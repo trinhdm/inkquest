@@ -16,12 +16,10 @@ type _CompoundSpec<P,> =
 			: false
 		: false
 
-type _RootSpec<
-	V,
-	P,
-> = _CompoundSpec<P> extends true
-	? never
-	: V
+type _RootSpec<V, P> =
+	_CompoundSpec<P> extends true
+		? never
+		: V
 
 type _Attributes<P,> = _RootSpec<Record<string, unknown>, P>
 type _ClassNames<P,> = _RootSpec<ClassValue, P>
@@ -38,7 +36,10 @@ export interface SpecStructure<P,> {
 
 // type _Handler<T = unknown> = (...args: T[]) => unknown
 
-export interface EventHandlers<N extends ValidElement & TagName, T = HTMLElementTagNameMap[N]> {
+export interface EventHandlers<
+	N extends ValidElement,
+	T = N extends TagName ? HTMLElementTagNameMap[N] : Element
+> {
 	onBlur?: FocusEventHandler<T>
 	onChange?: ChangeEventHandler<T>
 	onClick?: MouseEventHandler<T>

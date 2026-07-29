@@ -1,20 +1,22 @@
 import cx from 'clsx'
 import { toPolymorphic, type PolymorphicProps } from './Polymorphic'
-// import { useTheme } from '@/providers/ThemeProvider'
+import { useTheme } from '@/providers/ThemeProvider'
 import type { ReactNode } from 'react'
 
 export interface BoxProps {
 	children?: ReactNode
 }
 
-const _Box = ({
-	as,
-	attributes,
-	classNames,
-	styles,
-	...rest
-}: PolymorphicProps<'div', BoxProps>) => {
-	// const theme = useTheme()
+export const Box = toPolymorphic((_props: PolymorphicProps<'div', BoxProps>) => {
+	const {
+		as,
+		attributes,
+		classNames,
+		styles,
+		...rest
+	} = _props
+
+	const theme = useTheme()
 	const Element = as || 'div'
 
 	const props = {
@@ -25,7 +27,6 @@ const _Box = ({
 	}
 
 	return <Element { ...props } />
-}
+})
 
-_Box.displayName = '@/Box'
-export const Box = toPolymorphic(_Box)
+Box.displayName = '@/Box'

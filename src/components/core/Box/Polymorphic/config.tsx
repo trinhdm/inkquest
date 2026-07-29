@@ -1,6 +1,7 @@
 import {
 	factory,
 	type ComponentSpec,
+	type ExtendComponentSpec,
 	type FactoryUtils,
 	type Subcomponents,
 } from './factory'
@@ -10,17 +11,17 @@ import type { ExistingProps, PolymorphicProps } from './polymorphic'
 import type { InferSpecDefault, ValueOf } from './types'
 
 type PolymorphicSpec<
-	S extends { props: object },
+	S extends ComponentSpec<InferSpecDefault<S>>,
 	K = InferSpecDefault<S>,
 	V = S['props'] extends { variant?: infer PV } ? PV : never,
-> = ComponentSpec<K, S['props']> & {
+> = ComponentSpec<K, S['props']> & ExtendComponentSpec<S> & {
 	variant?: V extends string
 		? Exclude<V, undefined>
 		: S extends { variant?: infer SV } ? SV : never
 }
 
 export type PolymorphicSpecs<
-	S extends { props: object },
+	S extends ComponentSpec<InferSpecDefault<S>>,
 > = PolymorphicSpec<S>
 
 const polymorphicFactory = <S extends ComponentSpec<InferSpecDefault<S>>>(

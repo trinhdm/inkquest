@@ -29,10 +29,10 @@ export interface ComponentSpec<
 	default: { props?: _SpecProps<P> } & (
 		T extends TagName ? {
 			component: T
-			ref: HTMLElementTagNameMap[T]
+			// ref: HTMLElementTagNameMap[T]
 		} : {
 			component?: never
-			ref?: never
+			// ref?: never
 		}
 	)
 	id?: string
@@ -43,11 +43,16 @@ export interface ComponentSpec<
 	variant?: string
 }
 
+type _InferredRef<S extends ComponentSpec> =
+    S['default']['component'] extends TagName
+        ? { ref: HTMLElementTagNameMap[S['default']['component']] }
+        : { ref?: never }
+
 type _ComponentProps<S extends ComponentSpec> = _SpecProps<S['props']>
 
 type _CompoundComponentSpec<S extends ComponentSpec> = {
 	classNames?: never
-	default: Omit<S['default'], 'props'> & {
+	default: Omit<S['default'], 'props'> & _InferredRef<S> & {
 		props?: _ComponentProps<S>
 	}
 	styles?: never
@@ -55,13 +60,13 @@ type _CompoundComponentSpec<S extends ComponentSpec> = {
 
 type _RootComponentSpec<S extends ComponentSpec> = {
 	classNames?: ClassValue
-	default: Omit<S['default'], 'props'> & {
+	default: Omit<S['default'], 'props'> & _InferredRef<S> & {
 		props?: _ComponentProps<S>
 	}
 	styles?: CSSProperties
 }
 
-type _ExtendSpec<S extends ComponentSpec> =
+export type ExtendComponentSpec<S extends ComponentSpec> =
 	NonNullable<S['is']>['compound'] extends true
 		? _CompoundComponentSpec<S>
 		: _RootComponentSpec<S>
@@ -79,15 +84,12 @@ type _FactoryProps<S extends ComponentSpec> =
 type _Component<S extends ComponentSpec> =
 	NamedExoticComponent<_FactoryProps<S>>
 
-// export type FactorySpec<S extends ComponentSpec> =
-// 	S & _ExtendSpec<S>
-
 export interface FactoryUtils<
 	S extends ComponentSpec,
 	C = _Component<S>,
 	P = _PolymorphicSpec<S>,
 > {
-	extendTheme: (args: _ExtendSpec<S>) => _RootComponentSpec<S>
+	extendTheme: (args: ExtendComponentSpec<S>) => _RootComponentSpec<S>
 	withProps: (props: P) => C
 }
 

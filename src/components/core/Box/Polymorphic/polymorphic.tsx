@@ -25,6 +25,9 @@ type _InheritProps<C extends ValidElement, P2 = object> = _OverrideProps<
 	P2
 >
 
+type _ExtractProps<T> =
+	T extends { (props: infer P): unknown } ? P : never
+
 export type ExistingProps<P extends ComponentProps<ElementType>> = Omit<
 	FunctionComponent<P>,
 	never
@@ -32,14 +35,11 @@ export type ExistingProps<P extends ComponentProps<ElementType>> = Omit<
 
 export type PolymorphicProps<C, P> =
 	C extends ValidElement
-		? EventHandlers<C> & _InheritProps<C, P> & SpecStructure<P> & {
+		? SpecStructure<P> & EventHandlers<C> & _InheritProps<C, P> & {
 				as?: AsTag<C, P>
 				ref?: Ref<ComponentRef<C>>
 			}
 		: P & SpecStructure<P> & { as?: ElementType }
-
-type _ExtractProps<T> =
-	T extends { (props: infer P): unknown } ? P : never
 
 export const toPolymorphic = <T,>(target: T) => {
 	interface _Component {
