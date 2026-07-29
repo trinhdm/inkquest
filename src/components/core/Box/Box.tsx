@@ -5,27 +5,28 @@ import type { CSSProperties, ElementType, ReactNode } from 'react'
 
 export interface BoxProps {
 	as: ElementType
+	attributes?: Record<string, unknown>
 	children?: ReactNode
-	className?: string
+	classNames?: string
 	disabled?: boolean
 	onBlur?: () => void
 	onClick?: () => void
 	onFocus?: () => void
-	ref?: any
-	style?: CSSProperties
+	ref?: unknown
+	styles?: CSSProperties
 	variant?: string
 }
 
 const _Box = ({
 	as,
-	className,
+	classNames,
 	...rest
 }: BoxProps) => {
 	const Element = as || 'div',
 		theme = useTheme()
 
 	const props = {
-		className: cx(className),
+		classNames: cx(classNames),
 		...rest
 	}
 

@@ -12,11 +12,11 @@ import type { InferSpecDefault, ValueOf } from './types'
 //	fix circular logic
 
 type PolymorphicSpec<
-	K = any,
+	K = unknown,
 	S extends ComponentSpec<K> = ComponentSpec<K>,
-	V = S['props']['variant'],
+	V = S['props'] extends { variant?: infer V2 } ? V2 : never,
 > = ComponentSpec<K, S['props']> & {
-	variant?: V extends never ? S['variant'] : Exclude<V, undefined>
+	variant?: V extends string ? Exclude<V, undefined> : S['variant']
 }
 
 export type PolymorphicSpecs<
@@ -33,7 +33,7 @@ export const configPolymorphic = <S extends PolymorphicSpec<InferSpecDefault<S>>
 	type _Component = <T = C>(props: P<T>) => ReactElement
 	type _Subcomponents = Subcomponents<S>
 	type _Utils = FactoryUtils<S, _Component, P<C>>
-	type _Properties = ExistingProps<P<any>>
+	type _Properties = ExistingProps<P<unknown>>
 
 	type PolymorphicComponent =
 		& _Component

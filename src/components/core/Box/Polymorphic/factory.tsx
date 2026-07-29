@@ -10,7 +10,7 @@ import type {
 import type { DataAttrs, TagName } from './types'
 
 
-type SpecProps<P extends Record<string, any>> =
+type SpecProps<P extends object> =
 	Partial<P>
 	& DataAttrs
 
@@ -22,9 +22,10 @@ type SpecOptions =
 
 export interface ComponentSpec<
 	K = undefined,
-	P extends Record<string, any> = Record<string, any>,
+	P extends object = object,
 > {
-	ctx?: any
+	attributes?: string
+	ctx?: unknown
 	default?: { props?: SpecProps<P> } & (
 		K extends TagName ? {
 			component: K
@@ -37,35 +38,37 @@ export interface ComponentSpec<
 	id?: string
 	is?: Partial<Record<SpecOptions, boolean>>
 	props: P
-	ref?: Ref<any>
-	subcomponents?: Record<string, any>
+	ref?: Ref<unknown>
+	subcomponents?: Record<string, unknown>
 	variant?: string
 }
 
 interface _PolymorphicSpec {
-	as?: any
+	as?: unknown
 }
 
 type _ComponentProps<S extends ComponentSpec> = SpecProps<S['props']>
 
-interface _CompoundComponent<S extends ComponentSpec> {
+export interface CompoundComponent<S extends ComponentSpec> {
+	classNames?: never
 	default?: Omit<S['default'], 'props'> & {
 		props?: _ComponentProps<S>
 	}
+	styles?: never
 }
 
-interface _RootComponent<S extends ComponentSpec> {
-	className?: string[]
+export interface RootComponent<S extends ComponentSpec> {
+	classNames?: string[]
 	default?: Omit<S['default'], 'props'> & {
 		props?: _ComponentProps<S> & _PolymorphicSpec
 	}
-	style?: CSSProperties
+	styles?: CSSProperties
 }
 
 type _ComponentKind<S extends ComponentSpec> =
 	NonNullable<S['is']>['compound'] extends true
-		? _CompoundComponent<S>
-		: _RootComponent<S>
+		? CompoundComponent<S>
+		: RootComponent<S>
 
 type _Component<S extends ComponentSpec> = NamedExoticComponent<
 	S['props']
@@ -78,14 +81,14 @@ export interface FactoryUtils<
 	C = _Component<S>,
 	P = Partial<S['props']>,
 > {
-	extendTheme: (args: _ComponentKind<S>) => Record<keyof _RootComponent<S>, any>
+	extendTheme: (args: _ComponentKind<S>) => RootComponent<S>
 	withProps: (props: P) => C
 }
 
 export type Subcomponents<
 	S extends ComponentSpec,
 	List = S['subcomponents']
-> = List extends Record<string, any>
+> = List extends Record<string, unknown>
 	? List
 	: Record<string, never>
 
@@ -104,11 +107,11 @@ export const factory = <
 
 	const BaseComponent = target as unknown as _FactoryComponent
 
-	BaseComponent.extendTheme = extendWith as any
+	BaseComponent.extendTheme = extendWith
 	BaseComponent.withProps = (props: Parameters<typeof target>[0]): _FactoryComponent => {
-		const TempComponent = BaseComponent as unknown as ComponentType<any>
+		const TempComponent = BaseComponent as unknown as ComponentType<Record<string, unknown>>
 		const ExtendWith = (
-			override: Record<string, any>
+			override: Record<string, unknown>
 		) => <TempComponent { ...props } { ...override } />
 
 		ExtendWith.displayName = `WithProps(${BaseComponent.displayName})`
