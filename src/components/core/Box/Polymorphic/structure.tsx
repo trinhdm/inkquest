@@ -1,4 +1,4 @@
-import type { AsType } from './types'
+// import type { AsType } from './types'
 import type { ComponentSpec, FactorySpec } from './factory'
 import type { ClassValue } from 'clsx'
 import type { CSSProperties } from 'react'
@@ -21,14 +21,15 @@ type _RootSpec<
 type _Attributes<S extends ComponentSpec> = _RootSpec<'attributes', Record<string, unknown>, S>
 type _ClassNames<S extends ComponentSpec> = _RootSpec<'classNames', ClassValue, S>
 type _Styles<S extends ComponentSpec> = _RootSpec<'styles', CSSProperties, S>
+type _Variant<S extends ComponentSpec> = _RootSpec<'variant', string, S>
 
-type _ID<S extends ComponentSpec> = AsType<S['id'], string>
-type _Variant<S extends ComponentSpec> = AsType<S['variant'], string>
+// type _ID<S extends ComponentSpec> = AsType<S['id'], string>
+// type _Variant<S extends ComponentSpec> = AsType<S['variant'], string>
 
-export interface Structure<S extends ComponentSpec = ComponentSpec> {
+export interface SpecStructure<S extends ComponentSpec = ComponentSpec> {
 	attributes?: _Attributes<S>
 	classNames?: _ClassNames<S>
-	id?: _ID<S>
+	// id?: _ID<S>
 	styles?: _Styles<S>
 	variant?: _Variant<S>
 }

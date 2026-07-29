@@ -1,26 +1,25 @@
 import cx from 'clsx'
-import { toPolymorphic, type ComponentSpec, type PolymorphicRef, type Structure } from './Polymorphic'
+import { toPolymorphic, type ComponentSpec, type SpecStructure } from './Polymorphic'
 import { useTheme } from '@/providers/ThemeProvider'
 import type { ElementType, ReactNode } from 'react'
 
-type BoxSpec = ComponentSpec<undefined, {
-	children?: ReactNode
+type BoxSpec = ComponentSpec<ElementType, {
+	// children?: ReactNode
 	disabled?: boolean
 }>
 
 export interface BoxProps
-	extends Structure<BoxSpec> {
-	as: ElementType
-	ref?: PolymorphicRef<ElementType>
+	extends SpecStructure<BoxSpec> {
+	// as: ElementType
+	children?: ReactNode
 }
-
 
 const _Box = ({
 	as,
 	attributes,
 	classNames,
 	styles,
-	variant,
+	// variant,
 	...rest
 }: BoxProps) => {
 	const theme = useTheme()
