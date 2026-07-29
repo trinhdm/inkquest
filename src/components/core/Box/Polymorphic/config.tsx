@@ -25,7 +25,6 @@ export type PolymorphicSpecs<
 
 const polymorphicFactory = <S extends ComponentSpec<InferSpecDefault<S>>>(
 	target: Parameters<typeof factory<S>>[0]
-	// target: (props: PolymorphicProps<ValueOf<S, 'component'>, ValueOf<S, 'props'>>) => ReactNode
 ) => {
 	type C = ValueOf<S, 'component'>
 	type P<T> = PolymorphicProps<T, ValueOf<S, 'props'>>
@@ -42,7 +41,6 @@ const polymorphicFactory = <S extends ComponentSpec<InferSpecDefault<S>>>(
 		& _Properties
 
 	return factory<S, PolymorphicComponent>(target)
-	// return factory<S, PolymorphicComponent>(target as Parameters<typeof factory<S>>[0])
 }
 
 export const polymorphic = polymorphicFactory

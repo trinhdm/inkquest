@@ -4,7 +4,6 @@ import type {
 	NamedExoticComponent,
 	ReactNode,
 	Ref,
-	RefAttributes,
 } from 'react'
 
 import type { ClassValue } from 'clsx'
@@ -27,7 +26,7 @@ export interface ComponentSpec<
 > {
 	attributes?: Record<string, unknown>
 	ctx?: unknown
-	default?: { props?: _SpecProps<P> } & (
+	default: { props?: _SpecProps<P> } & (
 		T extends TagName ? {
 			component: T
 			ref: HTMLElementTagNameMap[T]
@@ -44,23 +43,19 @@ export interface ComponentSpec<
 	variant?: string
 }
 
-interface _PolymorphicSpec<T = unknown> {
-	as?: T
-}
-
 type _ComponentProps<S extends ComponentSpec> = _SpecProps<S['props']>
 
-type _CompoundComponentSpec<S extends ComponentSpec> = _PolymorphicSpec<never> & {
+type _CompoundComponentSpec<S extends ComponentSpec> = {
 	classNames?: never
-	default?: Omit<S['default'], 'props'> & {
+	default: Omit<S['default'], 'props'> & {
 		props?: _ComponentProps<S>
 	}
 	styles?: never
 }
 
-type _RootComponentSpec<S extends ComponentSpec> = _PolymorphicSpec<NonNullable<S['default']>['component']> & {
+type _RootComponentSpec<S extends ComponentSpec> = {
 	classNames?: ClassValue
-	default?: Omit<S['default'], 'props'> & {
+	default: Omit<S['default'], 'props'> & {
 		props?: _ComponentProps<S>
 	}
 	styles?: CSSProperties
@@ -71,20 +66,26 @@ type _ExtendSpec<S extends ComponentSpec> =
 		? _CompoundComponentSpec<S>
 		: _RootComponentSpec<S>
 
+type _PolymorphicSpec<
+	S extends ComponentSpec,
+	C = S['default']['component']
+> = S['props'] & {
+	as?: C extends never ? never : C
+}
+
+type _FactoryProps<S extends ComponentSpec> =
+	_PolymorphicSpec<S> & Pick<S, 'ref'>
+
+type _Component<S extends ComponentSpec> =
+	NamedExoticComponent<_FactoryProps<S>>
+
 export type FactorySpec<S extends ComponentSpec> =
 	S & _ExtendSpec<S>
-
-type _Component<S extends ComponentSpec> = NamedExoticComponent<
-	S['props']
-	& { as: NonNullable<S['default']>['component'] }
-	& RefAttributes<S['ref']>
-	& _PolymorphicSpec
->
 
 export interface FactoryUtils<
 	S extends ComponentSpec,
 	C = _Component<S>,
-	P = Partial<S['props'] & { as: NonNullable<S['default']>['component'] }>,
+	P = _PolymorphicSpec<S>,
 > {
 	extendTheme: (args: _ExtendSpec<S>) => _RootComponentSpec<S>
 	withProps: (props: P) => C
@@ -102,10 +103,7 @@ const extendWith = <T,>(value: T): T => value
 export const factory = <
 	S extends ComponentSpec,
 	C = unknown,
->(
-	// target: (props: S['props'] & Pick<S, 'ref'>) => ReactNode
-	target: (props: S['props'] & Pick<S, 'ref'> & { as?: NonNullable<S['default']>['component'] }) => ReactNode
-) => {
+>(target: (props: _FactoryProps<S>) => ReactNode) => {
 	type _FactoryComponent =
 		& _Component<S>
 		& Subcomponents<S>
@@ -126,5 +124,5 @@ export const factory = <
 		return ExtendWith as unknown as _FactoryComponent
 	}
 
-	return BaseComponent as C extends unknown ? _FactoryComponent : C
+	return BaseComponent as C
 }

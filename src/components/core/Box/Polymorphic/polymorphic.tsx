@@ -5,6 +5,7 @@ import type {
 	FunctionComponent,
 	JSX,
 	ReactElement,
+	Ref,
 } from 'react'
 
 import type { AsTag, ValidElement } from './types'
@@ -28,27 +29,23 @@ export type ExistingProps<P extends ComponentProps<ElementType>> = Omit<
 	never
 >
 
-type PolymorphicRef<C> = C extends ValidElement
-	? ComponentRef<C>
-	: never
-
-export type PolymorphicProps<C, P, T = AsTag<C, P>> =
+export type PolymorphicProps<C, P> =
 	C extends ValidElement
 		? InheritedProps<C, P> & {
-				as?: T
-				ref?: PolymorphicRef<T>
+				as?: AsTag<C, P>
+				ref?: Ref<ComponentRef<C>>
 			}
 		: P & { as?: ElementType }
 
 type ExtractProps<T> = T extends { (props: infer P): unknown } ? P : never
 
-export const toPolymorphic = <C,>(target: C) => {
+export const toPolymorphic = <T,>(target: T) => {
 	interface _Component {
-		<T = 'div', P = ExtractProps<T>>(props: PolymorphicProps<T, P>): ReactElement | null
+		<C = 'div', P = ExtractProps<C>>(props: PolymorphicProps<C, P>): ReactElement | null
 	}
 
-	type PolymorphicComponent = _Component
+	type PolymorphicBase = _Component
  		& ExistingProps<ComponentProps<ElementType>>
 
-	return target as PolymorphicComponent
+	return target as PolymorphicBase
 }
