@@ -1,35 +1,52 @@
-// import type { AsType } from './types'
-import type { ComponentSpec, FactorySpec } from './factory'
-import type { ClassValue } from 'clsx'
-import type { CSSProperties } from 'react'
+import type {
+	ChangeEventHandler,
+	CSSProperties,
+	FocusEventHandler,
+	KeyboardEventHandler,
+	MouseEventHandler,
+} from 'react'
 
-type _CompoundSpec<S extends ComponentSpec> = NonNullable<S['is']>['compound']
+import type { ClassValue } from 'clsx'
+import type { TagName, ValidElement } from './types'
+
+type _CompoundSpec<P,> =
+	'is' extends keyof P
+		? 'compound' extends keyof P['is']
+			? P['is']['compound']
+			: false
+		: false
 
 type _RootSpec<
-	K,
 	V,
-	S extends ComponentSpec,
-	C = FactorySpec<S>,
-> = _CompoundSpec<S> extends true
+	P,
+> = _CompoundSpec<P> extends true
 	? never
-	: K extends keyof C
-		? C[K] extends V | undefined
-			? C[K]
-			: never
-		: never
+	: V
 
-type _Attributes<S extends ComponentSpec> = _RootSpec<'attributes', Record<string, unknown>, S>
-type _ClassNames<S extends ComponentSpec> = _RootSpec<'classNames', ClassValue, S>
-type _Styles<S extends ComponentSpec> = _RootSpec<'styles', CSSProperties, S>
-type _Variant<S extends ComponentSpec> = _RootSpec<'variant', string, S>
+type _Attributes<P,> = _RootSpec<Record<string, unknown>, P>
+type _ClassNames<P,> = _RootSpec<ClassValue, P>
+type _Styles<P,> = _RootSpec<CSSProperties, P>
+type _Variant<P,> = _RootSpec<string, P>
 
-// type _ID<S extends ComponentSpec> = AsType<S['id'], string>
-// type _Variant<S extends ComponentSpec> = AsType<S['variant'], string>
+export interface SpecStructure<P,> {
+	attributes?: _Attributes<P>
+	classNames?: _ClassNames<P>
+	// id?: _ID<P>
+	styles?: _Styles<P>
+	variant?: _Variant<P>
+}
 
-export interface SpecStructure<S extends ComponentSpec = ComponentSpec> {
-	attributes?: _Attributes<S>
-	classNames?: _ClassNames<S>
-	// id?: _ID<S>
-	styles?: _Styles<S>
-	variant?: _Variant<S>
+// type _Handler<T = unknown> = (...args: T[]) => unknown
+
+export interface EventHandlers<N extends ValidElement & TagName, T = HTMLElementTagNameMap[N]> {
+	onBlur?: FocusEventHandler<T>
+	onChange?: ChangeEventHandler<T>
+	onClick?: MouseEventHandler<T>
+	onFocus?: FocusEventHandler<T>
+	onKeyDown?: KeyboardEventHandler<T>
+	onMouseDown?: MouseEventHandler<T>
+	onMouseEnter?: MouseEventHandler<T>
+	onMouseOut?: MouseEventHandler<T>
+	onMouseOver?: MouseEventHandler<T>
+	onMouseUp?: MouseEventHandler<T>
 }

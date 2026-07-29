@@ -79,8 +79,8 @@ type _FactoryProps<S extends ComponentSpec> =
 type _Component<S extends ComponentSpec> =
 	NamedExoticComponent<_FactoryProps<S>>
 
-export type FactorySpec<S extends ComponentSpec> =
-	S & _ExtendSpec<S>
+// export type FactorySpec<S extends ComponentSpec> =
+// 	S & _ExtendSpec<S>
 
 export interface FactoryUtils<
 	S extends ComponentSpec,
