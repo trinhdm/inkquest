@@ -9,8 +9,6 @@ import type { ReactElement } from 'react'
 import type { ExistingProps, PolymorphicProps } from './polymorphic'
 import type { InferSpecDefault, ValueOf } from './types'
 
-//	fix circular logic
-
 type PolymorphicSpec<
 	K = unknown,
 	S extends ComponentSpec<K> = ComponentSpec<K>,
@@ -24,7 +22,7 @@ export type PolymorphicSpecs<
 	S extends ComponentSpec<K> = ComponentSpec<K>,
 > = PolymorphicSpec<K, S>
 
-export const configPolymorphic = <S extends PolymorphicSpec<InferSpecDefault<S>>>(
+const polymorphicFactory = <S extends PolymorphicSpec<InferSpecDefault<S>>>(
 	target: Parameters<typeof factory<S>>[0]
 ) => {
 	type C = ValueOf<S, 'component'>
@@ -43,3 +41,5 @@ export const configPolymorphic = <S extends PolymorphicSpec<InferSpecDefault<S>>
 
 	return factory<S, PolymorphicComponent>(target)
 }
+
+export const polymorphic = polymorphicFactory

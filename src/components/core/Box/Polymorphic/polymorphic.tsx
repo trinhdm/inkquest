@@ -42,7 +42,7 @@ export type PolymorphicProps<C, P, T = AsTag<C, P>> = C extends ValidElement
 
 type ExtractProps<T> = T extends { (props: infer P): unknown } ? P : never
 
-export const polymorphic = <
+export const toPolymorphic = <
 	Component,
 	Props = ExtractProps<Component>,
 >(target: Component) => {
@@ -61,7 +61,7 @@ type ExtractFCProps<T> = T extends ComponentType<infer P>
 		? ComponentProps<T>
 		: T
 
-export const fcPolymorphic = <FC,>(target: FC) => {
+export const toPolymorphicFC = <FC,>(target: FC) => {
 	type _FComponentProps<T> = PolymorphicProps<AsTag<T>, ExtractFCProps<FC>>
 	type _TagProps<T> = ExtractFCProps<AsTag<T>>
 	type _Props<C> = _FComponentProps<C> & _TagProps<C>
