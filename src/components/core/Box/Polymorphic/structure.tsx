@@ -1,5 +1,5 @@
 import type {
-	ChangeEventHandler,
+	// ChangeEventHandler,
 	CSSProperties,
 	FocusEventHandler,
 	KeyboardEventHandler,
@@ -41,13 +41,13 @@ export interface EventHandlers<
 	T = N extends TagName ? HTMLElementTagNameMap[N] : Element
 > {
 	onBlur?: FocusEventHandler<T>
-	onChange?: ChangeEventHandler<T>
+	// onChange?: ChangeEventHandler<T>
 	onClick?: MouseEventHandler<T>
 	onFocus?: FocusEventHandler<T>
 	onKeyDown?: KeyboardEventHandler<T>
-	onMouseDown?: MouseEventHandler<T>
-	onMouseEnter?: MouseEventHandler<T>
-	onMouseOut?: MouseEventHandler<T>
-	onMouseOver?: MouseEventHandler<T>
-	onMouseUp?: MouseEventHandler<T>
+	// onMouseDown?: MouseEventHandler<T>
+	// onMouseEnter?: MouseEventHandler<T>
+	// onMouseOut?: MouseEventHandler<T>
+	// onMouseOver?: MouseEventHandler<T>
+	// onMouseUp?: MouseEventHandler<T>
 }

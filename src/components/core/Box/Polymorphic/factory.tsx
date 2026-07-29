@@ -7,12 +7,8 @@ import type {
 } from 'react'
 
 import type { ClassValue } from 'clsx'
-import type { DataAttrs, TagName } from './types'
+import type { DataAttrs, InferSpecDefault, TagName } from './types'
 
-
-type _SpecProps<P extends object> =
-	Partial<P>
-	& DataAttrs
 
 type _SpecOptions =
 	| 'compound'					// compound components cannot have styles
@@ -26,15 +22,6 @@ export interface ComponentSpec<
 > {
 	attributes?: Record<string, unknown>
 	ctx?: unknown
-	default: { props?: _SpecProps<P> } & (
-		T extends TagName ? {
-			component: T
-			// ref: HTMLElementTagNameMap[T]
-		} : {
-			component?: never
-			// ref?: never
-		}
-	)
 	id?: string
 	is?: Partial<Record<_SpecOptions, boolean>>
 	props: P
@@ -43,26 +30,30 @@ export interface ComponentSpec<
 	variant?: string
 }
 
-type _InferredRef<S extends ComponentSpec> =
-    S['default']['component'] extends TagName
-        ? { ref: HTMLElementTagNameMap[S['default']['component']] }
-        : { ref?: never }
+type _SpecProps<S extends ComponentSpec> =
+	Partial<S['props']>
+	& DataAttrs
 
-type _ComponentProps<S extends ComponentSpec> = _SpecProps<S['props']>
+type _InferredDefault<S extends ComponentSpec> =
+	{ props?: _SpecProps<S> } & (
+	InferSpecDefault<S> extends TagName ? {
+		component: InferSpecDefault<S>
+		ref: HTMLElementTagNameMap[InferSpecDefault<S>]
+	} : {
+		component?: never
+		ref?: never
+	}
+)
 
 type _CompoundComponentSpec<S extends ComponentSpec> = {
 	classNames?: never
-	default: Omit<S['default'], 'props'> & _InferredRef<S> & {
-		props?: _ComponentProps<S>
-	}
+	default: _InferredDefault<S>
 	styles?: never
 }
 
 type _RootComponentSpec<S extends ComponentSpec> = {
 	classNames?: ClassValue
-	default: Omit<S['default'], 'props'> & _InferredRef<S> & {
-		props?: _ComponentProps<S>
-	}
+	default: _InferredDefault<S>
 	styles?: CSSProperties
 }
 
@@ -73,7 +64,7 @@ export type ExtendComponentSpec<S extends ComponentSpec> =
 
 type _PolymorphicSpec<
 	S extends ComponentSpec,
-	C = S['default']['component']
+	C = InferSpecDefault<S>
 > = S['props'] & {
 	as?: C extends never ? never : C
 }
