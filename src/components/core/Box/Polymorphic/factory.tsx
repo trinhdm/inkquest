@@ -7,6 +7,7 @@ import type {
 	RefAttributes,
 } from 'react'
 
+import type { ClassValue } from 'clsx'
 import type { DataAttrs, TagName } from './types'
 
 
@@ -21,15 +22,15 @@ type SpecOptions =
 	| 'unstyled'
 
 export interface ComponentSpec<
-	K = undefined,
+	T = undefined,
 	P extends object = object,
 > {
-	attributes?: string
+	attributes?: Record<string, unknown>
 	ctx?: unknown
 	default?: { props?: SpecProps<P> } & (
-		K extends TagName ? {
-			component: K
-			ref: HTMLElementTagNameMap[K]
+		T extends TagName ? {
+			component: T
+			ref: HTMLElementTagNameMap[T]
 		} : {
 			component?: never
 			ref?: never
@@ -49,7 +50,7 @@ interface _PolymorphicSpec {
 
 type _ComponentProps<S extends ComponentSpec> = SpecProps<S['props']>
 
-export interface CompoundComponent<S extends ComponentSpec> {
+type _CompoundComponentSpec<S extends ComponentSpec> = S & {
 	classNames?: never
 	default?: Omit<S['default'], 'props'> & {
 		props?: _ComponentProps<S>
@@ -57,18 +58,18 @@ export interface CompoundComponent<S extends ComponentSpec> {
 	styles?: never
 }
 
-export interface RootComponent<S extends ComponentSpec> {
-	classNames?: string[]
+type _RootComponentSpec<S extends ComponentSpec> = S & {
+	classNames?: ClassValue
 	default?: Omit<S['default'], 'props'> & {
 		props?: _ComponentProps<S> & _PolymorphicSpec
 	}
 	styles?: CSSProperties
 }
 
-type _ComponentKind<S extends ComponentSpec> =
+export type FactorySpec<S extends ComponentSpec> =
 	NonNullable<S['is']>['compound'] extends true
-		? CompoundComponent<S>
-		: RootComponent<S>
+		? _CompoundComponentSpec<S>
+		: _RootComponentSpec<S>
 
 type _Component<S extends ComponentSpec> = NamedExoticComponent<
 	S['props']
@@ -81,7 +82,7 @@ export interface FactoryUtils<
 	C = _Component<S>,
 	P = Partial<S['props']>,
 > {
-	extendTheme: (args: _ComponentKind<S>) => RootComponent<S>
+	extendTheme: (args: FactorySpec<S>) => _RootComponentSpec<S>
 	withProps: (props: P) => C
 }
 

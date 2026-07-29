@@ -1,7 +1,7 @@
 import type {
 	ComponentProps,
 	ComponentRef,
-	ComponentType,
+	// ComponentType,
 	ElementType,
 	FunctionComponent,
 	JSX,
@@ -54,21 +54,20 @@ export const toPolymorphic = <
 	return target as PolymorphicComponent
 }
 
+// type ExtractFCProps<T> = T extends ComponentType<infer P>
+// 	? P
+// 	: T extends ValidElement
+// 		? ComponentProps<T>
+// 		: T
 
-type ExtractFCProps<T> = T extends ComponentType<infer P>
-	? P
-	: T extends ValidElement
-		? ComponentProps<T>
-		: T
+// export const toPolymorphicFC = <FC,>(target: FC) => {
+// 	type _FComponentProps<T> = PolymorphicProps<AsTag<T>, ExtractFCProps<FC>>
+// 	type _TagProps<T> = ExtractFCProps<AsTag<T>>
+// 	type _Props<C> = _FComponentProps<C> & _TagProps<C>
 
-export const toPolymorphicFC = <FC,>(target: FC) => {
-	type _FComponentProps<T> = PolymorphicProps<AsTag<T>, ExtractFCProps<FC>>
-	type _TagProps<T> = ExtractFCProps<AsTag<T>>
-	type _Props<C> = _FComponentProps<C> & _TagProps<C>
+// 	type _FComponent<C = FC> = (props: _Props<C>) => ReactElement | null
+// 	type PolymorphicFC = _FComponent
+// 		& ExistingProps<ComponentProps<ElementType>>
 
-	type _FComponent<C = FC> = (props: _Props<C>) => ReactElement | null
-	type PolymorphicFC = _FComponent
-		& ExistingProps<ComponentProps<ElementType>>
-
-	return target as PolymorphicFC
-}
+// 	return target as PolymorphicFC
+// }

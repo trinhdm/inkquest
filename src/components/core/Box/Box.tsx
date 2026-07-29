@@ -1,21 +1,19 @@
 import cx from 'clsx'
-import { toPolymorphic } from './Polymorphic'
+import { toPolymorphic, type ComponentSpec, type PolymorphicRef, type Structure } from './Polymorphic'
 import { useTheme } from '@/providers/ThemeProvider'
-import type { CSSProperties, ElementType, ReactNode } from 'react'
+import type { ElementType, ReactNode } from 'react'
 
-export interface BoxProps {
-	as: ElementType
-	attributes?: Record<string, unknown>
+type BoxSpec = ComponentSpec<undefined, {
 	children?: ReactNode
-	classNames?: string
 	disabled?: boolean
-	onBlur?: () => void
-	onClick?: () => void
-	onFocus?: () => void
-	ref?: unknown
-	styles?: CSSProperties
-	variant?: string
+}>
+
+export interface BoxProps
+	extends Structure<BoxSpec> {
+	as: ElementType
+	ref?: PolymorphicRef<ElementType>
 }
+
 
 const _Box = ({
 	as,
@@ -25,8 +23,8 @@ const _Box = ({
 	variant,
 	...rest
 }: BoxProps) => {
-	const Element = as || 'div',
-		theme = useTheme()
+	const theme = useTheme()
+	const Element = as || 'div'
 
 	const props = {
 		...attributes,

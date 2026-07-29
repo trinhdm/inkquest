@@ -8,6 +8,11 @@ export type AsTag<C, P = C> = 'as' extends keyof P
 	? P['as']
 	: C
 
+export type AsType<
+	V,
+	T = string,
+> = V extends T ? V : T
+
 export type DataAttrs = Record<`data-${string}`, unknown>
 export type TagName = keyof HTMLElementTagNameMap
 
