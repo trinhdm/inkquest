@@ -31,6 +31,11 @@ type PolymorphicSpec<
 export type PolymorphicSpecs<S extends ComponentSpec<InferSpecDefault<S>>> =
 	PolymorphicSpec<S>
 
+// type Spec<
+// 	Specs extends ComponentSpec<InferSpecDefault<Specs>>,
+// 	PS extends PolymorphicSpec<Specs> = PolymorphicSpec<Specs>
+// > = PS
+
 const polymorphicFactory = <
 	Specs extends ComponentSpec<InferSpecDefault<Specs>>,
 	S extends PolymorphicSpec<Specs> = PolymorphicSpec<Specs>

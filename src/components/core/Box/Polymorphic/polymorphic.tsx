@@ -9,21 +9,23 @@ import type {
 } from 'react'
 
 import type { AsTag, ValidElement } from './types'
-import type { EventHandlers, SpecStructure } from './structure'
+import type { SpecStructure } from './structure'
 
 type _BaseProps<C extends ValidElement> = JSX.LibraryManagedAttributes<
 	C,
 	ComponentProps<C>
 >
 
-type _OverrideProps<P1 = object, P2 = object> =
+export type OverrideProps<P1 = object, P2 = object> =
 	P2
 	& Omit<P1, keyof P2>
 
-type _InheritProps<C extends ValidElement, P2 = object> = _OverrideProps<
+export type ExtendedProps<C extends ValidElement, P2 = object> = OverrideProps<
 	_BaseProps<C>,
 	P2
 >
+
+//	InheritedProps
 
 type _ExtractProps<T> =
 	T extends { (props: infer P): unknown } ? P : never
@@ -34,12 +36,14 @@ export type PropertiesBase<P extends ComponentProps<ElementType>> = Omit<
 >
 
 export type PolymorphicProps<C, P> =
-	C extends ValidElement
-		? SpecStructure<P> & EventHandlers<C> & _InheritProps<C, P> & {
-				as?: AsTag<C, P>
-				ref?: Ref<ComponentRef<C>>
-			}
-		: P & SpecStructure<P> & { as?: ElementType }
+	SpecStructure<P> & (
+		C extends ValidElement
+			? ExtendedProps<C, P> & {
+					as?: AsTag<C, P>
+					ref?: Ref<ComponentRef<C>>
+				}
+			: P & { as?: ElementType }
+	)
 
 export const toPolymorphic = <T,>(target: T) => {
 	interface _Component {

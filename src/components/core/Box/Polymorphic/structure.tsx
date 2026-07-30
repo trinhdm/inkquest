@@ -1,13 +1,13 @@
-import type {
-	// ChangeEventHandler,
-	CSSProperties,
-	FocusEventHandler,
-	KeyboardEventHandler,
-	MouseEventHandler,
-} from 'react'
+// import type {
+// 	ChangeEventHandler,
+// 	FocusEventHandler,
+// 	KeyboardEventHandler,
+// 	MouseEventHandler,
+// } from 'react'
 
+import type { CSSProperties } from 'react'
 import type { ClassValue } from 'clsx'
-import type { TagName, ValidElement } from './types'
+// import type { TagName, ValidElement } from './types'
 
 type _CompoundSpec<P,> =
 	'is' extends keyof P
@@ -26,7 +26,7 @@ type _ClassNames<P,> = _RootSpec<ClassValue, P>
 type _Styles<P,> = _RootSpec<CSSProperties, P>
 type _Variant<P,> = _RootSpec<string, P>
 
-export interface SpecStructure<P,> {
+export interface SpecStructure<P = { is: { compound: false } }> {
 	attributes?: _Attributes<P>
 	classNames?: _ClassNames<P>
 	styles?: _Styles<P>
@@ -35,18 +35,18 @@ export interface SpecStructure<P,> {
 
 // type _Handler<T = unknown> = (...args: T[]) => unknown
 
-export interface EventHandlers<
-	N extends ValidElement,
-	T = N extends TagName ? HTMLElementTagNameMap[N] : Element
-> {
-	onBlur?: FocusEventHandler<T>
-	// onChange?: ChangeEventHandler<T>
-	onClick?: MouseEventHandler<T>
-	onFocus?: FocusEventHandler<T>
-	onKeyDown?: KeyboardEventHandler<T>
-	// onMouseDown?: MouseEventHandler<T>
-	// onMouseEnter?: MouseEventHandler<T>
-	// onMouseOut?: MouseEventHandler<T>
-	// onMouseOver?: MouseEventHandler<T>
-	// onMouseUp?: MouseEventHandler<T>
-}
+// export interface EventHandlers<
+// 	N extends ValidElement,
+// 	T = N extends TagName ? HTMLElementTagNameMap[N] : Element
+// > {
+// 	onBlur?: FocusEventHandler<T>
+// 	// onChange?: ChangeEventHandler<T>
+// 	onClick?: MouseEventHandler<T>
+// 	onFocus?: FocusEventHandler<T>
+// 	onKeyDown?: KeyboardEventHandler<T>
+// 	// onMouseDown?: MouseEventHandler<T>
+// 	// onMouseEnter?: MouseEventHandler<T>
+// 	// onMouseOut?: MouseEventHandler<T>
+// 	// onMouseOver?: MouseEventHandler<T>
+// 	// onMouseUp?: MouseEventHandler<T>
+// }

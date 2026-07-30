@@ -10,6 +10,7 @@ import type {
 
 import type { DataAttrs, InferSpecDefault, TagName } from './types'
 import type { SpecStructure } from './structure'
+// import type { PolymorphicProps } from './polymorphic'
 
 
 type _SpecOptions =
@@ -45,10 +46,17 @@ type _PolymorphicSpec<S extends ComponentSpec> = {
 type _PolymorphicProps<S extends ComponentSpec> =
 	S['props']
 	& _PolymorphicSpec<S>
+	// & PickStartsWith<PolymorphicProps<InferSpecDefault<S>, S['props']>, 'on'>
+
+// type Test<S extends ComponentSpec, P1> =
+// 	OverrideProps<_PolymorphicProps<S>, Pick<S, 'attributes' | 'id' | 'ref'>>
 
 type _FactoryProps<S extends ComponentSpec> =
-	_PolymorphicProps<S>
-	& Pick<S, 'ref'>
+	// Pick<S, 'ref'>
+	& Pick<S, 'attributes' | 'id' | 'ref'>
+	& _PolymorphicProps<S>
+	// & PickStartsWith<PolymorphicProps<InferSpecDefault<S>, S['props']>, 'on'>
+	// PolymorphicProps<InferSpecDefault<S>, _PolymorphicProps<S>>
 
 type _DefaultProps<S extends ComponentSpec> =
 	Partial<S['props']>
@@ -120,7 +128,7 @@ type _FactoryComponent<S extends ComponentSpec> =
 
 export const factory = <
 	S extends ComponentSpec,
-	C = _FactoryComponent<S>
+	C extends object = _FactoryComponent<S>
 >(target: (props: _FactoryProps<S>) => ReactNode) => {
 	type FC = _FactoryComponent<S>
 
