@@ -1,3 +1,5 @@
+import { setDefaultProps } from '@/lib/registries'
+
 import type {
 	ComponentType,
 	CSSProperties,
@@ -75,12 +77,14 @@ type _FactoryProps<S extends ComponentSpec> =
 type _Component<S extends ComponentSpec> =
 	NamedExoticComponent<_FactoryProps<S>>
 
+type ThemeDefaults<S extends ComponentSpec> = Pick<ExtendComponentSpec<S>['default'], 'props'>
+
 export interface FactoryUtils<
 	S extends ComponentSpec,
 	C = _Component<S>,
 	P = _PolymorphicSpec<S>,
 > {
-	extendTheme: (args: ExtendComponentSpec<S>) => _RootComponentSpec<S>
+	setDefaults: (args: ThemeDefaults<S>) => ThemeDefaults<S>
 	withProps: (props: P) => C
 }
 
@@ -90,8 +94,6 @@ export type Subcomponents<
 > = List extends Record<string, unknown>
 	? List
 	: Record<string, never>
-
-const extendWith = <T,>(value: T): T => value
 
 export const factory = <
 	S extends ComponentSpec,
@@ -104,7 +106,17 @@ export const factory = <
 
 	const BaseComponent = target as unknown as _FactoryComponent
 
-	BaseComponent.extendTheme = extendWith
+	BaseComponent.setDefaults = (args: ThemeDefaults<S>) => {
+		const { displayName } = BaseComponent
+
+		if (!displayName)
+			throw new Error('cannot set defaultProps: missing `displayName`')
+		if (args?.props && Object.keys(args.props).length)
+			setDefaultProps(displayName, args.props)
+
+		return args
+	}
+
 	BaseComponent.withProps = (props: Parameters<typeof target>[0]): _FactoryComponent => {
 		const TempComponent = BaseComponent as unknown as ComponentType<Record<string, unknown>>
 		const ExtendWith = (
@@ -112,7 +124,7 @@ export const factory = <
 		) => <TempComponent { ...props } { ...extended } />
 
 		ExtendWith.displayName = `WithProps(${BaseComponent.displayName})`
-		ExtendWith.extendTheme = BaseComponent.extendTheme
+		ExtendWith.setDefaults = BaseComponent.setDefaults
 
 		return ExtendWith as unknown as _FactoryComponent
 	}
