@@ -1,7 +1,7 @@
 import type { JSX, JSXElementConstructor } from 'react'
+import type { InferComponentSpec } from '@/types/spec'
 
 export type DataAttrs = Record<`data-${string}`, unknown>
-export type TagName = keyof HTMLElementTagNameMap
 
 export type ValidElement =
 	| keyof JSX.IntrinsicElements
@@ -15,14 +15,9 @@ export type PickStartsWith<T, Prefix extends string> = {
 	[K in keyof T as K extends `${Prefix}${string}` ? K : never]: T[K]
 }
 
-export type InferSpecDefault<S> =
-	S extends { default?: { component: infer K } }
-		? K
-		: unknown
-
 export type ValueOf<
 	S,
-	K = InferSpecDefault<S>,
+	K = InferComponentSpec<S>,
 	D = 'default' extends keyof S ? NonNullable<S['default']> : object
 > = K extends keyof S
 	? S[K]

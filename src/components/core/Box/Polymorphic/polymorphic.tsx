@@ -9,7 +9,7 @@ import type {
 } from 'react'
 
 import type { AsTag, ValidElement } from './types'
-import type { SpecStructure } from './structure'
+import type { SpecStructure } from '@/types/spec'
 
 type _BaseProps<C extends ValidElement> = JSX.LibraryManagedAttributes<
 	C,

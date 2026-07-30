@@ -5,9 +5,46 @@
 // 	MouseEventHandler,
 // } from 'react'
 
-import type { CSSProperties } from 'react'
+import type { CSSProperties, Ref } from 'react'
 import type { ClassValue } from 'clsx'
-// import type { TagName, ValidElement } from './types'
+
+
+export type TagName = keyof HTMLElementTagNameMap
+
+type _SpecOptions =
+	| 'compound'					// compound components cannot have styles
+	| 'disabled'
+	| 'focusable'
+	| 'unstyled'
+
+export interface Specs<
+	T = unknown,
+	P extends object = object,
+> {
+	attributes?: Record<string, unknown>
+	ctx?: unknown
+	default?: (
+			T extends TagName
+				? { component?: T }
+				: { component?: unknown extends T ? unknown : never }
+		)
+		& { props?: Partial<P> }
+	id?: string
+	is?: Partial<Record<_SpecOptions, boolean>>
+	props: P
+	ref?: Ref<T extends TagName ? HTMLElementTagNameMap[T] : unknown>
+	subcomponents?: Record<string, unknown>
+	variant?: string
+}
+
+export type InferComponentSpec<S> =
+	S extends { default?: { component: infer K } }
+		? K
+		: unknown
+
+export type ValidSpecs<S> =
+	Specs<InferComponentSpec<S>>
+
 
 type _CompoundSpec<P,> =
 	'is' extends keyof P
@@ -33,6 +70,7 @@ export interface SpecStructure<P = { is: { compound: false } }> {
 	variant?: _Variant<P>
 }
 
+
 // type _Handler<T = unknown> = (...args: T[]) => unknown
 
 // export interface EventHandlers<
@@ -50,3 +88,4 @@ export interface SpecStructure<P = { is: { compound: false } }> {
 // 	// onMouseOver?: MouseEventHandler<T>
 // 	// onMouseUp?: MouseEventHandler<T>
 // }
+

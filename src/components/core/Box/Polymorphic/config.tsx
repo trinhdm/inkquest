@@ -1,6 +1,6 @@
 import {
 	factory,
-	type ComponentSpec,
+	// type Specs,
 	type ExtendedSpec,
 	type MethodsBase,
 	type SubcomponentsBase,
@@ -8,13 +8,14 @@ import {
 
 import type { ReactElement } from 'react'
 import type { PolymorphicProps, PropertiesBase } from './polymorphic'
-import type { InferSpecDefault, ValueOf } from './types'
+import type { InferComponentSpec, Specs, ValidSpecs } from '@/types/spec'
+import type { ValueOf } from './types'
 
 type PolymorphicSpec<
-	S extends ComponentSpec<InferSpecDefault<S>>,
-	K = InferSpecDefault<S>,
+	S extends ValidSpecs<S>,
+	K = InferComponentSpec<S>,
 	// V = S['props'] extends { variant?: infer PV } ? PV : never,
-> = ComponentSpec<K, S['props']>
+> = Specs<K, S['props']>
 	& ExtendedSpec<S> & {
 			variant?: S['props'] extends { variant?: infer VP }
 				? VP extends string
@@ -28,17 +29,12 @@ type PolymorphicSpec<
 	// 			: S extends { variant?: infer SV } ? SV : never
 	// 	}
 
-export type PolymorphicSpecs<S extends ComponentSpec<InferSpecDefault<S>>> =
+export type PolymorphicSpecs<S extends ValidSpecs<S>> =
 	PolymorphicSpec<S>
 
-// type Spec<
-// 	Specs extends ComponentSpec<InferSpecDefault<Specs>>,
-// 	PS extends PolymorphicSpec<Specs> = PolymorphicSpec<Specs>
-// > = PS
-
 const polymorphicFactory = <
-	Specs extends ComponentSpec<InferSpecDefault<Specs>>,
-	S extends PolymorphicSpec<Specs> = PolymorphicSpec<Specs>
+	SC extends ValidSpecs<SC>,
+	S extends PolymorphicSpec<SC> = PolymorphicSpec<SC>
 >(target: Parameters<typeof factory<S>>[0]) => {
 	type C = ValueOf<S, 'component'>
 	type P<T> = PolymorphicProps<T, ValueOf<S, 'props'>>
@@ -58,63 +54,63 @@ const polymorphicFactory = <
 }
 
 type _TopExcessKeys<S> =
-	Exclude<keyof S, keyof ComponentSpec>
+	Exclude<keyof S, keyof Specs>
 
 type _DefaultExcessKeys<S> = S extends { default: infer D }
 	? Exclude<keyof D, 'component'>
 	: never
 
-type _ExcessMarker<Specs> =
-	[_TopExcessKeys<Specs>] extends [never]
-		? [_DefaultExcessKeys<Specs>] extends [never]
+type _ExcessMarker<SC> =
+	[_TopExcessKeys<SC>] extends [never]
+		? [_DefaultExcessKeys<SC>] extends [never]
 			? unknown
-			: { keyNotDefinedInSpecsDefault: _DefaultExcessKeys<Specs> }
-		: { keyNotDefinedInSpecs: _TopExcessKeys<Specs> }
+			: { keyNotDefinedInSpecsDefault: _DefaultExcessKeys<SC> }
+		: { keyNotDefinedInSpecs: _TopExcessKeys<SC> }
 
 export const polymorphic = <
-	Specs extends ComponentSpec<InferSpecDefault<Specs>>,
-	T extends typeof polymorphicFactory<Specs> = typeof polymorphicFactory<Specs>,
+	SC extends ValidSpecs<SC>,
+	T extends typeof polymorphicFactory<SC> = typeof polymorphicFactory<SC>,
 	P extends Parameters<T>[0] = Parameters<T>[0],
->(target: P & _ExcessMarker<Specs>) =>
-	polymorphicFactory<Specs>(target as P)
+>(target: P & _ExcessMarker<SC>) =>
+	polymorphicFactory<SC>(target as P)
 
 
 
-// type _PolymorphicArgs<Specs extends ComponentSpec<InferSpecDefault<Specs>>> =
-// 	_IsClean<Specs> extends true
-// 		? [target: Parameters<typeof polymorphicFactory<Specs>>[0]]
+// type _PolymorphicArgs<SC extends ValidSpecs<SC>> =
+// 	_IsClean<SC> extends true
+// 		? [target: Parameters<typeof polymorphicFactory<SC>>[0]]
 // 		: [
-// 			target: Parameters<typeof polymorphicFactory<Specs>>[0],
-// 			error: `Specs contains unexpected key(s), either at the top level or inside 'default'`,
+// 			target: Parameters<typeof polymorphicFactory<SC>>[0],
+// 			error: `SC contains unexpected key(s), either at the top level or inside 'default'`,
 // 		]
 
 // export const polymorphic = <
-// 	Specs extends ComponentSpec<InferSpecDefault<Specs>>,
-// >(...args: _PolymorphicArgs<Specs>) =>
-// 	polymorphicFactory<Specs>(args[0])
+// 	SC extends ValidSpecs<SC>,
+// >(...args: _PolymorphicArgs<SC>) =>
+// 	polymorphicFactory<SC>(args[0])
 
 
 
 
-// type _HasValidDefault<Specs> =
-// 	InferSpecDefault<Specs> extends TagName
+// type _HasValidDefault<SC> =
+// 	InferComponentSpec<SC> extends TagName
 // 		? true
-// 		: unknown extends InferSpecDefault<Specs>
+// 		: unknown extends InferComponentSpec<SC>
 // 			? true
 // 			: false
 
-// type _PolymorphicArgs<Specs extends ComponentSpec<InferSpecDefault<Specs>>> =
-// 	_HasValidDefault<Specs> extends true
-// 		? [target: Parameters<typeof polymorphicFactory<Specs>>[0]]
+// type _PolymorphicArgs<SC extends ValidSpecs<SC> =
+// 	_HasValidDefault<SC> extends true
+// 		? [target: Parameters<typeof polymorphicFactory<SC>>[0]]
 // 		: [
-// 			target: Parameters<typeof polymorphicFactory<Specs>>[0],
-// 			error: `Specs['default']['component'] must be a valid HTML tag name`,
+// 			target: Parameters<typeof polymorphicFactory<SC>>[0],
+// 			error: `SC['default']['component'] must be a valid HTML tag name`,
 // 		]
 
 // export const polymorphic = <
-// 	Specs extends ComponentSpec<InferSpecDefault<Specs>>,
-// >(...args: _PolymorphicArgs<Specs>) =>
-// 	polymorphicFactory<Specs>(args[0])
+// 	SC extends ValidSpecs<SC>,
+// >(...args: _PolymorphicArgs<SC>) =>
+// 	polymorphicFactory<SC>(args[0])
 
 // export const polymorphic = polymorphicFactory
 
@@ -122,7 +118,7 @@ export const polymorphic = <
 
 
 // type _NoExcessTop<S> =
-// 	Exclude<keyof S, keyof ComponentSpec> extends never
+// 	Exclude<keyof S, keyof Specs> extends never
 // 		? true
 // 		: false
 
@@ -133,21 +129,21 @@ export const polymorphic = <
 // 			: false
 // 		: true
 
-// type _IsClean<Specs> =
-// 	_NoExcessTop<Specs> extends true
-// 		? _DefaultIsClean<Specs> extends true
+// type _IsClean<SC> =
+// 	_NoExcessTop<SC> extends true
+// 		? _DefaultIsClean<SC> extends true
 // 			? true
 // 			: false
 // 		: false
 
-// type _ExcessMarker<Specs> =
-// 	_IsClean<Specs> extends true
+// type _ExcessMarker<SC> =
+// 	_IsClean<SC> extends true
 // 		? unknown
-// 		: { unexpectedKeyInSpecs: 'Specs contains a key not defined in ComponentSpec, either at the top level or inside default' }
+// 		: { unexpectedKeyInSpecs: 'SC contains a key not defined in Specs, either at the top level or inside default' }
 
 // export const polymorphic = <
-// 	Specs extends ComponentSpec<InferSpecDefault<Specs>>,
-// >(target: Parameters<typeof polymorphicFactory<Specs>>[0] & _ExcessMarker<Specs>) =>
-// 	polymorphicFactory<Specs>(target as Parameters<typeof polymorphicFactory<Specs>>[0])
+// 	SC extends ValidSpecs<SC>,
+// >(target: Parameters<typeof polymorphicFactory<SC>>[0] & _ExcessMarker<SC>) =>
+// 	polymorphicFactory<SC>(target as Parameters<typeof polymorphicFactory<SC>>[0])
 
 
