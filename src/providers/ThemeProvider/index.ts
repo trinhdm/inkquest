@@ -5,4 +5,5 @@ export {
 	useTheme,
 } from './ThemeProvider'
 
-export type { SiteTheme, ThemeProviderProps } from './ThemeProvider'
+export type { SiteTheme } from './theme.types'
+export type { ThemeProviderProps } from './ThemeProvider'
