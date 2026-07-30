@@ -16,10 +16,10 @@ type PolymorphicSpec<
 	V = S['props'] extends { variant?: infer PV } ? PV : never,
 > = ComponentSpec<K, S['props']>
 	& ExtendComponentSpec<S> & {
-		variant?: V extends string
-			? Exclude<V, undefined>
-			: S extends { variant?: infer SV } ? SV : never
-	}
+			variant?: V extends string
+				? Exclude<V, undefined>
+				: S extends { variant?: infer SV } ? SV : never
+		}
 
 export type PolymorphicSpecs<
 	S extends ComponentSpec<InferSpecDefault<S>>,
@@ -28,9 +28,7 @@ export type PolymorphicSpecs<
 const polymorphicFactory = <
 	Specs extends ComponentSpec<InferSpecDefault<Specs>>,
 	S extends PolymorphicSpec<Specs> = PolymorphicSpec<Specs>
->(
-	target: Parameters<typeof factory<S>>[0]
-) => {
+>(target: Parameters<typeof factory<S>>[0]) => {
 	type C = ValueOf<S, 'component'>
 	type P<T> = PolymorphicProps<T, ValueOf<S, 'props'>>
 

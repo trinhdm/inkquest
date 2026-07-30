@@ -2,14 +2,14 @@ import { setDefaultProps } from '@/lib/registries'
 
 import type {
 	ComponentType,
-	CSSProperties,
+	ElementType,
 	NamedExoticComponent,
 	ReactNode,
 	Ref,
 } from 'react'
 
-import type { ClassValue } from 'clsx'
 import type { DataAttrs, InferSpecDefault, TagName } from './types'
+import type { SpecStructure } from './structure'
 
 
 type _SpecOptions =
@@ -32,20 +32,25 @@ export interface ComponentSpec<
 	variant?: string
 }
 
-type _SpecProps<S extends ComponentSpec> =
+type _PolymorphicSpec<S extends ComponentSpec> = {
+	as?: unknown extends InferSpecDefault<S> ? ElementType : InferSpecDefault<S>
+}
+
+type _DefaultProps<S extends ComponentSpec> =
 	Partial<S['props']>
+	& _PolymorphicSpec<S>
 	& DataAttrs
 
 type _InferredDefault<S extends ComponentSpec> =
-	{ props?: _SpecProps<S> } & (
-	InferSpecDefault<S> extends TagName ? {
-		component: InferSpecDefault<S>
-		ref: HTMLElementTagNameMap[InferSpecDefault<S>]
-	} : {
-		component?: never
-		ref?: never
-	}
-)
+	{ props?: _DefaultProps<S> } & (
+		InferSpecDefault<S> extends TagName ? {
+			component: InferSpecDefault<S>
+			ref: HTMLElementTagNameMap[InferSpecDefault<S>]
+		} : {
+			component?: never
+			ref?: never
+		}
+	)
 
 type _CompoundComponentSpec<S extends ComponentSpec> = {
 	classNames?: never
@@ -54,9 +59,9 @@ type _CompoundComponentSpec<S extends ComponentSpec> = {
 }
 
 type _RootComponentSpec<S extends ComponentSpec> = {
-	classNames?: ClassValue
+	classNames?: SpecStructure<S>['classNames']
 	default: _InferredDefault<S>
-	styles?: CSSProperties
+	styles?: SpecStructure<S>['styles']
 }
 
 export type ExtendComponentSpec<S extends ComponentSpec> =
@@ -64,25 +69,31 @@ export type ExtendComponentSpec<S extends ComponentSpec> =
 		? _CompoundComponentSpec<S>
 		: _RootComponentSpec<S>
 
-type _PolymorphicSpec<
-	S extends ComponentSpec,
-	C = InferSpecDefault<S>
-> = S['props'] & {
-	as?: C extends never ? never : C
-}
+type _PolymorphicProps<S extends ComponentSpec> =
+	S['props']
+	& _PolymorphicSpec<S>
 
 type _FactoryProps<S extends ComponentSpec> =
-	_PolymorphicSpec<S> & Pick<S, 'ref'>
+	_PolymorphicProps<S>
+	& Pick<S, 'ref'>
 
 type _Component<S extends ComponentSpec> =
 	NamedExoticComponent<_FactoryProps<S>>
 
-type ThemeDefaults<S extends ComponentSpec> = Pick<ExtendComponentSpec<S>['default'], 'props'>
+type ThemeDefaults<S extends ComponentSpec, P = _DefaultProps<S>> = {
+	props?: P & (
+		'as' extends keyof P
+			? unknown extends InferSpecDefault<S>
+				? Pick<P, 'as'>
+				: Required<Pick<P, 'as'>>
+			: never
+		)
+}
 
 export interface FactoryUtils<
 	S extends ComponentSpec,
 	C = _Component<S>,
-	P = _PolymorphicSpec<S>,
+	P = _PolymorphicProps<S>,
 > {
 	setDefaults: (args: ThemeDefaults<S>) => ThemeDefaults<S>
 	withProps: (props: P) => C
@@ -118,10 +129,10 @@ export const factory = <
 	}
 
 	BaseComponent.withProps = (props: Parameters<typeof target>[0]): _FactoryComponent => {
-		const TempComponent = BaseComponent as unknown as ComponentType<Record<string, unknown>>
-		const ExtendWith = (
-			extended: Record<string, unknown>
-		) => <TempComponent { ...props } { ...extended } />
+		type P = Parameters<typeof target>[0]
+
+		const TempComponent = BaseComponent as ComponentType<P>
+		const ExtendWith = (extended: P) => <TempComponent { ...props } { ...extended } />
 
 		ExtendWith.displayName = `WithProps(${BaseComponent.displayName})`
 		ExtendWith.setDefaults = BaseComponent.setDefaults

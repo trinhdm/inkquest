@@ -29,7 +29,6 @@ type _Variant<P,> = _RootSpec<string, P>
 export interface SpecStructure<P,> {
 	attributes?: _Attributes<P>
 	classNames?: _ClassNames<P>
-	// id?: _ID<P>
 	styles?: _Styles<P>
 	variant?: _Variant<P>
 }
