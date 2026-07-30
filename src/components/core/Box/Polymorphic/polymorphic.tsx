@@ -28,7 +28,7 @@ type _InheritProps<C extends ValidElement, P2 = object> = _OverrideProps<
 type _ExtractProps<T> =
 	T extends { (props: infer P): unknown } ? P : never
 
-export type ExistingProps<P extends ComponentProps<ElementType>> = Omit<
+export type PropertiesBase<P extends ComponentProps<ElementType>> = Omit<
 	FunctionComponent<P>,
 	never
 >
@@ -47,7 +47,7 @@ export const toPolymorphic = <T,>(target: T) => {
 	}
 
 	type PolymorphicBase = _Component
- 		& ExistingProps<ComponentProps<ElementType>>
+ 		& PropertiesBase<ComponentProps<ElementType>>
 
 	return target as PolymorphicBase
 }

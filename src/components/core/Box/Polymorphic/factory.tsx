@@ -24,23 +24,12 @@ export interface ComponentSpec<
 > {
 	attributes?: Record<string, unknown>
 	ctx?: unknown
-	// default?: {
-	// 	component?: unknown extends T
-	// 		? unknown
-	// 		: T extends TagName
-	// 			? T
-	// 			: never
-	// 	props?: Partial<P>
-	// }
-	default?: {
-		component?: T extends TagName
-			? T
-			: unknown extends T
-				? unknown
-				: ElementType
-		props?: Partial<P>
-		ref?: never
-	}
+	default?: (
+			T extends TagName
+				? { component?: T }
+				: { component?: unknown extends T ? unknown : never }
+		)
+		& { props?: Partial<P> }
 	id?: string
 	is?: Partial<Record<_SpecOptions, boolean>>
 	props: P
@@ -53,13 +42,20 @@ type _PolymorphicSpec<S extends ComponentSpec> = {
 	as?: unknown extends InferSpecDefault<S> ? ElementType : InferSpecDefault<S>
 }
 
+type _PolymorphicProps<S extends ComponentSpec> =
+	S['props']
+	& _PolymorphicSpec<S>
+
+type _FactoryProps<S extends ComponentSpec> =
+	_PolymorphicProps<S>
+	& Pick<S, 'ref'>
+
 type _DefaultProps<S extends ComponentSpec> =
 	Partial<S['props']>
 	& _PolymorphicSpec<S>
 	& DataAttrs
 
-type _InferredDefault<S extends ComponentSpec> =
-	{ props?: _DefaultProps<S> } & (
+type _InferredDefault<S extends ComponentSpec> = (
 		InferSpecDefault<S> extends TagName ? {
 			component: InferSpecDefault<S>
 			ref: HTMLElementTagNameMap[InferSpecDefault<S>]
@@ -68,6 +64,7 @@ type _InferredDefault<S extends ComponentSpec> =
 			ref?: never
 		}
 	)
+	& { props?: _DefaultProps<S> }
 
 type _CompoundComponentSpec<S extends ComponentSpec> = {
 	classNames?: never
@@ -81,23 +78,12 @@ type _RootComponentSpec<S extends ComponentSpec> = {
 	styles?: SpecStructure<S>['styles']
 }
 
-export type ExtendComponentSpec<S extends ComponentSpec> =
+export type ExtendedSpec<S extends ComponentSpec> =
 	NonNullable<S['is']>['compound'] extends true
 		? _CompoundComponentSpec<S>
 		: _RootComponentSpec<S>
 
-type _PolymorphicProps<S extends ComponentSpec> =
-	S['props']
-	& _PolymorphicSpec<S>
-
-type _FactoryProps<S extends ComponentSpec> =
-	_PolymorphicProps<S>
-	& Pick<S, 'ref'>
-
-type _Component<S extends ComponentSpec> =
-	NamedExoticComponent<_FactoryProps<S>>
-
-type ThemeDefaults<S extends ComponentSpec, P = _DefaultProps<S>> = {
+type _DefaultComponent<S extends ComponentSpec, P = _DefaultProps<S>> = {
 	props?: P & (
 		'as' extends keyof P
 			? unknown extends InferSpecDefault<S>
@@ -107,34 +93,40 @@ type ThemeDefaults<S extends ComponentSpec, P = _DefaultProps<S>> = {
 		)
 }
 
-export interface FactoryUtils<
+type _Component<S extends ComponentSpec> =
+	NamedExoticComponent<_FactoryProps<S>>
+
+export interface MethodsBase<
 	S extends ComponentSpec,
 	C = _Component<S>,
 	P = _PolymorphicProps<S>,
+	D = _DefaultComponent<S>
 > {
-	setDefaults: (args: ThemeDefaults<S>) => ThemeDefaults<S>
+	setDefaults: (args: D) => D
 	withProps: (props: P) => C
 }
 
-export type Subcomponents<
+export type SubcomponentsBase<
 	S extends ComponentSpec,
 	List = S['subcomponents']
 > = List extends Record<string, unknown>
 	? List
 	: Record<string, never>
 
+type _FactoryComponent<S extends ComponentSpec> =
+	& _Component<S>
+	& SubcomponentsBase<S>
+	& MethodsBase<S>
+
 export const factory = <
 	S extends ComponentSpec,
-	C = unknown,
+	C = _FactoryComponent<S>
 >(target: (props: _FactoryProps<S>) => ReactNode) => {
-	type _FactoryComponent =
-		& _Component<S>
-		& Subcomponents<S>
-		& FactoryUtils<S>
+	type FC = _FactoryComponent<S>
 
-	const BaseComponent = target as unknown as _FactoryComponent
+	const BaseComponent = target as unknown as FC
 
-	BaseComponent.setDefaults = (args: ThemeDefaults<S>) => {
+	BaseComponent.setDefaults = (args: _DefaultComponent<S>) => {
 		const { displayName } = BaseComponent
 
 		if (!displayName)
@@ -145,17 +137,17 @@ export const factory = <
 		return args
 	}
 
-	BaseComponent.withProps = (props: Parameters<typeof target>[0]): _FactoryComponent => {
+	BaseComponent.withProps = (props: Parameters<typeof target>[0]): FC => {
 		type P = Parameters<typeof target>[0]
 
-		const TempComponent = BaseComponent as ComponentType<P>
-		const ExtendWith = (extended: P) => <TempComponent { ...props } { ...extended } />
+		const TempComponent = BaseComponent as ComponentType<P>,
+			ExtendWith = (extended: P) => <TempComponent { ...props } { ...extended } />
 
 		ExtendWith.displayName = `WithProps(${BaseComponent.displayName})`
 		ExtendWith.setDefaults = BaseComponent.setDefaults
 
-		return ExtendWith as unknown as _FactoryComponent
+		return ExtendWith as unknown as FC
 	}
 
-	return BaseComponent as C
+	return BaseComponent as unknown as C
 }

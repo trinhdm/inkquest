@@ -1,13 +1,13 @@
 import {
 	factory,
 	type ComponentSpec,
-	type ExtendComponentSpec,
-	type FactoryUtils,
-	type Subcomponents,
+	type ExtendedSpec,
+	type MethodsBase,
+	type SubcomponentsBase,
 } from './factory'
 
 import type { ReactElement } from 'react'
-import type { ExistingProps, PolymorphicProps } from './polymorphic'
+import type { PolymorphicProps, PropertiesBase } from './polymorphic'
 import type { InferSpecDefault, ValueOf } from './types'
 
 type PolymorphicSpec<
@@ -15,23 +15,21 @@ type PolymorphicSpec<
 	K = InferSpecDefault<S>,
 	// V = S['props'] extends { variant?: infer PV } ? PV : never,
 > = ComponentSpec<K, S['props']>
-	// & ExtendComponentSpec<S>
-	& ExtendComponentSpec<S> & {
+	& ExtendedSpec<S> & {
 			variant?: S['props'] extends { variant?: infer VP }
 				? VP extends string
 					? Exclude<VP, undefined>
 					: S extends { variant?: infer VS } ? VS : never
 				: never
 		}
-	// & ExtendComponentSpec<S> & {
+	// & ExtendedSpec<S> & {
 	// 		variant?: V extends string
 	// 			? Exclude<V, undefined>
 	// 			: S extends { variant?: infer SV } ? SV : never
 	// 	}
 
-export type PolymorphicSpecs<
-	S extends ComponentSpec<InferSpecDefault<S>>,
-> = PolymorphicSpec<S>
+export type PolymorphicSpecs<S extends ComponentSpec<InferSpecDefault<S>>> =
+	PolymorphicSpec<S>
 
 const polymorphicFactory = <
 	Specs extends ComponentSpec<InferSpecDefault<Specs>>,
@@ -41,19 +39,21 @@ const polymorphicFactory = <
 	type P<T> = PolymorphicProps<T, ValueOf<S, 'props'>>
 
 	type _Component = <T = C>(props: P<T>) => ReactElement
-	type _Subcomponents = Subcomponents<S>
-	type _Utils = FactoryUtils<S, _Component, P<C>>
-	type _Properties = ExistingProps<P<unknown>>
+	type _Subcomponents = SubcomponentsBase<S>
+	type _Methods = MethodsBase<S, _Component, P<C>>
+	type _Properties = PropertiesBase<P<unknown>>
 
 	type PolymorphicComponent =
 		& _Component
 		& _Subcomponents
-		& _Utils
+		& _Methods
 		& _Properties
 
 	return factory<S, PolymorphicComponent>(target)
 }
-type _TopExcessKeys<S> = Exclude<keyof S, keyof ComponentSpec>
+
+type _TopExcessKeys<S> =
+	Exclude<keyof S, keyof ComponentSpec>
 
 type _DefaultExcessKeys<S> = S extends { default: infer D }
 	? Exclude<keyof D, 'component'>
@@ -68,9 +68,10 @@ type _ExcessMarker<Specs> =
 
 export const polymorphic = <
 	Specs extends ComponentSpec<InferSpecDefault<Specs>>,
-	S extends Parameters<typeof polymorphicFactory<Specs>>[0] = Parameters<typeof polymorphicFactory<Specs>>[0],
->(target: S & _ExcessMarker<Specs>) =>
-	polymorphicFactory<Specs>(target as S)
+	T extends typeof polymorphicFactory<Specs> = typeof polymorphicFactory<Specs>,
+	P extends Parameters<T>[0] = Parameters<T>[0],
+>(target: P & _ExcessMarker<Specs>) =>
+	polymorphicFactory<Specs>(target as P)
 
 
 
