@@ -1,14 +1,18 @@
 import {
 	factory,
-	// type Specs,
-	type ExtendedSpec,
 	type MethodsBase,
 	type SubcomponentsBase,
 } from './factory'
 
+import type {
+	ExtendedSpecs,
+	InferComponentSpec,
+	Specs,
+	ValidSpecs,
+} from '@/types/spec'
+
 import type { ReactElement } from 'react'
 import type { PolymorphicProps, PropertiesBase } from './polymorphic'
-import type { InferComponentSpec, Specs, ValidSpecs } from '@/types/spec'
 import type { ValueOf } from './types'
 
 type PolymorphicSpec<
@@ -16,7 +20,7 @@ type PolymorphicSpec<
 	K = InferComponentSpec<S>,
 	// V = S['props'] extends { variant?: infer PV } ? PV : never,
 > = Specs<K, S['props']>
-	& ExtendedSpec<S> & {
+	& ExtendedSpecs<S> & {
 			variant?: S['props'] extends { variant?: infer VP }
 				? VP extends string
 					? Exclude<VP, undefined>

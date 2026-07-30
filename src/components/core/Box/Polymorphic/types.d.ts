@@ -1,8 +1,6 @@
 import type { JSX, JSXElementConstructor } from 'react'
 import type { InferComponentSpec } from '@/types/spec'
 
-export type DataAttrs = Record<`data-${string}`, unknown>
-
 export type ValidElement =
 	| keyof JSX.IntrinsicElements
 	| JSXElementConstructor<unknown>

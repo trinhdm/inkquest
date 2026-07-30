@@ -1,28 +1,21 @@
 import { setDefaultProps } from '@/lib/registries'
-import type { DataAttrs } from './types'
 
 import type {
 	ComponentType,
-	ElementType,
 	NamedExoticComponent,
 	ReactNode,
 } from 'react'
 
 import type {
 	InferComponentSpec,
+	InferDefaultProps,
+	PolymorphicSpec,
 	Specs,
-	SpecStructure,
-	TagName,
 } from '@/types/spec'
-
-
-type _PolymorphicSpec<S extends Specs> = {
-	as?: unknown extends InferComponentSpec<S> ? ElementType : InferComponentSpec<S>
-}
 
 type _PolymorphicProps<S extends Specs> =
 	S['props']
-	& _PolymorphicSpec<S>
+	& PolymorphicSpec<S>
 	// & PickStartsWith<PolymorphicProps<InferComponentSpec<S>, S['props']>, 'on'>
 
 // type Test<S extends Specs, P1> =
@@ -35,40 +28,7 @@ type _FactoryProps<S extends Specs> =
 	// & PickStartsWith<PolymorphicProps<InferComponentSpec<S>, S['props']>, 'on'>
 	// PolymorphicProps<InferComponentSpec<S>, _PolymorphicProps<S>>
 
-type _DefaultProps<S extends Specs> =
-	Partial<S['props']>
-	& _PolymorphicSpec<S>
-	& DataAttrs
-
-type _InferredDefault<S extends Specs> = (
-		InferComponentSpec<S> extends TagName ? {
-			component: InferComponentSpec<S>
-			ref: HTMLElementTagNameMap[InferComponentSpec<S>]
-		} : {
-			component?: never
-			ref?: never
-		}
-	)
-	& { props?: _DefaultProps<S> }
-
-type _CompoundComponentSpec<S extends Specs> = {
-	classNames?: never
-	default?: _InferredDefault<S>
-	styles?: never
-}
-
-type _RootComponentSpec<S extends Specs> = {
-	classNames?: SpecStructure<S>['classNames']
-	default?: _InferredDefault<S>
-	styles?: SpecStructure<S>['styles']
-}
-
-export type ExtendedSpec<S extends Specs> =
-	NonNullable<S['is']>['compound'] extends true
-		? _CompoundComponentSpec<S>
-		: _RootComponentSpec<S>
-
-type _DefaultComponent<S extends Specs, P = _DefaultProps<S>> = {
+type _DefaultComponent<S extends Specs, P = InferDefaultProps<S>> = {
 	props?: P & (
 		'as' extends keyof P
 			? unknown extends InferComponentSpec<S>
@@ -116,8 +76,11 @@ export const factory = <
 
 		if (!displayName)
 			throw new Error('cannot set defaultProps: missing `displayName`')
-		if (args?.props && Object.keys(args.props).length)
-			setDefaultProps(displayName, args.props)
+
+		if (args?.props && Object.keys(args.props).length) {
+			const props = { unstyled: false, ...args.props }
+			setDefaultProps(displayName, props)
+		}
 
 		return args
 	}
