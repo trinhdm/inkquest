@@ -1,0 +1,40 @@
+[data-theme] {
+	--accent:				var(--brand);
+	--accent-hover:			var(--brand-hover);
+	--accent-press:			var(--brand-press);
+	--accent-tint:			var(--brand-tint);
+
+	--bg-page:				var(--color-0);
+	--bg-surface:			var(--color-1);
+	--bg-card:				var(--color-2);
+	--bg-card-hover:		var(--color-3);
+	--bg-overlay:			rgba(14, 14, 16, 0.72);
+
+	--border-subtle:		var(--color-4);
+	--border-strong:		var(--color-5);
+
+	--text-primary:			var(--text-bright);
+	--text-secondary:		var(--text-dim);
+	--text-tertiary:		var(--text-mute);
+	--text-accent:			var(--text-glare);
+
+	--link-accent:			var(--accent);
+	--link-accent-hover:	var(--accent-hover);
+	--link-text:			var(--text-secondary);
+	--link-text-hover:		var(--text-primary);
+
+	--focus-ring:			var(--color-3);
+
+	--success:				#3FB68A;
+	--success-shade:		#12302A;
+	--success-tint:			#DEF3EB;
+	--warning:				#E0A83C;
+	--warning-shade:		#362A12;
+	--warning-tint:			#FBEED9;
+	--danger:				#E8483F;
+	--danger-shade:			#3A211F;
+	--danger-tint:			#FBE3E1;
+	--info:					#5C9CE0;
+	--info-shade:			#17293A;
+	--info-tint:			#E4EEFB;
+}

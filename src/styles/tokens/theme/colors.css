@@ -1,0 +1,55 @@
+:root {
+	--color-onyx:		#0E0E10;
+	--color-asphalt:	#17171A;
+	--color-charcoal:	#1B1B1F;
+	--color-ebony:		#232327;
+	--color-gunmetal:	#2A2A2E;
+	--color-smoke:		#3A3A3F;
+
+	--color-snow:		#FFFAFA;
+	--color-linen:		#F8F6F2;
+	--color-ecru:		#F2F0EC;
+	--color-ivory:		#EAE7E0;
+	--color-paper:		#DEDBD4;
+	--color-cloud:		#C9C6BF;
+
+	/* -------- brand -------- */
+
+	--color-fire:		#E8483F;
+	--color-signal:		#D63A31;
+	--color-lava:		#C22F27;
+	--color-derby:		#3A211F;
+	--color-blush:		#FBE3E1;
+
+
+
+	--color-01:			inherit;
+	--color-02:			inherit;
+	--color-03:			inherit;
+	--color-04:			inherit;
+	--color-05:			inherit;
+	--color-06:			inherit;
+
+	/* -------- brand -------- */
+
+	--brand:			inherit;
+	--brand-hover:		inherit;
+	--brand-press:		inherit;
+	--brand-tint:		inherit;
+
+	--bg-page:			inherit;
+	--bg-surface:		inherit;
+	--bg-card:			inherit;
+	--bg-card-hover:	inherit;
+	--bg-overlay:		inherit;
+
+	/* --text-primary:		inherit;
+	--text-secondary:	inherit;
+	--text-tertiary:	inherit;
+	--text-on-accent:	inherit; */
+
+	--text-bright:		inherit;
+	--text-dim:			inherit;
+	--text-mute:		inherit;
+	--text-glare:		inherit;
+}

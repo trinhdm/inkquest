@@ -1,0 +1,15 @@
+body {
+	background: var(--bg-page);
+	color: var(--text-primary);
+	font: var(--text-body);
+	-webkit-font-smoothing: antialiased;
+}
+
+a {
+	text-decoration: none;
+}
+
+::selection {
+	background: var(--accent);
+	color: var(--text-accent);
+}

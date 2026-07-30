@@ -1,0 +1,20 @@
+[data-theme="light"] {
+	--color-01:				var(--color-snow);
+	--color-02:				var(--color-linen);
+	--color-03:				var(--color-ecru);
+	--color-04:				var(--color-ivory);
+	--color-05:				var(--color-paper);
+	--color-06:				var(--color-cloud);
+
+	/* -------- brand -------- */
+
+	--brand: 				var(--color-fire);
+	--brand-hover:			var(--color-signal);
+	--brand-press:			var(--color-lava);
+	--brand-tint:			var(--color-blush);
+
+	--text-bright:			var(--color-onyx);
+	--text-dim:				#55555C;
+	--text-mute:			#777570;
+	--text-glare:			#FFFFFF;
+}
