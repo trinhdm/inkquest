@@ -43,6 +43,7 @@
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "next-auth": "^4.24.15",
+    "sass": "^1.102.0",
     "stylelint": "^17.14.1",
     "ts-node": "^10.9.2",
     "typescript": "^5"
