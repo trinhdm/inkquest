@@ -1,7 +1,10 @@
+@forward './theme';
+@forward './typography';
+
 /* @import url('fonts.css'); */
 
-@import url('theme/index.css');
-@import url('typography.css');
+// @import url('theme/index.css');
+// @import url('typography.css');
 /* @import url('spacing.css'); */
 /* @import url('radius.css'); */
 /* @import url('shadows.css'); */

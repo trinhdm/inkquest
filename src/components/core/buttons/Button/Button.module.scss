@@ -1,0 +1,54 @@
+.inkq-Button {
+    align-items: center;
+    cursor: pointer;
+	display: inline-flex;
+    justify-content: center;
+    opacity: 1;
+	overflow: hidden;
+    text-decoration: none;
+    width: auto;
+
+    gap: 8px;
+    padding: 8px 14px;
+    font: 600 13px var(--font-body);
+    border-radius: var(--radius-sm);
+    transition: background var(--duration-fast) var(--ease-standard), transform var(--duration-instant) var(--ease-standard), border-color var(--duration-fast);
+    letter-spacing: 0.01em;
+    background: var(--accent);
+    color: var(--text-on-accent);
+    border: 1px solid transparent;
+    transform: scale(0.97);
+
+	&__inner {
+		display: flex;
+	}
+}
+
+.variant {
+	&--solid {
+		background-color: red;
+	}
+
+	&--outline {
+		background-color: transparent;
+	}
+}
+
+.priority {
+	&--primary {
+		border: 1px solid;
+	}
+}
+
+:global([data-theme="dark"]),
+.theme--dark {
+	.variant {
+		&--solid {
+			background-color: yellow;
+		}
+
+		&--outline {
+			background-color: green;
+		}
+	}
+}

@@ -1,7 +1,12 @@
-@import url('colors.css');
-@import url('dark.css');
-@import url('light.css');
-@import url('root.css');
+@forward 'colors';
+@forward 'dark';
+@forward 'light';
+@forward 'root';
+
+// @import url('colors.css');
+// @import url('dark.css');
+// @import url('light.css');
+// @import url('root.css');
 
 [data-theme="dark"] {
 	color-scheme: dark;
