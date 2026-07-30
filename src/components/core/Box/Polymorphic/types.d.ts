@@ -17,7 +17,7 @@ export type DataAttrs = Record<`data-${string}`, unknown>
 export type TagName = keyof HTMLElementTagNameMap
 
 export type InferSpecDefault<S> =
-	S extends { default: { component: infer K } }
+	S extends { default?: { component: infer K } }
 		? K
 		: unknown
 

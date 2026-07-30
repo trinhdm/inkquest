@@ -24,6 +24,23 @@ export interface ComponentSpec<
 > {
 	attributes?: Record<string, unknown>
 	ctx?: unknown
+	// default?: {
+	// 	component?: unknown extends T
+	// 		? unknown
+	// 		: T extends TagName
+	// 			? T
+	// 			: never
+	// 	props?: Partial<P>
+	// }
+	default?: {
+		component?: T extends TagName
+			? T
+			: unknown extends T
+				? unknown
+				: ElementType
+		props?: Partial<P>
+		ref?: never
+	}
 	id?: string
 	is?: Partial<Record<_SpecOptions, boolean>>
 	props: P
@@ -54,13 +71,13 @@ type _InferredDefault<S extends ComponentSpec> =
 
 type _CompoundComponentSpec<S extends ComponentSpec> = {
 	classNames?: never
-	default: _InferredDefault<S>
+	default?: _InferredDefault<S>
 	styles?: never
 }
 
 type _RootComponentSpec<S extends ComponentSpec> = {
 	classNames?: SpecStructure<S>['classNames']
-	default: _InferredDefault<S>
+	default?: _InferredDefault<S>
 	styles?: SpecStructure<S>['styles']
 }
 
