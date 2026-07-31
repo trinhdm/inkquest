@@ -1,3 +1,4 @@
+import { rem } from '@/lib/general'
 import { getPalette, setPalette, type ColorPalette } from './palette'
 import type { SiteTheme } from './theme.types'
 
@@ -11,79 +12,66 @@ export const DEFAULT_PALETTE: ColorPalette = {
 
 export const PALETTE_KEYS = Object.keys(DEFAULT_PALETTE) as (keyof typeof DEFAULT_PALETTE)[]
 
+const DEFAULT_FONT_FAMILY = {
+	body: 'Archivo, -apple-system, BlinkMacSystemFont, sans-serif',
+	title: 'Archivo Black, Archivo, sans-serif',
+	label: 'Space Mono, SF Mono, monospace',
+}
+
 export const DEFAULT_THEME: SiteTheme = {
 	getPalette,
 	setPalette,
 
-	// colors: string[]
-	// font: FontProperties
-
-	breakpoints: {
-		xs: '36rem',
-		sm: '48rem',
-		md: '60rem',
-		lg: '72rem',
-		xl: '80rem',
-	},
-
 	font: {
-		family: {
-			monospace: '',
-			'sans-serif': '',
-			serif: '',
+		family: DEFAULT_FONT_FAMILY,
+		weight: {
+			regular: 400,
+			bold: 600,
+			black: 700,
 		},
 		size: {
-			xs: '8px',
-			sm: '10px',
-			md: '12px',
-			lg: '16px',
-			xl: '18px',
-		},
-		weight: {
-			thin: 100,
-			light: 300,
-			regular: 400,
-			medium: 500,
-			bold: 600,
-			black: 800,
+			xs: rem(10),
+			sm: rem(12),
+			md: rem(16),
+			lg: rem(18),
+			xl: rem(20),
 		},
 		lineHeight: {
-			xs: 1,
-			sm: 1.125,
-			md: 1.25,
-			lg: 1.375,
-			xl: 1.5,
+			xs: 1.3,
+			sm: 1.5,
+			md: 1.55,
+			lg: 1.55,
+			// xl: 1.5,
 		},
 	},
 
 	headings: {
-		fontFamily: '',
-		fontWeight: '',
+		fontFamily: DEFAULT_FONT_FAMILY.title,
+		fontWeight: 700,
 		tagName: {
 			h1: {
-				fontSize: '2rem',
-				lineHeight: 1.5,
+				fontSize: rem(32),
+				lineHeight: 1.15,
 			},
 			h2: {
-				fontSize: '2rem',
-				lineHeight: 1.5,
+				fontSize: rem(24),
+				lineHeight: 1.25,
 			},
 			h3: {
-				fontSize: '2rem',
-				lineHeight: 1.5,
-			},
-			h4: {
-				fontSize: '2rem',
-				lineHeight: 1.5,
-			},
-			h5: {
-				fontSize: '2rem',
-				lineHeight: 1.5,
-			},
-			h6: {
-				fontSize: '2rem',
-				lineHeight: 1.5,
+				fontSize: rem(20),
+				lineHeight: 1.3,
+				fontWeight: 600,
 			},
 		}
 	},
+
+	breakpoints: {
+		xs: rem(360),
+		sm: rem(768),
+		md: rem(1080),
+		lg: rem(1280),
+		xl: rem(1440),
+	},
 }
+
+console.log(DEFAULT_THEME)
