@@ -21,3 +21,5 @@ export type CSSUnit =
 // 	S extends `${number}${U}`
 // 		? true
 // 		: false
+
+export type EvenNumber = number & { readonly __brand: unique symbol }

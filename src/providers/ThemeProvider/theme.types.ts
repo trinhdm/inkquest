@@ -15,44 +15,53 @@ export interface SiteTheme {
 
 	font: Required<RewriteKeysWithout<'font', FontStyles>>
 	headings: Omit<FontStyles, 'fontSize' | 'lineHeight'> & {
-		tagName: Style<[HeadingTagName, Omit<FontStyles, 'fontFamily'>], 'h1'>
+		tagName: Style<Omit<FontStyles, 'fontFamily'>, HeadingTagName, 'h1'>
 	}
 
-	breakpoints: Style<[Size, number], 'xs'>
+	breakpoints: Style<CSSUnit, Size>
 }
-
-type FontProperty =
-	| 'fontFamily'
-	| 'fontSize'
-	| 'fontWeight'
-	| 'lineHeight'
 
 type ConsistentUnitFor<
 	K extends PropertyKey,
 	Optional extends boolean = false,
 	U extends string = Unit,
 > = {
-	[V in U]: Optional extends true
-		? AtLeastOneKey<Record<K, `${number}${V}`>>
-		: Record<K, `${number}${V}`>
-}[U]
+		[V in U]: Optional extends true
+			? AtLeastOneKey<Record<K, `${number}${V}`>>
+			: Record<K, `${number}${V}`>
+	}[U]
 
-type FontRequireAs<K extends FontProperty> =
-	FontList[K] & keyof FontStyleList<K>
+type ConsistentProperty =
+	| 'fontSize'
+	| 'lineHeight'
 
-type FontStyleList<K extends FontProperty> =
-	K extends 'fontSize'
-		? ConsistentUnitFor<FontList[K], true>
-		: AtLeastOneKey<Record<FontList[K], CSSProperties[K]>>
+type StyleList<
+    Keys extends PropertyKey,
+    V,
+    Name extends PropertyKey = PropertyKey,
+> =
+    V extends CSSUnit
+		? ConsistentUnitFor<Keys, true>
+		: Name extends ConsistentProperty
+			? ConsistentUnitFor<Keys, true>
+			: AtLeastOneKey<Record<Keys, V>>
+
+type Style<
+    V,
+    Keys extends PropertyKey,
+    RK extends Keys | undefined = undefined,
+    Name extends PropertyKey = PropertyKey,
+> =
+	| V
+	| (RK extends Keys
+		? Extract<StyleList<Keys, V, Name>, Record<RK, unknown>>
+		: StyleList<Keys, V, Name>)
 
 type FontStyle<
-	K extends FontProperty,
-	RK extends FontRequireAs<K> | undefined = undefined
-> = CSSProperties[K] | (
-	RK extends FontRequireAs<K>
-		? Extract<FontStyleList<K>, Record<RK, unknown>>
-		: FontStyleList<K>
-)
+    K extends keyof FontList,
+    RK extends FontList[K] | undefined = undefined,
+> =
+	Style<CSSProperties[K], FontList[K], RK, K>
 
 interface FontStyles {
 	fontFamily?: FontStyle<'fontFamily', 'body'>
@@ -60,24 +69,3 @@ interface FontStyles {
 	fontWeight?: FontStyle<'fontWeight', 'regular'>
 	lineHeight: FontStyle<'lineHeight'>
 }
-
-type StyleEntry = [key: PropertyKey, value: unknown]
-
-type StyleList<
-	E extends StyleEntry,
-	K extends E[0] = E[0],
-	V extends E[1] = E[1]
-> =
-	V extends number
-		? ConsistentUnitFor<K>
-		: AtLeastOneKey<Record<K, V>>
-
-type Style<
-	E extends StyleEntry,
-	RK extends PropertyKey | undefined = undefined,
-	K extends E[0] = E[0],
-	V extends E[1] = E[1]
-> = | (V extends number ? CSSUnit : V)
-	| (RK extends K
-		? Extract<StyleList<[K, V]>, Record<RK, unknown>>
-		: StyleList<[K, V]>)
