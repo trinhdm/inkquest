@@ -1,9 +1,11 @@
 import Link from 'next/link'
 import { Box, polymorphic, type BoxProps } from '../../Box'
+import { setThemeCSS } from '@/lib/colors'
+import { useProps, useStyles } from '@/hooks'
+
 import type { ReactNode } from 'react'
 
-import classes from './Button.module.css'
-import { useProps } from '@/hooks/useProps'
+import classes from './Button.module.scss'
 
 type ButtonSize =
 	| 'sm'
@@ -26,11 +28,26 @@ type ButtonVariant =
 	| 'warning'
 	| 'danger'
 
+type EvenNumber = number & { readonly __brand: unique symbol }
+
+type ButtonVars =
+	| `--button-background`
+	| `--button-border`
+	| `--button-color`
+	| `--button-focus`
+	| `--button-hover`
+
 interface ButtonProps extends BoxProps {
 	children: ReactNode
 	fullWidth?: boolean
 	href?: string
-	onClick?: () => void
+	icon?: React.ReactNode | {
+		color?: string
+		name?: React.ReactNode
+		position?: 'left' | 'right'
+		size?: EvenNumber
+	}
+	// onClick?: () => void
 	priority?: ButtonPriority
 	size?: ButtonSize
 	variant?: ButtonVariant
@@ -38,34 +55,74 @@ interface ButtonProps extends BoxProps {
 
 type ButtonSpecs = {
 	// asdf: ''
+	cssVars: { root: ButtonVars }
 	default: { component: 'button' }
 	props: ButtonProps
 }
 
+const NAME = 'Button' as const
+const PREFIX = `${NAME.toLowerCase() as Lowercase<typeof NAME>}` as const
+
+type _Prefix = Lowercase<typeof NAME>
+
+const cssVars = setThemeCSS<ButtonSpecs>((theme, { size, variant }) => {
+	const colors = theme.getPalette({ theme, variant })
+	console.log({ colors })
+
+	const variables = {
+		'--button-background': colors.background ?? undefined,
+		'--button-border': colors.border ?? undefined,
+		'--button-color': colors.color ?? undefined,
+		'--button-focus': colors.focus ?? undefined,
+		'--button-hover': colors.hover ?? undefined,
+	}
+
+	return {
+		root: variables
+	}
+})
+
+
 export const Button = polymorphic<ButtonSpecs>(_props => {
+	const props = useProps(NAME, _props)
+	const styles = useStyles<ButtonSpecs>({
+		name: NAME,
+		classes,
+		cssVars,
+		props,
+	})
+
 	const {
 		as,
 		children,
+		fullWidth,
 		href,
-		// size,
-		// variant,
+		priority,
+		size,
+		variant,
 		...rest
-	} = useProps(Button.displayName, _props)
+	} = props
 
 	const component = (href ? Link : undefined) ?? as
 
 	return (
 		<Box
+			// role="group"
 			as={ component }
+			{ ...styles('root') }
 			{ ...rest }
 		>
-			{ children }
+			<Box as="span" { ...styles('inner') }>
+				<Box as="span" { ...styles('label') }>
+					{ children }
+				</Box>
+			</Box>
 		</Box>
 	)
 })
 
 Button.classes = classes
-Button.displayName = 'Button'
+Button.displayName = NAME
 
 Button.setDefaults({
 	props: {

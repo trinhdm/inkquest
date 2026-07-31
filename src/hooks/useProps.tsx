@@ -4,9 +4,16 @@ type FilteredProps<T extends object> = {
 	[K in keyof T]: T[K] extends undefined ? never : T[K]
 }
 
-const filterProps = <T extends object>(props: T) => (
+export const filterProps = <T extends object>(
+	props: T,
+	filterEmpty = false
+) => (
 	(Object.keys(props) as (keyof T)[]).reduce<FilteredProps<T>>((acc, key) => {
-		if (Object.hasOwn(props, key)) acc[key] = props[key]
+		let isValid = Object.hasOwn(props, key)
+
+		if (filterEmpty) isValid = isValid && !!props[key]
+		if (isValid) acc[key] = props[key]
+
 		return acc
 	}, {} as FilteredProps<T>)
 )
