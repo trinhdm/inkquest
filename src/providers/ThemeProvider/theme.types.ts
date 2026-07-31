@@ -21,7 +21,7 @@ export interface SiteTheme {
 	breakpoints: Style<CSSUnit, Size>
 }
 
-type ConsistentUnitFor<
+type ConsistentUnit<
 	K extends PropertyKey,
 	Optional extends boolean = false,
 	U extends string = Unit,
@@ -30,6 +30,26 @@ type ConsistentUnitFor<
 			? AtLeastOneKey<Record<K, `${number}${V}`>>
 			: Record<K, `${number}${V}`>
 	}[U]
+
+type ConsistentType<
+	K extends PropertyKey,
+	Optional extends boolean = false,
+	T extends unknown = undefined,
+> =
+	T extends undefined
+		? never
+		: Optional extends true
+			? AtLeastOneKey<Record<K, T>>
+			: Record<K, T>
+
+type ConsistentValues<
+	K extends PropertyKey,
+	Optional extends boolean = false,
+	T extends unknown = undefined,
+	U extends string = Unit,
+> =
+	| ConsistentType<K, Optional, T>
+	| ConsistentUnit<K, Optional, U>
 
 type ConsistentProperty =
 	| 'fontSize'
@@ -41,9 +61,9 @@ type StyleList<
     Name extends PropertyKey = PropertyKey,
 > =
     V extends CSSUnit
-		? ConsistentUnitFor<Keys, true>
+		? ConsistentValues<Keys, true>
 		: Name extends ConsistentProperty
-			? ConsistentUnitFor<Keys, true>
+			? ConsistentValues<Keys, true, number extends V ? V : undefined>
 			: AtLeastOneKey<Record<Keys, V>>
 
 type Style<
