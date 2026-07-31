@@ -1,4 +1,4 @@
-import { getPalette, setPalette, type ColorPalette } from './getPalette'
+import { getPalette, setPalette, type ColorPalette } from './palette'
 import type { SiteTheme } from './theme.types'
 
 export const DEFAULT_PALETTE: ColorPalette = {

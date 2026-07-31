@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react'
 import type { AtLeastOneKey, RewriteKeysWithout } from '@/types/utils'
 import type { CSSUnit, FontList, HeadingTagName, Size, Unit } from '@/types/shared'
-import type { GetPaletteFn, SetPaletteFn } from './getPalette'
+import type { GetPaletteFn, SetPaletteFn } from './palette'
 
 
 export type Theme =

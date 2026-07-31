@@ -5,6 +5,6 @@ export {
 	useTheme,
 } from './ThemeProvider'
 
-export type { ColorVariable } from './getPalette'
+export type { ColorVariable } from './palette'
 export type { SiteTheme } from './theme.types'
 export type { ThemeProviderProps } from './ThemeProvider'
