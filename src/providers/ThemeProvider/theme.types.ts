@@ -8,12 +8,13 @@ export type Theme =
 	| 'system'
 
 export interface SiteTheme {
-	// colors: string[]
+	getPalette: GetPaletteFn
+	setPalette: SetPaletteFn
 
 	font: {
 		family: FontStyle<'fontFamily'>
 		lineHeight: FontStyle<'lineHeight'>
-		size: FontStyle<'fontSize'>
+		size: FontStyle<'fontSize', 'md'>
 		weight: FontStyle<'fontWeight', 'regular'>
 	}
 
@@ -22,10 +23,6 @@ export interface SiteTheme {
 	}
 
 	breakpoints: ConsistentUnitFor<Size>
-	// breakpoints: { [U in Unit]: Record<Size, `${number}${U}`> }[Unit]
-
-	getPalette: GetPaletteFn
-	setPalette: SetPaletteFn
 }
 
 type Unit = 'em' | 'px' | 'rem' | 'vh' | 'vw' | '%'
@@ -34,12 +31,6 @@ type CSSUnit = `${number}${Unit}`
 type ConsistentUnitFor<K extends PropertyKey, U extends string = Unit> =
 	{ [V in U]: Record<K, `${number}${V}`> }[U]
 
-type ThemeItem<K extends string, V> = {
-	[Key in K]: Record<K, V> extends Record<Key, infer CustomList>
-		? CustomList
-		: Size
-}
-
 type FontList = {
 	fontFamily: FontFamily
 	fontWeight: FontWeight
@@ -47,7 +38,10 @@ type FontList = {
 	lineHeight: Size
 }
 
-type FontStyleList<K extends FontProp> =
+type FontRequireAs<K extends FontProperty> =
+	FontList[K] & keyof FontStyleList<K>
+
+type FontStyleList<K extends FontProperty> =
 	K extends 'fontSize'
 		? ConsistentUnitFor<FontList[K]>
 		: K extends 'lineHeight'
@@ -55,15 +49,13 @@ type FontStyleList<K extends FontProp> =
 			: Record<FontList[K], CSSProperties[K]>
 
 type FontStyle<
-	K extends FontProp,
-	RequiredKey extends (FontList[K] & keyof FontStyleList<K>) | undefined = undefined
+	K extends FontProperty,
+	RK extends FontRequireAs<K> | undefined = undefined
 > = CSSProperties[K] | (
-	RequiredKey extends (FontList[K] & keyof FontStyleList<K>)
-		? Partial<FontStyleList<K>> & Pick<FontStyleList<K>, RequiredKey>
+	RK extends FontRequireAs<K>
+		? Partial<FontStyleList<K>> & Pick<FontStyleList<K>, RK>
 		: FontStyleList<K>
 )
-
-// type FontStyle2<K extends FontProp> = CSSProperties[K] | FontStyleList<K>
 
 
 type HeadingTagName = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
@@ -81,27 +73,11 @@ interface HeadingStyles {
 	lineHeight: FontStyle<'lineHeight'>
 }
 
-type FontProp =
+type FontProperty =
 	| 'fontFamily'
 	| 'fontSize'
 	| 'fontWeight'
 	| 'lineHeight'
-
-type FontProperties = {
-	[K in FontProp]: FontList[K] extends string
-		? Record<FontList[K], CSSProperties[K]>
-		: FontList[K]
-}
-
-type FontProperties2 =
-	{ [K in FontProp]: CSSProperties[K] }
-
-type FontStyleOld<K extends FontProp> =
-	FontProperties2 extends {
-		[P in K]: Record<infer Custom, CSSProperties[P]>
-	}
-		? Custom
-		: K extends keyof FontList ? Record<FontList[K], CSSProperties[K]> : never
 
 export type Size =
 	| 'xs'
@@ -130,17 +106,3 @@ export type FontWeight =
 	| 'medium'
 	| 'bold'
 	| 'black'
-
-// type FontList = {
-// 	fontFamily: FontFamily
-// 	fontWeight: FontWeight
-// 	fontSize: Size
-// 	lineHeight: Size
-// }
-
-// export interface FontProperties {
-// 	fontFamily: CSSProperties['fontFamily']
-// 	fontWeight?: CSSProperties['fontWeight']
-// 	fontSize: CSSProperties['fontSize']
-// 	lineHeight?: CSSProperties['lineHeight']
-// }

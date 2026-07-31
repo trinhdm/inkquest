@@ -56,14 +56,34 @@ export const DEFAULT_THEME: SiteTheme = {
 		},
 	},
 
-	// headings: {
-	// 	fontFamily: '',
-	// 	fontWeight: '',
-	// 	tagName: {
-	// 		h1: '',
-	// 		h2: '',
-	// 		h3: '',
-	// 		h4: '',
-	// 	}
-	// },
+	headings: {
+		fontFamily: '',
+		fontWeight: '',
+		tagName: {
+			h1: {
+				fontSize: '2rem',
+				lineHeight: 1.5,
+			},
+			h2: {
+				fontSize: '2rem',
+				lineHeight: 1.5,
+			},
+			h3: {
+				fontSize: '2rem',
+				lineHeight: 1.5,
+			},
+			h4: {
+				fontSize: '2rem',
+				lineHeight: 1.5,
+			},
+			h5: {
+				fontSize: '2rem',
+				lineHeight: 1.5,
+			},
+			h6: {
+				fontSize: '2rem',
+				lineHeight: 1.5,
+			},
+		}
+	},
 }

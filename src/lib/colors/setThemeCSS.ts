@@ -1,5 +1,5 @@
 import type { SiteTheme } from '@/providers/ThemeProvider'
-import type { CSSVariable, CSSVars } from '@/types/common'
+import type { CSSVariable, CSSVars } from '@/types/shared'
 import type { ValidSpecs } from '@/types/spec'
 
 // type _ConvertCSSVars<V> = V extends CSSVariable ? V : never

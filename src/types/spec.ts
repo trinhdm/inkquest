@@ -7,7 +7,7 @@
 
 import type { CSSProperties, ElementType, Ref } from 'react'
 import type { ClassValue } from 'clsx'
-import type { CSSVars, DataAttrs } from './common'
+import type { CSSVars, DataAttrs } from './shared/html'
 
 export type TagName = keyof HTMLElementTagNameMap
 
