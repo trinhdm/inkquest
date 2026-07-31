@@ -18,10 +18,6 @@ export const DEFAULT_THEME: SiteTheme = {
 	// colors: string[]
 	// font: FontProperties
 
-	// headings: {
-	// 	size:
-	// },
-
 	breakpoints: {
 		xs: '36rem',
 		sm: '48rem',
@@ -29,4 +25,45 @@ export const DEFAULT_THEME: SiteTheme = {
 		lg: '72rem',
 		xl: '80rem',
 	},
+
+	font: {
+		family: {
+			monospace: '',
+			'sans-serif': '',
+			serif: '',
+		},
+		size: {
+			xs: '8px',
+			sm: '10px',
+			md: '12px',
+			lg: '16px',
+			xl: '18px',
+		},
+		weight: {
+			thin: 100,
+			light: 300,
+			regular: 400,
+			medium: 500,
+			bold: 600,
+			black: 800,
+		},
+		lineHeight: {
+			xs: 1,
+			sm: 1.125,
+			md: 1.25,
+			lg: 1.375,
+			xl: 1.5,
+		},
+	},
+
+	// headings: {
+	// 	fontFamily: '',
+	// 	fontWeight: '',
+	// 	tagName: {
+	// 		h1: '',
+	// 		h2: '',
+	// 		h3: '',
+	// 		h4: '',
+	// 	}
+	// },
 }

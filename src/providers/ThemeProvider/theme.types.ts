@@ -8,37 +8,71 @@ export type Theme =
 	| 'system'
 
 export interface SiteTheme {
-	colors: string[]
-	font: FontProperties
+	// colors: string[]
 
-	headings: FontStyles & {
-		size: Record<HeadingTagName, HeadingStyles>
+	font: {
+		family: FontStyle<'fontFamily'>
+		lineHeight: FontStyle<'lineHeight'>
+		size: FontStyle<'fontSize'>
+		weight: FontStyle<'fontWeight', 'regular'>
 	}
 
-	breakpoints: Record<Size, CSSUnit>
+	headings?: Pick<FontStyles, 'fontFamily' | 'fontWeight'> & {
+		tagName: Record<HeadingTagName, HeadingStyles>
+	}
+
+	breakpoints: ConsistentUnitFor<Size>
+	// breakpoints: { [U in Unit]: Record<Size, `${number}${U}`> }[Unit]
 
 	getPalette: GetPaletteFn
 	setPalette: SetPaletteFn
 }
 
+type Unit = 'em' | 'px' | 'rem' | 'vh' | 'vw' | '%'
 type CSSUnit = `${number}${Unit}`
 
-type Unit = 'em' | 'px' | 'rem' | 'vh' | 'vw' | '%'
+type ConsistentUnitFor<K extends PropertyKey, U extends string = Unit> =
+	{ [V in U]: Record<K, `${number}${V}`> }[U]
 
-export type ThemeItem<K extends string, V> = {
+type ThemeItem<K extends string, V> = {
 	[Key in K]: Record<K, V> extends Record<Key, infer CustomList>
 		? CustomList
 		: Size
 }
 
+type FontList = {
+	fontFamily: FontFamily
+	fontWeight: FontWeight
+	fontSize: Size
+	lineHeight: Size
+}
+
+type FontStyleList<K extends FontProp> =
+	K extends 'fontSize'
+		? ConsistentUnitFor<FontList[K]>
+		: K extends 'lineHeight'
+			? ConsistentUnitFor<FontList[K]> | Record<FontList[K], number>
+			: Record<FontList[K], CSSProperties[K]>
+
+type FontStyle<
+	K extends FontProp,
+	RequiredKey extends (FontList[K] & keyof FontStyleList<K>) | undefined = undefined
+> = CSSProperties[K] | (
+	RequiredKey extends (FontList[K] & keyof FontStyleList<K>)
+		? Partial<FontStyleList<K>> & Pick<FontStyleList<K>, RequiredKey>
+		: FontStyleList<K>
+)
+
+// type FontStyle2<K extends FontProp> = CSSProperties[K] | FontStyleList<K>
+
 
 type HeadingTagName = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
 
-export interface FontStyles {
+interface FontStyles {
 	fontFamily?: FontStyle<'fontFamily'>
-	fontWeight?: FontStyle<'fontWeight'>
 	lineHeight: FontStyle<'lineHeight'>
-	size: FontStyle<'fontSize'>
+	fontSize: FontStyle<'fontSize'>
+	fontWeight?: FontStyle<'fontWeight'>
 }
 
 interface HeadingStyles {
@@ -47,7 +81,7 @@ interface HeadingStyles {
 	lineHeight: FontStyle<'lineHeight'>
 }
 
-export type FontProp =
+type FontProp =
 	| 'fontFamily'
 	| 'fontSize'
 	| 'fontWeight'
@@ -62,12 +96,12 @@ type FontProperties = {
 type FontProperties2 =
 	{ [K in FontProp]: CSSProperties[K] }
 
-export type FontStyle<K extends FontProp> =
+type FontStyleOld<K extends FontProp> =
 	FontProperties2 extends {
 		[P in K]: Record<infer Custom, CSSProperties[P]>
 	}
 		? Custom
-		: Record<K, K extends keyof FontList ? FontList[K] : Size>
+		: K extends keyof FontList ? Record<FontList[K], CSSProperties[K]> : never
 
 export type Size =
 	| 'xs'
@@ -97,12 +131,12 @@ export type FontWeight =
 	| 'bold'
 	| 'black'
 
-type FontList = {
-	fontFamily: FontFamily
-	fontWeight: FontWeight
-	fontSize: Size
-	lineHeight: Size
-}
+// type FontList = {
+// 	fontFamily: FontFamily
+// 	fontWeight: FontWeight
+// 	fontSize: Size
+// 	lineHeight: Size
+// }
 
 // export interface FontProperties {
 // 	fontFamily: CSSProperties['fontFamily']
