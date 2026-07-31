@@ -1,5 +1,7 @@
 import type { CSSProperties } from 'react'
 import type { GetPaletteFn, SetPaletteFn } from './getPalette'
+import type { FontList, HeadingTagName, Size, Unit } from '@/types/shared'
+import type { RewriteKeysWithout } from '@/types/utils'
 
 
 export type Theme =
@@ -11,32 +13,22 @@ export interface SiteTheme {
 	getPalette: GetPaletteFn
 	setPalette: SetPaletteFn
 
-	font: {
-		family: FontStyle<'fontFamily'>
-		lineHeight: FontStyle<'lineHeight'>
-		size: FontStyle<'fontSize', 'md'>
-		weight: FontStyle<'fontWeight', 'regular'>
-	}
-
-	headings?: Pick<FontStyles, 'fontFamily' | 'fontWeight'> & {
-		tagName: Record<HeadingTagName, HeadingStyles>
+	font: Required<RewriteKeysWithout<'font', FontStyles>>
+	headings: Omit<FontStyles, 'fontSize' | 'lineHeight'> & {
+		tagName: Record<HeadingTagName, Omit<FontStyles, 'fontFamily'>>
 	}
 
 	breakpoints: ConsistentUnitFor<Size>
 }
 
-type Unit = 'em' | 'px' | 'rem' | 'vh' | 'vw' | '%'
-type CSSUnit = `${number}${Unit}`
+type FontProperty =
+	| 'fontFamily'
+	| 'fontSize'
+	| 'fontWeight'
+	| 'lineHeight'
 
 type ConsistentUnitFor<K extends PropertyKey, U extends string = Unit> =
 	{ [V in U]: Record<K, `${number}${V}`> }[U]
-
-type FontList = {
-	fontFamily: FontFamily
-	fontWeight: FontWeight
-	fontSize: Size
-	lineHeight: Size
-}
 
 type FontRequireAs<K extends FontProperty> =
 	FontList[K] & keyof FontStyleList<K>
@@ -57,52 +49,9 @@ type FontStyle<
 		: FontStyleList<K>
 )
 
-
-type HeadingTagName = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
-
 interface FontStyles {
 	fontFamily?: FontStyle<'fontFamily'>
-	lineHeight: FontStyle<'lineHeight'>
-	fontSize: FontStyle<'fontSize'>
-	fontWeight?: FontStyle<'fontWeight'>
-}
-
-interface HeadingStyles {
-	fontSize: FontStyle<'fontSize'>
-	fontWeight?: FontStyle<'fontWeight'>
+	fontSize: FontStyle<'fontSize', 'md'>
+	fontWeight?: FontStyle<'fontWeight', 'regular'>
 	lineHeight: FontStyle<'lineHeight'>
 }
-
-type FontProperty =
-	| 'fontFamily'
-	| 'fontSize'
-	| 'fontWeight'
-	| 'lineHeight'
-
-export type Size =
-	| 'xs'
-	| 'sm'
-	| 'md'
-	| 'lg'
-	| 'xl'
-
-// type FontSizes =
-// 	FontProperties extends { size: Record<infer CustomSizes, string> }
-// 		? CustomSizes
-// 		: Size
-
-export type FontFamily =
-	| 'monospace'
-	| 'sans-serif'
-	| 'serif'
-
-// type FontFamilies =
-// 	{ [K in FontFamily]?: FontProperties['fontFamily'] }
-
-export type FontWeight =
-	| 'thin'
-	| 'light'
-	| 'regular'
-	| 'medium'
-	| 'bold'
-	| 'black'
