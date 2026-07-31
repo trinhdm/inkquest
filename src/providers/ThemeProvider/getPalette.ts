@@ -1,7 +1,6 @@
 import { DEFAULT_PALETTE } from './constants'
-import type { SiteTheme } from '@/providers/ThemeProvider'
-// import type { HexCode } from '@/types/common'
 import type { CSSProperties } from 'react'
+import type { SiteTheme } from '@/providers/ThemeProvider'
 
 export interface ColorPalette {
 	background: CSSProperties['backgroundColor']
@@ -11,20 +10,24 @@ export interface ColorPalette {
 	hover: CSSProperties['color']
 }
 
-export type ColorVars<S extends string> = `--${S}-${keyof ColorPalette}`
+export type ColorVariable<
+	S extends string,
+	T extends keyof ColorPalette = keyof ColorPalette
+> = `--${S}-${T}`
 
-interface PaletteSettings<V extends string | undefined> {
+type PaletteVars<S extends string> = {
+	[T in keyof ColorPalette as ColorVariable<S, T>]: ColorPalette[T]
+}
+
+interface GetPaletteArgs<V extends string | undefined> {
 	theme: SiteTheme
 	variant: V
 }
 
-export type PaletteConfig =
-	<V extends string | undefined>(settings: PaletteSettings<V>) => ColorPalette
+export type GetPaletteFn =
+	<V extends string | undefined>(args: GetPaletteArgs<V>) => ColorPalette
 
-export const getPalette: PaletteConfig = ({
-	theme,
-	variant,
-}) => {
+export const getPalette: GetPaletteFn = ({ theme, variant }) => {
 	const basePalette = DEFAULT_PALETTE
 	let palette: ColorPalette = basePalette
 
@@ -44,4 +47,27 @@ export const getPalette: PaletteConfig = ({
 	}
 
 	return palette
+}
+
+interface SetPaletteArgs<S extends string> {
+	colors: ColorPalette
+	name: S
+}
+
+export type SetPaletteFn =
+	<S extends string>(args: SetPaletteArgs<S>) => PaletteVars<SetPaletteArgs<S>['name']>
+
+export const setPalette: SetPaletteFn = ({ colors, name }) => {
+	type N = typeof name
+	const targets = Object.keys(colors) as (keyof typeof colors)[],
+		declarations = {} as PaletteVars<N>
+
+	targets.forEach(target => {
+		type T = typeof target
+		const variable: ColorVariable<N, T> = `--${name}-${target}`,
+			color: ColorPalette[T] = colors[target]
+		Object.assign(declarations, { [variable]: color ?? undefined })
+	})
+
+	return declarations
 }

@@ -1,7 +1,20 @@
-import { getPalette } from './getPalette';
-import type { SiteTheme } from './theme.types';
+import { getPalette, setPalette, type ColorPalette } from './getPalette'
+import type { SiteTheme } from './theme.types'
+
+export const DEFAULT_PALETTE: ColorPalette = {
+	background: 'transparent',
+	border: 'none',
+	color: 'inherit',
+	focus: 'transparent',
+	hover: 'transparent',
+}
+
+export const PALETTE_KEYS = Object.keys(DEFAULT_PALETTE) as (keyof typeof DEFAULT_PALETTE)[]
 
 export const DEFAULT_THEME: SiteTheme = {
+	getPalette,
+	setPalette,
+
 	// colors: string[]
 	// font: FontProperties
 
@@ -16,6 +29,4 @@ export const DEFAULT_THEME: SiteTheme = {
 		lg: '72rem',
 		xl: '80rem',
 	},
-
-	getPalette,
 }

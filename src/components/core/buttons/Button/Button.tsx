@@ -4,6 +4,7 @@ import { setThemeCSS } from '@/lib/colors'
 import { useProps, useStyles } from '@/hooks'
 
 import type { ReactNode } from 'react'
+import type { ColorVariable } from '@/providers/ThemeProvider'
 
 import classes from './Button.module.scss'
 
@@ -28,14 +29,8 @@ type ButtonVariant =
 	| 'warning'
 	| 'danger'
 
+type ButtonVars = ColorVariable<_Prefix>
 type EvenNumber = number & { readonly __brand: unique symbol }
-
-type ButtonVars =
-	| `--button-background`
-	| `--button-border`
-	| `--button-color`
-	| `--button-focus`
-	| `--button-hover`
 
 interface ButtonProps extends BoxProps {
 	children: ReactNode
@@ -47,7 +42,6 @@ interface ButtonProps extends BoxProps {
 		position?: 'left' | 'right'
 		size?: EvenNumber
 	}
-	// onClick?: () => void
 	priority?: ButtonPriority
 	size?: ButtonSize
 	variant?: ButtonVariant
@@ -66,16 +60,8 @@ const PREFIX = `${NAME.toLowerCase() as Lowercase<typeof NAME>}` as const
 type _Prefix = Lowercase<typeof NAME>
 
 const cssVars = setThemeCSS<ButtonSpecs>((theme, { size, variant }) => {
-	const colors = theme.getPalette({ theme, variant })
-	console.log({ colors })
-
-	const variables = {
-		'--button-background': colors.background ?? undefined,
-		'--button-border': colors.border ?? undefined,
-		'--button-color': colors.color ?? undefined,
-		'--button-focus': colors.focus ?? undefined,
-		'--button-hover': colors.hover ?? undefined,
-	}
+	const colors = theme.getPalette({ theme, variant }),
+		variables = theme.setPalette({ colors, name: PREFIX })
 
 	return {
 		root: variables

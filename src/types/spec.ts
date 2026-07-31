@@ -92,7 +92,6 @@ export type ExtendedSpecs<S extends Specs> =
 		? _CompoundComponentSpec<S>
 		: _RootComponentSpec<S>
 
-
 type _CompoundSpec<P,> =
 	'is' extends keyof P
 		? 'compound' extends keyof P['is']

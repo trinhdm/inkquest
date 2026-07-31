@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import type { PaletteConfig } from './getPalette'
+import type { GetPaletteFn, SetPaletteFn } from './getPalette'
 
 
 export type Theme =
@@ -15,9 +15,10 @@ export interface SiteTheme {
 		size: Record<HeadingTagName, HeadingStyles>
 	}
 
-	breakpoints: ThemeItem<'breakpoints', CSSUnit>
+	breakpoints: Record<Size, CSSUnit>
 
-	getPalette: PaletteConfig
+	getPalette: GetPaletteFn
+	setPalette: SetPaletteFn
 }
 
 type CSSUnit = `${number}${Unit}`
