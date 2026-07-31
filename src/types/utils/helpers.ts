@@ -1,4 +1,6 @@
 
+//	strings
+
 type ContainSubstr<S extends string, Sub extends string> =
 	S extends `${string}${Sub}${string}`
 		? true
@@ -9,6 +11,8 @@ export type RemoveSubstr<S extends string, Sub extends string> =
 		? `${Before}${After}`
 		: S
 
+//	objects
+
 export type RewriteKeysWithout<Sub extends string, T> = {
 	[K in keyof T as K extends string
 		? ContainSubstr<K, Sub> extends true
@@ -16,3 +20,7 @@ export type RewriteKeysWithout<Sub extends string, T> = {
 			: K
 		: K]: T[K]
 }
+
+export type AtLeastOneKey<T> = {
+	[K in keyof T]: Partial<Omit<T, K>> & Required<Pick<T, K>>
+}[keyof T]
