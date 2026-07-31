@@ -27,18 +27,22 @@ type FontProperty =
 	| 'fontWeight'
 	| 'lineHeight'
 
-type ConsistentUnitFor<K extends PropertyKey, U extends string = Unit> =
-	{ [V in U]: Record<K, `${number}${V}`> }[U]
-
-type PartialConsistentUnitFor<K extends PropertyKey, U extends string = Unit> =
-	{ [V in U]: AtLeastOneKey<Record<K, `${number}${V}`>> }[U]
+type ConsistentUnitFor<
+	K extends PropertyKey,
+	Optional extends boolean = false,
+	U extends string = Unit,
+> = {
+	[V in U]: Optional extends true
+		? AtLeastOneKey<Record<K, `${number}${V}`>>
+		: Record<K, `${number}${V}`>
+}[U]
 
 type FontRequireAs<K extends FontProperty> =
 	FontList[K] & keyof FontStyleList<K>
 
 type FontStyleList<K extends FontProperty> =
 	K extends 'fontSize'
-		? PartialConsistentUnitFor<FontList[K]>
+		? ConsistentUnitFor<FontList[K], true>
 		: AtLeastOneKey<Record<FontList[K], CSSProperties[K]>>
 
 type FontStyle<

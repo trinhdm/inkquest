@@ -8,12 +8,17 @@ export type HeadingTagName =
 	| 'h5'
 	| 'h6'
 
-export type FontFamily =
-	| 'monospace'
-	| 'sans-serif'
-	| 'serif'
+// type FontFamily =
+// 	| 'monospace'
+// 	| 'sans-serif'
+// 	| 'serif'
 
-export type FontWeight =
+type FontFamily =
+	| 'title'
+	| 'body'
+	| 'label'
+
+type FontWeight =
 	| 'thin'
 	| 'light'
 	| 'regular'
@@ -23,8 +28,8 @@ export type FontWeight =
 
 export type FontList = {
 	fontFamily: FontFamily
-	fontWeight: FontWeight
 	fontSize: Size
+	fontWeight: FontWeight
 	lineHeight: Size
 }
 
