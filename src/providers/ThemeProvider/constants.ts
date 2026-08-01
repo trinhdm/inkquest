@@ -2,9 +2,6 @@ import { rem } from '@/lib/general'
 import { getPalette, setPalette, type ColorPalette } from './theme/palette'
 import type { FontList } from '@/types/shared'
 import type { SiteTheme } from './theme.types'
-import { themeToCssVars } from './theme'
-import { themeToCssVarsTEMP } from './theme/cssVariables'
-
 
 export const DEFAULT_PALETTE: ColorPalette = {
 	background: 'transparent',

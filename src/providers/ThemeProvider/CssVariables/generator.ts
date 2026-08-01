@@ -62,16 +62,16 @@ const formatVariable = <V,>({ key, path = '', value }: {
 	return variable
 }
 
-export const themeToCssVars = (
-	theme: SiteTheme,
+export const toCssVars = <T extends Record<string, any>>(
+	input: T,
 	prefix: string = ''
 ) => {
 	const generate = <T extends Record<string, any> = SiteTheme>(target: T, path = '') => {
 		let variables = [] as [string, unknown][]
 
 		for (let key in target) {
-			const value = target[key],
-				vname = formatVariable({ key, path, value })
+			const value = target[key]
+			let vname = formatVariable({ key, path, value })
 
 			if (typeof value === 'function') continue
 
@@ -79,8 +79,10 @@ export const themeToCssVars = (
 				if (Object.hasOwn(value, 'tagName')) {
 					const tags = Object.keys(value['tagName'])
 
-					for (const tag of tags)
-						variables.push([`--text-${tag}`, getShorthand(tag, value)])
+					for (const tag of tags) {
+						vname = formatVariable({ key: `text-${tag}`, path, value })
+						variables.push([`--${vname}`, getShorthand(tag, value)])
+					}
 				} else {
 					variables = variables.concat(generate(value, vname))
 				}
@@ -92,65 +94,27 @@ export const themeToCssVars = (
 		return variables
 	}
 
-	const entries = generate(theme)
+	const entries = generate(input, prefix)
 	return Object.fromEntries(entries)
 }
 
-// const formatCSSVar = <V,>(name: string, value: V) => {
-// 	const regexTests = {
-// 		text: new RegExp(/h[1-6]/i),
-// 	}
+export const themeToCssVars = (
+	theme: SiteTheme,
+	prefix: string = ''
+) => {
+	const darkTheme = {
+		themeName: 'dark',
+	}
 
-// 	const tests = Object.keys(regexTests) as (keyof typeof regexTests)[]
-// 	let variable = name
+	const lightTheme = {
+		themeName: 'light',
+	}
 
-// 	for (const key of tests) {
-// 		const regex = regexTests[key],
-// 			index = name.search(regex)
+	const general = toCssVars(theme, prefix),
+		dark = toCssVars(darkTheme, prefix),
+		light = toCssVars(lightTheme, prefix)
 
-// 		if (index > -1) {
-// 			const i = name.slice(0, index).endsWith('-') ? index - 1 : index
-// 			variable = name.replace(name.substring(0, i), key)
-// 			break
-// 		}
-// 	}
+	const cssVars = { general, dark, light }
 
-// 	if (!variable.startsWith('--'))
-// 		variable = `--${variable}`
-
-// 	return [variable, value] as [typeof name, V]
-// }
-
-
-// const getShorthand = (target: Record<string, any>) => {
-// 	if (!target.hasOwnProperty('tagName')) return
-
-// 	const { tagName } = target
-// 	const tags = Object.keys(tagName)
-// 	let shorthand = []
-
-// 	if (Object.hasOwn(target, 'fontWeight'))
-// 		shorthand.push(target['fontWeight'])
-
-// 	for (const t of tags) {
-// 		const tag = tagName[t]
-// 		console.log({ tag: tagName[t] })
-
-// 		if (Object.hasOwn(tag, 'fontWeight'))
-// 			shorthand = [tag['fontWeight']]
-
-// 		if (Object.hasOwn(tag, 'fontSize')) {
-// 			let temp = tag['fontSize']
-
-// 			if (Object.hasOwn(tag, 'lineHeight'))
-// 				temp += `/${tag['lineHeight']}`
-
-// 			shorthand.push(temp)
-// 		}
-// 	}
-
-// 	if (Object.hasOwn(target, 'fontFamily'))
-// 		shorthand.push(target['fontFamily'])
-
-// 	return shorthand.join(' ')
-// }
+	return cssVars
+}
