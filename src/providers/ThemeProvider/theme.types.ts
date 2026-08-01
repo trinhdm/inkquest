@@ -1,26 +1,35 @@
 import type { CSSProperties } from 'react'
 import type { AtLeastOneKey } from '@/types/utils'
-import type { CSSUnit, FontList, HeadingTagName, Size, Unit } from '@/types/shared'
+import type { CSSUnit, CSSVars, FontList, HeadingTagName, HexCode, Size, Unit } from '@/types/shared'
 import type { GetPaletteFn, SetPaletteFn } from './theme/palette'
 
 
-export type ThemeScheme =
+export type ThemeName =
 	| 'dark'
 	| 'light'
 	// | 'system'
+
+export type ColorScheme =
+	| 'brand'
+	| 'ink'
+	| 'paper'
+
+export type ThemeTokens<V = unknown> = Record<ThemeName | 'base', CSSVars<V>>
 
 export interface SiteTheme {
 	getPalette: GetPaletteFn
 	setPalette: SetPaletteFn
 
-	fontFamily?: FontStyle<'fontFamily', 'body'>
+	fontFamily: FontStyle<'fontFamily', 'body'>
 	fontSize: FontStyle<'fontSize', 'md'>
-	fontWeight?: FontStyle<'fontWeight', 'regular'>
+	fontWeight: FontStyle<'fontWeight', 'regular'>
 	lineHeight: FontStyle<'lineHeight'>
 
 	headings: FontStyles<TagFontStyles, HeadingTagName, 'h1'>
 
+	colors: Record<ColorScheme, HexCode[]>
 	breakpoints: Style<CSSUnit, Size>
+	radius: Style<CSSUnit, Size | 'pill', 'md'>
 }
 
 type StyleList<

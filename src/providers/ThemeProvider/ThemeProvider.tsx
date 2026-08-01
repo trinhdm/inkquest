@@ -1,3 +1,5 @@
+'use client'
+
 import { createContext, use, useEffect, useMemo, type ReactNode } from 'react'
 import { mergeTheme } from './theme'
 import { CssVariables } from './CssVariables'
