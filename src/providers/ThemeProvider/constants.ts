@@ -1,5 +1,6 @@
 import { rem } from '@/lib/general'
-import { getPalette, setPalette, type ColorPalette } from './palette'
+import { getPalette, setPalette, type ColorPalette } from './theme/palette'
+import type { FontList } from '@/types/shared'
 import type { SiteTheme } from './theme.types'
 
 export const DEFAULT_PALETTE: ColorPalette = {

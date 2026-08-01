@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Box, polymorphic, type BoxProps } from '../../Box'
-import { setThemeCSS } from '@/lib/colors'
+import { setThemeCSS } from '@/lib/theme'
 import { useProps, useStyles } from '@/hooks'
 
 import type { ReactNode } from 'react'
@@ -30,7 +30,6 @@ type ButtonVariant =
 	| 'danger'
 
 type ButtonVars = ColorVariable<_Prefix>
-type EvenNumber = number & { readonly __brand: unique symbol }
 
 interface ButtonProps extends BoxProps {
 	children: ReactNode
@@ -40,7 +39,7 @@ interface ButtonProps extends BoxProps {
 		color?: string
 		name?: React.ReactNode
 		position?: 'left' | 'right'
-		size?: EvenNumber
+		size?: ButtonSize
 	}
 	priority?: ButtonPriority
 	size?: ButtonSize
@@ -67,7 +66,6 @@ const cssVars = setThemeCSS<ButtonSpecs>((theme, { size, variant }) => {
 		root: variables
 	}
 })
-
 
 export const Button = polymorphic<ButtonSpecs>(_props => {
 	const props = useProps(NAME, _props)

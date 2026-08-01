@@ -1,4 +1,4 @@
-import { DEFAULT_PALETTE } from './constants'
+import { DEFAULT_PALETTE } from '../constants'
 import type { CSSProperties } from 'react'
 import type { SiteTheme } from '@/providers/ThemeProvider'
 
