@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react'
-import type { AtLeastOneKey, RewriteKeysWithout } from '@/types/utils'
+import type { AtLeastOneKey } from '@/types/utils'
 import type { CSSUnit, FontList, HeadingTagName, Size, Unit } from '@/types/shared'
-import type { GetPaletteFn, SetPaletteFn } from './palette'
+import type { GetPaletteFn, SetPaletteFn } from './theme/palette'
 
 
 export type Theme =
@@ -9,13 +9,16 @@ export type Theme =
 	| 'light'
 	| 'system'
 
-export interface SiteTheme {
+export interface SiteTheme
+	extends Required<FontStyles> {
 	getPalette: GetPaletteFn
 	setPalette: SetPaletteFn
 
-	font: Required<RewriteKeysWithout<'font', FontStyles>>
-	headings: Omit<FontStyles, 'fontSize' | 'lineHeight'> & {
-		tagName: Style<Omit<FontStyles, 'fontFamily'>, HeadingTagName, 'h1'>
+	// font: Required<RewriteKeysWithout<'font', FontStyles>>
+	headings: {
+		fontFamily?: FontStyle<'fontFamily'>
+		fontWeight?: FontStyle<'fontWeight'>
+		tagName: Style<TagFontStyles, HeadingTagName, 'h1'>
 	}
 
 	breakpoints: Style<CSSUnit, Size>
@@ -54,6 +57,12 @@ interface FontStyles {
 	fontSize: FontStyle<'fontSize', 'md'>
 	fontWeight?: FontStyle<'fontWeight', 'regular'>
 	lineHeight: FontStyle<'lineHeight'>
+}
+
+interface TagFontStyles {
+	fontSize: FontStyle<'fontSize'>
+	fontWeight?: FontStyle<'fontWeight'>
+	lineHeight?: FontStyle<'lineHeight'>
 }
 
 // consistent value helpers

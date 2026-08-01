@@ -4,13 +4,16 @@ const pxUnitConverter = <const U extends Unit>(unit: U) => {
 	type UnitNum<T extends U = U> = `${number}${T}`
 
 	const calculate = (px: number): UnitNum<U> => {
-		const computed = getComputedStyle(document.documentElement),
-			rootFontSize = parseFloat(computed.fontSize)
+		let base = 16
 
-		return `${px / rootFontSize}${unit}` as UnitNum<U>
+		if (typeof window !== 'undefined') {
+			const computed = getComputedStyle(document.documentElement)
+			base = parseFloat(computed.fontSize)
+		}
+
+		return `${px / base}${unit}` as UnitNum<U>
 	}
 
-	// const convert = (value: N | string): UnitNum<U> =>
 	function convert(value: number): UnitNum<U>
 	function convert(value: string): string
 	function convert(value: number | string): UnitNum | string {

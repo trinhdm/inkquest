@@ -2,6 +2,9 @@ import { rem } from '@/lib/general'
 import { getPalette, setPalette, type ColorPalette } from './theme/palette'
 import type { FontList } from '@/types/shared'
 import type { SiteTheme } from './theme.types'
+import { themeToCssVars } from './theme'
+import { themeToCssVarsTEMP } from './theme/cssVariables'
+
 
 export const DEFAULT_PALETTE: ColorPalette = {
 	background: 'transparent',
@@ -11,9 +14,7 @@ export const DEFAULT_PALETTE: ColorPalette = {
 	hover: 'transparent',
 }
 
-export const PALETTE_KEYS = Object.keys(DEFAULT_PALETTE) as (keyof typeof DEFAULT_PALETTE)[]
-
-const DEFAULT_FONT_FAMILY = {
+const DEFAULT_FONT_FAMILY: Record<FontList['fontFamily'], string> = {
 	body: 'Archivo, -apple-system, BlinkMacSystemFont, sans-serif',
 	title: 'Archivo Black, Archivo, sans-serif',
 	label: 'Space Mono, SF Mono, monospace',
@@ -23,27 +24,25 @@ export const DEFAULT_THEME: SiteTheme = {
 	getPalette,
 	setPalette,
 
-	font: {
-		family: DEFAULT_FONT_FAMILY,
-		weight: {
-			regular: 400,
-			bold: 600,
-			black: 700,
-		},
-		size: {
-			xs: rem(10),
-			sm: rem(12),
-			md: rem(16),
-			lg: rem(18),
-			xl: rem(20),
-		},
-		lineHeight: {
-			xs: 1.3,
-			sm: 1.5,
-			md: 1.55,
-			lg: 1.55,
-			// xl: 1.5,
-		},
+	fontFamily: DEFAULT_FONT_FAMILY,
+	fontWeight: {
+		regular: 400,
+		bold: 600,
+		black: 700,
+	},
+	fontSize: {
+		xs: rem(10),
+		sm: rem(12),
+		md: rem(16),
+		lg: rem(18),
+		xl: rem(20),
+	},
+	lineHeight: {
+		xs: 1.3,
+		sm: 1.5,
+		md: 1.55,
+		lg: 1.55,
+		// xl: 1.5,
 	},
 
 	headings: {
@@ -74,5 +73,3 @@ export const DEFAULT_THEME: SiteTheme = {
 		xl: rem(1440),
 	},
 }
-
-console.log(DEFAULT_THEME)
