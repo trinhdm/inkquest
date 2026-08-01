@@ -31,16 +31,48 @@ const getShorthand = (tag: string, target: Record<string, any>) => {
 	return shorthand.join(' ')
 }
 
-export const themeToCssVars = (theme: SiteTheme) => {
+const formatVariable = <V,>({ key, path = '', value }: {
+	key: string
+	path: string
+	value: V
+}) => {
+	let name = toKebabCase(key)
+
+	const isPlural = name.endsWith('s') && name.length > 2,
+		isTagGroup = isObject(value) && Object.hasOwn(value, 'tagName'),
+		isNumeric = typeof value === 'number'
+			|| /\d/.test(`${value}`)
+			|| (isObject(value) && Object.values(value).every(v => /\d/.test(`${v}`)))
+
+	if (name.startsWith('font')) {
+		const replaced = {
+			'font-family': '-family',
+			'font-weight': 'font-',
+		}[name]
+
+		if (replaced)
+			name = name.replace(replaced, '')
+	}
+
+	if (isPlural && (isTagGroup || isNumeric))
+		name = name.slice(0, -1)
+
+	const variable = !!path ? `${path}-${name}` : name
+
+	return variable
+}
+
+export const themeToCssVars = (
+	theme: SiteTheme,
+	prefix: string = ''
+) => {
 	const generate = <T extends Record<string, any> = SiteTheme>(target: T, path = '') => {
 		let variables = [] as [string, unknown][]
 
 		for (let key in target) {
-			const name = toKebabCase(key),
-				value = target[key],
-				variable = !!path ? `${path}-${name}` : name
+			const value = target[key],
+				vname = formatVariable({ key, path, value })
 
-			// if (value === undefined) continue
 			if (typeof value === 'function') continue
 
 			if (isObject(value)) {
@@ -50,10 +82,10 @@ export const themeToCssVars = (theme: SiteTheme) => {
 					for (const tag of tags)
 						variables.push([`--text-${tag}`, getShorthand(tag, value)])
 				} else {
-					variables = variables.concat(generate(value, variable))
+					variables = variables.concat(generate(value, vname))
 				}
 			} else {
-				variables.push([`--${variable}`, value])
+				variables.push([`--${vname}`, value])
 			}
 		}
 

@@ -4,22 +4,21 @@ import type { CSSUnit, FontList, HeadingTagName, Size, Unit } from '@/types/shar
 import type { GetPaletteFn, SetPaletteFn } from './theme/palette'
 
 
-export type Theme =
+export type ThemeScheme =
 	| 'dark'
 	| 'light'
-	| 'system'
+	// | 'system'
 
-export interface SiteTheme
-	extends Required<FontStyles> {
+export interface SiteTheme {
 	getPalette: GetPaletteFn
 	setPalette: SetPaletteFn
 
-	// font: Required<RewriteKeysWithout<'font', FontStyles>>
-	headings: {
-		fontFamily?: FontStyle<'fontFamily'>
-		fontWeight?: FontStyle<'fontWeight'>
-		tagName: Style<TagFontStyles, HeadingTagName, 'h1'>
-	}
+	fontFamily?: FontStyle<'fontFamily', 'body'>
+	fontSize: FontStyle<'fontSize', 'md'>
+	fontWeight?: FontStyle<'fontWeight', 'regular'>
+	lineHeight: FontStyle<'lineHeight'>
+
+	headings: FontStyles<TagFontStyles, HeadingTagName, 'h1'>
 
 	breakpoints: Style<CSSUnit, Size>
 }
@@ -52,11 +51,14 @@ type FontStyle<
 > =
 	Style<CSSProperties[K], FontList[K], RK, K>
 
-interface FontStyles {
-	fontFamily?: FontStyle<'fontFamily', 'body'>
-	fontSize: FontStyle<'fontSize', 'md'>
-	fontWeight?: FontStyle<'fontWeight', 'regular'>
-	lineHeight: FontStyle<'lineHeight'>
+interface FontStyles<
+	V,
+	Keys extends PropertyKey,
+	RK extends Keys | undefined = undefined,
+> {
+	fontFamily?: FontStyle<'fontFamily'>
+	fontWeight?: FontStyle<'fontWeight'>
+	tagName: Style<V, Keys, RK>
 }
 
 interface TagFontStyles {
