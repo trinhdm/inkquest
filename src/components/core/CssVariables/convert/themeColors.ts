@@ -1,5 +1,5 @@
 import { getVariable } from '../format'
-import type { ColorScheme, SiteTheme } from '../../theme.types'
+import type { ColorScheme, SiteTheme } from '@/providers/ThemeProvider'
 import type { CSSVars, HexCode } from '@/types/shared'
 
 export interface ThemeColorsConfig {

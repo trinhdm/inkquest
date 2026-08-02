@@ -1,4 +1,4 @@
-import { useTheme } from '../ThemeProvider'
+import { useTheme } from '@/providers/ThemeProvider'
 import { resolveCssVars, serializeCssVars } from './build'
 
 export const CssVariables = () => {

@@ -1,7 +1,7 @@
 import { generateCssVars } from './generator'
 import { getThemeColors, ThemeColor } from './themeColors'
 import { keyWithValue } from '@/utils/helpers'
-import type { ColorScheme, SiteTheme, ThemeName } from '../../theme.types'
+import type { ColorScheme, SiteTheme, ThemeName } from '@/providers/ThemeProvider'
 import type { CSSVars } from '@/types/shared'
 
 export type ThemeTokens<V = unknown> = Record<ThemeName | 'base', CSSVars<V>>

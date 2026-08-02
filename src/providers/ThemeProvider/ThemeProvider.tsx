@@ -2,7 +2,6 @@
 
 import { createContext, use, useEffect, useMemo, type ReactNode } from 'react'
 import { mergeTheme } from './theme'
-import { CssVariables } from './CssVariables'
 import { DEFAULT_THEME } from './constants'
 import { PREFIX_CSS_SELECTOR, PREFIX_CSS_VARS } from '@/utils/constants'
 import type { SiteTheme } from './theme.types'
@@ -43,10 +42,5 @@ export const ThemeProvider = ({
 			documentEl.style.setProperty(PREFIX_CSS_VARS, PREFIX_CSS_SELECTOR)
 	}, [])
 
-	return (
-		<ThemeContext value={ mergedTheme }>
-			<CssVariables />
-			{ children }
-		</ThemeContext>
-	)
+	return <ThemeContext value={ mergedTheme }>{ children }</ThemeContext>
 }

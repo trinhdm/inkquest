@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google"
-import { ThemeProvider } from '@/providers/ThemeProvider'
+import { CssVariables } from '@/components/core/CssVariables'
 import { SchemeScript } from '@/providers/ThemeProvider/SchemeScript/SchemeScript'
+import { ThemeProvider } from '@/providers/ThemeProvider'
 import type { Metadata } from 'next'
 import '@/styles/_global.scss'
 
@@ -35,6 +36,7 @@ export default function RootLayout({
 			</head>
 			<body>
 				<ThemeProvider>
+					<CssVariables />
 					{ children }
 				</ThemeProvider>
 			</body>
