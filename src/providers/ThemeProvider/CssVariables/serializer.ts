@@ -2,21 +2,21 @@ import type { ThemeTokens } from '../theme.types'
 
 const BASE_SELECTORS = [':root', ':host'] as const
 
-const outputCss = ({ input, hasIndent }: {
+const declarationBlock = ({ input, hasIndent }: {
 	input: Record<string, unknown>,
 	hasIndent?: boolean
 }) => {
-	const css = Object.entries(input)
-		.map(([name, value]) => {
-			const declaration = `${name}: ${value};`
+	const block = Object.entries(input)
+		.map(([property, value]) => {
+			const declaration = `${property}: ${value};`
 			return hasIndent ? `\t${declaration}` : declaration
 		})
 		.join(hasIndent ? '\n' : ' ')
 
-	return hasIndent ? `\n${css}\n` : ` ${css} `
+	return hasIndent ? `\n${block}\n` : ` ${block} `
 }
 
-const outputSelectors = ({ name, selector, hasIndent }: {
+const listSelectors = ({ name, selector, hasIndent }: {
 	name: keyof ThemeTokens,
 	selector?: string,
 	hasIndent?: boolean
@@ -33,13 +33,12 @@ export const serializeCssVars = (
 	selector?: string,
 	hasIndent: boolean = true
 ) => {
-	const cssVars = (Object.keys(tokens) as (keyof typeof tokens)[]).map(name => {
-		const input = tokens[name],
-			css = outputCss({ input, hasIndent }),
-			selectors = outputSelectors({ name, selector, hasIndent })
+	const rules = (Object.keys(tokens) as (keyof typeof tokens)[]).map(name => {
+		const declaration = declarationBlock({ input: tokens[name], hasIndent }),
+			selectors = listSelectors({ name, selector, hasIndent })
 
-		return `${selectors} {${css}}`
+		return `${selectors} {${declaration}}`
 	}).join(`\n\n`)
 
-	return cssVars
+	return rules
 }

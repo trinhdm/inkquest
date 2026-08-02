@@ -8,53 +8,46 @@ export interface ThemeColorsConfig {
 	theme: SiteTheme
 }
 
-export const ThemeColor = (() => {
-	const altSchemes = {
-		brand: 'brand',
-		ink: 'paper',
-		paper: 'ink',
-	} as Record<ThemeColorsConfig['scheme'], ThemeColorsConfig['scheme']>
+const ALT_SCHEME: Record<ColorScheme, ColorScheme> = {
+	brand: 'brand',
+	ink: 'paper',
+	paper: 'ink',
+}
 
-	return {
-		main: function (
-			step: `0${number}`,
-			options: ThemeColorsConfig
-		) {
-			const { prefix, scheme, theme } = options
+const _mainColor = (
+	step: `0${number}`,
+	options: ThemeColorsConfig
+) => {
+	const { prefix, scheme, theme } = options
 
-			const colors = theme.colors[scheme],
-				index = parseFloat(step) - 1,
-				value = colors[index]
+	const colors = theme.colors[scheme],
+		index = parseFloat(step) - 1,
+		value = colors[index]
 
-			const variable = getVariable({ path: ['color', scheme, step], prefix, value })
+	// const path = scheme === 'ink' ? 'primary' : 'secondary'
+	const variable = getVariable({ path: ['color', scheme, step], prefix, value })
 
-			return `var(${variable})`
-		},
-		alt: function (
-			step: `0${number}`,
-			options: ThemeColorsConfig
-		) {
-			const args = { ...options, scheme: altSchemes[options.scheme] }
-			return this.main(step, args)
-		},
-		accent: function (
-			step: `0${number}`,
-			options: ThemeColorsConfig
-		) {
-			const args = { ...options, scheme: 'brand' as ThemeColorsConfig['scheme'] }
-			return this.main(step, args)
-		},
-	}
-})()
+	return `var(${variable})`
+}
+
+const _altColor = (step: `0${number}`, options: ThemeColorsConfig) =>
+	_mainColor(step, { ...options, scheme: ALT_SCHEME[options.scheme] })
+
+const _accentColor = (step: `0${number}`, options: ThemeColorsConfig) =>
+	_mainColor(step, { ...options, scheme: 'brand' })
+
+export const ThemeColor = {
+	main: _mainColor,
+	alt: _altColor,
+	accent: _accentColor,
+}
 
 export const getThemeColors = ({
 	as = 'hex',
 	prefix,
 	scheme,
 	theme,
-}: ThemeColorsConfig & {
-	as?: 'hex' | 'var'
-}) => {
+}: ThemeColorsConfig & { as?: 'hex' | 'var' }) => {
 	if (!Object.hasOwn(theme.colors, scheme)) return {}
 
 	const colors = theme.colors[scheme],

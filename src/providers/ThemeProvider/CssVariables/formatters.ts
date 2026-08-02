@@ -1,98 +1,98 @@
 import { isObject, toKebabCase } from '@/utils/helpers'
 import type { BaseVarKey } from '../theme.types'
 
-const readStyle = (
-	key: string,
-	...sources: Record<string, unknown>[]
-): string | undefined => {
-	for (const source of sources)
-		if (Object.hasOwn(source, key)) return String(source[key])
-
-	return undefined
-}
-
-const fontShorthand = <T extends Record<string, unknown>>(props: T[]) => {
-	const family = readStyle('fontFamily', ...props),
-		fontSize = readStyle('fontSize', ...props),
-		lineHeight = readStyle('lineHeight', ...props),
-		weight = readStyle('fontWeight', ...props)
-
-	let size = fontSize
-
-	if (size && lineHeight)
-		size += `/${lineHeight}`
-
-	return [weight, size, family].filter(part => part !== undefined).join(' ')
-}
-
-const _shorthandlers = {
-	font: fontShorthand
-}
-
-export const getShorthand = <T extends Record<string, unknown>>({ property, tag, value }: {
-	property: keyof typeof _shorthandlers
-	tag: string
-	value: T
-}) => {
-	if (!Object.hasOwn(_shorthandlers, property)) return ''
-	else if (!Object.hasOwn(value, 'tagName')) return ''
-
-	const { tagName } = value
-	if (!isObject(tagName) || !Object.hasOwn(tagName, tag)) return ''
-
-	const tagProps = tagName[tag] as T,
-		props = [value, tagProps]
-
-	return (_shorthandlers[property])(props)
-}
-
-export const getVariable = <V,>({ path, prefix, value }: {
+export interface CSSVarArgs<T> {
 	path: string[]
 	prefix?: string
-	value: V
-}): string => {
-	if (!path.length) return ''
-	let name = toKebabCase(path[0]),
-		route = path
+	value: T
+}
 
-	const isPlural = name.endsWith('s')
-		&& name.length > 2
-		&& !(['radius'].includes(name))
+const FONT_PART_INDEX = {
+	'family': 1,
+	'weight': 0,
+} as const
 
-	if (name.startsWith('font') && name.includes('-')) {
-		const parts = name.split('-')
-		const index = {
-			'family': 1,
-			'weight': 0,
-		}[parts[1]]
+const SINGULAR_NAMES = ['radius']
 
-		if (typeof index === 'number')
-			name = parts.toSpliced(index, 1).join('-')
-	}
+const isFontName = (name: string) =>
+	name.startsWith('font') && name.includes('-')
 
-	if (isPlural) {
-		const isTagGroup = isObject(value) && Object.hasOwn(value, 'tagName'),
-			isHexCode = /#(?:[0-9a-fA-F]{3}){1,2}\b/.test(`${value}`),
-			isNumeric = typeof value === 'number'
-				|| /\d/.test(`${value}`)
-				|| (isObject(value) && Object.values(value).every(v => /\d/.test(`${v}`)))
+const isPlural = (name: string) =>
+	name.endsWith('s')
+	&& name.length > 2
+	&& !(SINGULAR_NAMES.includes(name))
 
-		if (isTagGroup || isHexCode || isNumeric)
-			name = name.slice(0, -1)
-	}
+const isVerb = (name: string) =>
+	name.endsWith('ing')
 
-	if (name.endsWith('ing'))
+const isHexCode = (value: unknown) =>
+	/#(?:[0-9a-fA-F]{3}){1,2}\b/.test(`${value}`)
+
+const isNumeric = (value: unknown): boolean =>
+	typeof value === 'number'
+	|| /\d/.test(`${value}`)
+	|| (isObject(value) && Object.values(value).every(v => isNumeric(v)))
+
+const isTagGroup = (value: unknown) =>
+	isObject(value) && Object.hasOwn(value, 'tagName') && isObject(value.tagName)
+
+const isSingular = (value: unknown) =>
+	_is.TagGroup(value) || _is.HexCode(value) || _is.Numeric(value)
+
+const _is = {
+	FontName:	isFontName,
+	HexCode:	isHexCode,
+	Numeric:	isNumeric,
+	Plural:		isPlural,
+	Singular:	isSingular,
+	TagGroup:	isTagGroup,
+	Verb:		isVerb,
+}
+
+const formatFontName = (name: string) => {
+	const parts = name.split('-'),
+		index = FONT_PART_INDEX[parts[1] as keyof typeof FONT_PART_INDEX]
+	return typeof index === 'number'
+		? parts.toSpliced(index, 1).join('-')
+		: name
+}
+
+const formatName = <T,>({ path, value }: CSSVarArgs<T>) => {
+	let name = toKebabCase(path[0])
+
+	if (_is.FontName(name))
+		name = formatFontName(name)
+
+	if (_is.Plural(name) && _is.Singular(value))
+		name = name.slice(0, -1)
+
+	if (_is.Verb(name))
 		name = name.replace('ing', 'e')
 
+	return name
+}
+
+const formatPath = <T,>({ path }: CSSVarArgs<T>) => {
+	let route = path
+
 	if (route.at(-1) === ('base' as BaseVarKey))
-		route = route.slice(0, route.length - 1)
+		route = route.slice(0, -1)
 
 	for (const [i, str] of route.entries())
 		route[i] = toKebabCase(str)
 
-	const segments = [] as string[]
-	if (prefix) segments.push(prefix)
-	segments.push(...[name, ...route.slice(1)])
+	return route
+}
+
+export const getVariable = <T,>(args: CSSVarArgs<T>): string => {
+	const { path, prefix } = args
+	if (!path.length) return ''
+
+	const name = formatName(args),
+		route = formatPath(args)
+
+	const segments = [name, ...route.slice(1)]
+	if (prefix) segments.unshift(prefix)
 
 	return `--${segments.join('-')}`
 }

@@ -1,42 +1,36 @@
 import { generateCssVars } from './generator'
-import { getThemeColors, ThemeColor, type ThemeColorsConfig } from './themeColors'
+import { getThemeColors, ThemeColor } from './themeColors'
+import { keyWithValue } from '@/utils/helpers'
 import type { CSSVars } from '@/types/shared'
-import type { SiteTheme, ThemeName, ThemeTokens } from '../theme.types'
+import type { ColorScheme, SiteTheme, ThemeName, ThemeTokens } from '../theme.types'
 
-type KeysInBoth<T, U> = keyof { [K in keyof T as K extends U ? K : never]: T[K] }
-
-type BuildThemeScheme<
-	K extends keyof ThemeTokens,
-	N extends KeysInBoth<ThemeTokens, ThemeName>,
-> = {
-	name: K extends N ? N : never
-	scheme: ThemeColorsConfig['scheme']
+interface TokenBuilder {
+	// name?: ThemeName | never
+	// scheme?: ColorScheme | never
+	theme: SiteTheme
+	prefix?: string
 }
 
-type BuildThemeBase = {
+type BaseTokenBuilder = TokenBuilder & {
 	name?: never
 	scheme?: never
 }
 
-type BuildThemeProps<
-	K extends keyof ThemeTokens,
-	N extends KeysInBoth<ThemeTokens, ThemeName>,
-> =
-	Pick<ThemeColorsConfig, 'prefix' | 'theme'>
-	& (BuildThemeScheme<K, N> | BuildThemeBase)
+type ThemeTokenBuilder<K extends ThemeName> = TokenBuilder & {
+	name: K | never
+	scheme: ColorScheme | never
+}
 
-const buildTheme = <
-	// T extends ThemeTokens,
-	K extends keyof ThemeTokens,
-	N extends KeysInBoth<ThemeTokens, ThemeName>,
-	X extends Exclude<K, ThemeName>,
-	R extends ThemeTokens[K extends N ? N : X]
-	// N extends keyof { [K in keyof ThemeTokens as K extends ThemeName ? K : never]?: T[K] }
->(options: BuildThemeProps<K, N>): R => {
+type TokenBuilderOptions<K extends keyof ThemeTokens> =
+	K extends ThemeName ? ThemeTokenBuilder<K> : BaseTokenBuilder
+
+const buildTokens = <K extends keyof ThemeTokens>(
+	options: TokenBuilderOptions<K>
+): ThemeTokens[K] => {
 	const { prefix, theme } = options
 
-	const isConfigTheme = (Object.hasOwn(options, 'name') && options['name'])
-		&& (Object.hasOwn(options, 'scheme') && options['scheme'])
+	const isConfigTheme = keyWithValue('name', options)
+		&& keyWithValue('scheme', options)
 
 	if (!isConfigTheme) {
 		const { colors, ...baseTheme } = theme,
@@ -46,29 +40,19 @@ const buildTheme = <
 		for (const scheme of schemes)
 			Object.assign(vars, { [scheme]: getThemeColors({ ...options, scheme }) })
 
-		Object.assign(baseTheme, { colors: vars })
-
-		return generateCssVars(baseTheme, prefix) as R
+		return generateCssVars({ ...baseTheme, colors: vars }, prefix)
 	}
 
-	return configureTheme(options) as R
+	return buildThemeTokens(options as TokenBuilderOptions<Exclude<K, 'base'>>)
 }
 
-const configureTheme = <
-	K extends keyof ThemeTokens,
-	N extends ThemeName,
->(options: BuildThemeProps<K, N>) => {
-	const {
-		name,
-		theme,
-		scheme,
-		prefix,
-	} = options
+const buildThemeTokens = <K extends ThemeName>(
+	options: TokenBuilderOptions<K>
+): ThemeTokens[K] => {
+	const { name, theme, scheme, prefix } = options
+	if (!Object.hasOwn(theme.colors, scheme)) return {}
 
-	const isConfigTheme = name && scheme
-	if (!isConfigTheme || !Object.hasOwn(theme.colors, scheme)) return {}
-
-	const baseColors = getThemeColors({ ...options, as: 'var' })
+	const themeColors = getThemeColors({ ...options, as: 'var' })
 
 	const accent = {
 		base: ThemeColor.accent('01', options),
@@ -83,28 +67,19 @@ const configureTheme = <
 	}
 
 	const colors = {
-		...baseColors,
+		...themeColors,
 		text: ThemeColor.alt('01', options),
 	}
 
-	const config = { theme: name } as CSSVars
-	Object.assign(config, { colors, accent, border })
-
-	return generateCssVars(config, prefix)
+	const config = { theme: name, colors, accent, border } as CSSVars
+	return generateCssVars(config, prefix) as ThemeTokens[K]
 }
 
-// build theme
 export const themeToCssVars = (
 	theme: SiteTheme,
 	prefix?: string
-) => {
-	const options = { theme, prefix }
-
-	const base = buildTheme(options),
-		dark = buildTheme({ name: 'dark', scheme: 'ink', ...options }),
-		light = buildTheme({ name: 'light', scheme: 'paper', ...options })
-
-	const cssVars: ThemeTokens = { base, dark, light }
-
-	return cssVars
-}
+): ThemeTokens => ({
+	base: buildTokens({ theme, prefix }),
+	dark: buildTokens({ name: 'dark', scheme: 'ink', theme, prefix }),
+	light: buildTokens({ name: 'light', scheme: 'paper', theme, prefix }),
+})
