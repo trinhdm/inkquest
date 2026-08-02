@@ -13,7 +13,7 @@ type DeepMerge<T, U> = {
 			: never
 }
 
-export const isObject = (target: unknown): target is Record<string, unknown> => (
+export const isObject = <T extends Record<string, unknown>>(target: unknown): target is T => (
 	!!target
 	&& target?.constructor === Object
 	&& !Array.isArray(target)

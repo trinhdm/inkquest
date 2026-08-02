@@ -1,12 +1,14 @@
 import { deepMerge } from '@/utils/helpers'
 import { themeToCssVars } from './generator'
 import { PREFIX_CSS_SELECTOR } from '@/utils/constants'
-import type { CSSVars } from '@/types/shared'
-import type { SiteTheme, ThemeScheme } from '../theme.types'
+import type { SiteTheme, ThemeTokens } from '../theme.types'
 
 const BASE_SELECTORS = [':root', ':host'] as const
 
-export const resolveCssVars = (current: SiteTheme, override?: SiteTheme) => {
+export const resolveCssVars = (
+	current: SiteTheme,
+	override?: SiteTheme
+) => {
 	const currentVars = themeToCssVars(current, PREFIX_CSS_SELECTOR)
 	let cssVars = currentVars
 
@@ -18,10 +20,10 @@ export const resolveCssVars = (current: SiteTheme, override?: SiteTheme) => {
 	return cssVars
 }
 
-const outputCss = (
+const outputCss = ({ input, hasIndent }: {
 	input: Record<string, unknown>,
 	hasIndent?: boolean
-) => {
+}) => {
 	const css = Object.entries(input)
 		.map(([name, value]) => {
 			const declaration = `${name}: ${value};`
@@ -32,26 +34,27 @@ const outputCss = (
 	return hasIndent ? `\n${css}\n` : ` ${css} `
 }
 
-const outputSelectors = (
-	scheme: ThemeScheme | 'general',
-	override?: string,
+const outputSelectors = ({ name, selector, hasIndent }: {
+	name: keyof ThemeTokens,
+	selector?: string,
 	hasIndent?: boolean
-) => {
-	const selectors = !!override ? [override] : BASE_SELECTORS,
-		attr = scheme === 'general' ? '' : `[data-theme="${scheme}"]`,
+}) => {
+	const selectors = !!selector ? [selector] : BASE_SELECTORS,
+		attr = name === 'base' ? '' : `[data-theme="${name}"]`,
 		space = hasIndent ? `\n` : ` `
 
-	return selectors.map(selector => `${selector}${attr}`).join(`,${space}`)
+	return selectors.map(s => `${s}${attr}`).join(`,${space}`)
 }
 
 export const outputCssVars = (
-	tokens: Record<ThemeScheme | 'general', CSSVars>,
+	tokens: ThemeTokens,
 	selector?: string,
 	hasIndent: boolean = true
 ) => {
-	const cssVars = (Object.keys(tokens) as (keyof typeof tokens)[]).map(scheme => {
-		const selectors = outputSelectors(scheme, selector, hasIndent),
-			css = outputCss(tokens[scheme], hasIndent)
+	const cssVars = (Object.keys(tokens) as (keyof typeof tokens)[]).map(name => {
+		const input = tokens[name],
+			css = outputCss({ input, hasIndent }),
+			selectors = outputSelectors({ name, selector, hasIndent })
 
 		return `${selectors} {${css}}`
 	}).join(`\n\n`)

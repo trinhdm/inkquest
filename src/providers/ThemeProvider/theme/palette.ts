@@ -1,6 +1,8 @@
 import { DEFAULT_PALETTE } from '../constants'
 import type { CSSProperties } from 'react'
 import type { SiteTheme } from '@/providers/ThemeProvider'
+import { PREFIX_CSS_SELECTOR } from '@/utils/constants'
+import type { CssVariable } from 'next/dist/compiled/@next/font'
 
 export interface ColorPalette {
 	background: CSSProperties['backgroundColor']
@@ -13,13 +15,14 @@ export interface ColorPalette {
 export type ColorVariable<
 	S extends string,
 	T extends keyof ColorPalette = keyof ColorPalette
-> = `--${S}-${T}`
+> = `--${S}-${T}` extends CssVariable ? `--${S}-${T}` : never
 
 type PaletteVars<S extends string> = {
 	[T in keyof ColorPalette as ColorVariable<S, T>]: ColorPalette[T]
 }
 
 interface GetPaletteArgs<V extends string | undefined> {
+	prefix?: string
 	theme: SiteTheme
 	variant: V
 }
@@ -27,16 +30,39 @@ interface GetPaletteArgs<V extends string | undefined> {
 export type GetPaletteFn =
 	<V extends string | undefined>(args: GetPaletteArgs<V>) => ColorPalette
 
-export const getPalette: GetPaletteFn = ({ theme, variant }) => {
+export const getPalette: GetPaletteFn = ({
+	prefix = PREFIX_CSS_SELECTOR,
+	theme,
+	variant,
+}) => {
 	const basePalette = DEFAULT_PALETTE
 	let palette: ColorPalette = basePalette
 
 	switch (variant) {
+		case 'solid':
+			palette = {
+				background: `var(--${prefix}-accent)`,
+				border: 'transparent',
+				color: `var(--${prefix}-accent-text)`,
+				focus: 'transparent',
+				hover: `var(--${prefix}-accent-hover)`,
+			}
+			break
 		case 'outline':
 			palette = {
 				background: 'transparent',
-				border: 'none',
-				color: 'inherit',
+				border: `var(--${prefix}-border-strong)`,
+				// color: 'inherit',
+				color: `var(--${prefix}-border-text)`,
+				focus: 'transparent',
+				hover: 'transparent',
+			}
+			break
+		case 'ghost':
+			palette = {
+				background: 'transparent',
+				border: 'transparent',
+				color: `var(--${prefix}-border-text)`,
 				focus: 'transparent',
 				hover: 'transparent',
 			}

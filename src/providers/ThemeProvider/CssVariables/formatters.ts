@@ -34,7 +34,7 @@ export const getShorthand = <T extends Record<string, unknown>>({ property, tag,
 	value: T
 }) => {
 	if (!Object.hasOwn(_shorthandlers, property)) return ''
-	if (!Object.hasOwn(value, 'tagName')) return ''
+	else if (!Object.hasOwn(value, 'tagName')) return ''
 
 	const { tagName } = value
 	if (!isObject(tagName) || !Object.hasOwn(tagName, tag)) return ''
@@ -53,6 +53,10 @@ export const getVariable = <V,>({ path, prefix, value }: {
 	if (!path.length) return ''
 	let name = toKebabCase(path[0])
 
+	const isPlural = name.endsWith('s')
+		&& name.length > 2
+		&& !(['radius'].includes(name))
+
 	if (name.startsWith('font') && name.includes('-')) {
 		const parts = name.split('-')
 		const index = {
@@ -64,13 +68,14 @@ export const getVariable = <V,>({ path, prefix, value }: {
 			name = parts.toSpliced(index, 1).join('-')
 	}
 
-	if (name.endsWith('s') && name.length > 2) {
+	if (isPlural) {
 		const isTagGroup = isObject(value) && Object.hasOwn(value, 'tagName'),
+			isHexCode = /#(?:[0-9a-fA-F]{3}){1,2}\b/.test(`${value}`),
 			isNumeric = typeof value === 'number'
 				|| /\d/.test(`${value}`)
 				|| (isObject(value) && Object.values(value).every(v => /\d/.test(`${v}`)))
 
-		if (isTagGroup || isNumeric)
+		if (isTagGroup || isHexCode || isNumeric)
 			name = name.slice(0, -1)
 	}
 

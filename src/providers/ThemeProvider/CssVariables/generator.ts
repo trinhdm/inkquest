@@ -40,21 +40,51 @@ const generateCssVars = <T extends Record<string, unknown>>(
 	return vars as CSSVars
 }
 
-const getThemeColors = (
-	theme: SiteTheme,
+interface ThemeColorsConfig {
+	prefix?: string
 	scheme: ColorScheme
+	theme: SiteTheme
+}
+
+const getThemeColor = (
+	step: `0${number}`,
+	options: ThemeColorsConfig,
+	isAltScheme: boolean = false
 ) => {
+	const { prefix, scheme, theme } = options
+
+	const alt = scheme === 'ink' ? 'paper' : 'ink',
+		colorScheme = isAltScheme ? alt : scheme
+
+	const colors = theme.colors[scheme],
+		index = parseFloat(step) - 1,
+		value = colors[index]
+
+	const variable = getVariable({ path: ['color', colorScheme, step], prefix, value })
+
+	return `var(${variable})`
+}
+
+const getThemeColors = ({
+	as = 'hex',
+	prefix,
+	scheme,
+	theme,
+}: ThemeColorsConfig & {
+	as?: 'hex' | 'var'
+}) => {
 	if (!Object.hasOwn(theme.colors, scheme)) return {}
 
 	const colors = theme.colors[scheme],
 		vars = {}
 
-	for (const [index, color] of colors.entries()) {
-		const step = index + 1,
-			id = step < 10 ? `0${step}` : step
-			// name = `color-${i}`
+	for (const [index, value] of colors.entries()) {
+		const i = index + 1,
+			step = i < 10 ? `0${i}` : String(i),
+			variable = getVariable({ path: ['color', scheme, step], prefix, value }),
+			color = as === 'hex' ? value : `var(${variable})`
 
-		Object.assign(vars, { [id]: color })
+		Object.assign(vars, { [step]: color })
 	}
 
 	return vars as CSSVars<HexCode>
@@ -67,7 +97,7 @@ type BuildThemeScheme<
 	N extends KeysInBoth<ThemeTokens, ThemeName>,
 > = {
 	name: K extends N ? N : never
-	scheme: ColorScheme
+	scheme: ThemeColorsConfig['scheme']
 }
 
 type BuildThemeBase = {
@@ -78,10 +108,9 @@ type BuildThemeBase = {
 type BuildThemeProps<
 	K extends keyof ThemeTokens,
 	N extends KeysInBoth<ThemeTokens, ThemeName>,
-> = {
-	theme: SiteTheme
-	prefix?: string
-} & (BuildThemeScheme<K, N> | BuildThemeBase)
+> =
+	Pick<ThemeColorsConfig, 'prefix' | 'theme'>
+	& (BuildThemeScheme<K, N> | BuildThemeBase)
 
 const buildTheme = <
 	// T extends ThemeTokens,
@@ -97,32 +126,61 @@ const buildTheme = <
 		&& (Object.hasOwn(options, 'scheme') && options['scheme'])
 
 	if (!isConfigTheme) {
-		const { colors, ...baseTheme } = theme
+		const { colors, ...baseTheme } = theme,
+			schemes = Object.keys(colors) as (keyof typeof colors)[],
+			vars = {}
+		// const brandColors = getThemeColors(theme, 'brand')
+
+		for (const scheme of schemes)
+			Object.assign(vars, { [scheme]: getThemeColors({ ...options, scheme }) })
+
+		Object.assign(baseTheme, { colors: vars })
+
 		return generateCssVars(baseTheme, prefix) as R
 	}
 
-	const { name, scheme } = options
-
-	if (!Object.hasOwn(theme.colors, scheme)) return {} as R
-
-	const config = { theme: name } as CSSVars
-	const baseColors = getThemeColors(theme, scheme)
-
-	// Object.assign(config, baseColors)
-
-	const colors = {
-		[scheme]: baseColors,
-		focus: `var(--inkq-color-03)`,
-		text: `var(--inkq-color-01)`,
-	}
-
-	Object.assign(config, { colors })
-
-	const vars = generateCssVars(config, prefix)
-
-	return vars as R
+	return configureTheme(options) as R
 }
 
+const configureTheme = <
+	K extends keyof ThemeTokens,
+	N extends ThemeName,
+>(options: BuildThemeProps<K, N>) => {
+	const {
+		name,
+		theme,
+		scheme,
+		prefix,
+	} = options
+
+	const isConfigTheme = name && scheme
+	if (!isConfigTheme || !Object.hasOwn(theme.colors, scheme)) return {}
+
+	const baseColors = getThemeColors({ theme, scheme, prefix, as: 'var' })
+
+	const border = {
+		strong: getThemeColor('06', options, true),
+		subtle: getThemeColor('05', options, true),
+		text: getThemeColor('04', options, true),
+	}
+
+	const colors = {
+		...baseColors,
+		// accent: getThemeColor('01', options),
+		cta: `var(--inkq-color-03)`,
+		focus: `var(--inkq-color-03)`,
+		text: getThemeColor('01', options, true),
+		// 'accent-text': getThemeColor('01', options, true),
+		// text: `var(--inkq-color-${altScheme}-01)`,
+	}
+
+	const config = { theme: name } as CSSVars
+	Object.assign(config, { border, colors })
+
+	return generateCssVars(config, prefix)
+}
+
+// build theme
 export const themeToCssVars = (
 	theme: SiteTheme,
 	prefix?: string
