@@ -1,7 +1,7 @@
 import { deepMerge } from '@/utils/helpers'
-import { themeToCssVars } from './tokens'
+import { themeToCssVars } from '../convert'
 import { PREFIX_CSS_SELECTOR } from '@/utils/constants'
-import type { SiteTheme } from '../theme.types'
+import type { SiteTheme } from '../../theme.types'
 
 export const resolveCssVars = (
 	current: SiteTheme,

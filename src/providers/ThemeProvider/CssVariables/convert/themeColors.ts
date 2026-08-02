@@ -1,6 +1,6 @@
-import { getVariable } from './formatters'
+import { getVariable } from '../format'
+import type { ColorScheme, SiteTheme } from '../../theme.types'
 import type { CSSVars, HexCode } from '@/types/shared'
-import type { ColorScheme, SiteTheme } from '../theme.types'
 
 export interface ThemeColorsConfig {
 	prefix?: string

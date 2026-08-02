@@ -1,6 +1,6 @@
-import { _is } from './utils'
+import { _is } from './checks'
 import { toKebabCase } from '@/utils/helpers'
-import type { BaseVarKey } from '../theme.types'
+import type { BaseVarKey } from '../../theme.types'
 
 export interface CSSVarArgs<T> {
 	path: string[]

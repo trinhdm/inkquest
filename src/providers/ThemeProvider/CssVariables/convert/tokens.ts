@@ -1,13 +1,12 @@
 import { generateCssVars } from './generator'
 import { getThemeColors, ThemeColor } from './themeColors'
 import { keyWithValue } from '@/utils/helpers'
+import type { ColorScheme, SiteTheme, ThemeName } from '../../theme.types'
 import type { CSSVars } from '@/types/shared'
-import type { ColorScheme, SiteTheme, ThemeName } from '../theme.types'
-import type { ThemeTokens } from './tokens'
+
+export type ThemeTokens<V = unknown> = Record<ThemeName | 'base', CSSVars<V>>
 
 interface TokenBuilder {
-	// name?: ThemeName | never
-	// scheme?: ColorScheme | never
 	theme: SiteTheme
 	prefix?: string
 }

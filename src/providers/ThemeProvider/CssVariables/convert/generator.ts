@@ -1,6 +1,5 @@
 import { isObject } from '@/utils/helpers'
-import { getShorthand } from './fontShorthand'
-import { getVariable, type CSSVarArgs } from './formatters'
+import { getShorthand, getVariable, type CSSVarArgs } from '../format'
 import type { CSSVars } from '@/types/shared'
 
 export const generateCssVars = <T extends Record<string, unknown>>(

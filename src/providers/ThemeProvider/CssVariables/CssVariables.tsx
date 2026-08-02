@@ -1,6 +1,5 @@
 import { useTheme } from '../ThemeProvider'
-import { resolveCssVars } from './resolver'
-import { serializeCssVars } from './serializer'
+import { resolveCssVars, serializeCssVars } from './build'
 
 export const CssVariables = () => {
 	const theme = useTheme(),
