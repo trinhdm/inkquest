@@ -46,24 +46,70 @@ interface ThemeColorsConfig {
 	theme: SiteTheme
 }
 
-const getThemeColor = (
-	step: `0${number}`,
-	options: ThemeColorsConfig,
-	isAltScheme: boolean = false
-) => {
-	const { prefix, scheme, theme } = options
+// const getThemeColor = (
+// 	step: `0${number}`,
+// 	options: ThemeColorsConfig
+// ) => {
+// 	const { prefix, scheme, theme } = options
 
-	const alt = scheme === 'ink' ? 'paper' : 'ink',
-		colorScheme = isAltScheme ? alt : scheme
+// 	const colors = theme.colors[scheme],
+// 		index = parseFloat(step) - 1,
+// 		value = colors[index]
 
-	const colors = theme.colors[scheme],
-		index = parseFloat(step) - 1,
-		value = colors[index]
+// 	// const path = scheme === 'ink' ? 'primary' : 'secondary'
+// 	const variable = getVariable({ path: ['color', scheme, step], prefix, value })
 
-	const variable = getVariable({ path: ['color', colorScheme, step], prefix, value })
+// 	return `var(${variable})`
+// }
 
-	return `var(${variable})`
-}
+// const getAltThemeColor = (
+// 	step: `0${number}`,
+// 	options: ThemeColorsConfig
+// ) => {
+// 	const altScheme = options.scheme === 'ink' ? 'paper' : 'ink'
+// 	options.scheme = altScheme
+
+// 	return getThemeColor(step, options)
+// }
+
+const ThemeColor = (() => {
+	const altSchemes = {
+		brand: 'brand',
+		ink: 'paper',
+		paper: 'ink',
+	} as Record<ThemeColorsConfig['scheme'], ThemeColorsConfig['scheme']>
+
+	return {
+		main: function (
+			step: `0${number}`,
+			options: ThemeColorsConfig
+		) {
+			const { prefix, scheme, theme } = options
+
+			const colors = theme.colors[scheme],
+				index = parseFloat(step) - 1,
+				value = colors[index]
+
+			const variable = getVariable({ path: ['color', scheme, step], prefix, value })
+
+			return `var(${variable})`
+		},
+		alt: function (
+			step: `0${number}`,
+			options: ThemeColorsConfig
+		) {
+			const args = { ...options, scheme: altSchemes[options.scheme] }
+			return this.main(step, args)
+		},
+		accent: function (
+			step: `0${number}`,
+			options: ThemeColorsConfig
+		) {
+			const args = { ...options, scheme: 'brand' as ThemeColorsConfig['scheme'] }
+			return this.main(step, args)
+		},
+	}
+})()
 
 const getThemeColors = ({
 	as = 'hex',
@@ -129,7 +175,6 @@ const buildTheme = <
 		const { colors, ...baseTheme } = theme,
 			schemes = Object.keys(colors) as (keyof typeof colors)[],
 			vars = {}
-		// const brandColors = getThemeColors(theme, 'brand')
 
 		for (const scheme of schemes)
 			Object.assign(vars, { [scheme]: getThemeColors({ ...options, scheme }) })
@@ -156,26 +201,27 @@ const configureTheme = <
 	const isConfigTheme = name && scheme
 	if (!isConfigTheme || !Object.hasOwn(theme.colors, scheme)) return {}
 
-	const baseColors = getThemeColors({ theme, scheme, prefix, as: 'var' })
+	const baseColors = getThemeColors({ ...options, as: 'var' })
+
+	const accent = {
+		root: ThemeColor.accent('01', options),
+		hover: ThemeColor.accent('02', options),
+		text: ThemeColor.alt('01', options),
+	}
 
 	const border = {
-		strong: getThemeColor('06', options, true),
-		subtle: getThemeColor('05', options, true),
-		text: getThemeColor('04', options, true),
+		root: ThemeColor.alt('05', options),
+		strong: ThemeColor.alt('06', options),
+		text: ThemeColor.alt('04', options),
 	}
 
 	const colors = {
 		...baseColors,
-		// accent: getThemeColor('01', options),
-		cta: `var(--inkq-color-03)`,
-		focus: `var(--inkq-color-03)`,
-		text: getThemeColor('01', options, true),
-		// 'accent-text': getThemeColor('01', options, true),
-		// text: `var(--inkq-color-${altScheme}-01)`,
+		text: ThemeColor.alt('01', options),
 	}
 
 	const config = { theme: name } as CSSVars
-	Object.assign(config, { border, colors })
+	Object.assign(config, { colors, accent, border })
 
 	return generateCssVars(config, prefix)
 }

@@ -51,7 +51,8 @@ export const getVariable = <V,>({ path, prefix, value }: {
 	value: V
 }): string => {
 	if (!path.length) return ''
-	let name = toKebabCase(path[0])
+	let name = toKebabCase(path[0]),
+		route = path
 
 	const isPlural = name.endsWith('s')
 		&& name.length > 2
@@ -79,7 +80,10 @@ export const getVariable = <V,>({ path, prefix, value }: {
 			name = name.slice(0, -1)
 	}
 
-	const namedPath = [name, ...path.slice(1)],
+	if (path.at(-1) === 'root')
+		route = path.slice(0, path.length - 1)
+
+	const namedPath = [name, ...route.slice(1)],
 		segments = [] as string[]
 
 	if (prefix) segments.push(prefix)
