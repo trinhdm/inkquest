@@ -204,13 +204,13 @@ const configureTheme = <
 	const baseColors = getThemeColors({ ...options, as: 'var' })
 
 	const accent = {
-		root: ThemeColor.accent('01', options),
+		base: ThemeColor.accent('01', options),
 		hover: ThemeColor.accent('02', options),
 		text: ThemeColor.alt('01', options),
 	}
 
 	const border = {
-		root: ThemeColor.alt('05', options),
+		base: ThemeColor.alt('05', options),
 		strong: ThemeColor.alt('06', options),
 		text: ThemeColor.alt('04', options),
 	}

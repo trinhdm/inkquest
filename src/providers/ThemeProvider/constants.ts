@@ -99,6 +99,20 @@ export const DEFAULT_THEME: SiteTheme = {
 		lg: rem(12),
 		pill: rem(999),
 	},
+
+	easing: {
+		base: 'cubic-bezier(0.4, 0, 0.2, 1)',
+		out: 'cubic-bezier(0.16, 1, 0.3, 1)',
+		inOut: 'cubic-bezier(0.65, 0, 0.35, 1)',
+	},
+
+	duration: {
+		base: '240ms',
+		instant: '100ms',
+		fast: '160ms',
+		slow: '400ms',
+		gradual: '600ms',
+	},
 }
 
 export const DEFAULT_PALETTE: ColorPalette = {

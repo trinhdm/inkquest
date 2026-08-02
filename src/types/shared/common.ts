@@ -6,7 +6,7 @@ export type Size =
 	| 'lg'
 	| 'xl'
 
-export type Unit =
+type DimensionUnit =
 	| '%'
 	| 'em'
 	| 'px'
@@ -14,12 +14,21 @@ export type Unit =
 	| 'vh'
 	| 'vw'
 
-export type CSSUnit =
-	`${number}${Unit}`
+type TimeUnit =
+	| 'ms'
+	| 's'
+
+export type Unit =
+	| DimensionUnit
+	| TimeUnit
+
+export type CSSUnit<U extends Unit = Unit> =
+	`${number}${U}`
 
 // type ContainUnit<S extends string, U extends string = Unit> =
 // 	S extends `${number}${U}`
 // 		? true
 // 		: false
 
-export type EvenNumber = number & { readonly __brand: unique symbol }
+export type EvenNumber =
+	number & { readonly __brand: unique symbol }

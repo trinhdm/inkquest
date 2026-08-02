@@ -3,9 +3,11 @@ import { filterProps } from './useProps'
 import { useTheme, type SiteTheme } from '@/providers/ThemeProvider'
 import { PREFIX_CSS_SELECTOR } from '@/utils/constants'
 import type { CSSProperties } from 'react'
-import type { CSSVars } from '@/types/shared'
+import type { CSSVars, DataAttrs } from '@/types/shared'
 import type { ThemeCSSConfig } from '@/lib/theme'
 import type { ValidSpecs } from '@/types/spec'
+import { isObject } from '@/utils/helpers'
+import type { RecordToMap } from '@/types/utils'
 
 interface StyleOptions<S extends ValidSpecs<S>> {
 	readonly classes?: Record<string, string>
@@ -23,12 +25,6 @@ interface SharedConfig<S extends ValidSpecs<S>>
 	theme: SiteTheme
 }
 
-interface ClassNameOptions<S extends ValidSpecs<S>>
-	extends Omit<SharedConfig<S>, 'cssVars'> {}
-
-interface StyleAttrOptions<S extends ValidSpecs<S>>
-	extends Omit<SharedConfig<S>, 'classes' | 'prefix'> {}
-
 type StyleConfig<S extends ValidSpecs<S>> = (
 	selector: SharedConfig<S>['selector'],
 	config?: SharedConfig<S>['config']
@@ -42,7 +38,7 @@ const resolvePropClass = <S extends ValidSpecs<S>,>({
 	props,
 	// selector,
 	theme,
-}: ClassNameOptions<S>) => {
+}: SharedConfig<S>) => {
 	const entries = Object.entries(props),
 		propClasses = [] as string[]
 
@@ -74,7 +70,7 @@ const clname = (() => {
 	// }
 
 	interface GetArgs<S extends ValidSpecs<S>,>
-		extends Pick<ClassNameOptions<S>, 'classes' | 'props'>  {
+		extends Pick<SharedConfig<S>, 'classes' | 'props'>  {
 		conditional?: boolean
 		target: string
 	}
@@ -96,7 +92,7 @@ const clname = (() => {
 	}
 
 	interface SelectorArgs<S extends ValidSpecs<S>,>
-		extends ClassNameOptions<S>  {
+		extends SharedConfig<S>  {
 		target: string
 	}
 
@@ -124,7 +120,7 @@ const clname = (() => {
 
 // Pick<ClassNameOptions, 'classes' | 'config' | 'props' | 'selector'>
 
-const getClassName = <S extends ValidSpecs<S>,>(options: ClassNameOptions<S>): string => {
+const getClassName = <S extends ValidSpecs<S>,>(options: SharedConfig<S>): string => {
 	// if (Object.keys(options).length) return
 
 	const {
@@ -181,16 +177,15 @@ const getStyles = <S extends ValidSpecs<S>>({
 	props,
 	selector,
 	theme,
-}: StyleAttrOptions<S>) => {
-
+}: SharedConfig<S>) => {
 	const themeName = (Array.isArray(name) ? name : [name]).filter((n) => n) as string[];
 	// const headless = false
 	const stylesCtx = {}
 
 	const resolvedVars = mergeVars([
-		// headless ? {} : cssVars?.(theme, props, stylesCtx),   // 1st call
+		// headless ? {} : cssVars?.(theme, props, stylesCtx),
 		...themeName.map((n) => theme.components?.[n]?.cssVars?.(theme, props, stylesCtx)),
-		cssVars?.(theme, props, stylesCtx),                    // 2nd call — duplicate
+		cssVars?.(theme, props, stylesCtx),
 	])
 
 	const vars = Object.hasOwn(resolvedVars, selector)
@@ -200,19 +195,76 @@ const getStyles = <S extends ValidSpecs<S>>({
 	return { ...vars }
 }
 
-export const useStyles = <S extends ValidSpecs<S>>({
-	classes,
-	cssVars,
-	name,
-	prefix = PREFIX_CSS_SELECTOR,
-	props,
-}: StyleOptions<S>): StyleConfig<S> => {
-	const theme = useTheme()
-	const options = { name, prefix, props, theme }
+export const keyWithValue = <
+	T extends Record<string, unknown>,
+	K extends keyof T = keyof T,
+	V = T[K]
+>(entry: [K, V] | K, obj: T): boolean => {
+	let key = entry as K, value
+	const hasValue = Array.isArray(entry)
 
-	return (selector, config) => ({
-		className: getClassName({ ...options, classes, config, selector }),
-		style: getStyles({ ...options, cssVars, config, selector }),
-	})
+	if (hasValue) ([key, value] = entry)
+
+	return Object.hasOwn(obj, key)
+		&& hasValue ? obj[key] === value : !!obj[key]
+}
+
+const getDataAttrs = <S extends ValidSpecs<S>>({ props }: SharedConfig<S>) => {
+	const dataAttrs: RecordToMap<DataAttrs> = new Map()
+	if (!isObject(props)) return dataAttrs
+
+	const attrsMap = {
+		fullWidth: 'data-block',
+		variant: 'data-variant',
+	} as Record<keyof typeof props, keyof DataAttrs>
+
+	// if (Object.hasOwn(props, prop) && props[prop] !== false)
+	for (const [prop, attr] of Object.entries(attrsMap)) {
+		if (keyWithValue(prop, props))
+			dataAttrs.set(attr, props[prop])
+	}
+
+	// if (Object.hasOwn(props, 'variant'))
+	// 	dataAttrs.set('data-variant', props['variant'])
+
+	// if (Object.hasOwn(props, 'fullWidth'))
+	// 	dataAttrs.set('data-block', true)
+
+	return dataAttrs
+}
+
+const getHtmlAttrs = <S extends ValidSpecs<S>>({ props }: SharedConfig<S>) => {
+	const attrs = new Map<string, unknown>()
+	if (!isObject(props)) return attrs
+
+	if (keyWithValue(['as', 'button'], props) && !(keyWithValue('type', props)))
+		attrs.set('type', 'button')
+
+	return attrs
+}
+
+const getAttrs = <S extends ValidSpecs<S>>(args: SharedConfig<S>) => {
+	const data = getDataAttrs(args),
+		html = getHtmlAttrs(args),
+		attrs = new Map<string, unknown>([...data, ...html])
+
+	return Object.fromEntries(attrs)
+}
+
+export const useStyles = <S extends ValidSpecs<S>>(opts: StyleOptions<S>): StyleConfig<S> => {
+	const theme = useTheme()
+	let args = { ...opts, theme } as SharedConfig<S>
+	args.prefix = args['prefix'] ?? PREFIX_CSS_SELECTOR
+
+	return (selector, config) => {
+		args = { ...args, config, selector }
+		const attrs = getAttrs(args)
+
+		return {
+			...attrs,
+			className: getClassName(args),
+			style: getStyles(args),
+		}
+	}
 	// return Object.fromEntries((Object.entries(styles).filter(([_, value]) => !!value)))
 }

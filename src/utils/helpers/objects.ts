@@ -37,7 +37,6 @@ export const deepMerge = <
 	return Object.fromEntries(entries) as DeepMerge<T, U>
 }
 
-
 const deepKeys = <T extends Record<string, any>>(obj: T, prefix = '') => {
 	let keys = [] as string[]
 

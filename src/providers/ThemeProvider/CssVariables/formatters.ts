@@ -1,4 +1,5 @@
 import { isObject, toKebabCase } from '@/utils/helpers'
+import type { BaseVarKey } from '../theme.types'
 
 const readStyle = (
 	key: string,
@@ -80,14 +81,18 @@ export const getVariable = <V,>({ path, prefix, value }: {
 			name = name.slice(0, -1)
 	}
 
-	if (path.at(-1) === 'root')
-		route = path.slice(0, path.length - 1)
+	if (name.endsWith('ing'))
+		name = name.replace('ing', 'e')
 
-	const namedPath = [name, ...route.slice(1)],
-		segments = [] as string[]
+	if (route.at(-1) === ('base' as BaseVarKey))
+		route = route.slice(0, route.length - 1)
 
+	for (const [i, str] of route.entries())
+		route[i] = toKebabCase(str)
+
+	const segments = [] as string[]
 	if (prefix) segments.push(prefix)
-	segments.push(...namedPath)
+	segments.push(...[name, ...route.slice(1)])
 
 	return `--${segments.join('-')}`
 }

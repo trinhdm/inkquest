@@ -30,7 +30,25 @@ export interface SiteTheme {
 	colors: Record<ColorScheme, HexCode[]>
 	breakpoints: Style<CSSUnit, Size>
 	radius: Style<CSSUnit, Size | 'pill', 'md'>
+
+	duration: Style<CSSUnit, ThemeDuration, BaseVarKey>
+	easing: Style<`cubic-bezier(${string})`, ThemeEasing, BaseVarKey>
 }
+
+export type BaseVarKey = 'base'
+
+export type ThemeDuration =
+	| BaseVarKey
+	| 'instant'
+	| 'fast'
+	| 'slow'
+	| 'gradual'
+
+export type ThemeEasing =
+	| BaseVarKey
+	| 'in'
+	| 'out'
+	| 'inOut'
 
 type StyleList<
     Keys extends PropertyKey,
