@@ -1,10 +1,11 @@
-import { outputCssVars, resolveCssVars } from './resolver'
 import { useTheme } from '../ThemeProvider'
+import { resolveCssVars } from './resolver'
+import { serializeCssVars } from './serializer'
 
 export const CssVariables = () => {
 	const theme = useTheme(),
 		tokens = resolveCssVars(theme),
-		css = outputCssVars(tokens)
+		css = serializeCssVars(tokens)
 
 	if (!css) return null
 
