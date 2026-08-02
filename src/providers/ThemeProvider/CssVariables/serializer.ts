@@ -1,4 +1,4 @@
-import type { ThemeTokens } from '../theme.types'
+import type { ThemeTokens } from './tokens'
 
 const BASE_SELECTORS = [':root', ':host'] as const
 

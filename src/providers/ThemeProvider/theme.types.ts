@@ -1,20 +1,16 @@
 import type { CSSProperties } from 'react'
 import type { AtLeastOneKey } from '@/types/utils'
-import type { CSSUnit, CSSVars, FontList, HeadingTagName, HexCode, Size, Unit } from '@/types/shared'
+import type { CSSUnit, FontList, HeadingTag, HexCode, Size, Unit } from '@/types/shared'
 import type { GetPaletteFn, SetPaletteFn } from './theme/palette'
-
 
 export type ThemeName =
 	| 'dark'
 	| 'light'
-	// | 'system'
 
 export type ColorScheme =
 	| 'brand'
 	| 'ink'
 	| 'paper'
-
-export type ThemeTokens<V = unknown> = Record<ThemeName | 'base', CSSVars<V>>
 
 export interface SiteTheme {
 	getPalette: GetPaletteFn
@@ -25,7 +21,7 @@ export interface SiteTheme {
 	fontWeight: FontStyle<'fontWeight', 'regular'>
 	lineHeight: FontStyle<'lineHeight'>
 
-	headings: FontStyles<TagFontStyles, HeadingTagName, 'h1'>
+	headings: FontStyles<TagFontStyles, HeadingTag, 'h1'>
 
 	colors: Record<ColorScheme, HexCode[]>
 	breakpoints: Style<CSSUnit, Size>
@@ -37,14 +33,14 @@ export interface SiteTheme {
 
 export type BaseVarKey = 'base'
 
-export type ThemeDuration =
+type ThemeDuration =
 	| BaseVarKey
 	| 'instant'
 	| 'fast'
 	| 'slow'
 	| 'gradual'
 
-export type ThemeEasing =
+type ThemeEasing =
 	| BaseVarKey
 	| 'in'
 	| 'out'

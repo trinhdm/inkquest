@@ -2,7 +2,8 @@ import { generateCssVars } from './generator'
 import { getThemeColors, ThemeColor } from './themeColors'
 import { keyWithValue } from '@/utils/helpers'
 import type { CSSVars } from '@/types/shared'
-import type { ColorScheme, SiteTheme, ThemeName, ThemeTokens } from '../theme.types'
+import type { ColorScheme, SiteTheme, ThemeName } from '../theme.types'
+import type { ThemeTokens } from './tokens'
 
 interface TokenBuilder {
 	// name?: ThemeName | never
