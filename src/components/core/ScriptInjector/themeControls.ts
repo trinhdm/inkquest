@@ -1,11 +1,5 @@
+import { DEFAULT_THEME_NAME, THEME_STORAGE_KEY } from './constants'
 import type { ThemeName } from '@/providers/ThemeProvider'
-
-const DEFAULT_THEME_NAME: ThemeName = 'dark'
-const THEME_STORAGE_KEY = 'theme'
-
-// const prefersScheme = (scheme: ThemeName) =>
-// 	typeof window !== 'undefined' &&
-// 	window.matchMedia(`(prefers-color-scheme: ${scheme})`).matches
 
 export const getStoredTheme = (): ThemeName => {
 	if (typeof window === 'undefined') return DEFAULT_THEME_NAME
@@ -42,17 +36,17 @@ export const buildScript = ({
 	theme = DEFAULT_THEME_NAME,
 }: ThemeScriptOptions) => {
 	if (!lsKey) return ''
+	if (override)
+		return `document.documentElement.setAttribute("data-${lsKey}", "${override}");`
 
-	const scheme = override ?? theme,
-		altScheme = scheme === 'dark' ? 'light' : 'dark'
-
+	const altTheme = theme === 'dark' ? 'light' : 'dark'
 	const script = `;(function() {
 		try {
 			const lsTheme = localStorage.getItem("${lsKey}");
-			let computed = lsTheme
-			if (lsTheme !== "${altScheme}" || lsTheme !== "${scheme}")
-				window.matchMedia("(prefers-color-scheme: ${scheme})").matches ? "${scheme}" : "${DEFAULT_THEME_NAME}";
-			document.documentElement.setAttribute("data-${lsKey}", computed);
+			let initTheme = lsTheme
+			if (lsTheme !== "${theme}" && lsTheme !== "${altTheme}")
+				initTheme = window.matchMedia("(prefers-color-theme: dark)").matches ? "dark" : "${theme}";
+			document.documentElement.setAttribute("data-${lsKey}", initTheme);
 		} catch(e) {}
 	})()`
 

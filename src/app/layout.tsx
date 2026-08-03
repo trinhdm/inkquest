@@ -32,7 +32,7 @@ export default function RootLayout({
 			className={`${geistSans.variable} ${geistMono.variable}`}
 		>
 			<head>
-				<ScriptInjector defaultTheme="dark" />
+				<ScriptInjector />
 			</head>
 			<body>
 				<ThemeProvider>

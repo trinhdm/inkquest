@@ -4,11 +4,11 @@ import type { ThemeName } from '@/providers/ThemeProvider'
 
 interface ScriptInjectorProps
 	extends ComponentProps<'script'> {
-	defaultTheme: ThemeName
+	defaultTheme?: ThemeName
 }
 
 export const ScriptInjector = ({
-	defaultTheme = 'dark',
+	defaultTheme,
 	...props
 }: ScriptInjectorProps) => {
 	const script = buildScript({ theme: defaultTheme })
