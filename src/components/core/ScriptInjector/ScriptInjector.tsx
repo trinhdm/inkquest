@@ -1,4 +1,4 @@
-import { buildScript } from './themeControls'
+import { buildScript } from './buildScript'
 import type { ComponentProps } from 'react'
 import type { ThemeName } from '@/providers/ThemeProvider'
 

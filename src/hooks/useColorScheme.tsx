@@ -1,8 +1,10 @@
 'use client'
 
 import { useCallback, useState } from 'react'
-import { applyTheme, getStoredTheme, persistTheme } from '@/components/core/ScriptInjector'
+import { themeControls } from '@/components/core/ScriptInjector'
 import type { ThemeName } from '@/providers/ThemeProvider'
+
+const { applyTheme, getStoredTheme, persistTheme } = themeControls()
 
 export const useThemeName = () => {
 	const [themeName, setThemeNameState] = useState<ThemeName>(getStoredTheme)
