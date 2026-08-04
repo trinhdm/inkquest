@@ -1,15 +1,12 @@
 import { generateCssVars } from './generator'
-import { getThemeColors, ThemeColor } from './themeColors'
+import { getThemeColors, ThemeColor, type ThemeOptions } from './themeColors'
 import { keyWithValue } from '@/utils/helpers'
 import type { ColorScheme, SiteTheme, ThemeName } from '@/providers/ThemeProvider'
 import type { CSSVars } from '@/types/shared'
 
 export type ThemeTokens<V = unknown> = Record<ThemeName | 'base', CSSVars<V>>
 
-interface TokenBuilder {
-	theme: SiteTheme
-	prefix?: string
-}
+interface TokenBuilder extends Omit<ThemeOptions, 'scheme'> {}
 
 type BaseTokenBuilder = TokenBuilder & {
 	name?: never
@@ -57,7 +54,7 @@ const buildThemeTokens = <K extends ThemeName>(
 	const accent = {
 		base: ThemeColor.accent('01', options),
 		hover: ThemeColor.accent('02', options),
-		text: ThemeColor.alt('01', options),
+		// text: ThemeColor.alt('01', options),
 	}
 
 	const border = {
@@ -66,12 +63,15 @@ const buildThemeTokens = <K extends ThemeName>(
 		text: ThemeColor.alt('04', options),
 	}
 
+	const backgrounds = {
+		body: ThemeColor.main('01', options),
+	}
+
 	const colors = {
-		...themeColors,
 		text: ThemeColor.alt('01', options),
 	}
 
-	const config = { theme: name, colors, accent, border } as CSSVars
+	const config = { theme: name, ...themeColors, accent, colors, backgrounds, border } as CSSVars
 	return generateCssVars(config, prefix) as ThemeTokens[K]
 }
 
