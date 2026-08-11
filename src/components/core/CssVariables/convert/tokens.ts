@@ -4,8 +4,6 @@ import { keyWithValue } from '@/utils/helpers'
 import type { ColorScheme, SiteTheme, ThemeName } from '@/providers/ThemeProvider'
 import type { CSSVars } from '@/types/shared'
 
-export type ThemeTokens<V = unknown> = Record<ThemeName | 'base', CSSVars<V>>
-
 interface TokenBuilder extends Omit<ThemeOptions, 'scheme'> {}
 
 type BaseTokenBuilder = TokenBuilder & {
@@ -17,6 +15,8 @@ type ThemeTokenBuilder<K extends ThemeName> = TokenBuilder & {
 	name: K | never
 	scheme: ColorScheme | never
 }
+
+export type ThemeTokens<V = unknown> = Record<ThemeName | 'base', CSSVars<V>>
 
 type TokenBuilderOptions<K extends keyof ThemeTokens> =
 	K extends ThemeName ? ThemeTokenBuilder<K> : BaseTokenBuilder

@@ -28,6 +28,34 @@ function getStep(value: number | Position): number | string {
 	return parseFloat(value) - 1
 }
 
+export const getThemeColors = ({
+	as = 'hex',
+	prefix,
+	scheme,
+	theme,
+}: ThemeOptions & { as?: 'hex' | 'var' }) => {
+	if (!Object.hasOwn(theme.colors, scheme)) return {}
+
+	const colors = theme.colors[scheme],
+		vars = new Map()
+
+	for (const [index, value] of colors.entries()) {
+		const step = getStep(index)
+
+		if (as === 'hex')
+			deepSetMap(vars, step, value)
+
+		if (as === 'var') {
+			const primary = getVariable({ path: ['color', scheme, step], prefix, value }),
+				secondary = getVariable({ path: ['color', ALT_SCHEME[scheme], step], prefix, value })
+			deepSetMap(vars, 'primary', `primary-${step}`, `var(${primary})`)
+			deepSetMap(vars, 'secondary', `secondary-${step}`, `var(${secondary})`)
+		}
+	}
+
+	return flattenMap(vars) as CSSVars<HexCode>
+}
+
 const _customColor = (
 	step: Position,
 	path: string[],
@@ -58,32 +86,4 @@ export const ThemeColor = {
 	alt: _secondaryColor,
 	accent: _tertiaryColor,
 	custom: _customColor,
-}
-
-export const getThemeColors = ({
-	as = 'hex',
-	prefix,
-	scheme,
-	theme,
-}: ThemeOptions & { as?: 'hex' | 'var' }) => {
-	if (!Object.hasOwn(theme.colors, scheme)) return {}
-
-	const colors = theme.colors[scheme],
-		vars = new Map()
-
-	for (const [index, value] of colors.entries()) {
-		const step = getStep(index)
-
-		if (as === 'hex')
-			deepSetMap(vars, step, value)
-
-		if (as === 'var') {
-			const primary = getVariable({ path: ['color', scheme, step], prefix, value }),
-				secondary = getVariable({ path: ['color', ALT_SCHEME[scheme], step], prefix, value })
-			deepSetMap(vars, 'primary', `primary-${step}`, `var(${primary})`)
-			deepSetMap(vars, 'secondary', `secondary-${step}`, `var(${secondary})`)
-		}
-	}
-
-	return flattenMap(vars) as CSSVars<HexCode>
 }
