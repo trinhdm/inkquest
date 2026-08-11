@@ -56,7 +56,19 @@ export const getThemeColors = ({
 	return flattenMap(vars) as CSSVars<HexCode>
 }
 
-const _customColor = (
+const _getColor = (
+	...args: [...paths: string[], options: ThemeOptions]
+) => {
+	const options = args.pop() as ThemeOptions,
+		path = args as string[]
+
+	const { prefix } = options
+	const variable = getVariable({ path, prefix, value: '' })
+
+	return `var(${variable})`
+}
+
+const _schemeColor = (
 	step: Position,
 	path: string[],
 	options: ThemeOptions
@@ -73,17 +85,17 @@ const _customColor = (
 }
 
 const _primaryColor = (step: Position, options: ThemeOptions) =>
-	_customColor(step, ['primary'], options)
+	_schemeColor(step, ['primary'], options)
 
 const _secondaryColor = (step: Position, options: ThemeOptions) =>
-	_customColor(step, ['secondary'], options)
+	_schemeColor(step, ['secondary'], options)
 
 const _tertiaryColor = (step: Position, options: ThemeOptions) =>
-	_customColor(step, ['color', 'brand'], options)
+	_schemeColor(step, ['color', 'brand'], options)
 
 export const ThemeColor = {
 	main: _primaryColor,
 	alt: _secondaryColor,
 	accent: _tertiaryColor,
-	custom: _customColor,
+	get: _getColor,
 }

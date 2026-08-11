@@ -1,28 +1,47 @@
 import { generateCssVars } from './generator'
 import { getThemeColors, ThemeColor, type ThemeOptions } from './themeColors'
-import { keyWithValue } from '@/utils/helpers'
+import { deepMerge, keyWithValue } from '@/utils/helpers'
 import type { ColorScheme, SiteTheme, ThemeName } from '@/providers/ThemeProvider'
 import type { CSSVars } from '@/types/shared'
+import type { CSSProperties } from 'react'
 
-interface TokenBuilder extends Omit<ThemeOptions, 'scheme'> {}
+export type ThemeTokens<V = unknown> =
+	Record<ThemeName | 'base', CSSVars<V>>
+interface TokenBuilderRoot extends Omit<ThemeOptions, 'scheme'> {}
 
-type BaseTokenBuilder = TokenBuilder & {
+type BaseTokenBuilder = TokenBuilderRoot & {
 	name?: never
 	scheme?: never
 }
 
-type ThemeTokenBuilder<K extends ThemeName> = TokenBuilder & {
-	name: K | never
-	scheme: ColorScheme | never
+type ThemeTokenBuilder<K extends ThemeName> = TokenBuilderRoot & {
+	name: K
+	scheme: ColorScheme
 }
 
-export type ThemeTokens<V = unknown> = Record<ThemeName | 'base', CSSVars<V>>
-
-type TokenBuilderOptions<K extends keyof ThemeTokens> =
+type TokenBuilder<K extends keyof ThemeTokens> =
 	K extends ThemeName ? ThemeTokenBuilder<K> : BaseTokenBuilder
 
+type TokenItem<T extends keyof CSSProperties> =
+	CSSProperties[T]
+
+interface TokenStatesList<T extends keyof CSSProperties> {
+	base: TokenItem<T>
+	hover: TokenItem<T>
+}
+
+type TokenGroup<T extends keyof CSSProperties> =
+	| TokenItem<T>
+	| TokenStatesList<T>
+
+export interface ColorPalette {
+	background?: TokenGroup<'backgroundColor'>
+	border?: TokenGroup<'borderColor'>
+	color?: TokenGroup<'color'>
+}
+
 const buildTokens = <K extends keyof ThemeTokens>(
-	options: TokenBuilderOptions<K>
+	options: TokenBuilder<K>
 ): ThemeTokens[K] => {
 	const { prefix, theme } = options
 
@@ -40,21 +59,82 @@ const buildTokens = <K extends keyof ThemeTokens>(
 		return generateCssVars({ ...baseTheme, colors: vars }, prefix)
 	}
 
-	return buildThemeTokens(options as TokenBuilderOptions<Exclude<K, 'base'>>)
+	return buildThemeTokens(options as TokenBuilder<Exclude<K, 'base'>>)
 }
 
-const buildThemeTokens = <K extends ThemeName>(
-	options: TokenBuilderOptions<K>
+const basePalette: ColorPalette = {
+	background: {
+		base: 'transparent',
+		hover: 'transparent',
+	},
+	border: {
+		base: 'none',
+		hover: 'none',
+	},
+	color: {
+		base: 'inherit',
+		hover: 'inherit',
+	},
+}
+
+const getVariantColors = <K extends ThemeName>(
+	variant: string,
+	options: TokenBuilder<K>
+): Partial<ColorPalette> => {
+	switch (variant) {
+		case 'solid':
+			return {
+				background: {
+					base: ThemeColor.get('accent', options),
+					hover: ThemeColor.get('accent', 'hover', options),
+				},
+				color: ThemeColor.get('accent', 'text', options),
+			}
+		case 'outline':
+			return {
+				border: {
+					base: ThemeColor.get('border', options),
+					hover: ThemeColor.get('border', 'strong', options),
+				},
+				color: ThemeColor.get('border', 'text', options),
+			}
+		case 'ghost':
+			return {
+				background: {
+					base: 'transparent',
+					hover: ThemeColor.get('primary', '03', options),
+				},
+				border: {
+					base: 'transparent',
+					hover: ThemeColor.get('primary', '03', options),
+				},
+				color: ThemeColor.get('border', 'text', options),
+			}
+		default:
+			return {}
+	}
+}
+
+// currently takes in wrong params - use interface type
+export const buildVariantTokens = <K extends ThemeName>(
+	target: string,
+	variant: string,
+	options: TokenBuilder<K>
 ): ThemeTokens[K] => {
-	const { name, theme, scheme, prefix } = options
-	if (!Object.hasOwn(theme.colors, scheme)) return {}
+	const variantPalette = getVariantColors(variant, options),
+		palette = deepMerge(basePalette, variantPalette)
+		console.log({ options })
 
-	const themeColors = getThemeColors({ ...options, as: 'var' })
+	return generateCssVars(palette, target)
+}
 
+const listThemeTokens = <K extends ThemeName>(
+	options: TokenBuilder<K>
+) => {
 	const accent = {
 		base: ThemeColor.accent('01', options),
 		hover: ThemeColor.accent('02', options),
-		// text: ThemeColor.alt('01', options),
+		text: ThemeColor.alt('01', options),
 	}
 
 	const border = {
@@ -71,7 +151,22 @@ const buildThemeTokens = <K extends ThemeName>(
 		text: ThemeColor.alt('01', options),
 	}
 
-	const config = { theme: name, ...themeColors, accent, colors, backgrounds, border } as CSSVars
+	const themeColors = getThemeColors({ ...options, as: 'var' })
+	return { ...themeColors, accent, colors, backgrounds, border }
+}
+
+export const buildThemeTokens = <K extends ThemeName>(
+	options: TokenBuilder<K>
+): ThemeTokens[K] => {
+	const { name, theme, scheme, prefix } = options
+	if (!Object.hasOwn(theme.colors, scheme)) return {}
+
+	const test2 = buildVariantTokens('button', 'solid', options)
+	console.log(test2)
+
+	const tokens = listThemeTokens(options),
+		config = { theme: name, ...tokens }
+
 	return generateCssVars(config, prefix) as ThemeTokens[K]
 }
 

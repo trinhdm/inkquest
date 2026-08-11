@@ -1,7 +1,7 @@
 import { DEFAULT_PALETTE } from '../constants'
+import { PREFIX_CSS_SELECTOR } from '@/utils/constants'
 import type { CSSProperties } from 'react'
 import type { SiteTheme } from '@/providers/ThemeProvider'
-import { PREFIX_CSS_SELECTOR } from '@/utils/constants'
 import type { CssVariable } from 'next/dist/compiled/@next/font'
 
 export interface ColorPalette {
@@ -42,15 +42,18 @@ export const getPalette: GetPaletteFn = ({
 		case 'solid':
 			palette = {
 				background: `var(--${prefix}-accent)`,
+				'background-hover': `var(--${prefix}-accent-hover)`,
 				border: 'transparent',
-				color: `var(--${prefix}-accent-text)`,
+				// color: `var(--${prefix}-accent-text)`,
 				focus: 'transparent',
 				hover: `var(--${prefix}-accent-hover)`,
+				// 'border-hover': `var(--${prefix}-accent-hover)`,
 			}
 			break
 		case 'outline':
 			palette = {
 				background: 'transparent',
+				'background-hover': `var(--${prefix}-primary-03)`,
 				border: `var(--${prefix}-border-strong)`,
 				// color: 'inherit',
 				color: `var(--${prefix}-border-text)`,
@@ -61,6 +64,7 @@ export const getPalette: GetPaletteFn = ({
 		case 'ghost':
 			palette = {
 				background: 'transparent',
+				'background-hover': `var(--${prefix}-primary-03)`,
 				border: 'transparent',
 				color: `var(--${prefix}-border-text)`,
 				focus: 'transparent',
