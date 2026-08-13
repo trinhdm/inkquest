@@ -1,5 +1,6 @@
 import { rem } from '@/lib/general'
-import { getPalette, setPalette, type ColorPalette } from './theme/palette'
+import { getPalette, setPalette } from './theme/palette'
+import { getVariantColors, getVariantTokens, paintVariants } from './colors'
 import type { SiteTheme } from './theme.types'
 
 export const DEFAULT_COLORS: SiteTheme['colors'] = {
@@ -111,12 +112,21 @@ export const DEFAULT_THEME: SiteTheme = {
 		slow: '400ms',
 		gradual: '600ms',
 	},
+
+	// variants: {
+	// 	getColors: getVariantColors,
+	// 	resolveTokens: getVariantTokens,
+	// },
+
+	paintVariants,
+	// variantColors: getVariantColors,
+	// variantTokens: getVariantTokens,
 }
 
-export const DEFAULT_PALETTE: ColorPalette = {
-	background: 'transparent',
-	border: 'none',
-	color: 'inherit',
-	focus: 'transparent',
-	hover: 'transparent',
-}
+// export const DEFAULT_PALETTE: ColorPalette = {
+// 	background: 'transparent',
+// 	border: 'transparent',
+// 	color: 'inherit',
+// 	focus: 'transparent',
+// 	hover: 'transparent',
+// }

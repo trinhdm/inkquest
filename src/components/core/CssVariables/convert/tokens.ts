@@ -56,6 +56,7 @@ const buildTokens = <K extends keyof ThemeTokens>(
 		for (const scheme of schemes)
 			Object.assign(vars, { [scheme]: getThemeColors({ ...options, scheme }) })
 
+		// console.log({ baseVars: vars })
 		return generateCssVars({ ...baseTheme, colors: vars }, prefix)
 	}
 
@@ -123,7 +124,7 @@ export const buildVariantTokens = <K extends ThemeName>(
 ): ThemeTokens[K] => {
 	const variantPalette = getVariantColors(variant, options),
 		palette = deepMerge(basePalette, variantPalette)
-		console.log({ options })
+		// console.log({ options })
 
 	return generateCssVars(palette, target)
 }
@@ -161,8 +162,8 @@ export const buildThemeTokens = <K extends ThemeName>(
 	const { name, theme, scheme, prefix } = options
 	if (!Object.hasOwn(theme.colors, scheme)) return {}
 
-	const test2 = buildVariantTokens('button', 'solid', options)
-	console.log(test2)
+	// const test2 = buildVariantTokens('button', 'solid', options)
+	// console.log(test2)
 
 	const tokens = listThemeTokens(options),
 		config = { theme: name, ...tokens }

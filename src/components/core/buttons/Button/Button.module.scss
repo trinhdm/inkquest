@@ -1,54 +1,79 @@
 .inkq-Button {
-    align-items: center;
+	background-color: var(--button-background);
+    border: 1px solid var(--button-border);
+    border-radius: var(--inkq-radius-sm);
+	color: var(--button-color);
+    font-weight: var(--inkq-weight-bold);
+    transition:
+		background-color var(--inkq-duration-fast) var(--inkq-ease),
+		border-color var(--inkq-duration-fast),
+		transform var(--inkq-duration-instant) var(--inkq-ease);
+
     cursor: pointer;
-	display: inline-flex;
-    justify-content: center;
+	line-height: 1;
     opacity: 1;
 	overflow: hidden;
+	position: relative;
     text-decoration: none;
-    width: auto;
-
-    gap: 8px;
+	touch-action: manipulation;
+	user-select: none;
+	vertical-align: middle;
     padding: 8px 14px;
-    font: 600 13px var(--font-body);
-    border-radius: var(--radius-sm);
-    transition: background var(--duration-fast) var(--ease-standard), transform var(--duration-instant) var(--ease-standard), border-color var(--duration-fast);
     letter-spacing: 0.01em;
-    background: var(--accent);
-    color: var(--text-on-accent);
-    border: 1px solid transparent;
     transform: scale(0.97);
 
+	&:hover {
+		background-color: var(--button-background-hover);
+		border-color: var(--button-border-hover);
+		color: var(--button-color-hover);
+	}
+
+	&:not([data-block]) {
+		display: inline-block;
+		width: auto;
+	}
+
+	&:is([data-block]) {
+		display: block;
+		width: 100%;
+	}
+
 	&__inner {
+		align-items: center;
 		display: flex;
+		gap: 8px;
+		justify-content: center;
+		position: relative;
 	}
 }
 
-.variant {
-	&--solid {
-		background-color: red;
-	}
+// .variant {
+// 	&--solid {
+// 		background: red;
+// 		border-radius: var(--inkq-radius-sm);
+// 	}
 
-	&--outline {
-		background-color: transparent;
-	}
-}
+// 	&--outline {
+// 		background-color: transparent;
+// 	}
+// }
 
-.priority {
-	&--primary {
-		border: 1px solid;
-	}
-}
+// .priority {
+// 	&--primary {
+// 		border: 1px solid;
+// 	}
+// }
 
-:global([data-theme="dark"]),
-.theme--dark {
-	.variant {
-		&--solid {
-			background-color: yellow;
-		}
+// :global([data-theme="dark"]),
+// .theme--dark {
+// 	.variant {
+// 		&--solid {
+// 			background-color: yellow;
+// 			border-radius: var(--radius-lg);
+// 		}
 
-		&--outline {
-			background-color: green;
-		}
-	}
-}
+// 		&--outline {
+// 			background-color: green;
+// 		}
+// 	}
+// }

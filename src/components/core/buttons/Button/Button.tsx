@@ -58,12 +58,14 @@ const PREFIX = `${NAME.toLowerCase() as Lowercase<typeof NAME>}` as const
 
 type _Prefix = Lowercase<typeof NAME>
 
-const cssVars = setThemeCSS<ButtonSpecs>((theme, { size, variant }) => {
-	const colors = theme.getPalette({ theme, variant }),
-		variables = theme.setPalette({ colors, name: PREFIX })
+const cssVars = setThemeCSS<ButtonSpecs>((theme, _props) => {
+	// // if (!Object.hasOwn(_props, 'variant')) return {}
+	// const colors = theme.variantColors({ theme, ..._props }),
+	// 	variables = theme.variantTokens({ colors, name: PREFIX })
+	// 	// console.log(theme)
 
 	return {
-		root: variables
+		root: theme.paintVariants({ name: PREFIX, theme, ..._props }),
 	}
 })
 
@@ -111,7 +113,6 @@ Button.displayName = NAME
 Button.setDefaults({
 	props: {
 		as: 'button',
-		fullWidth: false,
 		priority: 'primary',
 		size: 'sm',
 		variant: 'solid',

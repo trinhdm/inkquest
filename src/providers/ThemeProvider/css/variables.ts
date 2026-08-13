@@ -40,7 +40,7 @@ const formatName = <T,>({ path, value }: CSSVarArgs<T>) => {
 	return name
 }
 
-const formatPath = <T,>({ path }: CSSVarArgs<T>) => {
+const formatRoute = <T,>({ path }: CSSVarArgs<T>) => {
 	let route = path
 
 	if (route.at(-1) === ('base' as BaseVarKey))
@@ -57,25 +57,31 @@ export const getVariable = <T,>(args: CSSVarArgs<T>): string => {
 	if (!path?.length) return ''
 
 	const name = formatName(args),
-		route = formatPath(args)
+		route = formatRoute(args)
 
 	const segments = [name, ...route.slice(1)]
-	if (prefix) segments.unshift(prefix)
 
-	return `--${segments.join('-')}`
+	if (prefix && !name.startsWith(`--${prefix}`))
+		segments.unshift(prefix)
+
+	const variable = segments.join('-')
+	return variable.replace(/^[- ]*/, '--')
 }
 
 type Position = `0${number}`
 
-function getStep(value: number): string
-function getStep(value: Position): number
-function getStep(value: number | Position): number | string {
-	if (typeof value === 'number') {
-		const i = value + 1
-		return i < 10 ? `0${i}` as const : String(i)
+function getStep(num: number, value: string): string
+function getStep(num: Position, value?: never): number
+function getStep(num: number | Position, value: string = ''): number | string {
+	const isPrimitive = !value.startsWith('var(--')
+
+	if (typeof num === 'number') {
+		const i = num + 1,
+			step = isPrimitive ? i * 100 : `0${i}`
+		return i < 10 ? `${step}` as const : String(i)
 	}
 
-	return parseFloat(value) - 1
+	return parseFloat(num) - 1
 }
 
 
@@ -113,7 +119,7 @@ export const nameVariables = <T extends Record<string, unknown>>(
 	const withScale = ({ path, prefix, value }: CSSVarArgs<T>) => {
 		if (!value) return
 		for (const [index, v] of value.entries()) {
-			const step = getStep(index)
+			const step = getStep(index, v)
 			const name = getVariable({ path: [ ...path, step ], prefix, value: v })
 			assign({ name, value: v })
 		}
