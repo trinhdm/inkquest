@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react'
 import type { AtLeastOneKey } from '@/types/utils'
 import type { CSSUnit, CSSVars, FontList, HeadingTag, HexCode, Size, Unit } from '@/types/shared'
-import type { GetPaletteFn, SetPaletteFn } from './theme/palette'
+// import type { GetPaletteFn, SetPaletteFn } from './theme/palette'
 import type { PaintVariantsFn } from './colors/variants'
 
 export type ThemeName =
@@ -14,10 +14,14 @@ export type ColorScheme =
 	| 'paper'
 
 export interface SiteTheme {
-	getPalette: GetPaletteFn
-	setPalette: SetPaletteFn
+	// getPalette: GetPaletteFn
+	// setPalette: SetPaletteFn
 
 	paintVariants: PaintVariantsFn
+
+	// getName: () => ThemeName
+	name: ThemeName
+	setName: (theme: ThemeName) => void
 
 	fontFamily: FontStyle<'fontFamily', 'body'>
 	fontSize: FontStyle<'fontSize', 'md'>

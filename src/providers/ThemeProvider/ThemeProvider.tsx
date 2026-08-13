@@ -5,6 +5,7 @@ import { mergeTheme } from './theme'
 import { DEFAULT_THEME } from './constants'
 // import { PREFIX_CSS_SELECTOR, PREFIX_CSS_VARS } from '@/utils/constants'
 import type { SiteTheme } from './theme.types'
+import { useThemeName } from '@/hooks/useThemeName'
 
 interface ThemeProviderProps {
 	children?: ReactNode
@@ -26,10 +27,17 @@ export const ThemeProvider = ({
 	theme,
 }: ThemeProviderProps) => {
 	const currentTheme = useSafeTheme()
-	const mergedTheme = useMemo(
-		() => mergeTheme(currentTheme, theme),
-		[currentTheme, theme]
-	)
+	// const mergedTheme = useMemo(
+	// 	() => mergeTheme(currentTheme, theme),
+	// 	[currentTheme, theme]
+	// )
+
+	const { themeName, setThemeName } = useThemeName()
+	const mergedTheme = useMemo(() => ({
+		...mergeTheme(currentTheme, theme),
+		name: (() => themeName)(),
+		setName: setThemeName,
+	}), [currentTheme, theme, themeName, setThemeName])
 
 	// useEffect(() => {
 	// 	if (typeof window === 'undefined') return

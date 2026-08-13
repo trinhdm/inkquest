@@ -1,7 +1,11 @@
 import { rem } from '@/lib/general'
-import { getPalette, setPalette } from './theme/palette'
+// import { getPalette, setPalette } from './theme/palette'
 import { getVariantColors, getVariantTokens, paintVariants } from './colors'
 import type { SiteTheme } from './theme.types'
+import { themeControls } from '@/components/core/ScriptInjector'
+const { applyTheme, getStoredTheme, persistTheme } = themeControls()
+// ...
+
 
 export const DEFAULT_COLORS: SiteTheme['colors'] = {
 	brand: [
@@ -36,8 +40,11 @@ const DEFAULT_FONT_FAMILY: SiteTheme['fontFamily'] = {
 }
 
 export const DEFAULT_THEME: SiteTheme = {
-	getPalette,
-	setPalette,
+	// getPalette,
+	// setPalette,
+
+	get name() { return getStoredTheme() },
+	setName: (theme) => { applyTheme(theme); persistTheme(theme) },
 
 	colors: DEFAULT_COLORS,
 	fontFamily: DEFAULT_FONT_FAMILY,
