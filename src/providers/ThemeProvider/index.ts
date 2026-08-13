@@ -11,4 +11,4 @@ export type {
 	SiteTheme,
 	ThemeName,
 } from './theme.types'
-export type { ColorVariable } from './theme'
+export type { ColorVariable } from './colors'

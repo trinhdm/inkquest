@@ -1,8 +1,4 @@
-// import { DEFAULT_PALETTE } from '../constants'
-// import { PREFIX_CSS_SELECTOR } from '@/utils/constants'
-// import type { CSSProperties } from 'react'
 import type { BaseVarKey, SiteTheme } from '@/providers/ThemeProvider'
-// import type { CssVariable } from 'next/dist/compiled/@next/font'
 import { deepMerge } from '@/utils/helpers'
 import { nameVariables } from '../css'
 import type { ColorPalette, TokenStatesList } from './tokens'
