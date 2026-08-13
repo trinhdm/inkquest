@@ -1,4 +1,4 @@
-export { buildSchemes } from './schemes'
+export { buildSchemes } from './builder'
 export { getVariantColors, getVariantTokens, paintVariants } from './variants'
 export type { ColorVariable } from './variants'
-export type { ThemeTokens } from './schemes'
+export type { ThemeTokens } from './builder'

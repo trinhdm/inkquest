@@ -1,6 +1,6 @@
 import { nameVariables } from '../css'
-import { Token } from './tokens'
-import type { ColorScheme, SiteTheme, ThemeName } from '@/providers/ThemeProvider'
+import { Token } from './reference'
+import type { ColorScheme, SiteTheme, ThemeName } from '../theme.types'
 import type { CSSProperties } from 'react'
 import type { CSSVars } from '@/types/shared'
 

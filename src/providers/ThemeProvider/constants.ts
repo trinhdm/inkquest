@@ -1,6 +1,6 @@
 import { rem } from '@/lib/general'
 // import { getPalette, setPalette } from './theme/palette'
-import { getVariantColors, getVariantTokens, paintVariants } from './colors'
+import { getVariantColors, getVariantTokens, paintVariants } from './tokens'
 import type { SiteTheme } from './theme.types'
 import { themeControls } from '@/components/core/ScriptInjector'
 const { applyTheme, getStoredTheme, persistTheme } = themeControls()

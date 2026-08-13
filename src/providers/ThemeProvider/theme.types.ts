@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react'
 import type { AtLeastOneKey } from '@/types/utils'
 import type { CSSUnit, CSSVars, FontList, HeadingTag, HexCode, Size, Unit } from '@/types/shared'
 // import type { GetPaletteFn, SetPaletteFn } from './theme/palette'
-import type { PaintVariantsFn } from './colors/variants'
+import type { PaintVariantsFn } from './tokens/variants'
 
 export type ThemeName =
 	| 'dark'
