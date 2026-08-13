@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react'
 import type { AtLeastOneKey } from '@/types/utils'
 import type { CSSUnit, CSSVars, FontList, HeadingTag, HexCode, Size, Unit } from '@/types/shared'
 import type { GetPaletteFn, SetPaletteFn } from './theme/palette'
+import type { PaintVariantsFn } from './colors/variants'
 
 export type ThemeName =
 	| 'dark'
@@ -15,6 +16,8 @@ export type ColorScheme =
 export interface SiteTheme {
 	getPalette: GetPaletteFn
 	setPalette: SetPaletteFn
+
+	paintVariants: PaintVariantsFn
 
 	fontFamily: FontStyle<'fontFamily', 'body'>
 	fontSize: FontStyle<'fontSize', 'md'>
