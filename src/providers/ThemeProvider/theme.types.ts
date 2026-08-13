@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react'
 import type { AtLeastOneKey } from '@/types/utils'
-import type { CSSUnit, FontList, HeadingTag, HexCode, Size, Unit } from '@/types/shared'
+import type { CSSUnit, CSSVars, FontList, HeadingTag, HexCode, Size, Unit } from '@/types/shared'
 import type { GetPaletteFn, SetPaletteFn } from './theme/palette'
 
 export type ThemeName =
@@ -29,6 +29,10 @@ export interface SiteTheme {
 
 	duration: Style<CSSUnit, ThemeDuration, BaseVarKey>
 	easing: Style<`cubic-bezier(${string})`, ThemeEasing, BaseVarKey>
+
+	subcomponents?: Record<string, {
+		cssVars?: (theme: SiteTheme, props: any, ctx: unknown) => Partial<Record<string, CSSVars>>
+	}>
 }
 
 export type BaseVarKey = 'base'

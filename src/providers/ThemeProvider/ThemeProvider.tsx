@@ -1,9 +1,9 @@
 'use client'
 
-import { createContext, use, useEffect, useMemo, type ReactNode } from 'react'
+import { createContext, use, useMemo, type ReactNode } from 'react'
 import { mergeTheme } from './theme'
 import { DEFAULT_THEME } from './constants'
-import { PREFIX_CSS_SELECTOR, PREFIX_CSS_VARS } from '@/utils/constants'
+// import { PREFIX_CSS_SELECTOR, PREFIX_CSS_VARS } from '@/utils/constants'
 import type { SiteTheme } from './theme.types'
 
 interface ThemeProviderProps {
@@ -31,16 +31,16 @@ export const ThemeProvider = ({
 		[currentTheme, theme]
 	)
 
-	useEffect(() => {
-		if (typeof window === 'undefined') return
+	// useEffect(() => {
+	// 	if (typeof window === 'undefined') return
 
-		const { documentElement: documentEl } = document,
-			rootStyle = getComputedStyle(documentEl),
-			cssPrefix = rootStyle.getPropertyValue(PREFIX_CSS_VARS)
+	// 	const { documentElement: documentEl } = document,
+	// 		rootStyle = getComputedStyle(documentEl),
+	// 		cssPrefix = rootStyle.getPropertyValue(PREFIX_CSS_VARS)
 
-		if (!cssPrefix)
-			documentEl.style.setProperty(PREFIX_CSS_VARS, PREFIX_CSS_SELECTOR)
-	}, [])
+	// 	if (!cssPrefix)
+	// 		documentEl.style.setProperty(PREFIX_CSS_VARS, PREFIX_CSS_SELECTOR)
+	// }, [])
 
 	return <ThemeContext value={ mergedTheme }>{ children }</ThemeContext>
 }

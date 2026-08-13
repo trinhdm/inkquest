@@ -72,8 +72,8 @@ export const deepSetMap = <V,>(
 	...args: [...keys: string[], value: V]
 ): DeepMap<V> => {
 	let current = map
-	const keys = args as string[],
-		value = args.pop() as V
+	const value = args.pop() as V,
+		keys = args as string[]
 
 	for (const key of keys) {
 		if (typeof key !== 'string') continue

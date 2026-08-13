@@ -1,6 +1,6 @@
 import { rem } from '@/lib/general'
 import { getPalette, setPalette, type ColorPalette } from './theme/palette'
-import type { SiteTheme, ThemeName } from './theme.types'
+import type { SiteTheme } from './theme.types'
 
 export const DEFAULT_COLORS: SiteTheme['colors'] = {
 	brand: [
@@ -33,8 +33,6 @@ const DEFAULT_FONT_FAMILY: SiteTheme['fontFamily'] = {
 	title: `'Archivo Black', 'Archivo', sans-serif`,
 	label: `'Space Mono', SF Mono, monospace`,
 }
-
-export const DEFAULT_THEME_NAME: ThemeName = 'dark'
 
 export const DEFAULT_THEME: SiteTheme = {
 	getPalette,

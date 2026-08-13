@@ -1,17 +1,24 @@
+'use client'
+
 import { useTheme } from '@/providers/ThemeProvider'
 import { resolveCssVars, serializeCssVars } from './build'
+import type { ComponentProps } from 'react'
 
-export const CssVariables = () => {
+interface CssVariablesProps
+	extends ComponentProps<'style'> {}
+
+export const CssVariables = (props: CssVariablesProps) => {
 	const theme = useTheme(),
 		tokens = resolveCssVars(theme),
 		css = serializeCssVars(tokens)
 
 	if (!css) return null
 
-	console.log(css)
+	// console.log(css)
 
 	return (
 		<style
+			{ ...props }
 			data-theme-vars
 			dangerouslySetInnerHTML={{ __html: css }}
 		/>
@@ -19,3 +26,4 @@ export const CssVariables = () => {
 }
 
 CssVariables.displayName = 'CssVariables'
+// rename to StyleInliner or Themer
