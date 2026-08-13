@@ -1,10 +1,16 @@
 import type { BaseVarKey, SiteTheme } from '@/providers/ThemeProvider'
 import { deepMerge } from '@/utils/helpers'
 import { nameVariables } from '../css'
-import type { ColorPalette, TokenStatesList } from './tokens'
+import type { TokenStatesList, TokenGroup } from './schemes'
 import type { CSSVariable } from '@/types/shared'
 import type { ValidSpecs } from '@/types/spec'
 import { Token } from './tokens'
+
+export interface ColorPalette {
+	background?: TokenGroup<'backgroundColor'>
+	border?: TokenGroup<'borderColor'>
+	color?: TokenGroup<'color'>
+}
 
 export type Variant =
 	| 'solid'

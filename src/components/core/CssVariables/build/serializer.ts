@@ -1,4 +1,4 @@
-import type { ThemeTokens } from '../convert'
+import type { ThemeTokens } from '@/providers/ThemeProvider/colors'
 
 const BASE_SELECTORS = [':root', ':host'] as const
 
