@@ -19,7 +19,7 @@ export const themeControls = ({
 				if (lsTheme === 'light' || lsTheme === 'dark') return lsTheme
 			} catch {}
 
-			return window.matchMedia(`(prefers-color-scheme: 'dark')`).matches
+			return window.matchMedia('(prefers-color-scheme: dark)').matches
 				? 'dark'
 				: defaultTheme
 		},

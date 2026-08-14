@@ -1,10 +1,7 @@
 import { _is } from './checks'
-import { isObject, toKebabCase } from '@/utils/helpers'
-import { getShorthand } from './shorthand'
+import { toKebabCase } from '@/utils/helpers'
 import type { BaseVarKey } from '../../theme.types'
 import type { CSSVars } from '@/types/shared'
-import type { RecordToMap } from '@/types/utils'
-import { rem } from '@/lib/general'
 
 export interface CSSVarArgs<T> {
 	path: string[]
@@ -14,7 +11,7 @@ export interface CSSVarArgs<T> {
 
 const FONT_PART_INDEX = {
 	family: 1,
-	size: 0,
+	// size: 0,
 	weight: 0,
 } as const
 
@@ -26,13 +23,13 @@ const formatFontName = (name: string) => {
 		: name
 }
 
-const formatName = <T,>({ path, value }: CSSVarArgs<T>): string => {
+const formatName = <T,>({ path }: CSSVarArgs<T>): string => {
 	let name = toKebabCase(path[0])
 
 	if (_is.FontName(name))
 		name = formatFontName(name)
 
-	if (_is.Plural(name) && _is.Singular(value))
+	if (_is.Plural(name))
 		name = name.slice(0, -1)
 
 	if (_is.Verb(name))
@@ -48,14 +45,8 @@ const formatRoute = <T,>({ path }: CSSVarArgs<T>): CSSVarArgs<T>['path'] => {
 	if (route.at(-1) === ('base' as BaseVarKey))
 		route = route.slice(0, -1)
 
-	for (const [i, str] of route.entries()) {
-		// let part = toKebabCase(str)
-
-		// if (_is.Plural(part))
-		// 	part = part.slice(0, -1)
-
+	for (const [i, str] of route.entries())
 		route[i] = toKebabCase(str)
-	}
 
 	return route
 }
@@ -74,146 +65,4 @@ export const formatToken = <T,>(args: CSSVarArgs<T>): keyof CSSVars => {
 	token = token.replace(/^[- ]*/, '--')
 
 	return `${token as keyof CSSVars}` as const
-}
-
-type Position = `${number}00` | `0${number}`
-const getStep = (num: number, value?: unknown): Position | `${number}` => {
-	const isPrimitive = typeof value === 'string' && !value.startsWith('var(--')
-	const i = num + 1,
-		step = `0${i}` as const
-
-	if (isPrimitive && value.startsWith('#'))
-		return `${i}00` as const
-
-	return i < 10 ? step : String(i) as `${number}`
-}
-
-
-
-const scale2 = (steps: number[], base = 4) => steps.reduce((acc, step) => {
-	acc.push(rem(step * base))
-	return acc
-}, [] as ReturnType<typeof rem>[])
-
-
-const generateTokens = <T extends Record<string, unknown>>(
-	input: T,
-	prepend?: string
-): CSSVars => {
-	const variables: RecordToMap<CSSVars> = new Map()
-
-	const assign = ({ name, value }: { name: keyof CSSVars; value: unknown }) => {
-		if (!name || !value) return
-		variables.set(name, String(value))
-	}
-
-	const toShorthand = (args: CSSVarArgs<Record<string, unknown>>) => {
-		const { path, value: { tagName } } = args as CSSVarArgs<T> & { value: { tagName: T } }
-		let shorthand = {} as Parameters<typeof assign>[0]
-
-		if (tagName) {
-			for (const tag of Object.keys(tagName)) {
-				const tagValues = tagName[tag]
-
-				if (!isObject(tagValues)) continue
-				if (!Object.keys(tagValues).some(k => k.includes('font'))) continue
-
-				const route = path.length > 1 ? path : ['text']
-				shorthand = {
-					name: formatToken({ ...args, path: [...route, tag] }),
-					value: getShorthand({ property: 'font', values: [args.value!, tagValues] }),
-				}
-				console.log({ tag, tagValues, shorthand })
-				if (!shorthand.value) continue
-				assign(shorthand)
-			}
-		} else {
-			shorthand = {
-				name: formatToken(args),
-				value: getShorthand({ property: 'font', values: [args.value!] }),
-			}
-
-			if (!shorthand.value) return
-			assign(shorthand)
-		}
-	}
-
-	const scale = ({ path, prefix, value }: CSSVarArgs<number>) => {
-		if (!value) return
-		const steps = Array.from({ length: 12 }, (_, i) => i + 1)
-
-		for (let step of steps) {
-			step = step * value
-			const output = rem(step)
-			const name = formatToken({ path: [ 'size', `${step}` ], prefix, value: output })
-			assign({ name, value: output })
-		}
-	}
-
-	const withScale = ({ path, prefix, value }: CSSVarArgs<unknown[]>) => {
-		if (!value) return
-		const isNum = value.every(v => typeof v === 'number')
-
-		if (isNum) {
-			for (const v of value) {
-				const step = rem(v)
-				const name = formatToken({ path: [ ...path, `${v}` ], prefix, value: step })
-				assign({ name, value: step })
-			}
-		}
-		else {
-			for (const [index, v] of value.entries()) {
-				const step = getStep(index, v)
-				const name = formatToken({ path: [ ...path, step ], prefix, value: v })
-				assign({ name, value: v })
-			}
-		}
-	}
-
-	const traverse = <U = T>({ path, prefix, value }: CSSVarArgs<U>) => {
-		if (!value) return
-		Object.entries(value).forEach(([k, v]) =>
-			generate({ value: v, path: [...path, k], prefix }))
-	}
-
-	const generate = (args: CSSVarArgs<unknown>) => {
-		const { value } = args
-
-		if (typeof value === 'function') return
-		if (value === undefined) return
-
-		if (typeof value === 'number' && value === 4) {
-			scale({ ...args, value })
-			return
-		}
-
-		if (Array.isArray(value)) {
-			withScale({ ...args, value })
-			return
-		}
-
-		if (isObject(value)) {
-			const fontKeys = ['fontFamily', 'fontSize', 'fontWeight', 'lineHeight'],
-				keys = Object.keys(value)
-
-			if (keys.length === fontKeys.length && fontKeys.every(k => keys.includes(k))) {
-				toShorthand({ ...args, value })
-				return
-			}
-
-			if (!Object.hasOwn(value, 'tagName')) {
-				traverse({ ...args, value })
-				return
-			}
-
-			if (!isObject(value.tagName)) return
-			toShorthand({ ...args, value })
-			return
-		}
-
-		assign({ name: formatToken(args), value })
-	}
-
-	generate({ value: input, path: [], prefix: prepend })
-	return Object.fromEntries(variables) as CSSVars
 }

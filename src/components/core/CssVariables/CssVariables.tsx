@@ -2,6 +2,7 @@
 
 import { useTheme } from '@/providers/ThemeProvider'
 import { resolveCssVars, serializeCssVars } from './build'
+import { PREFIX_CSS_SELECTOR } from '@/utils/constants'
 import type { ComponentProps } from 'react'
 
 interface CssVariablesProps
@@ -9,12 +10,12 @@ interface CssVariablesProps
 
 export const CssVariables = (props: CssVariablesProps) => {
 	const theme = useTheme(),
-		tokens = resolveCssVars(theme),
+		tokens = resolveCssVars({ current: theme, prefix: PREFIX_CSS_SELECTOR }),
 		css = serializeCssVars(tokens)
 
 	if (!css) return null
 
-	// console.log(css)
+	console.log(css)
 
 	return (
 		<style

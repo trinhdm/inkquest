@@ -85,7 +85,7 @@ export const getVariantColors: GetPaletteFn = _props => {
 					base: Token.alias('accent'),
 					hover: Token.alias('accent', 'hover'),
 				},
-				color: Token.alias('accent', 'text'),
+				color: Token.alias('color', 'interactive'),
 			}
 		case 'outline':
 			return {
@@ -93,43 +93,46 @@ export const getVariantColors: GetPaletteFn = _props => {
 					base: Token.alias('border'),
 					hover: Token.alias('border', 'strong'),
 				},
-				color: Token.alias('border', 'text'),
+				color: Token.alias('color', 'interactive'),
 			}
 		case 'ghost':
 			return {
 				background: {
 					base: 'transparent',
-					hover: Token.alias('primary', '03'),
+					hover: Token.alias('background', 'card'),
 				},
 				border: {
 					base: 'transparent',
-					hover: Token.alias('primary', '03'),
+					hover: Token.alias('background', 'card', 'hover'),
 				},
-				color: Token.alias('border', 'text'),
+				color: {
+					base: Token.alias('color', 'interactive'),
+					hover: Token.alias('color', 'interactive', 'hover'),
+				},
 			}
 		case 'light':
 			return {
 				background: {
-					base: Token.alias('secondary', '06'),
-					hover: Token.alias('secondary', '04'),
+					base: Token.alias('background', 'card'),
+					hover: Token.alias('background', 'card', 'hover'),
 				},
 				border: {
-					base: Token.alias('secondary', '06'),
-					hover: Token.alias('secondary', '04'),
+					base: Token.alias('background', 'card'),
+					hover: Token.alias('background', 'card', 'hover'),
 				},
-				color: Token.alias('primary', '02'),
+				color: Token.alias('color', 'interactive'),
 			}
 		case 'dark':
 			return {
 				background: {
-					base: Token.alias('primary', '04'),
-					hover: Token.alias('primary', '06'),
+					base: Token.alias('background', 'card'),
+					hover: Token.alias('background', 'card', 'hover'),
 				},
 				border: {
-					base: Token.alias('primary', '04'),
-					hover: Token.alias('primary', '06'),
+					base: Token.alias('background', 'card'),
+					hover: Token.alias('background', 'card', 'hover'),
 				},
-				color: Token.alias('secondary', '02'),
+				color: Token.alias('color', 'interactive'),
 			}
 		default:
 			return DEFAULT_PALETTE

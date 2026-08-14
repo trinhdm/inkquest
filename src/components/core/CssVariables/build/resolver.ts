@@ -1,18 +1,19 @@
+import { buildSchemes } from '@/providers/ThemeProvider/tokens'
 import { deepMerge } from '@/utils/helpers'
-// import { themeToCssVars } from '../convert'
-import { PREFIX_CSS_SELECTOR } from '@/utils/constants'
 import type { SiteTheme } from '@/providers/ThemeProvider'
-import { buildSchemes } from '@/providers/ThemeProvider/colors'
 
-export const resolveCssVars = (
-	current: SiteTheme,
+interface ResolveCSSProps {
+	current: SiteTheme
 	override?: SiteTheme
-) => {
-	const currentVars = buildSchemes(current, PREFIX_CSS_SELECTOR)
+	prefix?: string
+}
+
+export const resolveCssVars = ({ current, override, prefix }: ResolveCSSProps) => {
+	const currentVars = buildSchemes(current, prefix)
 	let cssVars = currentVars
 
 	if (override) {
-		const overrideVars = buildSchemes(override)
+		const overrideVars = buildSchemes(override, prefix)
 		cssVars = deepMerge(currentVars, overrideVars)
 	}
 

@@ -1,4 +1,4 @@
-import type { ThemeTokens } from '@/providers/ThemeProvider/colors'
+import type { ThemeTokens } from '@/providers/ThemeProvider/tokens'
 
 const BASE_SELECTORS = [':root', ':host'] as const
 
@@ -34,11 +34,16 @@ export const serializeCssVars = (
 	hasIndent: boolean = true
 ) => {
 	const rules = (Object.keys(tokens) as (keyof typeof tokens)[]).map(name => {
-		const declaration = declarationBlock({ input: tokens[name], hasIndent }),
+		const input = tokens[name]
+		if (!Object.keys(input).length) return
+
+		const declaration = declarationBlock({ input, hasIndent }),
 			selectors = listSelectors({ name, selector, hasIndent })
 
 		return `${selectors} {${declaration}}`
-	}).join(`\n\n`)
+	})
+		.filter(Boolean)
+		.join(`\n\n`)
 
 	return rules
 }

@@ -22,7 +22,7 @@ export const buildScript = ({
 			const lsTheme = localStorage.getItem("${lsKey}");
 			let initTheme = lsTheme
 			if (lsTheme !== "${theme}" && lsTheme !== "${altTheme}")
-				initTheme = window.matchMedia("(prefers-color-theme: dark)").matches ? "dark" : "${theme}";
+				initTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "${theme}";
 			document.documentElement.setAttribute("data-${lsKey}", initTheme);
 		} catch(e) {}
 	})()`

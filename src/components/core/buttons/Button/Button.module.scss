@@ -1,39 +1,34 @@
 .inkq-Button {
-	background-color: var(--button-background);
-    border: 1px solid var(--button-border);
-    border-radius: var(--inkq-radius-sm);
-	color: var(--button-color);
-    font-weight: var(--inkq-weight-bold);
-    transition:
-		background-color var(--inkq-duration-fast) var(--inkq-ease),
-		border-color var(--inkq-duration-fast),
-		transform var(--inkq-duration-instant) var(--inkq-ease);
+	--button-padding: var(--inkq-space-inset-sm) var(--inkq-space-inset-lg);
 
+	background-color: var(--button-background, var(--inkq-accent));
+    border-radius: var(--inkq-border-radius-sm);
+    border: 1px solid var(--button-border, var(--inkq-accent));
+	color: var(--button-color, var(--inkq-color-link));
     cursor: pointer;
+	display: inline-block;
+	font-size: var(--inkq-font-size-label);
+    font-weight: var(--inkq-font-weight-bold);
+    letter-spacing: 0.01em;
 	line-height: 1;
     opacity: 1;
 	overflow: hidden;
+    padding: var(--button-padding);
 	position: relative;
-    text-decoration: none;
 	touch-action: manipulation;
+    text-decoration: none;
+    transition: var(--inkq-motion-interactive);
 	user-select: none;
 	vertical-align: middle;
-    padding: 8px 14px;
-    letter-spacing: 0.01em;
-    transform: scale(0.97);
+	width: auto;
 
 	&:hover {
-		background-color: var(--button-background-hover);
-		border-color: var(--button-border-hover);
-		color: var(--button-color-hover);
+		background-color: var(--button-background-hover, var(--inkq-accent-hover));
+		border-color: var(--button-border-hover, var(--inkq-accent-hover));
+		color: var(--button-color-hover, var(--inkq-color-link-hover));
 	}
 
-	&:not([data-block]) {
-		display: inline-block;
-		width: auto;
-	}
-
-	&:is([data-block]) {
+	&:where([data-block]) {
 		display: block;
 		width: 100%;
 	}
@@ -41,39 +36,8 @@
 	&__inner {
 		align-items: center;
 		display: flex;
-		gap: 8px;
+		gap: var(--inkq-space-inset-sm);
 		justify-content: center;
 		position: relative;
 	}
 }
-
-// .variant {
-// 	&--solid {
-// 		background: red;
-// 		border-radius: var(--inkq-radius-sm);
-// 	}
-
-// 	&--outline {
-// 		background-color: transparent;
-// 	}
-// }
-
-// .priority {
-// 	&--primary {
-// 		border: 1px solid;
-// 	}
-// }
-
-// :global([data-theme="dark"]),
-// .theme--dark {
-// 	.variant {
-// 		&--solid {
-// 			background-color: yellow;
-// 			border-radius: var(--radius-lg);
-// 		}
-
-// 		&--outline {
-// 			background-color: green;
-// 		}
-// 	}
-// }

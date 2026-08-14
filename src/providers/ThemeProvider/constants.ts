@@ -2,7 +2,6 @@ import { rem } from '@/lib/general'
 import { paintVariants } from './tokens'
 import { themeControls } from '@/components/core/ScriptInjector'
 import type { SiteTheme } from './theme.types'
-import { tkn } from './tokens/reference'
 
 export const DEFAULT_COLORS: SiteTheme['colors'] = {
 	brand: [
@@ -44,10 +43,15 @@ export const DEFAULT_THEME: SiteTheme = {
 
 	paintVariants,
 
-	baseSize: 4,
+	// baseSize: 4,
+	scale: {
+		size: 4
+	},
 
 	colors: DEFAULT_COLORS,
 	fontFamily: DEFAULT_FONT_FAMILY,
+
+	fontSizes: [12, 14, 16, 20, 24, 32, 48, 96],
 
 	fontWeight: [
 		400,
@@ -86,9 +90,9 @@ export const DEFAULT_THEME: SiteTheme = {
 	},
 
 	duration: {
-		base: '240ms',
 		instant: '100ms',
 		fast: '160ms',
+		default: '240ms',
 		slow: '400ms',
 		gradual: '600ms',
 	},

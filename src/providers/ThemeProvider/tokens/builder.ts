@@ -1,5 +1,5 @@
 import { generateTokens } from './generate'
-import { Token } from './reference'
+import { tkn, Token } from './reference'
 import type { ColorScheme, SiteTheme, ThemeName } from '../theme.types'
 import type { CSSProperties } from 'react'
 import type { CSSVars } from '@/types/shared'
@@ -37,72 +37,65 @@ const buildSemanticTheme = <K extends ThemeName>(
 ) => {
 	const { scheme } = options
 	const accent = {
-		base: Token.base('brand', '100'),
-		hover: Token.base('brand', '200'),
-		press: Token.base('brand', '300'),
-		text: Token.alias('secondary', '02', options),
+		base: tkn('brand', '100'),
+		hover: tkn('brand', '200'),
+		press: tkn('brand', '300'),
+		text: Token.alias('color', 'link'),
 	}
 
 	const border = {
-		base: Token.alias('secondary', '05', options),
-		strong: Token.alias('secondary', '06', options),
-		text: Token.alias('secondary', '04', options),
+		base: tkn(scheme, '600'),
+		// strong: tkn(scheme, '500'),
+		strong: `color-mix(in oklab, #FFF 55%, ${Token.alias('border')})`,
+		// text: Token.alias('secondary', '04', options),
 	}
 
 	const backgrounds = {
 		page: options.name === 'dark'
-			? Token.base(scheme, '100')
-			: Token.base(scheme, '300'),
+			? tkn(scheme, '100')
+			: tkn(scheme, '300'),
 		surface: Token.alias('primary', '02', options),
-		card: options.name === 'dark'
-			? Token.alias('primary', '03', options)
-			: Token.alias('primary', '01', options),
+		card: {
+			base: options.name === 'dark'
+				? tkn(scheme, '300')
+				: tkn(scheme, '100'),
+			hover: tkn(scheme, '400')
+		}
 	}
+
+	const mixer = options.name === 'dark'
+		? '#FFF'
+		: '#000'
 
 	const colors = {
 		text: {
-			base: Token.alias('secondary', '01', options),
-			inverse: Token.alias('primary', '01', options),
+			base: `color-mix(in oklab, ${mixer} 95%, ${tkn(scheme, '100')})`,
+			// inverse: Token.alias('primary', '01', options),
 		},
 		link: {
-			base: Token.alias('accent', options),
-			hover: Token.alias('accent', 'hover', options),
+			base: `color-mix(in oklab, ${mixer} 50%, ${tkn(scheme, '100')})`,
+			hover: `color-mix(in oklab, ${mixer} 75%, ${tkn(scheme, '100')})`,
+		},
+		action: {
+			base: Token.alias('accent'),
+			hover: Token.alias('accent', 'hover'),
+		},
+		interactive: {
+			base: `color-mix(in oklab, ${mixer} 85%, ${tkn(scheme, '100')})`,
+			hover: `color-mix(in oklab, ${mixer} 90%, ${tkn(scheme, '100')})`,
 		},
 	}
 
 	const motion = {
-		background: `background-color var(--inkq-duration-fast) var(--inkq-ease),
-		border-color var(--inkq-duration-fast),
-		transform var(--inkq-duration-instant) var(--inkq-ease)`,
+		interactive: `background-color ${tkn('duration', 'fast')} ${tkn('ease')},
+		border-color ${tkn('duration', 'fast')},
+		transform ${tkn('duration', 'instant')} ${tkn('ease')}`,
 	}
 
 	// const semantic = { accent, colors, backgrounds, border }
 	// console.log({ scheme, options })
 
 	return { accent, colors, backgrounds, border, motion }
-}
-
-const buildAlias = <K extends ThemeName>(
-	options: TokenBuilder<K>
-): ThemeTokens[K] => {
-	const { prefix, primitives, scheme } = options
-	const PRIMITIVE_SCALE = /(0|[1-9]\d*)00$/,
-		variables = Object.keys(primitives).filter(k => PRIMITIVE_SCALE.test(k))
-
-	const groupedByScheme = variables.reduce<Record<string, string[]>>((acc, value) => {
-		if (value.includes('brand')) return acc
-		const group = value.includes(scheme) ? 'primary' : 'secondary'
-
-		if (!Object.hasOwn(acc, group))
-			acc[group] = [] as string[]
-		if (!acc[group].includes(value))
-			acc[group].push(`var(${value})`)
-
-		return acc
-	}, {})
-	// console.log({ scheme, groupedByScheme, options })
-
-	return generateTokens(groupedByScheme, prefix)
 }
 
 const buildTokens = <K extends ThemeName>(
@@ -123,45 +116,79 @@ const buildTokens = <K extends ThemeName>(
 const buildSemantic = <K extends ThemeName>(
 	{ prefix }: TokenBuilder<K>
 ) => {
-	const font = {
-		display: {
-			fontFamily: Token.base('font', 'black'),
-			fontSize: Token.base('size', '32'),
-			fontWeight: Token.base('weight', '700'),
-			lineHeight: Token.base('line', 'height', 'lg'),
+	const fontProperties = {
+		family: {
+			display: tkn('font', 'black'),
+			title: tkn('font', 'sans'),
+			body: tkn('font', 'sans'),
 		},
-		title: {
-			fontFamily: Token.base('font', 'sans'),
-			fontSize: Token.base('size', '24'),
-			fontWeight: Token.base('weight', '600'),
-			lineHeight: Token.base('line', 'height', 'lg'),
+		size: {
+			title: {
+				h1: tkn('font', 'size', '32'),
+				h2: tkn('font', 'size', '24'),
+				h3: tkn('font', 'size', '20'),
+			},
+			body: tkn('font', 'size', '16'),
+			label: {
+				base: tkn('font', 'size', '14'),
+				sm: tkn('font', 'size', '12'),
+			},
 		},
-		body: {
-			fontFamily: Token.base('font', 'sans'),
-			fontSize: Token.base('size', '16'),
-			fontWeight: Token.base('weight', '400'),
-			lineHeight: Token.base('line', 'height', 'sm'),
+		weight: {
+			normal: tkn('weight', '400'),
+			bold: tkn('weight', '600'),
+			bolder: tkn('weight', '700'),
 		},
 	}
 
-	// const fonts = {
-	// 	display: {},
-	// 	heading: {},
-	// 	body: {},
-	// 	caption: {},
-	// 	label: {},
-	// }
+	const fonts = {
+		...fontProperties,
+		display: {
+			fontFamily: Token.alias('font', 'family', 'display'),
+			fontSize: tkn('font', 'size', '96'),
+			fontWeight: Token.alias('font', 'weight', 'bolder'),
+			lineHeight: tkn('line', 'height', 'lg'),
+		},
+		title: {
+			fontFamily: tkn('font', 'sans'),
+			fontSize: tkn('size', '24'),
+			fontWeight: tkn('weight', '600'),
+			lineHeight: tkn('line', 'height', 'lg'),
+		},
+		body: {
+			fontFamily: tkn('font', 'sans'),
+			fontSize: tkn('size', '16'),
+			fontWeight: tkn('weight', '400'),
+			lineHeight: tkn('line', 'height', 'sm'),
+		},
+		// 	caption: {},
+		// 	label: {},
+	}
 
 	const radius = {
-		none: Token.base('radius', '01'),
-		sm: Token.base('radius', '02'),
-		md: Token.base('radius', '03'),
-		lg: Token.base('radius', '04'),
-		pill: Token.base('radius', '05'),
+		none: tkn('radius', '01'),
+		sm: tkn('radius', '02'),
+		md: tkn('radius', '03'),
+		lg: tkn('radius', '04'),
+		pill: tkn('radius', '05'),
+	}
+
+	const space = {
+		inset: {
+			xs: tkn('size', '4'),
+			sm: tkn('size', '8'),
+			md: tkn('size', '12'),
+			lg: tkn('size', '16'),
+			xl: tkn('size', '24'),
+			xxl: tkn('size', '32'),
+		},
+		// stack: {},
+		// inline: {},
 	}
 
 	const tokens = {
-		font,
+		fonts,
+		space,
 		border: { radius }
 	}
 
@@ -179,30 +206,18 @@ const buildPrimitives = <K extends keyof ThemeTokens>(
 	return { ...colorTokens, ...baseTokens }
 }
 
-// const buildScheme = <K extends keyof ThemeTokens>(
-// 	options: TokenBuilder<K>
-// ): ThemeTokens[K] => {
-// 	const { name } = options
-// 	return { [name]: buildTokens({ ...options, primitives }) }
-// }
-
 export const buildSchemes = (
 	theme: SiteTheme,
 	prefix?: string
 ): ThemeTokens => {
 	const primitives = buildPrimitives(theme),
 		semantic = buildSemantic({ prefix })
-	// const variables = Object.keys(primitives).filter(k => /(0|[1-9]\d*)00$/.test(k))
 	const options = { prefix, primitives }
-
-	// const themeName = theme.name
-	// console.log({ themeName })
 
 	return {
 		base: { ...primitives, ...semantic },
 		dark: buildTokens({ name: 'dark', scheme: 'ink', ...options }),
 		light: buildTokens({ name: 'light', scheme: 'paper', ...options }),
 		// ...buildTokens({ name: 'dark', scheme: 'ink' }),
-		// light: buildTokens({ name: 'light', scheme: 'paper', theme, prefix }),
 	}
 }
