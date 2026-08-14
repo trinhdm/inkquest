@@ -1,80 +1,8 @@
-import { _is } from './checks'
-import { isObject, toKebabCase } from '@/utils/helpers'
-import { getShorthand } from './shorthand'
-import type { BaseVarKey } from '../../theme.types'
-import type { CSSVars } from '@/types/shared'
-import type { RecordToMap } from '@/types/utils'
-import { rem } from '@/lib/general'
-
-export interface CSSVarArgs<T> {
-	path: string[]
-	prefix?: string
-	value?: T
-}
-
-const FONT_PART_INDEX = {
-	family: 1,
-	size: 0,
-	weight: 0,
-} as const
-
-const formatFontName = (name: string) => {
-	const parts = name.split('-'),
-		index = FONT_PART_INDEX[parts[1] as keyof typeof FONT_PART_INDEX]
-	return typeof index === 'number'
-		? parts.toSpliced(index, 1).join('-')
-		: name
-}
-
-const formatName = <T,>({ path, value }: CSSVarArgs<T>): string => {
-	let name = toKebabCase(path[0])
-
-	if (_is.FontName(name))
-		name = formatFontName(name)
-
-	if (_is.Plural(name) && _is.Singular(value))
-		name = name.slice(0, -1)
-
-	if (_is.Verb(name))
-		name = name.replace('ing', 'e')
-
-	return name
-}
-
-const formatRoute = <T,>({ path }: CSSVarArgs<T>): CSSVarArgs<T>['path'] => {
-	if (!path?.length) return path
-	let route = path
-
-	if (route.at(-1) === ('base' as BaseVarKey))
-		route = route.slice(0, -1)
-
-	for (const [i, str] of route.entries()) {
-		// let part = toKebabCase(str)
-
-		// if (_is.Plural(part))
-		// 	part = part.slice(0, -1)
-
-		route[i] = toKebabCase(str)
-	}
-
-	return route
-}
-
-export const formatToken = <T,>(args: CSSVarArgs<T>): keyof CSSVars => {
-	const name = formatName(args),
-		route = formatRoute(args)
-
-	const segments = [name, ...route.slice(1)]
-	const { prefix } = args
-
-	if (prefix && !name.startsWith(`--${prefix}`))
-		segments.unshift(prefix)
-
-	let token = segments.join('-')
-	token = token.replace(/^[- ]*/, '--')
-
-	return `${token as keyof CSSVars}` as const
-}
+import { rem } from '@/lib/general';
+import { formatToken, getShorthand, type CSSVarArgs } from './format';
+import { isObject } from '@/utils/helpers';
+import type { CSSVars } from '@/types/shared';
+import type { RecordToMap } from '@/types/utils';
 
 type Position = `${number}00` | `0${number}`
 const getStep = (num: number, value?: unknown): Position | `${number}` => {
@@ -88,15 +16,7 @@ const getStep = (num: number, value?: unknown): Position | `${number}` => {
 	return i < 10 ? step : String(i) as `${number}`
 }
 
-
-
-const scale2 = (steps: number[], base = 4) => steps.reduce((acc, step) => {
-	acc.push(rem(step * base))
-	return acc
-}, [] as ReturnType<typeof rem>[])
-
-
-const generateTokens = <T extends Record<string, unknown>>(
+export const generateTokens = <T extends Record<string, unknown>>(
 	input: T,
 	prepend?: string
 ): CSSVars => {
@@ -156,7 +76,7 @@ const generateTokens = <T extends Record<string, unknown>>(
 
 		if (isNum) {
 			for (const v of value) {
-				const step = rem(v)
+				const step = v % 100 === 0 ? v : rem(v)
 				const name = formatToken({ path: [ ...path, `${v}` ], prefix, value: step })
 				assign({ name, value: step })
 			}

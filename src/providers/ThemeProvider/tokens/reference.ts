@@ -45,3 +45,5 @@ export const Token = {
 	base: baseVar,
 	alias: aliasVar,
 }
+
+export const tkn = baseVar

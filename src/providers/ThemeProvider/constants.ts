@@ -2,6 +2,7 @@ import { rem } from '@/lib/general'
 import { paintVariants } from './tokens'
 import { themeControls } from '@/components/core/ScriptInjector'
 import type { SiteTheme } from './theme.types'
+import { tkn } from './tokens/reference'
 
 export const DEFAULT_COLORS: SiteTheme['colors'] = {
 	brand: [
@@ -30,9 +31,9 @@ export const DEFAULT_COLORS: SiteTheme['colors'] = {
 }
 
 const DEFAULT_FONT_FAMILY: SiteTheme['fontFamily'] = {
-	body: `'Archivo', -apple-system, BlinkMacSystemFont, sans-serif`,
-	title: `'Archivo Black', 'Archivo', sans-serif`,
-	label: `'Space Mono', SF Mono, monospace`,
+	black: `'Archivo Black', 'Archivo', sans-serif`,
+	mono: `'Space Mono', SF Mono, monospace`,
+	sans: `'Archivo', -apple-system, BlinkMacSystemFont, sans-serif`,
 }
 
 const { applyTheme, getStoredTheme, persistTheme } = themeControls()
@@ -48,21 +49,11 @@ export const DEFAULT_THEME: SiteTheme = {
 	colors: DEFAULT_COLORS,
 	fontFamily: DEFAULT_FONT_FAMILY,
 
-	fontWeight: {
-		regular: 400,
-		bold: 600,
-		black: 700,
-	},
-
-	// fontSize: {
-	// 	xs: rem(10),
-	// 	sm: rem(12),
-	// 	md: rem(16),
-	// 	lg: rem(18),
-	// 	xl: rem(20),
-	// },
-
-	fontSize: [1, 2, 3, 4, 6, 8, 10, 12],
+	fontWeight: [
+		400,
+		600,
+		700,
+	],
 
 	lineHeight: {
 		xs: 1.3,
@@ -70,26 +61,6 @@ export const DEFAULT_THEME: SiteTheme = {
 		md: 1.55,
 		lg: 1.55,
 		// xl: 1.5,
-	},
-
-	headings: {
-		fontFamily: DEFAULT_FONT_FAMILY.title,
-		fontWeight: 700,
-		tagName: {
-			h1: {
-				fontSize: rem(32),
-				lineHeight: 1.15,
-			},
-			h2: {
-				fontSize: rem(24),
-				lineHeight: 1.25,
-			},
-			h3: {
-				fontSize: rem(20),
-				lineHeight: 1.3,
-				fontWeight: 500,
-			},
-		}
 	},
 
 	breakpoints: {
@@ -100,19 +71,12 @@ export const DEFAULT_THEME: SiteTheme = {
 		xl: rem(1440),
 	},
 
-	// radius: {
-	// 	sm: rem(6),
-	// 	md: rem(8),
-	// 	lg: rem(12),
-	// 	pill: rem(999),
-	// },
-
 	radius: [
-		rem(0),
-		rem(6),
-		rem(8),
-		rem(12),
-		rem(999),
+		0,
+		6,
+		8,
+		12,
+		999,
 	],
 
 	easing: {
@@ -128,4 +92,47 @@ export const DEFAULT_THEME: SiteTheme = {
 		slow: '400ms',
 		gradual: '600ms',
 	},
+
+	// fontWeight: {
+	// 	regular: 400,
+	// 	bold: 600,
+	// 	black: 700,
+	// },
+
+	// fontSize: {
+	// 	xs: rem(10),
+	// 	sm: rem(12),
+	// 	md: rem(16),
+	// 	lg: rem(18),
+	// 	xl: rem(20),
+	// },
+
+	// fontSize: [1, 2, 3, 4, 6, 8, 10, 12],
+
+	// headings: {
+	// 	fontFamily: DEFAULT_FONT_FAMILY.title,
+	// 	fontWeight: 700,
+	// 	tagName: {
+	// 		h1: {
+	// 			fontSize: tkn('size', '32'),
+	// 			lineHeight: 1.15,
+	// 		},
+	// 		h2: {
+	// 			fontSize: tkn('size', '24'),
+	// 			lineHeight: 1.25,
+	// 		},
+	// 		h3: {
+	// 			fontSize: tkn('size', '20'),
+	// 			lineHeight: 1.3,
+	// 			fontWeight: 500,
+	// 		},
+	// 	}
+	// },
+
+	// radius: {
+	// 	sm: rem(6),
+	// 	md: rem(8),
+	// 	lg: rem(12),
+	// 	pill: rem(999),
+	// },
 }

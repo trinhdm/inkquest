@@ -1,4 +1,4 @@
-import { generateTokens } from './format'
+import { generateTokens } from './generate'
 import { Token } from './reference'
 import type { ColorScheme, SiteTheme, ThemeName } from '../theme.types'
 import type { CSSProperties } from 'react'
@@ -51,8 +51,8 @@ const buildSemanticTheme = <K extends ThemeName>(
 
 	const backgrounds = {
 		page: options.name === 'dark'
-			? Token.alias('primary', '01', options)
-			: Token.alias('primary', '03', options),
+			? Token.base(scheme, '100')
+			: Token.base(scheme, '300'),
 		surface: Token.alias('primary', '02', options),
 		card: options.name === 'dark'
 			? Token.alias('primary', '03', options)
@@ -112,9 +112,9 @@ const buildTokens = <K extends ThemeName>(
 	let tokens = { theme: name }
 
 	if (name) {
-		const aliasTokens = buildAlias(options)
+		// const aliasTokens = buildAlias(options)
 		const semanticTokens = buildSemanticTheme(options)
-		tokens = { ...tokens, ...aliasTokens, ...semanticTokens }
+		tokens = { ...tokens, ...semanticTokens }
 	}
 
 	return generateTokens(tokens, prefix)
@@ -124,12 +124,22 @@ const buildSemantic = <K extends ThemeName>(
 	{ prefix }: TokenBuilder<K>
 ) => {
 	const font = {
-		display: Token.base('text', 'h1'),
-		title: Token.base('text', 'h2'),
+		display: {
+			fontFamily: Token.base('font', 'black'),
+			fontSize: Token.base('size', '32'),
+			fontWeight: Token.base('weight', '700'),
+			lineHeight: Token.base('line', 'height', 'lg'),
+		},
+		title: {
+			fontFamily: Token.base('font', 'sans'),
+			fontSize: Token.base('size', '24'),
+			fontWeight: Token.base('weight', '600'),
+			lineHeight: Token.base('line', 'height', 'lg'),
+		},
 		body: {
-			fontFamily: Token.base('font', 'body'),
+			fontFamily: Token.base('font', 'sans'),
 			fontSize: Token.base('size', '16'),
-			fontWeight: 400,
+			fontWeight: Token.base('weight', '400'),
 			lineHeight: Token.base('line', 'height', 'sm'),
 		},
 	}
