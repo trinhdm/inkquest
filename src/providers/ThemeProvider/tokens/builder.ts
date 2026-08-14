@@ -15,21 +15,6 @@ interface TokenBuilder<K extends ThemeName> {
 	scheme: ColorScheme
 }
 
-// interface TokenBuilderRoot extends Omit<ThemeOptions, 'scheme'> {}
-
-// type BaseTokenBuilder = TokenBuilderRoot & {
-// 	name?: never
-// 	scheme?: never
-// }
-
-// type ThemeTokenBuilder<K extends ThemeName> = TokenBuilderRoot & {
-// 	name: K
-// 	scheme: ColorScheme
-// }
-
-// type TokenBuilder<K extends keyof ThemeTokens> =
-// 	K extends ThemeName ? ThemeTokenBuilder<K> : BaseTokenBuilder
-
 type TokenItem<T extends keyof CSSProperties> =
 	CSSProperties[T]
 
@@ -47,7 +32,7 @@ export type TokenGroup<T extends keyof CSSProperties> =
 	| TokenItem<T>
 	| TokenStatesList<T>
 
-const buildSemantic = <K extends ThemeName>(
+const buildSemanticTheme = <K extends ThemeName>(
 	options: TokenBuilder<K>
 ) => {
 	const { scheme } = options
@@ -92,7 +77,7 @@ const buildSemantic = <K extends ThemeName>(
 	}
 
 	// const semantic = { accent, colors, backgrounds, border }
-	console.log({ scheme, options })
+	// console.log({ scheme, options })
 
 	return { accent, colors, backgrounds, border, motion }
 }
@@ -128,8 +113,46 @@ const buildTokens = <K extends ThemeName>(
 
 	if (name) {
 		const aliasTokens = buildAlias(options)
-		const semanticTokens = buildSemantic(options)
+		const semanticTokens = buildSemanticTheme(options)
 		tokens = { ...tokens, ...aliasTokens, ...semanticTokens }
+	}
+
+	return generateTokens(tokens, prefix)
+}
+
+const buildSemantic = <K extends ThemeName>(
+	{ prefix }: TokenBuilder<K>
+) => {
+	const font = {
+		display: Token.base('text', 'h1'),
+		title: Token.base('text', 'h2'),
+		body: {
+			fontFamily: Token.base('font', 'body'),
+			fontSize: Token.base('size', '16'),
+			fontWeight: 400,
+			lineHeight: Token.base('line', 'height', 'sm'),
+		},
+	}
+
+	// const fonts = {
+	// 	display: {},
+	// 	heading: {},
+	// 	body: {},
+	// 	caption: {},
+	// 	label: {},
+	// }
+
+	const radius = {
+		none: Token.base('radius', '01'),
+		sm: Token.base('radius', '02'),
+		md: Token.base('radius', '03'),
+		lg: Token.base('radius', '04'),
+		pill: Token.base('radius', '05'),
+	}
+
+	const tokens = {
+		font,
+		border: { radius }
 	}
 
 	return generateTokens(tokens, prefix)
@@ -157,7 +180,8 @@ export const buildSchemes = (
 	theme: SiteTheme,
 	prefix?: string
 ): ThemeTokens => {
-	const primitives = buildPrimitives(theme)
+	const primitives = buildPrimitives(theme),
+		semantic = buildSemantic({ prefix })
 	// const variables = Object.keys(primitives).filter(k => /(0|[1-9]\d*)00$/.test(k))
 	const options = { prefix, primitives }
 
@@ -165,7 +189,7 @@ export const buildSchemes = (
 	// console.log({ themeName })
 
 	return {
-		base: primitives,
+		base: { ...primitives, ...semantic },
 		dark: buildTokens({ name: 'dark', scheme: 'ink', ...options }),
 		light: buildTokens({ name: 'light', scheme: 'paper', ...options }),
 		// ...buildTokens({ name: 'dark', scheme: 'ink' }),

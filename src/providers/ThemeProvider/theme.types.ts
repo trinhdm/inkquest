@@ -1,7 +1,6 @@
 import type { CSSProperties } from 'react'
 import type { AtLeastOneKey } from '@/types/utils'
 import type { CSSUnit, CSSVars, FontList, HeadingTag, HexCode, Size, Unit } from '@/types/shared'
-// import type { GetPaletteFn, SetPaletteFn } from './theme/palette'
 import type { PaintVariantsFn } from './tokens/variants'
 
 export type ThemeName =
@@ -14,17 +13,13 @@ export type ColorScheme =
 	| 'paper'
 
 export interface SiteTheme {
-	// getPalette: GetPaletteFn
-	// setPalette: SetPaletteFn
-
 	paintVariants: PaintVariantsFn
 
-	// getName: () => ThemeName
 	name: ThemeName
 	setName: (theme: ThemeName) => void
 
 	fontFamily: FontStyle<'fontFamily', 'body'>
-	fontSize: FontStyle<'fontSize', 'md'>
+	fontSize: number[] | FontStyle<'fontSize', 'md'>
 	fontWeight: FontStyle<'fontWeight', 'regular'>
 	lineHeight: FontStyle<'lineHeight'>
 
@@ -32,7 +27,8 @@ export interface SiteTheme {
 
 	colors: Record<ColorScheme, HexCode[]>
 	breakpoints: Style<CSSUnit, Size>
-	radius: Style<CSSUnit, Size | 'pill', 'md'>
+	radius: CSSUnit[]
+	// radius: Style<CSSUnit, Size | 'pill', 'md'>
 
 	duration: Style<CSSUnit, ThemeDuration, BaseVarKey>
 	easing: Style<`cubic-bezier(${string})`, ThemeEasing, BaseVarKey>
@@ -68,7 +64,7 @@ type StyleList<
 			? ConsistentValues<Keys, true, number extends V ? V : undefined>
 			: AtLeastOneKey<Record<Keys, V>>
 
-type Style<
+export type Style<
     V,
     Keys extends PropertyKey,
     RK extends Keys | undefined = undefined,

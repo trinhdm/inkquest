@@ -1,11 +1,7 @@
 import { rem } from '@/lib/general'
-// import { getPalette, setPalette } from './theme/palette'
-import { getVariantColors, getVariantTokens, paintVariants } from './tokens'
-import type { SiteTheme } from './theme.types'
+import { paintVariants } from './tokens'
 import { themeControls } from '@/components/core/ScriptInjector'
-const { applyTheme, getStoredTheme, persistTheme } = themeControls()
-// ...
-
+import type { SiteTheme } from './theme.types'
 
 export const DEFAULT_COLORS: SiteTheme['colors'] = {
 	brand: [
@@ -39,12 +35,15 @@ const DEFAULT_FONT_FAMILY: SiteTheme['fontFamily'] = {
 	label: `'Space Mono', SF Mono, monospace`,
 }
 
-export const DEFAULT_THEME: SiteTheme = {
-	// getPalette,
-	// setPalette,
+const { applyTheme, getStoredTheme, persistTheme } = themeControls()
 
+export const DEFAULT_THEME: SiteTheme = {
 	get name() { return getStoredTheme() },
 	setName: (theme) => { applyTheme(theme); persistTheme(theme) },
+
+	paintVariants,
+
+	baseSize: 4,
 
 	colors: DEFAULT_COLORS,
 	fontFamily: DEFAULT_FONT_FAMILY,
@@ -55,13 +54,15 @@ export const DEFAULT_THEME: SiteTheme = {
 		black: 700,
 	},
 
-	fontSize: {
-		xs: rem(10),
-		sm: rem(12),
-		md: rem(16),
-		lg: rem(18),
-		xl: rem(20),
-	},
+	// fontSize: {
+	// 	xs: rem(10),
+	// 	sm: rem(12),
+	// 	md: rem(16),
+	// 	lg: rem(18),
+	// 	xl: rem(20),
+	// },
+
+	fontSize: [1, 2, 3, 4, 6, 8, 10, 12],
 
 	lineHeight: {
 		xs: 1.3,
@@ -86,7 +87,7 @@ export const DEFAULT_THEME: SiteTheme = {
 			h3: {
 				fontSize: rem(20),
 				lineHeight: 1.3,
-				fontWeight: 600,
+				fontWeight: 500,
 			},
 		}
 	},
@@ -99,12 +100,20 @@ export const DEFAULT_THEME: SiteTheme = {
 		xl: rem(1440),
 	},
 
-	radius: {
-		sm: rem(6),
-		md: rem(8),
-		lg: rem(12),
-		pill: rem(999),
-	},
+	// radius: {
+	// 	sm: rem(6),
+	// 	md: rem(8),
+	// 	lg: rem(12),
+	// 	pill: rem(999),
+	// },
+
+	radius: [
+		rem(0),
+		rem(6),
+		rem(8),
+		rem(12),
+		rem(999),
+	],
 
 	easing: {
 		base: 'cubic-bezier(0.4, 0, 0.2, 1)',
@@ -119,21 +128,4 @@ export const DEFAULT_THEME: SiteTheme = {
 		slow: '400ms',
 		gradual: '600ms',
 	},
-
-	// variants: {
-	// 	getColors: getVariantColors,
-	// 	resolveTokens: getVariantTokens,
-	// },
-
-	paintVariants,
-	// variantColors: getVariantColors,
-	// variantTokens: getVariantTokens,
 }
-
-// export const DEFAULT_PALETTE: ColorPalette = {
-// 	background: 'transparent',
-// 	border: 'transparent',
-// 	color: 'inherit',
-// 	focus: 'transparent',
-// 	hover: 'transparent',
-// }

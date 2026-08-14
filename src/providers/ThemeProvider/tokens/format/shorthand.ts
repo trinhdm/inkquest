@@ -2,8 +2,8 @@ import { isObject } from '@/utils/helpers'
 
 interface ShorthandArgs<T> {
 	property: keyof typeof _SHORTHANDLERS
-	tag: string
-	value?: T
+	// tag: string
+	values: T[]
 }
 
 const readStyle = (
@@ -38,16 +38,16 @@ const _SHORTHANDLERS = {
 }
 
 export const getShorthand = <T extends Record<string, unknown>>({
-	property, tag, value,
+	property, values,
 }: ShorthandArgs<T>): string | undefined => {
 	if (!Object.hasOwn(_SHORTHANDLERS, property)) return
-	if (!value || !Object.hasOwn(value, 'tagName')) return
-	const { tagName } = value
+	// if (!value || !Object.hasOwn(value, 'tagName')) return
+	// const { tagName } = value
 
-	if (!isObject(tagName) || !Object.hasOwn(tagName, tag)) return
-	const tagProps = tagName[tag] as T
+	// if (!isObject(tagName) || !Object.hasOwn(tagName, tag)) return
+	// const tagProps = tagName[tag] as T
 
-	if (isObject(tagProps) && !Object.keys(tagProps).some(k => k.includes(property)))  return
+	// if (isObject(tagProps) && !Object.keys(tagProps).some(k => k.includes(property)))  return
 
-	return (_SHORTHANDLERS[property])([value, tagProps])
+	return (_SHORTHANDLERS[property])(values)
 }

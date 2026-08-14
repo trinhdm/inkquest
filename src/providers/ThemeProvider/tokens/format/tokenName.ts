@@ -4,23 +4,18 @@ import { getShorthand } from './shorthand'
 import type { BaseVarKey } from '../../theme.types'
 import type { CSSVars } from '@/types/shared'
 import type { RecordToMap } from '@/types/utils'
+import { rem } from '@/lib/general'
 
-type ThemeNode =
-    | string
-    | number
-    | ((...args: never[]) => unknown)
-    | ThemeNode[]
-    | { [key: string]: ThemeNode }
-
-export interface CSSVarArgs<T = ThemeNode> {
+export interface CSSVarArgs<T> {
 	path: string[]
 	prefix?: string
 	value?: T
 }
 
 const FONT_PART_INDEX = {
-	'family': 1,
-	'weight': 0,
+	family: 1,
+	size: 0,
+	weight: 0,
 } as const
 
 const formatFontName = (name: string) => {
@@ -53,8 +48,14 @@ const formatRoute = <T,>({ path }: CSSVarArgs<T>): CSSVarArgs<T>['path'] => {
 	if (route.at(-1) === ('base' as BaseVarKey))
 		route = route.slice(0, -1)
 
-	for (const [i, str] of route.entries())
+	for (const [i, str] of route.entries()) {
+		// let part = toKebabCase(str)
+
+		// if (_is.Plural(part))
+		// 	part = part.slice(0, -1)
+
 		route[i] = toKebabCase(str)
+	}
 
 	return route
 }
@@ -76,16 +77,23 @@ export const formatToken = <T,>(args: CSSVarArgs<T>): keyof CSSVars => {
 }
 
 type Position = `${number}00` | `0${number}`
-function getStep(num: number, value?: unknown): Position | `${number}` {
+const getStep = (num: number, value?: unknown): Position | `${number}` => {
 	const isPrimitive = typeof value === 'string' && !value.startsWith('var(--')
 	const i = num + 1,
 		step = `0${i}` as const
 
-	if (isPrimitive)
+	if (isPrimitive && value.startsWith('#'))
 		return `${i}00` as const
 
 	return i < 10 ? step : String(i) as `${number}`
 }
+
+
+
+const scale = (steps: number[], base = 4) => steps.reduce((acc, step) => {
+	acc.push(rem(step * base))
+	return acc
+}, [] as ReturnType<typeof rem>[])
 
 
 export const generateTokens = <T extends Record<string, unknown>>(
@@ -100,25 +108,53 @@ export const generateTokens = <T extends Record<string, unknown>>(
 	}
 
 	const toShorthand = (args: CSSVarArgs<Record<string, unknown>>) => {
-		const { value: { tagName } } = args as CSSVarArgs<T> & { value: { tagName: T } }
+		const { path, value: { tagName } } = args as CSSVarArgs<T> & { value: { tagName: T } }
+		let shorthand = {} as Parameters<typeof assign>[0]
 
-		for (const tag of Object.keys(tagName)) {
-			const shorthand: Parameters<typeof assign>[0] = {
-				name: formatToken({ ...args, path: ['text', tag] }),
-				value: getShorthand({ ...args, property: 'font', tag }),
+		if (tagName) {
+			for (const tag of Object.keys(tagName)) {
+				const tagValues = tagName[tag]
+
+				if (!isObject(tagValues)) continue
+				if (!Object.keys(tagValues).some(k => k.includes('font'))) continue
+
+				const route = path.length > 1 ? path : ['text']
+				shorthand = {
+					name: formatToken({ ...args, path: [...route, tag] }),
+					value: getShorthand({ property: 'font', values: [args.value!, tagValues] }),
+				}
+				console.log({ tag, tagValues, shorthand })
+				if (!shorthand.value) continue
+				assign(shorthand)
+			}
+		} else {
+			shorthand = {
+				name: formatToken(args),
+				value: getShorthand({ property: 'font', values: [args.value!] }),
 			}
 
-			if (!shorthand.value) continue
+			if (!shorthand.value) return
 			assign(shorthand)
 		}
 	}
 
 	const withScale = ({ path, prefix, value }: CSSVarArgs<unknown[]>) => {
 		if (!value) return
-		for (const [index, v] of value.entries()) {
-			const step = getStep(index, v)
-			const name = formatToken({ path: [ ...path, step ], prefix, value: v })
-			assign({ name, value: v })
+		const isNum = value.every(v => typeof v === 'number')
+
+		if (isNum) {
+			for (const v of value) {
+				const step = v * 4
+				const name = formatToken({ path: [ ...path, `${step}` ], prefix, value: rem(step) })
+				assign({ name, value: rem(step) })
+			}
+		}
+		else {
+			for (const [index, v] of value.entries()) {
+				const step = getStep(index, v)
+				const name = formatToken({ path: [ ...path, step ], prefix, value: v })
+				assign({ name, value: v })
+			}
 		}
 	}
 
@@ -140,6 +176,14 @@ export const generateTokens = <T extends Record<string, unknown>>(
 		}
 
 		if (isObject(value)) {
+			const fontKeys = ['fontFamily', 'fontSize', 'fontWeight', 'lineHeight'],
+				keys = Object.keys(value)
+
+			if (keys.length === fontKeys.length && fontKeys.every(k => keys.includes(k))) {
+				toShorthand({ ...args, value })
+				return
+			}
+
 			if (!Object.hasOwn(value, 'tagName')) {
 				traverse({ ...args, value })
 				return

@@ -1,6 +1,7 @@
 import { formatToken } from './format/tokenName'
 import { PREFIX_CSS_SELECTOR } from '@/utils/constants'
 import type { ColorScheme, SiteTheme } from '@/providers/ThemeProvider'
+import type { CSSVars } from '@/types/shared'
 
 interface ThemeOptions {
 	prefix?: string
@@ -8,20 +9,20 @@ interface ThemeOptions {
 	theme?: SiteTheme
 }
 
+type TokenVar = `var(${keyof CSSVars})`
 type PathArgs = [...paths: string[], options: ThemeOptions] | string[]
 
 const splitTokenPath = (...args: PathArgs) => {
 	const path = args as string[]
 	let options: ThemeOptions | undefined
 
-	// (args as Exclude<typeof args, string[]>).pop()
 	if (typeof args.at(-1) === 'object')
 		options = args.pop() as ThemeOptions
 
 	return { options, path }
 }
 
-const getTokenVar = (args: Parameters<typeof formatToken>[0]) => {
+const getTokenVar = (args: Parameters<typeof formatToken>[0]): TokenVar => {
 	return `var(${formatToken(args)})`
 }
 
@@ -44,45 +45,3 @@ export const Token = {
 	base: baseVar,
 	alias: aliasVar,
 }
-
-
-// const _namePrimitive = (
-// 	...args: [...paths: string[], options: ThemeOptions] | string[]
-// ) => {
-// 	const last = args.at(-1)
-// 	let options = {} as ThemeOptions,
-// 		prefix: string | undefined = undefined
-
-// 	if (typeof last === 'object') {
-// 		options = args.pop() as ThemeOptions
-
-// 		if (Object.hasOwn(options, 'prefix'))
-// 			({ prefix } = options)
-// 	}
-
-// 	const path = args as string[]
-// 	const variable = formatToken({ path, prefix })
-// 	// console.log(variable, options, { path, prefix })
-
-// 	return variable
-// }
-
-// const _getSemantic = (
-// 	...args: [...paths: string[], options: ThemeOptions] | string[]
-// ) => {
-// 	const last = args.at(-1)
-// 	let options = args as Exclude<typeof args, string[]>
-
-// 	if (typeof last === 'string')
-// 		options.push({ prefix: PREFIX_CSS_SELECTOR } as ThemeOptions)
-
-// 	const variable = _namePrimitive(...options)
-// 	return `var(${variable})`
-// }
-
-// const _getPrimitive = (
-// 	...args: [...paths: string[], options: ThemeOptions] | string[]
-// ) => {
-// 	const variable = _namePrimitive(...args)
-// 	return `var(${variable})`
-// }
