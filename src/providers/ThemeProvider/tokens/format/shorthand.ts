@@ -17,6 +17,9 @@ const readStyle = (
 }
 
 const fontShorthand = <T extends Record<string, unknown>>(props: T[]) => {
+	// const properties = Object.keys(Object.assign({}, ...props))
+	// if (!properties.some(k => k.includes('font'))) return ''
+
 	const family = readStyle('fontFamily', ...props),
 		fontSize = readStyle('fontSize', ...props),
 		lineHeight = readStyle('lineHeight', ...props),
@@ -36,13 +39,15 @@ const _SHORTHANDLERS = {
 
 export const getShorthand = <T extends Record<string, unknown>>({
 	property, tag, value,
-}: ShorthandArgs<T>) => {
-	if (!Object.hasOwn(_SHORTHANDLERS, property)) return ''
-	if (!value || !Object.hasOwn(value, 'tagName')) return ''
+}: ShorthandArgs<T>): string | undefined => {
+	if (!Object.hasOwn(_SHORTHANDLERS, property)) return
+	if (!value || !Object.hasOwn(value, 'tagName')) return
 	const { tagName } = value
 
-	if (!isObject(tagName) || !Object.hasOwn(tagName, tag)) return ''
+	if (!isObject(tagName) || !Object.hasOwn(tagName, tag)) return
 	const tagProps = tagName[tag] as T
+
+	if (isObject(tagProps) && !Object.keys(tagProps).some(k => k.includes(property)))  return
 
 	return (_SHORTHANDLERS[property])([value, tagProps])
 }

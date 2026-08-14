@@ -1,6 +1,6 @@
 import type { BaseVarKey, SiteTheme } from '@/providers/ThemeProvider'
 import { deepMerge } from '@/utils/helpers'
-import { nameVariables } from '../css'
+import { generateTokens } from './format'
 import { Token } from './reference'
 import type { CSSVariable } from '@/types/shared'
 import type { TokenStatesList, TokenGroup } from './builder'
@@ -148,7 +148,7 @@ export type SetPaletteFn =
 export const getVariantTokens: SetPaletteFn = ({ colors, name }) => {
 	type N = typeof name
 	const palette = deepMerge(DEFAULT_PALETTE, colors),
-		vars = nameVariables(palette, name)
+		vars = generateTokens(palette, name)
 
 	return vars as PaletteVars<N>
 }

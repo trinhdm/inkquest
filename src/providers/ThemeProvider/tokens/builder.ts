@@ -1,4 +1,4 @@
-import { nameVariables } from '../css'
+import { generateTokens } from './format'
 import { Token } from './reference'
 import type { ColorScheme, SiteTheme, ThemeName } from '../theme.types'
 import type { CSSProperties } from 'react'
@@ -101,25 +101,23 @@ const buildAlias = <K extends ThemeName>(
 	options: TokenBuilder<K>
 ): ThemeTokens[K] => {
 	const { prefix, primitives, scheme } = options
+	const PRIMITIVE_SCALE = /(0|[1-9]\d*)00$/,
+		variables = Object.keys(primitives).filter(k => PRIMITIVE_SCALE.test(k))
 
-	const variables = Object.keys(primitives).filter(k => /(0|[1-9]\d*)00$/.test(k))
-	let tokens = {}
-
-	const groupedByScheme = variables.reduce((acc, value) => {
+	const groupedByScheme = variables.reduce<Record<string, string[]>>((acc, value) => {
 		if (value.includes('brand')) return acc
 		const group = value.includes(scheme) ? 'primary' : 'secondary'
 
-		if (group && Object.hasOwn(acc, group) && !acc[group].includes(value))
+		if (!Object.hasOwn(acc, group))
+			acc[group] = [] as string[]
+		if (!acc[group].includes(value))
 			acc[group].push(`var(${value})`)
 
 		return acc
-	}, {
-		primary: [] as string[],
-		secondary: [] as string[]
-	})
+	}, {})
 	// console.log({ scheme, groupedByScheme, options })
 
-	return nameVariables(groupedByScheme, prefix)
+	return generateTokens(groupedByScheme, prefix)
 }
 
 const buildTokens = <K extends ThemeName>(
@@ -134,7 +132,7 @@ const buildTokens = <K extends ThemeName>(
 		tokens = { ...tokens, ...aliasTokens, ...semanticTokens }
 	}
 
-	return nameVariables(tokens, prefix)
+	return generateTokens(tokens, prefix)
 }
 
 const buildPrimitives = <K extends keyof ThemeTokens>(
@@ -142,8 +140,8 @@ const buildPrimitives = <K extends keyof ThemeTokens>(
 ): ThemeTokens[K] => {
 	// let primitives = {}
 	const { colors, name, setName, ...baseTheme } = theme
-	const colorTokens = nameVariables(colors),
-		baseTokens = nameVariables(baseTheme)
+	const colorTokens = generateTokens(colors),
+		baseTokens = generateTokens(baseTheme)
 
 	return { ...colorTokens, ...baseTokens }
 }

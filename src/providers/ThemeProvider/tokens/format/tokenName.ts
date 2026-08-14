@@ -1,7 +1,7 @@
 import { _is } from './checks'
 import { isObject, toKebabCase } from '@/utils/helpers'
 import { getShorthand } from './shorthand'
-import type { BaseVarKey } from '../theme.types'
+import type { BaseVarKey } from '../../theme.types'
 import type { CSSVars } from '@/types/shared'
 import type { RecordToMap } from '@/types/utils'
 
@@ -31,7 +31,7 @@ const formatFontName = (name: string) => {
 		: name
 }
 
-const formatName = <T,>({ path, value }: CSSVarArgs<T>) => {
+const formatName = <T,>({ path, value }: CSSVarArgs<T>): string => {
 	let name = toKebabCase(path[0])
 
 	if (_is.FontName(name))
@@ -59,8 +59,7 @@ const formatRoute = <T,>({ path }: CSSVarArgs<T>): CSSVarArgs<T>['path'] => {
 	return route
 }
 
-export const getVariable = <T,>(args: CSSVarArgs<T>): keyof CSSVars => {
-	// if (!path?.length) return ''
+export const formatToken = <T,>(args: CSSVarArgs<T>): keyof CSSVars => {
 	const name = formatName(args),
 		route = formatRoute(args)
 
@@ -70,55 +69,46 @@ export const getVariable = <T,>(args: CSSVarArgs<T>): keyof CSSVars => {
 	if (prefix && !name.startsWith(`--${prefix}`))
 		segments.unshift(prefix)
 
-	let variable = segments.join('-')
-	variable = variable.replace(/^[- ]*/, '--')
+	let token = segments.join('-')
+	token = token.replace(/^[- ]*/, '--')
 
-	return `${variable as keyof CSSVars}` as const
+	return `${token as keyof CSSVars}` as const
 }
 
-type Position = `0${number}`
-
-function getStep(num: number, value?: unknown): string
-function getStep(num: Position, value?: never): number
-function getStep(num: number | Position, value?: unknown): number | string {
-	if (typeof num === 'string')
-		return parseFloat(num) - 1
-
+type Position = `${number}00` | `0${number}`
+function getStep(num: number, value?: unknown): Position | `${number}` {
 	const isPrimitive = typeof value === 'string' && !value.startsWith('var(--')
 	const i = num + 1,
-		step = isPrimitive ? i * 100 : `0${i}`
-	return i < 10 ? `${step}` as const : String(i)
+		step = `0${i}` as const
+
+	if (isPrimitive)
+		return `${i}00` as const
+
+	return i < 10 ? step : String(i) as `${number}`
 }
 
 
-export const nameVariables = <T extends Record<string, unknown>>(
+export const generateTokens = <T extends Record<string, unknown>>(
 	input: T,
 	prepend?: string
 ): CSSVars => {
 	const variables: RecordToMap<CSSVars> = new Map()
-	// const vars: Record<string, string> = {}
 
 	const assign = ({ name, value }: { name: keyof CSSVars; value: unknown }) => {
-		// vars[name] = String(value)
+		if (!name || !value) return
 		variables.set(name, String(value))
 	}
 
-	const toFontShorthand = (args: CSSVarArgs<Record<string, unknown>>, tag: string) => ({
-		name: getVariable({ ...args, path: ['text', tag] }),
-		value: getShorthand({ ...args, tag, property: 'font' }),
-	})
-
-	const toShorthand = <U = T>(args: CSSVarArgs<Record<string, unknown>>) => {
+	const toShorthand = (args: CSSVarArgs<Record<string, unknown>>) => {
 		const { value: { tagName } } = args as CSSVarArgs<T> & { value: { tagName: T } }
 
 		for (const tag of Object.keys(tagName)) {
-			const tagValues = tagName[tag]
-			let shorthand = {} as Parameters<typeof assign>[0]
+			const shorthand: Parameters<typeof assign>[0] = {
+				name: formatToken({ ...args, path: ['text', tag] }),
+				value: getShorthand({ ...args, property: 'font', tag }),
+			}
 
-			if (!isObject(tagValues)) continue
-			if (Object.keys(tagValues).some(k => k.includes('font')))
-				(shorthand = toFontShorthand(args, tag))
-
+			if (!shorthand.value) continue
 			assign(shorthand)
 		}
 	}
@@ -127,15 +117,15 @@ export const nameVariables = <T extends Record<string, unknown>>(
 		if (!value) return
 		for (const [index, v] of value.entries()) {
 			const step = getStep(index, v)
-			const name = getVariable({ path: [ ...path, step ], prefix, value: v })
+			const name = formatToken({ path: [ ...path, step ], prefix, value: v })
 			assign({ name, value: v })
 		}
 	}
 
-	const traverse = <U = T>({ value, path, prefix }: CSSVarArgs<U>) => {
+	const traverse = <U = T>({ path, prefix, value }: CSSVarArgs<U>) => {
 		if (!value) return
 		Object.entries(value).forEach(([k, v]) =>
-			generate({ value: v as T, path: [...path, k], prefix }))
+			generate({ value: v, path: [...path, k], prefix }))
 	}
 
 	const generate = (args: CSSVarArgs<unknown>) => {
@@ -160,7 +150,7 @@ export const nameVariables = <T extends Record<string, unknown>>(
 			return
 		}
 
-		assign({ name: getVariable(args), value })
+		assign({ name: formatToken(args), value })
 	}
 
 	generate({ value: input, path: [], prefix: prepend })
