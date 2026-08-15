@@ -18,30 +18,57 @@ export interface SiteTheme {
 	name: ThemeName
 	setName: (theme: ThemeName) => void
 
-	fontFamily: FontStyle<'fontFamily', 'body'>
+	scale: { size: number }
+
+	fontFamily: FontStyle<'fontFamily', 'sans'>
 	fontSize: number[] | FontStyle<'fontSize', 'md'>
-	fontWeight: FontStyle<'fontWeight', 'regular'>
+	fontWeight: number[] | FontStyle<'fontWeight', 'regular'>
 	lineHeight: FontStyle<'lineHeight'>
 
-	headings: FontStyles<TagFontStyles, HeadingTag, 'h1'>
+	// headings: FontStyles<TagFontStyles, HeadingTag, 'h1'>
 
 	colors: Record<ColorScheme, HexCode[]>
 	breakpoints: Style<CSSUnit, Size>
-	radius: CSSUnit[]
-	// radius: Style<CSSUnit, Size | 'pill', 'md'>
+	radius: number[]
 
-	duration: Style<CSSUnit, ThemeDuration, BaseVarKey>
+	duration: Style<CSSUnit, ThemeDuration, 'default'>
 	easing: Style<`cubic-bezier(${string})`, ThemeEasing, BaseVarKey>
 
 	subcomponents?: Record<string, {
-		cssVars?: (theme: SiteTheme, props: any, ctx: unknown) => Partial<Record<string, CSSVars>>
+		cssVars?: (theme: SiteTheme, props: unknown, ctx: unknown) => Partial<Record<string, CSSVars>>
 	}>
 }
+
+// export interface SiteTheme {
+// 	paintVariants: PaintVariantsFn
+
+// 	name: ThemeName
+// 	setName: (theme: ThemeName) => void
+
+// 	fontFamily: FontStyle<'fontFamily', 'body'>
+// 	fontSize: number[] | FontStyle<'fontSize', 'md'>
+// 	fontWeight: FontStyle<'fontWeight', 'regular'>
+// 	lineHeight: FontStyle<'lineHeight'>
+
+// 	headings: FontStyles<TagFontStyles, HeadingTag, 'h1'>
+
+// 	colors: Record<ColorScheme, HexCode[]>
+// 	breakpoints: Style<CSSUnit, Size>
+// 	radius: CSSUnit[]
+// 	// radius: Style<CSSUnit, Size | 'pill', 'md'>
+
+// 	duration: Style<CSSUnit, ThemeDuration, BaseVarKey>
+// 	easing: Style<`cubic-bezier(${string})`, ThemeEasing, BaseVarKey>
+
+// 	subcomponents?: Record<string, {
+// 		cssVars?: (theme: SiteTheme, props: any, ctx: unknown) => Partial<Record<string, CSSVars>>
+// 	}>
+// }
 
 export type BaseVarKey = 'base'
 
 type ThemeDuration =
-	| BaseVarKey
+	| 'default'
 	| 'instant'
 	| 'fast'
 	| 'slow'

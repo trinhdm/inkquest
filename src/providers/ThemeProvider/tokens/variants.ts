@@ -1,10 +1,10 @@
 import type { BaseVarKey, SiteTheme } from '@/providers/ThemeProvider'
 import { deepMerge } from '@/utils/helpers'
-import { generateTokens } from './generate'
-import { Token } from './reference'
+import { tokenGenerator } from './generate'
 import type { CSSVariable } from '@/types/shared'
-import type { TokenStatesList, TokenGroup } from './builder'
+import type { TokenStatesList, TokenGroup } from './config'
 import type { ValidSpecs } from '@/types/spec'
+import { alias } from './ref'
 
 export interface ColorPalette {
 	background?: TokenGroup<'backgroundColor'>
@@ -82,57 +82,60 @@ export const getVariantColors: GetPaletteFn = _props => {
 		case 'solid':
 			return {
 				background: {
-					base: Token.alias('accent'),
-					hover: Token.alias('accent', 'hover'),
+					base: alias.accent(),
+					hover: alias.accent('hover'),
 				},
-				color: Token.alias('color', 'interactive'),
+				color: {
+					base: alias.color.interactive(),
+					hover: alias.color.interactive('hover'),
+				}
 			}
 		case 'outline':
 			return {
 				border: {
-					base: Token.alias('border'),
-					hover: Token.alias('border', 'strong'),
+					base: alias.border(),
+					hover: alias.border('strong'),
 				},
-				color: Token.alias('color', 'interactive'),
+				color: alias.color.interactive(),
 			}
 		case 'ghost':
 			return {
 				background: {
 					base: 'transparent',
-					hover: Token.alias('background', 'card'),
+					hover: alias.background.card(),
 				},
 				border: {
 					base: 'transparent',
-					hover: Token.alias('background', 'card', 'hover'),
+					hover: alias.background.card('hover'),
 				},
 				color: {
-					base: Token.alias('color', 'interactive'),
-					hover: Token.alias('color', 'interactive', 'hover'),
+					base: alias.color.interactive(),
+					hover: alias.color.interactive('hover'),
 				},
 			}
 		case 'light':
 			return {
 				background: {
-					base: Token.alias('background', 'card'),
-					hover: Token.alias('background', 'card', 'hover'),
+					base: alias.background.card(),
+					hover: alias.background.card('hover'),
 				},
 				border: {
-					base: Token.alias('background', 'card'),
-					hover: Token.alias('background', 'card', 'hover'),
+					base: alias.background.card(),
+					hover: alias.background.card('hover'),
 				},
-				color: Token.alias('color', 'interactive'),
+				color: alias.color.interactive(),
 			}
 		case 'dark':
 			return {
 				background: {
-					base: Token.alias('background', 'card'),
-					hover: Token.alias('background', 'card', 'hover'),
+					base: alias.background.card(),
+					hover: alias.background.card('hover'),
 				},
 				border: {
-					base: Token.alias('background', 'card'),
-					hover: Token.alias('background', 'card', 'hover'),
+					base: alias.background.card(),
+					hover: alias.background.card('hover'),
 				},
-				color: Token.alias('color', 'interactive'),
+				color: alias.color.interactive(),
 			}
 		default:
 			return DEFAULT_PALETTE
@@ -151,7 +154,7 @@ export type SetPaletteFn =
 export const getVariantTokens: SetPaletteFn = ({ colors, name }) => {
 	type N = typeof name
 	const palette = deepMerge(DEFAULT_PALETTE, colors),
-		vars = generateTokens(palette, name)
+		vars = tokenGenerator(palette, name)
 
 	return vars as PaletteVars<N>
 }
