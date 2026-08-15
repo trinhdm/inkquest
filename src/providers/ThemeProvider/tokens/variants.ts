@@ -1,10 +1,10 @@
-import type { BaseVarKey, SiteTheme } from '@/providers/ThemeProvider'
+import { alias } from './ref'
 import { deepMerge } from '@/utils/helpers'
 import { tokenGenerator } from './generate'
+import type { BaseVarKey, SiteTheme } from '@/providers/ThemeProvider'
 import type { CSSVariable } from '@/types/shared'
 import type { TokenStatesList, TokenGroup } from './config'
 import type { ValidSpecs } from '@/types/spec'
-import { alias } from './ref'
 
 export interface ColorPalette {
 	background?: TokenGroup<'backgroundColor'>
@@ -115,15 +115,9 @@ export const getVariantColors: GetPaletteFn = _props => {
 			}
 		case 'light':
 			return {
-				background: {
-					base: alias.background.card(),
-					hover: alias.background.card('hover'),
-				},
-				border: {
-					base: alias.background.card(),
-					hover: alias.background.card('hover'),
-				},
-				color: alias.color.interactive(),
+				background: alias.accent('muted'),
+				border: 'currentColor',
+				color: alias.accent(),
 			}
 		case 'dark':
 			return {

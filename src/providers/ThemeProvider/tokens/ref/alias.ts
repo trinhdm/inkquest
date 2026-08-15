@@ -1,40 +1,45 @@
 import { aliasVar } from './shared'
-import { createAccessor, createStateAccessor } from './accessors'
+import { createAccessor, createStateAccessor, createValueRef } from './accessor'
 import type {
 	AccentStateKey, BorderStateKey, CardStateKey,
 	LinkColorStateKey, InteractiveColorStateKey,
 	FontFamilyAliasKey, FontWeightAliasKey,
+	SpaceInsetKey, BorderRadiusKey,
+	ActionColorStateKey,
+	TextColorStateKey,
 } from './keys'
 
-/**
- * References into already-built semantic tokens, replacing the old
- * Token.alias('category', 'key') call style. Nesting mirrors the real shape
- * of SemanticTheme (builder/semantic/index.ts) — a new semantic category
- * needs a matching entry here, same as it already needs one in
- * semantic/index.ts's composition. Only categories actually referenced
- * elsewhere are listed (extending this is cheap and additive).
- *
- * Unlike tkn (see tkn.ts), this isn't built from a runtime registry: its
- * categories are anchored in TypeScript interfaces (AccentTokens,
- * BorderTokens, ...) that describe what builder/semantic/*.ts's functions
- * return — interfaces don't exist at runtime, so there's nothing to iterate
- * over. Each line below is already about as small as it can get: a name, a
- * path, and a key type pulled from the one real interface that defines it.
- */
+/** References into already-built semantic tokens. Nesting mirrors config/'s composition — a new semantic category needs a matching entry here. */
 export const alias = {
+	theme: createValueRef(aliasVar, 'theme'),
 	accent: createStateAccessor<AccentStateKey>(aliasVar, 'accent'),
 	border: createStateAccessor<BorderStateKey>(aliasVar, 'border'),
 	background: {
+		page: createValueRef(aliasVar, 'background', 'page'),
 		card: createStateAccessor<CardStateKey>(aliasVar, 'background', 'card'),
 	},
 	color: {
+		text: createStateAccessor<TextColorStateKey>(aliasVar, 'color', 'text'),
 		link: createStateAccessor<LinkColorStateKey>(aliasVar, 'color', 'link'),
+		action: createStateAccessor<ActionColorStateKey>(aliasVar, 'color', 'action'),
 		interactive: createStateAccessor<InteractiveColorStateKey>(aliasVar, 'color', 'interactive'),
 	},
-	// Distinct from tkn.font (raw family primitives: black/sans/mono) — these
-	// alias the semantic typography tokens built in builder/typography.ts.
 	font: {
 		family: createAccessor<FontFamilyAliasKey>(aliasVar, 'font', 'family'),
 		weight: createAccessor<FontWeightAliasKey>(aliasVar, 'font', 'weight'),
+		display: createValueRef(aliasVar, 'font', 'display'),
+		title: createValueRef(aliasVar, 'font', 'title'),
+		body: createValueRef(aliasVar, 'font', 'body'),
+		label: createValueRef(aliasVar, 'font', 'label'),
+	},
+	space: {
+		inset: createAccessor<SpaceInsetKey>(aliasVar, 'space', 'inset'),
+	},
+	radius: createAccessor<BorderRadiusKey>(aliasVar, 'border', 'radius'),
+	motion: {
+		interactive: createValueRef(aliasVar, 'motion', 'interactive'),
 	},
 }
+
+/** The shape useTheme() exposes to components — see SiteTheme.alias in theme.types.ts. */
+export type AliasTokens = typeof alias

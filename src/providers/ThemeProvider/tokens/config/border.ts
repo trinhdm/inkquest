@@ -2,18 +2,15 @@ import { tokn } from '../ref'
 import { colorMix } from './color-mix'
 import type { ThemeConfig } from './theme'
 
-export interface BorderConfig {
-	mixer: ThemeConfig['mixer']
-	scheme: ThemeConfig['scheme']
+export interface BorderRadiusTokens {
+	none: string
+	sm: string
+	md: string
+	lg: string
+	pill: string
 }
 
-export interface BorderColorTokens {
-	base: string
-	strong: string
-}
-
-
-const borderRadiusTokens = () => ({
+const borderRadiusTokens = (): BorderRadiusTokens => ({
 	none: tokn.radius('01'),
 	sm: tokn.radius('02'),
 	md: tokn.radius('03'),
@@ -21,7 +18,12 @@ const borderRadiusTokens = () => ({
 	pill: tokn.radius('05'),
 })
 
-const borderColorTokens = ({ scheme, mixer }: BorderConfig): BorderColorTokens => {
+export interface BorderColorTokens {
+	base: string
+	strong: string
+}
+
+const borderColorTokens = ({ scheme, mixer }: ThemeConfig): BorderColorTokens => {
 	const scaleBase = tokn[scheme]('600')
 	// const scaleBase = tkn(scheme, '100')
 

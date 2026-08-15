@@ -1,11 +1,6 @@
 import { tokn } from '../ref'
 import type { ThemeConfig } from './theme'
 
-export interface BackgroundConfig {
-	scheme: ThemeConfig['scheme']
-	name: ThemeConfig['name']
-}
-
 export interface BackgroundTokens {
 	page: string
 	// surface: string

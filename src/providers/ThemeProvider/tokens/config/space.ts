@@ -1,6 +1,17 @@
 import { tokn } from '../ref'
 
-export const spaceTokens = () => ({
+export interface SpaceTokens {
+	inset: {
+		xs: string
+		sm: string
+		md: string
+		lg: string
+		xl: string
+		xxl: string
+	}
+}
+
+export const spaceTokens = (): SpaceTokens => ({
 	inset: {
 		xs: tokn.size('4'),
 		sm: tokn.size('8'),

@@ -1,11 +1,19 @@
 import { alias, tokn } from '../ref'
 
+interface TypographyGroup {
+	fontFamily: string
+	fontSize: string
+	fontWeight: string
+	lineHeight: string
+}
+
 export interface TypographyTokens {
-	family: { display: string; title: string; body: string }
+	family: { display: string; title: string; body: string; label: string }
 	weight: { normal: string; bold: string; bolder: string }
-	display: { fontFamily: string; fontSize: string; fontWeight: string; lineHeight: string }
-	title: { fontFamily: string; fontSize: string; fontWeight: string; lineHeight: string }
-	body: { fontFamily: string; fontSize: string; fontWeight: string; lineHeight: string }
+	display: TypographyGroup
+	title: TypographyGroup
+	body: TypographyGroup
+	label: TypographyGroup
 }
 
 
@@ -24,6 +32,7 @@ export const typographyTokens = (): TypographyTokens => {
 				h3: tokn.fontSize('20'),
 			},
 			body: tokn.fontSize('16'),
+			interactive: tokn.fontSize('10'),
 			label: {
 				base: tokn.fontSize('14'),
 				sm: tokn.fontSize('12'),
@@ -52,9 +61,16 @@ export const typographyTokens = (): TypographyTokens => {
 		},
 		body: {
 			fontFamily: alias.font.family('body'),
-			fontSize: tokn.fontSize('16'),
+			fontSize: tokn.fontSize('10'),
+			// fontSize: alias.font.size('16'),
 			fontWeight: alias.font.weight('normal'),
 			lineHeight: tokn.lineHeight('sm'),
+		},
+		label: {
+			fontFamily: alias.font.family('label'),
+			fontSize: tokn.fontSize('10'),
+			fontWeight: alias.font.weight('bolder'),
+			lineHeight: tokn.lineHeight('exact'),
 		},
 		// 	caption: {},
 		// 	label: {},

@@ -1,7 +1,7 @@
-import type { ThemeName } from '../../theme.types'
 import type { CSSVars } from '@/types/shared'
 import type { CSSProperties } from 'react'
 import type { ColorScaleStep, PaletteName } from '../ref/keys'
+import type { ThemeName } from '../../theme.types'
 
 export type ThemeTokens<V = unknown> =
 	Record<ThemeName | 'base', CSSVars<V>>
@@ -47,8 +47,6 @@ export const THEME_CONFIGS: Record<ThemeName, ThemeConfig> = {
 		background: { page: '300', cardBase: '100' },
 	},
 }
-
-export const THEME_NAMES = Object.keys(THEME_CONFIGS) as ThemeName[]
 
 export const ALT_THEME: Record<PaletteName, PaletteName> = {
 	ink: 'paper',

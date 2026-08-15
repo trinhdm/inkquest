@@ -1,6 +1,6 @@
 import type { Size } from './common'
 
-export type HeadingTagName =
+export type HeadingTag =
 	| 'h1'
 	| 'h2'
 	| 'h3'
@@ -13,10 +13,15 @@ export type HeadingTagName =
 // 	| 'sans-serif'
 // 	| 'serif'
 
+// type FontFamily =
+// 	| 'title'
+// 	| 'body'
+// 	| 'label'
+
 type FontFamily =
-	| 'title'
-	| 'body'
-	| 'label'
+	| 'black'
+	| 'mono'
+	| 'sans'
 
 type FontWeight =
 	| 'thin'

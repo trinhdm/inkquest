@@ -6,6 +6,7 @@ export interface AccentTokens {
 	base: string
 	hover: string
 	press: string
+	muted: string
 	text: string
 }
 
@@ -13,13 +14,9 @@ export const accentTokens = (): AccentTokens => ({
 	base: tokn.brand('100'),
 	hover: tokn.brand('200'),
 	press: tokn.brand('300'),
+	muted: colorMix(alias.background.page(), 80, alias.accent()),
 	text: alias.color.link(),
 })
-
-export interface ColorsConfig {
-	scheme: ThemeConfig['scheme']
-	mixer: ThemeConfig['mixer']
-}
 
 export interface ColorTokens {
 	text: { base: string; inverse: string }
@@ -28,7 +25,7 @@ export interface ColorTokens {
 	interactive: { base: string; hover: string }
 }
 
-export const colorTokens = ({ scheme, mixer }: ColorsConfig): ColorTokens => {
+export const colorTokens = ({ scheme, mixer }: ThemeConfig): ColorTokens => {
 	// const scaleBase = tkn[paletteName]('100')
 	const scaleBase = tokn[scheme]('100')
 	const altBase = tokn[ALT_THEME[scheme]]('100')

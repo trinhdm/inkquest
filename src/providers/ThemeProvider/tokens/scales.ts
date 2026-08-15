@@ -37,7 +37,18 @@ export const FONT_FAMILY_SCALE = {
 
 export const FONT_WEIGHT_SCALE = [400, 600, 700] as const
 export const RADIUS_SCALE = [0, 6, 8, 12, 999] as const
-export const LINE_HEIGHT_SCALE = { xs: 1.3, sm: 1.5, md: 1.55, lg: 1.55 } as const
+export const LINE_HEIGHT_SCALE = {
+	exact: 1,
+	xs: 1.3,
+	sm: 1.5,
+	md: 1.55,
+	lg: 1.55,
+} as const
+
+export const TRACKING_SCALE = [
+	'0.08em',
+	'0.1em',
+] as const
 
 export const DURATION_SCALE = {
 	instant: '100ms', fast: '160ms', default: '240ms', slow: '400ms', gradual: '600ms',

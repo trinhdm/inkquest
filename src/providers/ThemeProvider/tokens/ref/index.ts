@@ -1,2 +1,2 @@
 export { alias } from './alias'
-export { tokn } from './tokn'
+export { primitive as tokn } from './primitive'

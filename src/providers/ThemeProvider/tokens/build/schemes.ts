@@ -1,24 +1,24 @@
-import type { ThemeName, SiteTheme } from '../../theme.types'
-import type { CSSVars } from '@/types/shared'
-import { tokenGenerator } from '../generate'
 import { Config } from '../config'
-import { THEME_CONFIGS, THEME_NAMES, type ThemeConfig, type ThemeTokens } from '../config/theme'
+import { tokenGenerator } from '../generate'
+import { THEME_CONFIGS, type ThemeConfig, type ThemeTokens } from '../config/theme'
+import type { CSSVars } from '@/types/shared'
+import type { ThemeName, SiteTheme } from '../../theme.types'
 
 export interface ThemeTokensConfig {
 	config: ThemeConfig
 	prefix?: string
 }
 
+const THEME_NAMES = Object.keys(THEME_CONFIGS) as ThemeName[]
+
 const buildSemanticTheme = (
 	options: ThemeConfig
 ) => {
-	const { mixer, scheme } = options
-
 	return {
 		accent: Config.accent(),
-		colors: Config.color({ scheme, mixer }),
+		colors: Config.color(options),
 		backgrounds: Config.background(options),
-		border: Config.border.color({ scheme, mixer }),
+		border: Config.border.color(options),
 	}
 }
 
@@ -43,8 +43,7 @@ const buildStaticTokens = (prefix?: string): CSSVars => {
 const buildPrimitiveTokens = <K extends keyof ThemeTokens>(
 	theme: SiteTheme
 ): ThemeTokens[K] => {
-	// let primitives = {}
-	const { colors, name, setName, ...baseTheme } = theme
+	const { colors, ...baseTheme } = theme
 	const colorTokens = tokenGenerator(colors),
 		baseTokens = tokenGenerator(baseTheme)
 
