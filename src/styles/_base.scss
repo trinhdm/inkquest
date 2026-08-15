@@ -1,15 +1,24 @@
 body {
-	background: var(--bg-page);
-	color: var(--text-primary);
-	font: var(--text-body);
+	background: var(--inkq-background-page);
+	color: var(--inkq-color-text);
+	font: var(--inkq-font-body);
 	-webkit-font-smoothing: antialiased;
 }
 
+h1 {
+	font: var(--inkq-font-hero);
+}
+
 a {
+	color: var(--inkq-color-link);
 	text-decoration: none;
+
+	&:hover {
+		color: var(--inkq-color-link-hover);
+	}
 }
 
 ::selection {
-	background: var(--accent);
-	color: var(--text-accent);
+	background: var(--inkq-primary);
+	color: var(--inkq-primary-text);
 }

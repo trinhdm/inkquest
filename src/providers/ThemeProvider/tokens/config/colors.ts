@@ -1,8 +1,8 @@
 import { alias, tokn } from '../ref'
-import { colorMix } from './color-mix'
+import { colorMix } from './utils'
 import { ALT_THEME, type ThemeConfig } from './theme'
 
-export interface AccentTokens {
+export interface PrimaryTokens {
 	base: string
 	hover: string
 	press: string
@@ -10,11 +10,11 @@ export interface AccentTokens {
 	text: string
 }
 
-export const accentTokens = (): AccentTokens => ({
+export const primaryTokens = (): PrimaryTokens => ({
 	base: tokn.brand('100'),
 	hover: tokn.brand('200'),
 	press: tokn.brand('300'),
-	muted: colorMix(alias.background.page(), 80, alias.accent()),
+	muted: colorMix(alias.background.page(), 80, alias.primary()),
 	text: alias.color.link(),
 })
 
@@ -41,8 +41,8 @@ export const colorTokens = ({ scheme, mixer }: ThemeConfig): ColorTokens => {
 			hover: colorMix(mixer, 75, scaleBase),
 		},
 		action: {
-			base: alias.accent(),
-			hover: alias.accent('hover'),
+			base: alias.primary(),
+			hover: alias.primary('hover'),
 		},
 		interactive: {
 			base: colorMix(mixer, 100, scaleBase),

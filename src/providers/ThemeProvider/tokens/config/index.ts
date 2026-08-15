@@ -1,12 +1,12 @@
 import { backgroundTokens } from './backgrounds'
 import { borderTokens } from './border'
-import { accentTokens, colorTokens } from './colors'
+import { primaryTokens, colorTokens } from './colors'
 import { motionTokens } from './motion'
 import { spaceTokens } from './space'
 import { typographyTokens } from './typography'
 
 export const Config = {
-	accent: accentTokens,
+	primary: primaryTokens,
 	background: backgroundTokens,
 	border: borderTokens,
 	color: colorTokens,

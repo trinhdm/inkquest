@@ -11,6 +11,6 @@ const getTokenVar = (path: string[], prefix?: string): TokenVar =>
 export const baseVar = (...path: string[]): TokenVar =>
 	getTokenVar(path)
 
-/** Prefixed reference into an already-built semantic/alias token — aliasVar('accent') -> var(--inkq-accent). */
+/** Prefixed reference into an already-built semantic/alias token — aliasVar('primary') -> var(--inkq-primary). */
 export const aliasVar = (...path: string[]): TokenVar =>
 	getTokenVar(path, PREFIX_CSS_SELECTOR)

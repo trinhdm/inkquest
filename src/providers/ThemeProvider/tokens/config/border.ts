@@ -1,5 +1,5 @@
 import { tokn } from '../ref'
-import { colorMix } from './color-mix'
+import { colorMix } from './utils'
 import type { ThemeConfig } from './theme'
 
 export interface BorderRadiusTokens {
