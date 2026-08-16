@@ -1,5 +1,7 @@
 /* 1. Use a more-intuitive box-sizing model */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
 	box-sizing: border-box;
 }
 
@@ -29,6 +31,10 @@ img, picture, video, canvas, svg {
 /* 6. Remove built-in form typography inheritance distortions */
 input, button, textarea, select {
 	font: inherit;
+}
+
+button {
+	appearance: none;
 }
 
 /* 7. Avoid text overflows */
