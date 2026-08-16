@@ -1,7 +1,5 @@
 import { Archivo, Archivo_Black, Space_Mono } from 'next/font/google'
-import { CssVariables } from '@/components/core/CssVariables'
 import { ScriptInjector } from '@/components/core/ScriptInjector'
-import { ThemeProvider } from '@/providers/ThemeProvider'
 import type { Metadata } from 'next'
 import '@/styles/_global.scss'
 
@@ -15,36 +13,35 @@ const archivo = Archivo({
 	weight: ['400', '600', '700'],
 	subsets: ['latin'],
 })
+
 const archivoBlack = Archivo_Black({
 	variable: '--font-archivo-black',
 	weight: '400',
 	subsets: ['latin'],
 })
+
 const spaceMono = Space_Mono({
 	variable: '--font-space-mono',
 	weight: ['400', '700'],
 	subsets: ['latin'],
 })
 
+const fontsList = `${archivo.variable} ${archivoBlack.variable} ${spaceMono.variable}`
+
 export default function RootLayout({
 	children,
-}: Readonly<{
-	children: React.ReactNode
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
 	return (
 		<html
 			suppressHydrationWarning
 			lang="en"
-			className={`${archivo.variable} ${archivoBlack.variable} ${spaceMono.variable}`}
+			className={ fontsList }
 		>
 			<head>
 				<ScriptInjector />
 			</head>
 			<body>
-				<ThemeProvider>
-					<CssVariables />
-					{ children }
-				</ThemeProvider>
+				{ children }
 			</body>
 		</html>
 	)

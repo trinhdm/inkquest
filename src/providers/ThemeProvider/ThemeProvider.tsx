@@ -1,7 +1,8 @@
 'use client'
 
-import { createContext, use, useMemo, type ReactNode } from 'react'
+import { use, useMemo, type ReactNode } from 'react'
 import { mergeTheme } from './theme'
+import { ThemeContext } from './theme.context'
 import { DEFAULT_THEME } from './constants'
 import type { SiteTheme } from './theme.types'
 
@@ -10,8 +11,6 @@ interface ThemeProviderProps {
 	// prefix?: string
 	theme?: SiteTheme
 }
-
-export const ThemeContext = createContext<SiteTheme | null>(null)
 
 export const useSafeTheme = () => use(ThemeContext) || DEFAULT_THEME
 export const useTheme = () => {

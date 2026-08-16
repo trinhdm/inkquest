@@ -3,8 +3,14 @@
 import Image from "next/image"
 import styles from "./page.module.css"
 import { Button } from '@/components/core/buttons/Button'
+import { useThemeName } from '@/hooks/useThemeName'
+// import { useTheme } from '@/providers/ThemeProvider'
+import { Icon } from '@/components/core/Icon/Icon'
+import { Badge } from '@/components/core/Badge'
 
 export default function Home() {
+  const { setThemeName } = useThemeName()
+  // console.log({ themeName })
   return (
     <div className={styles.page}>
       <main className={styles.main}>
@@ -18,7 +24,37 @@ export default function Home() {
         />
         <div className={styles.intro}>
           <h1>To get started, edit the page.tsx file.</h1>
-          <Button id="asdf">test</Button>
+          <Button onClick={ () => setThemeName('dark') }>dark</Button>
+          <Button variant="ghost" onClick={ () => setThemeName('light') }>light</Button>
+          <br /><br />
+
+          <Button variant="solid">solid</Button>
+          <Button variant="outline">outline</Button>
+          <Button variant="ghost">ghost</Button>
+          <Button variant="light">light</Button>
+          <Button variant="dark">dark</Button>
+
+          <br /><br />
+
+          { ['danger', 'warning', 'success', 'info'].map(variant => (
+            <div key={ variant }>
+              { ['primary', 'secondary', 'tertiary'].map(priority => (
+                <Button
+                  variant={ variant }
+                  priority={ priority }
+                  key={ `${variant}-${priority}` }
+                >
+                  { variant }: { priority }
+                </Button>
+              )) }
+            </div>
+          )) }
+
+          <Icon type="chevron-right" />
+
+          <Badge>text here</Badge>
+
+          <br /><br />
           <p>
             Looking for a starting point or more instructions? Head over to{" "}
             <a
