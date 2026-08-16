@@ -3,7 +3,7 @@ import { alias, base } from '../reference'
 import { isObject } from '@/utils/helpers'
 import type { ColorMixtures } from './types'
 import type { StaticColorNames } from '../reference/primitive'
-import type { ThemeName } from '../../theme.types'
+import type { ThemeName } from '../../types'
 
 export const colorMix = (mixColor: string, percent: number, withColor: string): string =>
 	`color-mix(in oklab, ${mixColor} ${percent}%, ${withColor})`

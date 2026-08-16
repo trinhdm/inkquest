@@ -1,7 +1,7 @@
 import { Config, THEME_CONFIGS, type ThemeConfig } from './config'
 import { tokenGenerator } from './generate'
 import type { CSSVars } from '@/types/shared'
-import type { ThemeName, SiteTheme } from '../theme.types'
+import type { SiteTheme, ThemeName } from '../types'
 import type { ThemeTokens } from './token.types'
 
 export interface ThemeTokensConfig {

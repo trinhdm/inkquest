@@ -1,12 +1,12 @@
-import { alias as tokens, paintVariants } from './tokens'
 import { rem } from '@/lib/general'
 import {
+	paintVariants, tokens,
 	BASE_SCALE, COLOR_TOKENS,
 	FONT_FAMILY_SCALE, FONT_SIZE_SCALE, FONT_WEIGHT_SCALE, LINE_HEIGHT_SCALE,
 	DURATION_SCALE, EASE_SCALE, RADIUS_SCALE,
 	SCREEN_SIZE_SCALE,
-} from './tokens/scales'
-import type { SiteTheme } from './theme.types'
+	type SiteTheme,
+} from '@/lib/theme'
 // import { themeControls } from '@/components/core/ScriptInjector'
 
 // const { applyTheme, getStoredTheme, persistTheme } = themeControls()

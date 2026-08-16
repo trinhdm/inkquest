@@ -1,6 +1,6 @@
 import { buildScript } from './buildScript'
 import type { ComponentProps } from 'react'
-import type { ThemeName } from '@/providers/ThemeProvider'
+import type { ThemeName } from '@/lib/theme'
 
 interface ScriptInjectorProps
 	extends ComponentProps<'script'> {

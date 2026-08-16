@@ -1,5 +1,5 @@
 import { deepMerge } from '@/utils/helpers/objects'
-import type { SiteTheme } from '../theme.types'
+import type { SiteTheme } from '@/lib/theme'
 
 interface ThemeValidator {
 	(theme: SiteTheme): asserts theme is SiteTheme

@@ -1,20 +1,17 @@
-'use client'
-
-import { useMemo, type ComponentProps } from 'react'
-import { useTheme } from '@/providers/ThemeProvider'
 import { resolveCssVars, serializeCssVars } from './build'
 import { PREFIX_CSS_SELECTOR } from '@/utils/constants'
+import { DEFAULT_THEME } from '@/providers/ThemeProvider/constants'
+import type { ComponentProps } from 'react'
+import type { SiteTheme } from '@/lib/theme'
 
 interface CssVariablesProps
-	extends ComponentProps<'style'> {}
+	extends ComponentProps<'style'> {
+		theme?: SiteTheme
+	}
 
-export const CssVariables = (props: CssVariablesProps) => {
-	const theme = useTheme()
-
-	const css = useMemo(() => {
-		const tokens = resolveCssVars({ current: theme, prefix: PREFIX_CSS_SELECTOR })
-		return serializeCssVars(tokens)
-	}, [theme])
+export const CssVariables = ({ theme, ...props }: CssVariablesProps) => {
+	const tokens = resolveCssVars({ current: theme ?? DEFAULT_THEME, prefix: PREFIX_CSS_SELECTOR }),
+		css = serializeCssVars(tokens)
 
 	if (!css) return null
 

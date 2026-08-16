@@ -1,7 +1,7 @@
 import { COLOR_TOKENS, THEME_SCHEMES } from './scales'
 import type { CSSProperties } from 'react'
 import type { CSSVars } from '@/types/shared'
-import type { ThemeName } from '../theme.types'
+import type { ThemeName } from '../types'
 
 export type ColorScheme =
 	keyof typeof COLOR_TOKENS

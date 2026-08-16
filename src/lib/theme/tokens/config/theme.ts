@@ -1,5 +1,5 @@
 import type { PaletteName } from '../token.types'
-import type { ThemeName } from '../../theme.types'
+import type { ThemeName } from '../../types'
 
 export interface ThemeConfig {
 	readonly name: ThemeName

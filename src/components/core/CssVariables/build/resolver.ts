@@ -1,6 +1,5 @@
-import { buildSchemes } from '@/providers/ThemeProvider/tokens'
+import { buildSchemes, type SiteTheme } from '@/lib/theme'
 import { deepMerge } from '@/utils/helpers'
-import type { SiteTheme } from '@/providers/ThemeProvider'
 
 interface ResolveCSSProps {
 	current: SiteTheme

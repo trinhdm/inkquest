@@ -1,5 +1,5 @@
 import { DEFAULT_THEME_NAME, THEME_STORAGE_KEY } from './constants'
-import type { ThemeName } from '@/providers/ThemeProvider'
+import type { ThemeName } from '@/lib/theme'
 
 interface ThemeScriptOptions {
 	lsKey?: string,

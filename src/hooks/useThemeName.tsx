@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from 'react'
 import { themeControls } from '@/components/core/ScriptInjector'
-import type { ThemeName } from '@/providers/ThemeProvider'
+import type { ThemeName } from '@/lib/theme'
 
 const { applyTheme, getStoredTheme, persistTheme } = themeControls()
 

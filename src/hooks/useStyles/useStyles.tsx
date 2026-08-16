@@ -1,10 +1,10 @@
 import { getAttributes } from './getAttributes'
 import { getClassName } from './getClassName'
 import { getStyles } from './getStyle'
-import { useTheme, type SiteTheme } from '@/providers/ThemeProvider'
+import { useTheme} from '@/providers/ThemeProvider'
 import { PREFIX_CSS_SELECTOR } from '@/utils/constants'
 import type { CSSProperties } from 'react'
-import type { ThemeCSSConfig } from '@/lib/theme'
+import type { SiteTheme, ThemeCSSConfig } from '@/lib/theme'
 import type { ValidSpecs } from '@/types/spec'
 
 interface StyleOptions<S extends ValidSpecs<S>> {

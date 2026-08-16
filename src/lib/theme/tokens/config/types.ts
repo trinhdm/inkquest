@@ -6,7 +6,6 @@ export interface ColorMixtures
 	base: string
 	bright: string
 	dim: string
-	// dusty: string
 	muted: string
 	shade: string
 	tint: string

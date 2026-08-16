@@ -1,7 +1,7 @@
 import { alias } from './reference'
 import { deepMerge } from '@/utils/helpers'
 import { tokenGenerator } from './generate'
-import type { BaseVarKey, SiteTheme } from '@/providers/ThemeProvider'
+import type { BaseVarKey, SiteTheme } from '../types'
 import type { CSSVariable } from '@/types/shared'
 import type { TokenGroup, TokenStatesList } from './token.types'
 import type { ValidSpecs } from '@/types/spec'

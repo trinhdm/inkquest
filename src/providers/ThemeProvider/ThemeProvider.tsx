@@ -4,7 +4,7 @@ import { use, useMemo, type ReactNode } from 'react'
 import { mergeTheme } from './theme'
 import { ThemeContext } from './theme.context'
 import { DEFAULT_THEME } from './constants'
-import type { SiteTheme } from './theme.types'
+import type { SiteTheme } from '@/lib/theme'
 
 interface ThemeProviderProps {
 	children?: ReactNode
