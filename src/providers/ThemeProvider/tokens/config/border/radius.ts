@@ -1,4 +1,4 @@
-import { tokn } from '../../ref'
+import { base } from '../../reference'
 
 export interface BorderRadiusTokens {
 	none: string
@@ -9,9 +9,9 @@ export interface BorderRadiusTokens {
 }
 
 export const getBorderRadiusTokens = (): BorderRadiusTokens => ({
-	none: tokn.radius('01'),
-	sm: tokn.radius('02'),
-	md: tokn.radius('03'),
-	lg: tokn.radius('04'),
-	pill: tokn.radius('05'),
+	none: base.radius('01'),
+	sm: base.radius('02'),
+	md: base.radius('03'),
+	lg: base.radius('04'),
+	pill: base.radius('05'),
 })

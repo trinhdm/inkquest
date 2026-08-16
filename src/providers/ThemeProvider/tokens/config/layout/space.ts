@@ -1,4 +1,4 @@
-import { tokn } from '../../ref'
+import { base } from '../../reference'
 
 export interface SpaceTokens {
 	inset: {
@@ -13,12 +13,12 @@ export interface SpaceTokens {
 
 export const getSpaceTokens = (): SpaceTokens => ({
 	inset: {
-		xs: tokn.size('4'),
-		sm: tokn.size('8'),
-		md: tokn.size('12'),
-		lg: tokn.size('16'),
-		xl: tokn.size('24'),
-		xxl: tokn.size('32'),
+		xs: base.size('4'),
+		sm: base.size('8'),
+		md: base.size('12'),
+		lg: base.size('16'),
+		xl: base.size('24'),
+		xxl: base.size('32'),
 	},
 	// stack: {},
 	// inline: {},

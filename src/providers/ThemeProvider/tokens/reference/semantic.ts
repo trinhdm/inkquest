@@ -1,12 +1,10 @@
-import { aliasVar } from './shared'
+import { aliasVar } from './handler'
 import { createAccessor, createStateAccessor, createValueRef } from './accessor'
 import type {
 	AccentTokens, BackgroundTokens,
 	BorderColorTokens, BorderRadiusTokens, ColorTokens,
 	SpaceTokens, TypographyTokens
-} from '../config'
-
-/** References into already-built semantic tokens. Nesting mirrors config/'s composition — a new semantic category needs a matching entry here. */
+} from '../config/types'
 
 const themeTokens = {
 	theme: createValueRef(aliasVar, 'theme'),
@@ -32,7 +30,9 @@ const propertyTokens = {
 		transform: createValueRef(aliasVar, 'motion', 'transform'),
 	},
 }
-export const alias = {
+
+/** References into already-built semantic tokens. Nesting mirrors config/'s composition — a new semantic category needs a matching entry here. */
+export const semanticTokens = {
 	...themeTokens,
 	...propertyTokens,
 	background: {
@@ -60,4 +60,4 @@ export const alias = {
 }
 
 /** The shape useTheme() exposes to components — see SiteTheme.alias in theme.types.ts. */
-export type AliasTokens = typeof alias
+export type SemanticTokens = typeof semanticTokens

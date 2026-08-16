@@ -1,8 +1,7 @@
 import type { CSSProperties } from 'react'
 import type { AtLeastOneKey } from '@/types/utils'
-import type { CSSUnit, CSSVars, FontList, HeadingTag, HexCode, Size, Unit } from '@/types/shared'
-import type { PaintVariantsFn } from './tokens/variants'
-import type { AliasTokens } from './tokens/ref/alias'
+import type { CSSUnit, CSSVars, FontList, HexCode, Size, Unit } from '@/types/shared'
+import type { PaintVariantsFn, SemanticTokens } from './tokens'
 
 export type ThemeName =
 	| 'dark'
@@ -16,8 +15,10 @@ export type ColorScheme =
 export interface SiteTheme {
 	paintVariants: PaintVariantsFn
 
+	// name: ThemeName
+	// setName: (theme: ThemeName) => void
 
-	tokens: AliasTokens
+	tokens: SemanticTokens
 
 	scale: { size: number }
 
@@ -28,7 +29,7 @@ export interface SiteTheme {
 
 	// headings: FontStyles<TagFontStyles, HeadingTag, 'h1'>
 
-	colors: Record<ColorScheme, HexCode[]>
+	colors: Record<ColorScheme, readonly HexCode[]>
 	breakpoints: Style<CSSUnit, Size>
 	radius: number[]
 
@@ -144,3 +145,30 @@ type ConsistentValues<
 > =
 	| ConsistentType<K, Optional, T>
 	| ConsistentUnit<K, Optional, U>
+
+
+	// export interface SiteTheme {
+	// 	paintVariants: PaintVariantsFn
+
+	// 	name: ThemeName
+	// 	setName: (theme: ThemeName) => void
+
+	// 	fontFamily: FontStyle<'fontFamily', 'body'>
+	// 	fontSize: number[] | FontStyle<'fontSize', 'md'>
+	// 	fontWeight: FontStyle<'fontWeight', 'regular'>
+	// 	lineHeight: FontStyle<'lineHeight'>
+
+	// 	headings: FontStyles<TagFontStyles, HeadingTag, 'h1'>
+
+	// 	colors: Record<ColorScheme, HexCode[]>
+	// 	breakpoints: Style<CSSUnit, Size>
+	// 	radius: CSSUnit[]
+	// 	// radius: Style<CSSUnit, Size | 'pill', 'md'>
+
+	// 	duration: Style<CSSUnit, ThemeDuration, BaseVarKey>
+	// 	easing: Style<`cubic-bezier(${string})`, ThemeEasing, BaseVarKey>
+
+	// 	subcomponents?: Record<string, {
+	// 		cssVars?: (theme: SiteTheme, props: any, ctx: unknown) => Partial<Record<string, CSSVars>>
+	// 	}>
+	// }

@@ -1,3 +1,18 @@
+import type { ColorScheme } from '../../theme.types'
+import type { INK_SCALE, PAPER_SCALE, LINE_HEIGHT_SCALE } from '../scales'
+
+export type PaletteName = Extract<ColorScheme, 'ink' | 'paper'>
+
+/** Needed externally: builder/theme-config.ts's ThemeConfig.background.{page,cardBase} are typed with this. */
+export type ColorScaleStep = ColorStepLabels<typeof INK_SCALE> | ColorStepLabels<typeof PAPER_SCALE>
+
+/** Needed by primitive.ts's own hand-kept lineHeight accessor. */
+export type LineHeightKey = keyof typeof LINE_HEIGHT_SCALE
+
+/** Needed by primitive.ts's own hand-kept size accessor — generated (1x-24x baseSize) at runtime, not enumerable from a fixed list. */
+export type SizeStep = `${number}`
+
+
 /**
  * Type-level mirror of generate/step-naming.ts's getArrayStepLabel(): derives
  * the exact set of valid step labels straight from a scale array's length, so
@@ -25,3 +40,11 @@ export type PaddedIndexLabels<
 > = T extends readonly [unknown, ...infer Rest]
 	? PaddedIndexLabels<Rest, Acc | `0${Increment<Counted>['length']}`, Increment<Counted>>
 	: Acc
+
+export type { AccentTokens } from './accent'
+export type { BackgroundTokens } from './background'
+export type { BorderColorTokens, BorderRadiusTokens } from './border'
+export type { ColorTokens } from './colors'
+export type { MotionTokens } from './motion'
+export type { SpaceTokens } from './layout'
+export type { TypographyTokens } from './typography'

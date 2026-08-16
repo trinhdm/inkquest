@@ -1,5 +1,5 @@
-import { formatToken } from '../format/tokenName'
 import { PREFIX_CSS_SELECTOR } from '@/utils/constants'
+import { formatToken } from '../format'
 import type { CSSVars } from '@/types/shared'
 
 export type TokenVar = `var(${keyof CSSVars})`

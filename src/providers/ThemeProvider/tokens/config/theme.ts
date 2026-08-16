@@ -1,6 +1,6 @@
-import type { CSSVars } from '@/types/shared'
 import type { CSSProperties } from 'react'
-import type { ColorScaleStep, PaletteName } from '../ref/keys'
+import type { CSSVars } from '@/types/shared'
+import type { ColorScaleStep, PaletteName } from './types'
 import type { ThemeName } from '../../theme.types'
 
 export type ThemeTokens<V = unknown> =

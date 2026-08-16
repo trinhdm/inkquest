@@ -1,12 +1,11 @@
+import { baseVar } from './handler'
 import { createAccessor, createStateAccessor } from './accessor'
-import { baseVar } from './shared'
-import {
-	BRAND_SCALE, INK_SCALE, PAPER_SCALE, RADIUS_SCALE,
-	FONT_WEIGHT_SCALE, FONT_FAMILY_SCALE, DURATION_SCALE, EASE_SCALE, LINE_HEIGHT_SCALE,
-	type FONT_SIZE_SCALE,
-	type BASE_SCALE,
-} from '../scales'
 import type { ColorStepLabels, PaddedIndexLabels } from '../config/types'
+import type {
+	BRAND_SCALE, INK_SCALE, PAPER_SCALE, BASE_SCALE,
+	FONT_FAMILY_SCALE, FONT_SIZE_SCALE, FONT_WEIGHT_SCALE, LINE_HEIGHT_SCALE,
+	DURATION_SCALE, EASE_SCALE, RADIUS_SCALE,
+} from '../scales'
 
 type LastTwoDigits =
   | `${0 | 2 | 4 | 6 | 8}${0 | 4 | 8}`
@@ -23,7 +22,7 @@ type MultipleOfFour<T extends number> =
  * Each field's key type is derived straight from its backing scale in scales.ts,
  * so adding/removing a scale step never requires touching a type by hand.
  */
-export const primitive = {
+export const primitiveTokens = {
 	// hex color scales — step label = position, in hundreds
 	brand: createAccessor<ColorStepLabels<typeof BRAND_SCALE>>(baseVar, 'brand'),
 	ink: createAccessor<ColorStepLabels<typeof INK_SCALE>>(baseVar, 'ink'),
@@ -45,3 +44,6 @@ export const primitive = {
 	// step label = the scale object's own key, optional — omitting it means "base"
 	ease: createStateAccessor<Exclude<keyof typeof EASE_SCALE, 'base'>>(baseVar, 'ease'),
 }
+
+/** The shape useTheme() exposes to components — see SiteTheme.alias in theme.types.ts. */
+export type PrimitiveTokens = typeof primitiveTokens

@@ -1,8 +1,8 @@
-import { Config } from '../config'
-import { tokenGenerator } from '../generate'
-import { THEME_CONFIGS, type ThemeConfig, type ThemeTokens } from '../config/theme'
+import { Config } from './config'
+import { tokenGenerator } from './generate'
+import { THEME_CONFIGS, type ThemeConfig, type ThemeTokens } from './config/theme'
 import type { CSSVars } from '@/types/shared'
-import type { ThemeName, SiteTheme } from '../../theme.types'
+import type { ThemeName, SiteTheme } from '../theme.types'
 
 export interface ThemeTokensConfig {
 	config: ThemeConfig
@@ -11,20 +11,14 @@ export interface ThemeTokensConfig {
 
 const THEME_NAMES = Object.keys(THEME_CONFIGS) as ThemeName[]
 
-const buildSemanticTheme = (
-	options: ThemeConfig
-) => {
-	return {
-		accent: Config.accent(),
-		colors: Config.color(options),
-		backgrounds: Config.background(options),
-		border: Config.border.color(options),
-	}
-}
-
 export const buildThemeTokens = ({ config, prefix }: ThemeTokensConfig): CSSVars => {
-	const semanticTokens = buildSemanticTheme(config)
-	const tokens = { theme: config.name, ...semanticTokens }
+	const tokens = {
+		theme: config.name,
+		accent: Config.accent(),
+		colors: Config.color(config),
+		backgrounds: Config.background(config),
+		border: Config.border.color(config),
+	}
 
 	return tokenGenerator(tokens, prefix)
 }
@@ -33,7 +27,9 @@ const buildStaticTokens = (prefix?: string): CSSVars => {
 	const tokens = {
 		fonts: Config.typography(),
 		space: Config.space(),
-		border: { radius: Config.border.radius() },
+		border: {
+			radius: Config.border.radius(),
+		},
 		motion: Config.motion(),
 	}
 

@@ -1,5 +1,5 @@
 import { ALT_THEME, type ThemeConfig } from '../theme'
-import { alias, tokn } from '../../ref'
+import { alias, base } from '../../reference'
 import { colorMix } from '../utils'
 
 export interface ColorTokens {
@@ -23,8 +23,8 @@ export interface ColorTokens {
 
 export const getColorTokens = ({ scheme, mixer }: ThemeConfig): ColorTokens => {
 	// const scaleBase = tkn[paletteName]('100')
-	const scaleBase = tokn[scheme]('100')
-	const altBase = tokn[ALT_THEME[scheme]]('100')
+	const scaleBase = base[scheme]('100')
+	const altBase = base[ALT_THEME[scheme]]('100')
 
 	return {
 		text: {

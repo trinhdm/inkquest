@@ -1,6 +1,6 @@
-import type { TokenVar } from './shared'
+import type { TokenVar } from './handler'
 
-export type LeafPath<T> =
+type LeafPath<T> =
 	T extends readonly unknown[] ? [] :
 	T extends object
 		?
@@ -22,23 +22,3 @@ export const createStateAccessor = <K>(build: Builder, ...category: string[]) =>
 
 export const createValueRef = (build: Builder, ...category: string[]) =>
 	(): TokenVar => build(...category)
-
-
-// export type LeafPath<T> =
-// 	T extends readonly unknown[] ? [] :
-// 	T extends object
-// 		?
-// 			| ('base' extends keyof T ? [] : never)
-// 			| { [K in keyof T & string]: [K, ...LeafPath<T[K]>] }[keyof T & string]
-// 		: []
-
-// export type StateLeafPath<T> =
-// 	T extends readonly unknown[] ? [] :
-// 	T extends object
-// 		?
-// 			| ('base' extends keyof T ? [] : never)
-// 			| { [K in Exclude<keyof T & string, 'base'>]: [K, ...StateLeafPath<T[K]>] }[Exclude<keyof T & string, 'base'>]
-// 		: []
-
-// type PathOf<K> = K extends object ? LeafPath<K> : [K]
-// type StatePathOf<K> = K extends object ? StateLeafPath<K> : [K]

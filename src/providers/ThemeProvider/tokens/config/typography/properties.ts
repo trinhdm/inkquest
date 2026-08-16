@@ -1,4 +1,4 @@
-import { tokn } from '../../ref'
+import { base } from '../../reference'
 
 interface FontFamilyTokens {
 	display: string
@@ -43,34 +43,34 @@ export interface FontPropertyTokens {
 
 export const getFontPropertyTokens = (): FontPropertyTokens => ({
 	fontFamily: {
-		display:	tokn.font('black'),
-		heading:	tokn.font('sans'),
-		body:		tokn.font('sans'),
-		data:		tokn.font('mono'),
+		display:	base.font('black'),
+		heading:	base.font('sans'),
+		body:		base.font('sans'),
+		data:		base.font('mono'),
 	},
 	fontSize: {
-		display:	tokn.fontSize('96'),
+		display:	base.fontSize('96'),
 		heading: {
-			h1:		tokn.fontSize('32'),
-			h2:		tokn.fontSize('24'),
-			h3:		tokn.fontSize('20'),
+			h1:		base.fontSize('32'),
+			h2:		base.fontSize('24'),
+			h3:		base.fontSize('20'),
 		},
-		body:		tokn.fontSize('16'),
+		body:		base.fontSize('16'),
 		label: {
-			base:	tokn.fontSize('14'),
-			sm:		tokn.fontSize('12'),
+			base:	base.fontSize('14'),
+			sm:		base.fontSize('12'),
 		},
-		control:	tokn.fontSize('10'),
+		control:	base.fontSize('10'),
 	},
 	fontWeight: {
-		normal:		tokn.weight('400'),
-		medium:		tokn.weight('600'),
-		bold:		tokn.weight('700'),
+		normal:		base.weight('400'),
+		medium:		base.weight('600'),
+		bold:		base.weight('700'),
 	},
 	lineHeight: {
-		none:		tokn.lineHeight('exact'),
-		heading:	tokn.lineHeight('tight'),
-		body:		tokn.lineHeight('normal'),
-		label:		tokn.lineHeight('snug'),
+		none:		base.lineHeight('exact'),
+		heading:	base.lineHeight('tight'),
+		body:		base.lineHeight('normal'),
+		label:		base.lineHeight('snug'),
 	},
 })

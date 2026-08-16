@@ -1,4 +1,4 @@
-import { alias } from './ref'
+import { alias } from './reference'
 import { deepMerge } from '@/utils/helpers'
 import { tokenGenerator } from './generate'
 import type { BaseVarKey, SiteTheme } from '@/providers/ThemeProvider'
@@ -12,7 +12,7 @@ export interface ColorPalette {
 	color?: TokenGroup<'color'>
 }
 
-export type Variant =
+type Variant =
 	| 'solid'
 	| 'outline'
 	| 'ghost'
@@ -35,9 +35,9 @@ type StateVariable<
 	: never
 
 export type ColorVariable<
-	S extends string,
-	T extends keyof ColorPalette = keyof ColorPalette
-> = StateVariable<S, T>
+    S extends string,
+    T extends keyof ColorPalette = keyof ColorPalette
+> = StateVariable<Lowercase<S>, T>
 
 type StateToken<V, K extends StateKey> =
 	V extends Record<K, infer X>
@@ -55,7 +55,7 @@ interface GetPaletteArgs<S extends ValidSpecs<S>> {
 }
 
 export type GetPaletteFn =
-	<S extends ValidSpecs<S>>(args: GetPaletteArgs<S> & S['props']) => Partial<ColorPalette>
+	<S extends ValidSpecs<S>>(args: GetPaletteArgs<S> & Omit<S['props'], 'name'>) => Partial<ColorPalette>
 
 const DEFAULT_PALETTE: ColorPalette = {
 	background: {
@@ -135,36 +135,39 @@ export const getVariantColors: GetPaletteFn = _props => {
 
 
 interface SetPaletteArgs<S extends string> {
-	colors: ColorPalette
-	name: S
+    colors: ColorPalette
+    name: S
 }
 
 export type SetPaletteFn =
-	<S extends string>(args: SetPaletteArgs<S>) => PaletteVars<SetPaletteArgs<S>['name']>
+    <S extends string>(args: SetPaletteArgs<S>) => PaletteVars<Lowercase<S>>
 
 export const getVariantTokens: SetPaletteFn = ({ colors, name }) => {
-	type N = typeof name
+	type N = Lowercase<typeof name>
+	const namespace = `${name.toLowerCase() as N}` as const
 	const palette = deepMerge(DEFAULT_PALETTE, colors),
-		vars = tokenGenerator(palette, name)
+		vars = tokenGenerator(palette, namespace)
 
 	return vars as PaletteVars<N>
 }
 
 
 interface PaintVariantsArgs<S extends ValidSpecs<S>, N extends string>
-	extends GetPaletteArgs<S> {
-	name: N
+    extends GetPaletteArgs<S> {
+    name: N
 }
 
 export type PaintVariantsFn =
 	<S extends ValidSpecs<S>, N extends string>(
 		args: PaintVariantsArgs<S, N> & S['props']
-	) => PaletteVars<N>
+	) => PaletteVars<Lowercase<N>>
 
-export const paintVariants: PaintVariantsFn = _props => {
-	const { name, ...props } = _props
-	const colors = getVariantColors(props),
-		variables = getVariantTokens({ colors, name })
+export const paintVariants: PaintVariantsFn = <S extends ValidSpecs<S>, N extends string>(
+    _props: PaintVariantsArgs<S, N> & S['props']
+) => {
+    const { name, ...props } = _props
+    const colors = getVariantColors<S>(props),
+        variables = getVariantTokens({ colors, name })
 
-	return variables
+    return variables
 }

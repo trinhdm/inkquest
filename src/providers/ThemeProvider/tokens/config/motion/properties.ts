@@ -1,4 +1,4 @@
-import { tokn } from '../../ref'
+import { base } from '../../reference'
 
 export interface TransitionPropertyTokens {
 	background: string
@@ -8,8 +8,8 @@ export interface TransitionPropertyTokens {
 }
 
 export const getTransitionPropertyTokens = (): TransitionPropertyTokens => ({
-	background:		`background-color ${tokn.duration('fast')} ${tokn.ease()}`,
-	border:			`border-color ${tokn.duration('fast')} ${tokn.ease()}`,
-	color:			`color ${tokn.duration('fast')} ${tokn.ease()}`,
-	transform:		`transform ${tokn.duration('instant')} ${tokn.ease()}`,
+	background:		`background-color ${base.duration('fast')} ${base.ease()}`,
+	border:			`border-color ${base.duration('fast')} ${base.ease()}`,
+	color:			`color ${base.duration('fast')} ${base.ease()}`,
+	transform:		`transform ${base.duration('instant')} ${base.ease()}`,
 })

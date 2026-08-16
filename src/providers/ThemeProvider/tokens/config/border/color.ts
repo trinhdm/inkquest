@@ -1,4 +1,4 @@
-import { tokn } from '../../ref'
+import { base } from '../../reference'
 import { colorMix } from '../utils'
 import type { ThemeConfig } from '../theme'
 
@@ -8,7 +8,7 @@ export interface BorderColorTokens {
 }
 
 export const getBorderColorTokens = ({ scheme, mixer }: ThemeConfig): BorderColorTokens => {
-	const scaleBase = tokn[scheme]('600')
+	const scaleBase = base[scheme]('600')
 	// const scaleBase = tkn(scheme, '100')
 
 	return {

@@ -1,4 +1,4 @@
-import { alias } from '../../ref'
+import { alias } from '../../reference'
 
 export interface TransitionPresetTokens {
 	interactive: string

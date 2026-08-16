@@ -1,4 +1,4 @@
-import { tokn } from '../../ref'
+import { base } from '../../reference'
 import type { ThemeConfig } from '../theme'
 
 export interface BackgroundTokens {
@@ -9,13 +9,13 @@ export interface BackgroundTokens {
 
 export const getBackgroundTokens = ({ scheme, name }: ThemeConfig): BackgroundTokens => ({
 	page: name === 'dark'
-		? tokn[scheme]('100')
-		: tokn[scheme]('300'),
+		? base[scheme]('100')
+		: base[scheme]('300'),
 	// surface: Token.alias('primary', '02'),
 	card: {
 		base: name === 'dark'
-			? tokn[scheme]('300')
-			: tokn[scheme]('100'),
-		hover: tokn[scheme]('400')
+			? base[scheme]('300')
+			: base[scheme]('100'),
+		hover: base[scheme]('400')
 	}
 })

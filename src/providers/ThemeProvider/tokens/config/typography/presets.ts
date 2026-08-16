@@ -1,4 +1,4 @@
-import { alias } from '../../ref'
+import { alias } from '../../reference'
 import type { FontPropertyTokens } from './properties'
 
 interface FontProperties
