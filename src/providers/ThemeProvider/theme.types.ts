@@ -1,16 +1,17 @@
 import type { CSSProperties } from 'react'
 import type { AtLeastOneKey } from '@/types/utils'
 import type { CSSUnit, CSSVars, FontList, HexCode, Size, Unit } from '@/types/shared'
+import type { ColorScaleKey, FlatColorKey } from './tokens/token.types'
 import type { PaintVariantsFn, SemanticTokens } from './tokens'
 
 export type ThemeName =
 	| 'dark'
 	| 'light'
 
-export type ColorScheme =
-	| 'brand'
-	| 'ink'
-	| 'paper'
+// export type ColorScheme =
+// 	| 'brand'
+// 	| 'ink'
+// 	| 'paper'
 
 export interface SiteTheme {
 	paintVariants: PaintVariantsFn
@@ -29,7 +30,10 @@ export interface SiteTheme {
 
 	// headings: FontStyles<TagFontStyles, HeadingTag, 'h1'>
 
-	colors: Record<ColorScheme, readonly HexCode[]>
+	// colors: Record<ColorScheme, readonly HexCode[]>
+	colors:
+		& { [K in FlatColorKey]: HexCode }
+		& { [K in ColorScaleKey]: readonly HexCode[] }
 	breakpoints: Style<CSSUnit, Size>
 	radius: number[]
 

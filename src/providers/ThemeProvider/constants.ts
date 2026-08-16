@@ -1,18 +1,12 @@
 import { alias as tokens, paintVariants } from './tokens'
 import { rem } from '@/lib/general'
 import {
-	BRAND_SCALE, INK_SCALE, PAPER_SCALE, BASE_SCALE,
+	BASE_SCALE, COLOR_TOKENS,
 	FONT_FAMILY_SCALE, FONT_SIZE_SCALE, FONT_WEIGHT_SCALE, LINE_HEIGHT_SCALE,
 	DURATION_SCALE, EASE_SCALE, RADIUS_SCALE,
 } from './tokens/scales'
 import type { SiteTheme } from './theme.types'
 // import { themeControls } from '@/components/core/ScriptInjector'
-
-const DEFAULT_COLORS: SiteTheme['colors'] = {
-	brand: BRAND_SCALE,
-	ink: INK_SCALE,
-	paper: PAPER_SCALE,
-}
 
 // const { applyTheme, getStoredTheme, persistTheme } = themeControls()
 
@@ -24,10 +18,10 @@ export const DEFAULT_THEME: SiteTheme = {
 	tokens,
 
 	scale: {
-		size: BASE_SCALE
+		size: BASE_SCALE,
 	},
 
-	colors: DEFAULT_COLORS,
+	colors: COLOR_TOKENS,
 	fontFamily: FONT_FAMILY_SCALE,
 
 	fontWeight: [...FONT_WEIGHT_SCALE],

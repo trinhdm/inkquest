@@ -3,7 +3,7 @@ import { deepMerge } from '@/utils/helpers'
 import { tokenGenerator } from './generate'
 import type { BaseVarKey, SiteTheme } from '@/providers/ThemeProvider'
 import type { CSSVariable } from '@/types/shared'
-import type { TokenStatesList, TokenGroup } from './config'
+import type { TokenGroup, TokenStatesList } from './token.types'
 import type { ValidSpecs } from '@/types/spec'
 
 export interface ColorPalette {
@@ -21,6 +21,7 @@ type Variant =
 	| 'success'
 	| 'warning'
 	| 'danger'
+	| 'info'
 
 type StateKey = keyof TokenStatesList<any>
 
@@ -76,45 +77,55 @@ export const getVariantColors: GetPaletteFn = _props => {
 	if (!Object.hasOwn(_props, 'variant'))
 		return DEFAULT_PALETTE
 
-	const { theme, variant, ...props } = _props
+	const { theme,  variant, ...props } = _props
+	const priorities: Variant[] = ['danger', 'warning', 'success', 'info']
+	// const isOverride = priorities.includes(variant as Variant)
+	// const token = isOverride ? variant : 'action'
 
 	switch (variant) {
 		case 'solid':
 			return {
 				background: {
-					base: alias.accent.primary(),
-					hover: alias.accent.primary('hover'),
+					base: alias.color.action(),
+					hover: alias.color.action('hover'),
 				},
-				color: alias.color.interactive(),
+				color: alias.color.text('on', 'accent'),
 			}
 		case 'outline':
 			return {
-				border: {
-					base: alias.border(),
-					hover: alias.border('strong'),
+				background: {
+					base: 'transparent',
+					hover: alias.background.card('hover'),
 				},
-				color: alias.color.interactive(),
+				border: {
+					base: alias.border('strong'),
+					hover: alias.color.action(),
+				},
+				color: alias.color.text(),
 			}
 		case 'ghost':
 			return {
 				background: {
 					base: 'transparent',
-					hover: alias.background.card(),
+					hover: alias.background.card('hover'),
 				},
 				border: {
 					base: 'transparent',
-					hover: alias.background.card('hover'),
+					hover: alias.border('strong'),
 				},
 				color: {
-					base: alias.color.interactive(),
-					hover: alias.color.interactive('hover'),
-				},
+					base: alias.color.text(),
+					hover: alias.color.action('hover'),
+				}
 			}
 		case 'light':
 			return {
-				background: alias.accent.primary('muted'),
+				background: alias.color.action('muted'),
 				border: 'currentColor',
-				color: alias.accent.primary(),
+				color: {
+					base: alias.color.action(),
+					hover: alias.color.text('primary'),
+				},
 			}
 		case 'dark':
 			return {
@@ -126,7 +137,50 @@ export const getVariantColors: GetPaletteFn = _props => {
 					base: alias.background.card(),
 					hover: alias.background.card('hover'),
 				},
-				color: alias.color.interactive(),
+				color: {
+					base: alias.color.text('tertiary'),
+					hover: alias.color.text('primary'),
+				},
+			}
+		case 'danger':
+		case 'success':
+		case 'warning':
+		case 'info':
+			const token = alias.color[variant]
+			switch (props.priority) {
+				case 'tertiary':
+					return {
+						background: {
+							base: 'transparent',
+							hover: token('muted'),
+						},
+						border: {
+							base: 'transparent',
+							hover: token('dim'),
+						},
+						color: token(),
+					}
+				case 'secondary':
+					return {
+						background: {
+							base: 'transparent',
+							hover: alias.background.card('hover'),
+						},
+						border: {
+							base: token('shade'),
+							hover: token(),
+						},
+						color: token(),
+					}
+				case 'primary':
+				default:
+					return {
+						background: {
+							base: token(),
+							hover: token('shade'),
+						},
+						color: alias.color.text('on', 'accent'),
+					}
 			}
 		default:
 			return DEFAULT_PALETTE

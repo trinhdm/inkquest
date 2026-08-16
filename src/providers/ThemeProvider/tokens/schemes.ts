@@ -1,8 +1,8 @@
-import { Config } from './config'
+import { Config, THEME_CONFIGS, type ThemeConfig } from './config'
 import { tokenGenerator } from './generate'
-import { THEME_CONFIGS, type ThemeConfig, type ThemeTokens } from './config/theme'
 import type { CSSVars } from '@/types/shared'
 import type { ThemeName, SiteTheme } from '../theme.types'
+import type { ThemeTokens } from './token.types'
 
 export interface ThemeTokensConfig {
 	config: ThemeConfig
@@ -14,9 +14,9 @@ const THEME_NAMES = Object.keys(THEME_CONFIGS) as ThemeName[]
 export const buildThemeTokens = ({ config, prefix }: ThemeTokensConfig): CSSVars => {
 	const tokens = {
 		theme: config.name,
-		accent: Config.accent(),
-		colors: Config.color(config),
-		backgrounds: Config.background(config),
+		accent: Config.accent(config),
+		color: Config.color(config),
+		background: Config.background(config),
 		border: Config.border.color(config),
 	}
 
@@ -25,7 +25,7 @@ export const buildThemeTokens = ({ config, prefix }: ThemeTokensConfig): CSSVars
 
 const buildStaticTokens = (prefix?: string): CSSVars => {
 	const tokens = {
-		fonts: Config.typography(),
+		font: Config.typography(),
 		space: Config.space(),
 		border: {
 			radius: Config.border.radius(),

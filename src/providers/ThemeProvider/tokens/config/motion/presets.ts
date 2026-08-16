@@ -1,9 +1,14 @@
 import { alias } from '../../reference'
 
 export interface TransitionPresetTokens {
-	interactive: string
+	box: string
+	colors: string
 }
 
 export const getTransitionPresetTokens = (): TransitionPresetTokens => ({
-	interactive: `${alias.transition.background()}, ${alias.transition.border()}`,
+	box: `${alias.transition.background()},
+		${alias.transition.border()}`,
+	colors: `${alias.transition.background()},
+		${alias.transition.border()},
+		${alias.transition.color()}`,
 })

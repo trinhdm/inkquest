@@ -3,7 +3,7 @@ import { getBorderRadiusTokens, type BorderRadiusTokens } from './radius'
 import type { ThemeConfig } from '../theme'
 
 interface BorderTokens {
-	color: ({ scheme, mixer }: ThemeConfig) => BorderColorTokens
+	color: ({ scheme }: ThemeConfig) => BorderColorTokens
 	radius: () => BorderRadiusTokens
 }
 

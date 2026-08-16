@@ -1,5 +1,5 @@
 import { base } from '../../reference'
-import { colorMix } from '../utils'
+import { byTheme } from '../utils'
 import type { ThemeConfig } from '../theme'
 
 export interface BorderColorTokens {
@@ -7,12 +7,11 @@ export interface BorderColorTokens {
 	strong: string
 }
 
-export const getBorderColorTokens = ({ scheme, mixer }: ThemeConfig): BorderColorTokens => {
-	const scaleBase = base[scheme]('600')
-	// const scaleBase = tkn(scheme, '100')
+export const getBorderColorTokens = (config: ThemeConfig): BorderColorTokens => {
+	const { colors } = byTheme(config)
 
 	return {
-		base: scaleBase,
-		strong: colorMix(mixer, 55, scaleBase),		// Token.alias('border')
+		base: colors.theme('500'),
+		strong: colors.theme('600'),
 	}
 }

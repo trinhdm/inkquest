@@ -16,4 +16,4 @@ export const Config = {
 	typography: getTypographyTokens,
 }
 
-export type { ThemeTokens, TokenGroup, TokenStatesList } from './theme'
+export { THEME_CONFIGS, type ThemeConfig } from './theme'

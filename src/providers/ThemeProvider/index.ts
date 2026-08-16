@@ -5,10 +5,5 @@ export {
 	useTheme,
 } from './ThemeProvider'
 
-export type {
-	BaseVarKey,
-	ColorScheme,
-	SiteTheme,
-	ThemeName,
-} from './theme.types'
+export type { BaseVarKey, SiteTheme, ThemeName } from './theme.types'
 export type { ColorVariable } from './tokens'

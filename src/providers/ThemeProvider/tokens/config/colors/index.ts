@@ -1,11 +1,18 @@
-import { ALT_THEME, type ThemeConfig } from '../theme'
 import { alias, base } from '../../reference'
-import { colorMix } from '../utils'
+import { byTheme, colorMod } from '../utils'
+import type { ColorMixtures } from '../types'
+import type { ThemeConfig } from '../theme'
 
 export interface ColorTokens {
 	text: {
 		base: string
+		primary: string
+		secondary: string
+		tertiary: string
 		inverse: string
+		on: {
+			accent: string
+		}
 	}
 	link: {
 		base: string
@@ -14,35 +21,43 @@ export interface ColorTokens {
 	action: {
 		base: string
 		hover: string
+		active: string
+		muted: string
 	}
-	interactive: {
-		base: string
-		hover: string
-	}
+	danger: ColorMixtures
+	success: ColorMixtures
+	warning: ColorMixtures
+	info: ColorMixtures
 }
 
-export const getColorTokens = ({ scheme, mixer }: ThemeConfig): ColorTokens => {
-	// const scaleBase = tkn[paletteName]('100')
-	const scaleBase = base[scheme]('100')
-	const altBase = base[ALT_THEME[scheme]]('100')
+export const getColorTokens = (config: ThemeConfig): ColorTokens => {
+	const { colors } = byTheme(config)
+	const scaleBase = colors.theme('100')
 
 	return {
 		text: {
-			base: colorMix(mixer, 95, scaleBase),
-			inverse: colorMix(mixer, 95, altBase),
-			// inverse: tkn[OPPOSITE_PALETTE_NAME[paletteName]]('100'),
+			base: colors.alt('100'),
+			inverse: colors.theme('100'),
+			primary: alias.accent.secondary('tint'),
+			secondary: alias.accent.secondary(),
+			tertiary: alias.accent.secondary('shade'),
+			on: {
+				accent: colors.theme('100'),
+			},
 		},
 		link: {
-			base: colorMix(mixer, 50, scaleBase),
-			hover: colorMix(mixer, 75, scaleBase),
+			base: alias.accent.secondary('shade'),
+			hover: alias.accent.secondary('tint'),
 		},
 		action: {
 			base: alias.accent.primary(),
-			hover: alias.accent.primary('hover'),
+			hover: alias.accent.primary('shade'),
+			active: alias.accent.primary('tint'),
+			muted: alias.accent.primary('muted'),
 		},
-		interactive: {
-			base: colorMix(mixer, 100, scaleBase),
-			hover: colorMix(mixer, 90, scaleBase),
-		},
+		danger: colorMod('red'),
+		success: colorMod('green'),
+		warning: colorMod('yellow'),
+		info: colorMod('blue'),
 	}
 }

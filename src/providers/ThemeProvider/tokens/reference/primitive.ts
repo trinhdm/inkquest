@@ -1,8 +1,8 @@
 import { baseVar } from './handler'
-import { createAccessor, createStateAccessor } from './accessor'
+import { createAccessor, createStateAccessor, createValueRef } from './accessor'
 import type { ColorStepLabels, PaddedIndexLabels } from '../config/types'
 import type {
-	BRAND_SCALE, INK_SCALE, PAPER_SCALE, BASE_SCALE,
+	BASE_SCALE, COLOR_TOKENS,
 	FONT_FAMILY_SCALE, FONT_SIZE_SCALE, FONT_WEIGHT_SCALE, LINE_HEIGHT_SCALE,
 	DURATION_SCALE, EASE_SCALE, RADIUS_SCALE,
 } from '../scales'
@@ -17,6 +17,18 @@ type MultipleOfFour<T extends number> =
     `${T}` extends `${string}${LastTwoDigits}` ? T :
     0
 
+type SiteColors = typeof COLOR_TOKENS
+type ThemeColorNames = {
+	[K in keyof SiteColors]: SiteColors[K] extends readonly unknown[]
+		? K : never
+}[keyof SiteColors]
+
+export type StaticColorNames =
+	Exclude<keyof SiteColors, ThemeColorNames>
+
+type ThemeColor<K extends ThemeColorNames> =
+	ColorStepLabels<SiteColors[K]>
+
 /**
  * One accessor per primitive token category — primitive.brand('100') -> var(--brand-100).
  * Each field's key type is derived straight from its backing scale in scales.ts,
@@ -24,11 +36,23 @@ type MultipleOfFour<T extends number> =
  */
 export const primitiveTokens = {
 	// hex color scales — step label = position, in hundreds
-	brand: createAccessor<ColorStepLabels<typeof BRAND_SCALE>>(baseVar, 'brand'),
-	ink: createAccessor<ColorStepLabels<typeof INK_SCALE>>(baseVar, 'ink'),
-	paper: createAccessor<ColorStepLabels<typeof PAPER_SCALE>>(baseVar, 'paper'),
-	// ink/paper must stay the same shape — config/backgrounds.ts and
-	// config/colors.ts do primitive[scheme]('100') with a runtime scheme.
+	ink: createAccessor<ThemeColor<'ink'>>(baseVar, 'ink'),
+	oxblood: createAccessor<ThemeColor<'oxblood'>>(baseVar, 'oxblood'),
+	ghost: createAccessor<ThemeColor<'ghost'>>(baseVar, 'ghost'),
+
+	paper: createAccessor<ThemeColor<'paper'>>(baseVar, 'paper'),
+	crimson: createAccessor<ThemeColor<'crimson'>>(baseVar, 'crimson'),
+	smoke: createAccessor<ThemeColor<'smoke'>>(baseVar, 'smoke'),
+
+	// static colors
+	red: createValueRef(baseVar, 'red'),
+	green: createValueRef(baseVar, 'green'),
+	yellow: createValueRef(baseVar, 'yellow'),
+	blue: createValueRef(baseVar, 'blue'),
+	white: createValueRef(baseVar, 'white'),
+	gray: createValueRef(baseVar, 'gray'),
+	black: createValueRef(baseVar, 'black'),
+
 	size: createAccessor<`${number}`>(baseVar, 'size'),
 
 	// small scale — step label = zero-padded position ('01'..'05')

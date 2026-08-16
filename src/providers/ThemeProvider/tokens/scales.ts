@@ -25,9 +25,26 @@
 // mean tightening SiteTheme's scale fields in theme.types.ts to fixed-length
 // shapes, a larger, separate change.
 
-export const BRAND_SCALE = ['#E8483F', '#D63A31', '#C22F27', '#3A211F', '#FBE3E1'] as const
-export const INK_SCALE = ['#0E0E10', '#17171A', '#1B1B1F', '#232327', '#2A2A2E', '#3A3A3F'] as const
-export const PAPER_SCALE = ['#FFFAFA', '#F8F6F2', '#F2F0EC', '#EAE7E0', '#DEDBD4', '#C9C6BF'] as const
+export const COLOR_TOKENS = {
+	ink: ['#0E0E10', '#17171A', '#1B1B1F', '#232327', '#2A2A2E', '#3A3A3F'],
+	paper: ['#FFFAFA', '#F8F6F2', '#F2F0EC', '#EAE7E0', '#DEDBD4', '#C9C6BF'],
+
+	oxblood: ['#E8483F', '#D63A31', '#C22F27', '#3A211F', '#FBE3E1'],
+	crimson: ['#B02B27', '#9C231F', '#8A1B18', '#3A211F', '#FBE3E1'],
+
+	ghost: ['#F2F0EC', '#B9B7B2', '#8B8B90'],
+	smoke: ['#777570', '#55555C', '#18181A'],
+
+	red: '#C5120D',
+	green: '#3FB68A',
+	yellow: '#E0A83C',
+	blue: '#5C9CE0',
+	white: '#FFF',
+	gray: '#808080',
+	black: '#000',
+} as const
+
+export const THEME_SCHEMES = ['ink', 'paper'] as const satisfies readonly (keyof typeof COLOR_TOKENS)[]
 
 export const BASE_SCALE = 4 as const
 
@@ -58,8 +75,8 @@ export const RADIUS_SCALE = [0, 6, 8, 12, 999] as const
 
 export const DURATION_SCALE = {
 	instant: '.1s',
-	fast: '.15s',
-	default: '.25s',
+	fast: '.2s',
+	default: '.3s',
 	slow: '.4s',
 	gradual: '.6s',
 } as const

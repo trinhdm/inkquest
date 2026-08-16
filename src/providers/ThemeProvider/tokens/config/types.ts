@@ -1,17 +1,18 @@
-import type { ColorScheme } from '../../theme.types'
-import type { INK_SCALE, PAPER_SCALE, LINE_HEIGHT_SCALE } from '../scales'
+import type { COLOR_TOKENS } from '../scales'
 
-export type PaletteName = Extract<ColorScheme, 'ink' | 'paper'>
+export interface ColorMixtures {
+	base: string
+	bright: string
+	dim: string
+	dusty: string
+	muted: string
+	shade: string
+	tint: string
+}
 
-/** Needed externally: builder/theme-config.ts's ThemeConfig.background.{page,cardBase} are typed with this. */
-export type ColorScaleStep = ColorStepLabels<typeof INK_SCALE> | ColorStepLabels<typeof PAPER_SCALE>
-
-/** Needed by primitive.ts's own hand-kept lineHeight accessor. */
-export type LineHeightKey = keyof typeof LINE_HEIGHT_SCALE
-
-/** Needed by primitive.ts's own hand-kept size accessor — generated (1x-24x baseSize) at runtime, not enumerable from a fixed list. */
-export type SizeStep = `${number}`
-
+export type ColorScaleStep =
+	| ColorStepLabels<typeof COLOR_TOKENS.ink>
+	| ColorStepLabels<typeof COLOR_TOKENS.paper>
 
 /**
  * Type-level mirror of generate/step-naming.ts's getArrayStepLabel(): derives

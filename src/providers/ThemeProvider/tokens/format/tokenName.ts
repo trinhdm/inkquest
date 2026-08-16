@@ -29,8 +29,8 @@ const formatName = <T,>({ path }: CSSVarArgs<T>): string => {
 	if (_is.FontName(name))
 		name = formatFontName(name)
 
-	if (_is.Plural(name))
-		name = name.slice(0, -1)
+	// if (_is.Plural(name))
+	// 	name = name.slice(0, -1)
 
 	if (_is.Verb(name))
 		name = name.replace('ing', 'e')
@@ -42,11 +42,22 @@ const formatRoute = <T,>({ path }: CSSVarArgs<T>): CSSVarArgs<T>['path'] => {
 	if (!path?.length) return path
 	let route = path
 
+	route = route.flatMap(str => {
+		const part = toKebabCase(str)
+
+		if (route.length > 2 && part.includes('-'))
+			return [...part.split('-')]
+
+		return part
+	})
+
+	if (route.length !== path.length) {
+		const unique = new Set(route)
+		route = [...unique]
+	}
+
 	if (route.at(-1) === ('base' as BaseVarKey))
 		route = route.slice(0, -1)
-
-	for (const [i, str] of route.entries())
-		route[i] = toKebabCase(str)
 
 	return route
 }

@@ -1,4 +1,4 @@
-import type { TokenVar } from './handler'
+import type { TokenVar } from '../token.types'
 
 type LeafPath<T> =
 	T extends readonly unknown[] ? [] :

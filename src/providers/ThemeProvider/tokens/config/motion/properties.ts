@@ -8,8 +8,8 @@ export interface TransitionPropertyTokens {
 }
 
 export const getTransitionPropertyTokens = (): TransitionPropertyTokens => ({
-	background:		`background-color ${base.duration('fast')} ${base.ease()}`,
-	border:			`border-color ${base.duration('fast')} ${base.ease()}`,
-	color:			`color ${base.duration('fast')} ${base.ease()}`,
+	background:		`background-color ${base.duration('default')} ${base.ease()}`,
+	border:			`border-color ${base.duration('default')} ${base.ease()}`,
+	color:			`color ${base.duration('default')} ${base.ease()}`,
 	transform:		`transform ${base.duration('instant')} ${base.ease()}`,
 })

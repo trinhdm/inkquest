@@ -18,9 +18,9 @@ const propertyTokens = {
 	border: createStateAccessor<BorderColorTokens>(aliasVar, 'border'),
 	borderRadius: createAccessor<BorderRadiusTokens>(aliasVar, 'border', 'radius'),
 
-	fontFamily: createAccessor<TypographyTokens['fontFamily']>(aliasVar, 'font', 'fontFamily'),
-	fontSize: createAccessor<TypographyTokens['fontSize']>(aliasVar, 'font', 'fontSize'),
-	fontWeight: createAccessor<TypographyTokens['fontWeight']>(aliasVar, 'font', 'fontWeight'),
+	fontFamily: createAccessor<TypographyTokens['fontFamily']>(aliasVar, 'font', 'family'),
+	fontSize: createAccessor<TypographyTokens['fontSize']>(aliasVar, 'font', 'size'),
+	fontWeight: createAccessor<TypographyTokens['fontWeight']>(aliasVar, 'font', 'weight'),
 	lineHeight: createAccessor<TypographyTokens['lineHeight']>(aliasVar, 'font', 'lineHeight'),
 
 	transition: {
@@ -43,7 +43,10 @@ export const semanticTokens = {
 		text: createStateAccessor<ColorTokens['text']>(aliasVar, 'color', 'text'),
 		link: createStateAccessor<ColorTokens['link']>(aliasVar, 'color', 'link'),
 		action: createStateAccessor<ColorTokens['action']>(aliasVar, 'color', 'action'),
-		interactive: createStateAccessor<ColorTokens['interactive']>(aliasVar, 'color', 'interactive'),
+		danger: createStateAccessor<ColorTokens['danger']>(aliasVar, 'color', 'danger'),
+		success: createStateAccessor<ColorTokens['success']>(aliasVar, 'color', 'success'),
+		warning: createStateAccessor<ColorTokens['warning']>(aliasVar, 'color', 'warning'),
+		info: createStateAccessor<ColorTokens['info']>(aliasVar, 'color', 'info'),
 	},
 	font: {
 		display: createValueRef(aliasVar, 'font', 'display'),

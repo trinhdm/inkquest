@@ -1,18 +1,19 @@
-import { alias, base } from '../../reference'
-import { colorMix } from '../utils'
+import { base } from '../../reference'
+import { byTheme, colorMod } from '../utils'
+import type { ColorMixtures } from '../types'
+import type { ThemeConfig } from '../theme'
 
-export interface PrimaryTokens {
-	base: string
-	hover: string
-	press: string
-	muted: string
-	text: string
+export interface PrimaryTokens
+	extends ColorMixtures {}
+
+export const getPrimaryTokens = (config: ThemeConfig): PrimaryTokens => {
+	const primaryColors = {
+		dark: base.oxblood,
+		light: base.crimson,
+	}
+
+	const { colors } = byTheme(config, primaryColors),
+		hues = colorMod(colors.get('100'))
+
+	return hues
 }
-
-export const getPrimaryTokens = (): PrimaryTokens => ({
-	base: base.brand('100'),
-	hover: base.brand('200'),
-	press: base.brand('300'),
-	muted: colorMix(alias.background.page(), 80, alias.accent.primary()),
-	text: alias.color.link(),
-})
