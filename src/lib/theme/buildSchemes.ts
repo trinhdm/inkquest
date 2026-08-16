@@ -1,17 +1,13 @@
 import { Config, THEME_CONFIGS, type ThemeConfig } from './tokens/config'
 import { tokenGenerator } from './tokens/generate'
-import type { CSSVars } from '@/types/shared'
-import type { SiteTheme, ThemeName } from './types'
-import type { ThemeTokens } from './tokens/token.types'
-
-export interface ThemeTokensConfig {
-	config: ThemeConfig
-	prefix?: string
-}
+import type { SiteTheme, ThemeName, ThemeTokens } from './types'
 
 const THEME_NAMES = Object.keys(THEME_CONFIGS) as ThemeName[]
+type ThemeTokensList<K extends ThemeName = ThemeName> = Pick<ThemeTokens, K>
 
-export const buildThemeTokens = ({ config, prefix }: ThemeTokensConfig): CSSVars => {
+const buildThemeTokens = <K extends ThemeName>(
+	config: ThemeConfig, prefix?: string
+): ThemeTokensList<K>[K] => {
 	const tokens = {
 		theme: config.name,
 		accent: Config.accent(config),
@@ -23,7 +19,9 @@ export const buildThemeTokens = ({ config, prefix }: ThemeTokensConfig): CSSVars
 	return tokenGenerator(tokens, prefix)
 }
 
-const buildStaticTokens = (prefix?: string): CSSVars => {
+const buildStaticTokens = <K extends keyof ThemeTokens>(
+	prefix?: string
+): ThemeTokens[K] => {
 	const tokens = {
 		font: Config.typography(),
 		space: Config.space(),
@@ -53,10 +51,10 @@ export const buildSchemes = (
 	const primitives = buildPrimitiveTokens(theme),
 		staticTokens = buildStaticTokens(prefix)
 
-	const themes = THEME_NAMES.reduce<Record<ThemeName, CSSVars>>((schemes, name) => ({
+	const themes = THEME_NAMES.reduce<ThemeTokensList>((schemes, name) => ({
 		...schemes,
-		[name]: buildThemeTokens({ config: THEME_CONFIGS[name], prefix }),
-	}), {} as Record<ThemeName, CSSVars>)
+		[name]: buildThemeTokens(THEME_CONFIGS[name], prefix),
+	}), {} as ThemeTokensList)
 
 	return {
 		base: { ...primitives, ...staticTokens },

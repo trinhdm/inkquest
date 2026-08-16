@@ -25,16 +25,11 @@ export type ThemeName =
 	| 'dark'
 	| 'light'
 
-// export type ColorScheme =
-// 	| 'brand'
-// 	| 'ink'
-// 	| 'paper'
+export type ThemeTokens<V = unknown> =
+	Record<ThemeName | 'base', CSSVars<V>>
 
 export interface SiteTheme {
 	paintVariants: PaintVariantsFn
-
-	// name: ThemeName
-	// setName: (theme: ThemeName) => void
 
 	tokens: SemanticTokens
 
@@ -46,8 +41,6 @@ export interface SiteTheme {
 	lineHeight: Style<CSSProperties['lineHeight'], ThemeLineHeight, 'normal'>
 
 	// headings: FontStyles<TagFontStyles, HeadingTag, 'h1'>
-
-	// colors: Record<ColorScheme, readonly HexCode[]>
 	colors:
 		& { [K in FlatColorKey]: HexCode }
 		& { [K in ColorScaleKey]: readonly HexCode[] }
