@@ -2,7 +2,6 @@
 
 import { createContext, use, useMemo, type ReactNode } from 'react'
 import { mergeTheme } from './theme'
-// import { useThemeName } from '@/hooks/useThemeName'
 import { DEFAULT_THEME } from './constants'
 import type { SiteTheme } from './theme.types'
 
@@ -30,31 +29,6 @@ export const ThemeProvider = ({
 		() => mergeTheme(currentTheme, theme),
 		[currentTheme, theme]
 	)
-
-	// const { themeName, setThemeName } = useThemeName()
-	// // const mergedTheme = useMemo(() => ({
-	// // 	...mergeTheme(currentTheme, theme),
-	// // 	name: (() => themeName)(),
-	// // 	setName: setThemeName,
-	// // }), [currentTheme, theme, themeName, setThemeName])
-
-	// const mergedData = useMemo(() => mergeTheme(currentTheme, theme), [currentTheme, theme])
-	// const mergedTheme = useMemo(() => ({
-	// 	...mergedData,
-	// 	name: themeName,
-	// 	setName: setThemeName,
-	// }), [mergedData, themeName, setThemeName])
-
-	// useEffect(() => {
-	// 	if (typeof window === 'undefined') return
-
-	// 	const { documentElement: documentEl } = document,
-	// 		rootStyle = getComputedStyle(documentEl),
-	// 		cssPrefix = rootStyle.getPropertyValue(PREFIX_CSS_VARS)
-
-	// 	if (!cssPrefix)
-	// 		documentEl.style.setProperty(PREFIX_CSS_VARS, PREFIX_CSS_SELECTOR)
-	// }, [])
 
 	return <ThemeContext value={ mergedTheme }>{ children }</ThemeContext>
 }

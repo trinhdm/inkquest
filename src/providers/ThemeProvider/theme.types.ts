@@ -40,6 +40,8 @@ export interface SiteTheme {
 	duration: Style<CSSProperties['transitionDuration'], ThemeDuration, 'default'>
 	easing: Style<ThemeEasingValues, ThemeEasing, BaseVarKey>
 
+	screenSize: number[]
+
 	subcomponents?: Record<string, {
 		cssVars?: (theme: SiteTheme, props: unknown, ctx: unknown) => Partial<Record<string, CSSVars>>
 	}>

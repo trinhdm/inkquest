@@ -86,3 +86,5 @@ export const EASE_SCALE = {
 	out: 'cubic-bezier(0.16, 1, 0.3, 1)',
 	inOut: 'cubic-bezier(0.65, 0, 0.35, 1)',
 } as const
+
+export const SCREEN_SIZE_SCALE = [ 360, 768, 1080, 1280, 1440, 1920 ] as const

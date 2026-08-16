@@ -4,6 +4,7 @@ import {
 	BASE_SCALE, COLOR_TOKENS,
 	FONT_FAMILY_SCALE, FONT_SIZE_SCALE, FONT_WEIGHT_SCALE, LINE_HEIGHT_SCALE,
 	DURATION_SCALE, EASE_SCALE, RADIUS_SCALE,
+	SCREEN_SIZE_SCALE,
 } from './tokens/scales'
 import type { SiteTheme } from './theme.types'
 // import { themeControls } from '@/components/core/ScriptInjector'
@@ -22,8 +23,8 @@ export const DEFAULT_THEME: SiteTheme = {
 	},
 
 	colors: COLOR_TOKENS,
-	fontFamily: FONT_FAMILY_SCALE,
 
+	fontFamily: FONT_FAMILY_SCALE,
 	fontWeight: [...FONT_WEIGHT_SCALE],
 	fontSize: [...FONT_SIZE_SCALE],
 
@@ -42,4 +43,7 @@ export const DEFAULT_THEME: SiteTheme = {
 	easing: EASE_SCALE,
 
 	duration: DURATION_SCALE,
+
+	screenSize: [...SCREEN_SIZE_SCALE],
+	// width: [ 1200 ],
 }

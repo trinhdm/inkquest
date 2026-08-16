@@ -5,6 +5,7 @@ import type {
 	BASE_SCALE, COLOR_TOKENS,
 	FONT_FAMILY_SCALE, FONT_SIZE_SCALE, FONT_WEIGHT_SCALE, LINE_HEIGHT_SCALE,
 	DURATION_SCALE, EASE_SCALE, RADIUS_SCALE,
+	SCREEN_SIZE_SCALE,
 } from '../scales'
 
 type LastTwoDigits =
@@ -54,6 +55,7 @@ export const primitiveTokens = {
 	black: createValueRef(baseVar, 'black'),
 
 	size: createAccessor<`${number}`>(baseVar, 'size'),
+	screenSize: createAccessor<`${typeof SCREEN_SIZE_SCALE[number]}`>(baseVar, 'screenSize'),
 
 	// small scale — step label = zero-padded position ('01'..'05')
 	radius: createAccessor<PaddedIndexLabels<typeof RADIUS_SCALE>>(baseVar, 'radius'),

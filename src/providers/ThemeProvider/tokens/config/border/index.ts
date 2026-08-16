@@ -7,7 +7,7 @@ interface BorderTokens {
 	radius: () => BorderRadiusTokens
 }
 
-export const borderTokens: BorderTokens = {
+export const getBorderTokens: BorderTokens = {
 	color: getBorderColorTokens,
 	radius: getBorderRadiusTokens,
 }
