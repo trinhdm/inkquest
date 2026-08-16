@@ -1,24 +1,46 @@
-import { baseVar } from './handler'
-import { createAccessor, createStateAccessor, createValueRef } from './accessor'
-import type { ColorStepLabels, PaddedIndexLabels } from '../config/types'
+import { baseVar, token } from './utils'
 import type {
 	BASE_SCALE, COLOR_TOKENS,
 	FONT_FAMILY_SCALE, FONT_SIZE_SCALE, FONT_WEIGHT_SCALE, LINE_HEIGHT_SCALE,
 	DURATION_SCALE, EASE_SCALE, RADIUS_SCALE,
 	SCREEN_SIZE_SCALE,
-} from '../scales'
+} from '../../scales'
 
-type LastTwoDigits =
-  | `${0 | 2 | 4 | 6 | 8}${0 | 4 | 8}`
-  | `${1 | 3 | 5 | 7 | 9}${2 | 6}`;
+/**
+ * Type-level mirror of generate/step-naming.ts's getArrayStepLabel(): derives
+ * the exact set of valid step labels straight from a scale array's length, so
+ * accessor key types never need hand-counting or manual updates when a scale
+ * gains or loses a step. The runtime and type-level versions implement the
+ * same labeling rule at two different phases (JS values vs. TS types) — that
+ * duplication is inherent to TypeScript's phase separation, not a shortcut.
+ */
+type Increment<Counted extends unknown[]> = [...Counted, unknown]
 
-type MultipleOfFour<T extends number> =
-    T extends -8 | -4 | 0 | 4 | 8 ? T :
-    `${T}` extends `${string}${"e" | "."}${string} ` ? 0 :
-    `${T}` extends `${string}${LastTwoDigits}` ? T :
-    0
+/** '100' | '200' | ... — one label per element, in order. For hex-color scales (brand/ink/paper). */
+export type ColorStepLabels<
+	T extends readonly unknown[],
+	Acc extends string = never,
+	Counted extends unknown[] = []
+> = T extends readonly [unknown, ...infer Rest]
+	? ColorStepLabels<Rest, Acc | `${Increment<Counted>['length']}00`, Increment<Counted>>
+	: Acc
+
+/** '01' | '02' | ... — one zero-padded label per element. For small (<10-step) scales like radius. */
+export type PaddedIndexLabels<
+	T extends readonly unknown[],
+	Acc extends string = never,
+	Counted extends unknown[] = []
+> = T extends readonly [unknown, ...infer Rest]
+	? PaddedIndexLabels<Rest, Acc | `0${Increment<Counted>['length']}`, Increment<Counted>>
+	: Acc
+
+export type ColorScaleStep =
+	| ColorStepLabels<typeof COLOR_TOKENS.ink>
+	| ColorStepLabels<typeof COLOR_TOKENS.paper>
+
 
 type SiteColors = typeof COLOR_TOKENS
+
 type ThemeColorNames = {
 	[K in keyof SiteColors]: SiteColors[K] extends readonly unknown[]
 		? K : never
@@ -37,38 +59,38 @@ type ThemeColor<K extends ThemeColorNames> =
  */
 export const primitiveTokens = {
 	// hex color scales — step label = position, in hundreds
-	ink: createAccessor<ThemeColor<'ink'>>(baseVar, 'ink'),
-	oxblood: createAccessor<ThemeColor<'oxblood'>>(baseVar, 'oxblood'),
-	ghost: createAccessor<ThemeColor<'ghost'>>(baseVar, 'ghost'),
+	ink: token.path<ThemeColor<'ink'>>(baseVar, 'ink'),
+	oxblood: token.path<ThemeColor<'oxblood'>>(baseVar, 'oxblood'),
+	ghost: token.path<ThemeColor<'ghost'>>(baseVar, 'ghost'),
 
-	paper: createAccessor<ThemeColor<'paper'>>(baseVar, 'paper'),
-	crimson: createAccessor<ThemeColor<'crimson'>>(baseVar, 'crimson'),
-	smoke: createAccessor<ThemeColor<'smoke'>>(baseVar, 'smoke'),
+	paper: token.path<ThemeColor<'paper'>>(baseVar, 'paper'),
+	crimson: token.path<ThemeColor<'crimson'>>(baseVar, 'crimson'),
+	smoke: token.path<ThemeColor<'smoke'>>(baseVar, 'smoke'),
 
 	// static colors
-	red: createValueRef(baseVar, 'red'),
-	green: createValueRef(baseVar, 'green'),
-	yellow: createValueRef(baseVar, 'yellow'),
-	blue: createValueRef(baseVar, 'blue'),
-	white: createValueRef(baseVar, 'white'),
-	gray: createValueRef(baseVar, 'gray'),
-	black: createValueRef(baseVar, 'black'),
+	red: token.endPath(baseVar, 'red'),
+	green: token.endPath(baseVar, 'green'),
+	yellow: token.endPath(baseVar, 'yellow'),
+	blue: token.endPath(baseVar, 'blue'),
+	white: token.endPath(baseVar, 'white'),
+	gray: token.endPath(baseVar, 'gray'),
+	black: token.endPath(baseVar, 'black'),
 
-	size: createAccessor<`${number}`>(baseVar, 'size'),
-	screenSize: createAccessor<`${typeof SCREEN_SIZE_SCALE[number]}`>(baseVar, 'screenSize'),
+	size: token.path<`${number}`>(baseVar, 'size'),
+	screenSize: token.path<`${typeof SCREEN_SIZE_SCALE[number]}`>(baseVar, 'screenSize'),
 
 	// small scale — step label = zero-padded position ('01'..'05')
-	radius: createAccessor<PaddedIndexLabels<typeof RADIUS_SCALE>>(baseVar, 'radius'),
+	radius: token.path<PaddedIndexLabels<typeof RADIUS_SCALE>>(baseVar, 'radius'),
 
-	font: createAccessor<keyof typeof FONT_FAMILY_SCALE>(baseVar, 'font'),
-	fontSize: createAccessor<`${typeof FONT_SIZE_SCALE[number]}`>(baseVar, 'font', 'size'),
-	weight: createAccessor<`${typeof FONT_WEIGHT_SCALE[number]}`>(baseVar, 'weight'),
-	lineHeight: createAccessor<keyof typeof LINE_HEIGHT_SCALE>(baseVar, 'line', 'height'),
+	font: token.path<keyof typeof FONT_FAMILY_SCALE>(baseVar, 'font'),
+	fontSize: token.path<`${typeof FONT_SIZE_SCALE[number]}`>(baseVar, 'font', 'size'),
+	weight: token.path<`${typeof FONT_WEIGHT_SCALE[number]}`>(baseVar, 'weight'),
+	lineHeight: token.path<keyof typeof LINE_HEIGHT_SCALE>(baseVar, 'line', 'height'),
 
-	duration: createAccessor<keyof typeof DURATION_SCALE>(baseVar, 'duration'),
+	duration: token.path<keyof typeof DURATION_SCALE>(baseVar, 'duration'),
 
 	// step label = the scale object's own key, optional — omitting it means "base"
-	ease: createStateAccessor<Exclude<keyof typeof EASE_SCALE, 'base'>>(baseVar, 'ease'),
+	ease: token.optPath<keyof typeof EASE_SCALE>(baseVar, 'ease'),
 }
 
 /** The shape useTheme() exposes to components — see SiteTheme.alias in theme.types.ts. */

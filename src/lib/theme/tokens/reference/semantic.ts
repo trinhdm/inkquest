@@ -1,5 +1,4 @@
-import { aliasVar } from './handler'
-import { createAccessor, createStateAccessor, createValueRef } from './accessor'
+import { aliasVar, token } from './utils'
 import type {
 	AccentTokens, BackgroundTokens,
 	BorderColorTokens, BorderRadiusTokens, ColorTokens,
@@ -7,27 +6,27 @@ import type {
 } from '../config/types'
 
 const themeTokens = {
-	theme: createValueRef(aliasVar, 'theme'),
+	theme: token.endPath(aliasVar, 'theme'),
 	accent: {
-		primary: createStateAccessor<AccentTokens['primary']>(aliasVar, 'accent', 'primary'),
-		secondary: createStateAccessor<AccentTokens['secondary']>(aliasVar, 'accent', 'secondary'),
+		primary: token.optPath<AccentTokens['primary']>(aliasVar, 'accent', 'primary'),
+		secondary: token.optPath<AccentTokens['secondary']>(aliasVar, 'accent', 'secondary'),
 	}
 }
 
 const propertyTokens = {
-	border: createStateAccessor<BorderColorTokens>(aliasVar, 'border'),
-	borderRadius: createAccessor<BorderRadiusTokens>(aliasVar, 'border', 'radius'),
+	border: token.optPath<BorderColorTokens>(aliasVar, 'border'),
+	borderRadius: token.path<BorderRadiusTokens>(aliasVar, 'border', 'radius'),
 
-	fontFamily: createAccessor<TypographyTokens['fontFamily']>(aliasVar, 'font', 'family'),
-	fontSize: createAccessor<TypographyTokens['fontSize']>(aliasVar, 'font', 'size'),
-	fontWeight: createAccessor<TypographyTokens['fontWeight']>(aliasVar, 'font', 'weight'),
-	lineHeight: createAccessor<TypographyTokens['lineHeight']>(aliasVar, 'font', 'lineHeight'),
+	fontFamily: token.path<TypographyTokens['fontFamily']>(aliasVar, 'font', 'family'),
+	fontSize: token.path<TypographyTokens['fontSize']>(aliasVar, 'font', 'size'),
+	fontWeight: token.path<TypographyTokens['fontWeight']>(aliasVar, 'font', 'weight'),
+	lineHeight: token.path<TypographyTokens['lineHeight']>(aliasVar, 'font', 'lineHeight'),
 
 	transition: {
-		background: createValueRef(aliasVar, 'motion', 'background'),
-		border: createValueRef(aliasVar, 'motion', 'border'),
-		color: createValueRef(aliasVar, 'motion', 'color'),
-		transform: createValueRef(aliasVar, 'motion', 'transform'),
+		background: token.endPath(aliasVar, 'motion', 'background'),
+		border: token.endPath(aliasVar, 'motion', 'border'),
+		color: token.endPath(aliasVar, 'motion', 'color'),
+		transform: token.endPath(aliasVar, 'motion', 'transform'),
 	},
 }
 
@@ -36,29 +35,29 @@ export const semanticTokens = {
 	...themeTokens,
 	...propertyTokens,
 	background: {
-		page: createValueRef(aliasVar, 'background', 'page'),
-		card: createStateAccessor<BackgroundTokens['card']>(aliasVar, 'background', 'card'),
+		page: token.endPath(aliasVar, 'background', 'page'),
+		card: token.optPath<BackgroundTokens['card']>(aliasVar, 'background', 'card'),
 	},
 	color: {
-		text: createStateAccessor<ColorTokens['text']>(aliasVar, 'color', 'text'),
-		link: createStateAccessor<ColorTokens['link']>(aliasVar, 'color', 'link'),
-		action: createStateAccessor<ColorTokens['action']>(aliasVar, 'color', 'action'),
-		danger: createStateAccessor<ColorTokens['danger']>(aliasVar, 'color', 'danger'),
-		success: createStateAccessor<ColorTokens['success']>(aliasVar, 'color', 'success'),
-		warning: createStateAccessor<ColorTokens['warning']>(aliasVar, 'color', 'warning'),
-		info: createStateAccessor<ColorTokens['info']>(aliasVar, 'color', 'info'),
+		text: token.optPath<ColorTokens['text']>(aliasVar, 'color', 'text'),
+		link: token.optPath<ColorTokens['link']>(aliasVar, 'color', 'link'),
+		action: token.optPath<ColorTokens['action']>(aliasVar, 'color', 'action'),
+		danger: token.optPath<ColorTokens['danger']>(aliasVar, 'color', 'danger'),
+		success: token.optPath<ColorTokens['success']>(aliasVar, 'color', 'success'),
+		warning: token.optPath<ColorTokens['warning']>(aliasVar, 'color', 'warning'),
+		info: token.optPath<ColorTokens['info']>(aliasVar, 'color', 'info'),
 	},
 	font: {
-		display: createValueRef(aliasVar, 'font', 'display'),
-		title: createValueRef(aliasVar, 'font', 'title'),
-		body: createValueRef(aliasVar, 'font', 'body'),
-		label: createValueRef(aliasVar, 'font', 'label'),
+		display: token.endPath(aliasVar, 'font', 'display'),
+		title: token.endPath(aliasVar, 'font', 'title'),
+		body: token.endPath(aliasVar, 'font', 'body'),
+		label: token.endPath(aliasVar, 'font', 'label'),
 	},
 	space: {
-		inset: createAccessor<SpaceTokens['inset']>(aliasVar, 'space', 'inset'),
+		inset: token.path<SpaceTokens['inset']>(aliasVar, 'space', 'inset'),
 	},
 	motion: {
-		interactive: createValueRef(aliasVar, 'motion', 'interactive'),
+		interactive: token.endPath(aliasVar, 'motion', 'interactive'),
 	},
 }
 

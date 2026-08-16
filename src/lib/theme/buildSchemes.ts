@@ -1,8 +1,8 @@
-import { Config, THEME_CONFIGS, type ThemeConfig } from './config'
-import { tokenGenerator } from './generate'
+import { Config, THEME_CONFIGS, type ThemeConfig } from './tokens/config'
+import { tokenGenerator } from './tokens/generate'
 import type { CSSVars } from '@/types/shared'
-import type { SiteTheme, ThemeName } from '../types'
-import type { ThemeTokens } from './token.types'
+import type { SiteTheme, ThemeName } from './types'
+import type { ThemeTokens } from './tokens/token.types'
 
 export interface ThemeTokensConfig {
 	config: ThemeConfig
