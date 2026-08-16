@@ -1,6 +1,13 @@
+import { alias } from './tokens/ref'
 import { rem } from '@/lib/general'
 import { paintVariants } from './tokens'
-import { themeControls } from '@/components/core/ScriptInjector'
+import {
+	BRAND_SCALE, INK_SCALE, PAPER_SCALE, FONT_FAMILY_SCALE, FONT_WEIGHT_SCALE,
+	RADIUS_SCALE, LINE_HEIGHT_SCALE, DURATION_SCALE, EASE_SCALE,
+	FONT_SIZE_SCALE,
+	BASE_SCALE,
+} from './tokens/scales'
+// import { themeControls } from '@/components/core/ScriptInjector'
 import type { SiteTheme } from './theme.types'
 
 export const DEFAULT_COLORS: SiteTheme['colors'] = {
@@ -29,43 +36,26 @@ export const DEFAULT_COLORS: SiteTheme['colors'] = {
 	],
 }
 
-const DEFAULT_FONT_FAMILY: SiteTheme['fontFamily'] = {
-	black: `'Archivo Black', 'Archivo', sans-serif`,
-	mono: `'Space Mono', SF Mono, monospace`,
-	sans: `'Archivo', -apple-system, BlinkMacSystemFont, sans-serif`,
-}
-
-const { applyTheme, getStoredTheme, persistTheme } = themeControls()
+// const { applyTheme, getStoredTheme, persistTheme } = themeControls()
 
 export const DEFAULT_THEME: SiteTheme = {
-	get name() { return getStoredTheme() },
-	setName: (theme) => { applyTheme(theme); persistTheme(theme) },
+	// get name() { return getStoredTheme() },
+	// setName: (theme) => { applyTheme(theme); persistTheme(theme) },
 
 	paintVariants,
+	tokens: alias,
 
-	// baseSize: 4,
 	scale: {
-		size: 4
+		size: BASE_SCALE
 	},
 
 	colors: DEFAULT_COLORS,
-	fontFamily: DEFAULT_FONT_FAMILY,
+	fontFamily: FONT_FAMILY_SCALE,
 
-	fontSizes: [12, 14, 16, 20, 24, 32, 48, 96],
+	fontWeight: [...FONT_WEIGHT_SCALE],
+	fontSize: [...FONT_SIZE_SCALE],
 
-	fontWeight: [
-		400,
-		600,
-		700,
-	],
-
-	lineHeight: {
-		xs: 1.3,
-		sm: 1.5,
-		md: 1.55,
-		lg: 1.55,
-		// xl: 1.5,
-	},
+	lineHeight: LINE_HEIGHT_SCALE,
 
 	breakpoints: {
 		xs: rem(360),
@@ -75,68 +65,70 @@ export const DEFAULT_THEME: SiteTheme = {
 		xl: rem(1440),
 	},
 
-	radius: [
-		0,
-		6,
-		8,
-		12,
-		999,
-	],
+	radius: [...RADIUS_SCALE],
 
-	easing: {
-		base: 'cubic-bezier(0.4, 0, 0.2, 1)',
-		out: 'cubic-bezier(0.16, 1, 0.3, 1)',
-		inOut: 'cubic-bezier(0.65, 0, 0.35, 1)',
-	},
+	easing: EASE_SCALE,
 
-	duration: {
-		instant: '100ms',
-		fast: '160ms',
-		default: '240ms',
-		slow: '400ms',
-		gradual: '600ms',
-	},
-
-	// fontWeight: {
-	// 	regular: 400,
-	// 	bold: 600,
-	// 	black: 700,
-	// },
-
-	// fontSize: {
-	// 	xs: rem(10),
-	// 	sm: rem(12),
-	// 	md: rem(16),
-	// 	lg: rem(18),
-	// 	xl: rem(20),
-	// },
-
-	// fontSize: [1, 2, 3, 4, 6, 8, 10, 12],
-
-	// headings: {
-	// 	fontFamily: DEFAULT_FONT_FAMILY.title,
-	// 	fontWeight: 700,
-	// 	tagName: {
-	// 		h1: {
-	// 			fontSize: tkn('size', '32'),
-	// 			lineHeight: 1.15,
-	// 		},
-	// 		h2: {
-	// 			fontSize: tkn('size', '24'),
-	// 			lineHeight: 1.25,
-	// 		},
-	// 		h3: {
-	// 			fontSize: tkn('size', '20'),
-	// 			lineHeight: 1.3,
-	// 			fontWeight: 500,
-	// 		},
-	// 	}
-	// },
-
-	// radius: {
-	// 	sm: rem(6),
-	// 	md: rem(8),
-	// 	lg: rem(12),
-	// 	pill: rem(999),
-	// },
+	duration: DURATION_SCALE,
 }
+
+// export const DEFAULT_THEME: SiteTheme = {
+// 	get name() { return getStoredTheme() },
+// 	setName: (theme) => { applyTheme(theme); persistTheme(theme) },
+
+// 	paintVariants,
+
+// 	// baseSize: 4,
+// 	scale: {
+// 		size: 4
+// 	},
+
+// 	colors: DEFAULT_COLORS,
+// 	fontFamily: DEFAULT_FONT_FAMILY,
+
+// 	fontSizes: [12, 14, 16, 20, 24, 32, 48, 96],
+
+// 	fontWeight: [
+// 		400,
+// 		600,
+// 		700,
+// 	],
+
+// 	lineHeight: {
+// 		xs: 1.3,
+// 		sm: 1.5,
+// 		md: 1.55,
+// 		lg: 1.55,
+// 		// xl: 1.5,
+// 	},
+
+// 	breakpoints: {
+// 		xs: rem(360),
+// 		sm: rem(768),
+// 		md: rem(1080),
+// 		lg: rem(1280),
+// 		xl: rem(1440),
+// 	},
+
+// 	radius: [
+// 		0,
+// 		6,
+// 		8,
+// 		12,
+// 		999,
+// 	],
+
+// 	easing: {
+// 		base: 'cubic-bezier(0.4, 0, 0.2, 1)',
+// 		out: 'cubic-bezier(0.16, 1, 0.3, 1)',
+// 		inOut: 'cubic-bezier(0.65, 0, 0.35, 1)',
+// 	},
+
+// 	duration: {
+// 		instant: '100ms',
+// 		fast: '160ms',
+// 		default: '240ms',
+// 		slow: '400ms',
+// 		gradual: '600ms',
+// 	},
+// }

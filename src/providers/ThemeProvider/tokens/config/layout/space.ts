@@ -1,4 +1,4 @@
-import { tokn } from '../ref'
+import { tokn } from '../../ref'
 
 export interface SpaceTokens {
 	inset: {
@@ -11,7 +11,7 @@ export interface SpaceTokens {
 	}
 }
 
-export const spaceTokens = (): SpaceTokens => ({
+export const getSpaceTokens = (): SpaceTokens => ({
 	inset: {
 		xs: tokn.size('4'),
 		sm: tokn.size('8'),

@@ -1,18 +1,26 @@
-import { backgroundTokens } from './backgrounds'
 import { borderTokens } from './border'
-import { primaryTokens, colorTokens } from './colors'
-import { motionTokens } from './motion'
-import { spaceTokens } from './space'
-import { typographyTokens } from './typography'
+import { getAccentTokens } from './accent'
+import { getBackgroundTokens } from './background'
+import { getColorTokens } from './colors'
+import { getMotionTokens } from './motion'
+import { getSpaceTokens } from './layout/space'
+import { getTypographyTokens } from './typography'
 
 export const Config = {
-	primary: primaryTokens,
-	background: backgroundTokens,
+	accent: getAccentTokens,
+	background: getBackgroundTokens,
 	border: borderTokens,
-	color: colorTokens,
-	motion: motionTokens,
-	space: spaceTokens,
-	typography: typographyTokens,
+	color: getColorTokens,
+	motion: getMotionTokens,
+	space: getSpaceTokens,
+	typography: getTypographyTokens,
 }
 
 export type { ThemeTokens, TokenGroup, TokenStatesList } from './theme'
+export type { AccentTokens } from './accent'
+export type { BackgroundTokens } from './background'
+export type { BorderColorTokens, BorderRadiusTokens } from './border'
+export type { ColorTokens } from './colors'
+export type { MotionTokens } from './motion'
+export type { SpaceTokens } from './layout'
+export type { TypographyTokens } from './typography'

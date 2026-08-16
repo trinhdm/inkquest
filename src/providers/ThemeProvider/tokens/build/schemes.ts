@@ -15,7 +15,7 @@ const buildSemanticTheme = (
 	options: ThemeConfig
 ) => {
 	return {
-		primary: Config.primary(),
+		accent: Config.accent(),
 		colors: Config.color(options),
 		backgrounds: Config.background(options),
 		border: Config.border.color(options),

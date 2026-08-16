@@ -29,20 +29,24 @@ export const BRAND_SCALE = ['#E8483F', '#D63A31', '#C22F27', '#3A211F', '#FBE3E1
 export const INK_SCALE = ['#0E0E10', '#17171A', '#1B1B1F', '#232327', '#2A2A2E', '#3A3A3F'] as const
 export const PAPER_SCALE = ['#FFFAFA', '#F8F6F2', '#F2F0EC', '#EAE7E0', '#DEDBD4', '#C9C6BF'] as const
 
+export const BASE_SCALE = 4 as const
+
 export const FONT_FAMILY_SCALE = {
 	black: `'Archivo Black', 'Archivo', sans-serif`,
 	mono: `'Space Mono', SF Mono, monospace`,
 	sans: `'Archivo', -apple-system, BlinkMacSystemFont, sans-serif`,
 } as const
 
+export const FONT_SIZE_SCALE = [10, 12, 14, 16, 20, 24, 32, 48, 96] as const
+
 export const FONT_WEIGHT_SCALE = [400, 600, 700] as const
-export const RADIUS_SCALE = [0, 6, 8, 12, 999] as const
+
 export const LINE_HEIGHT_SCALE = {
 	exact: 1,
-	xs: 1.3,
-	sm: 1.5,
-	md: 1.55,
-	lg: 1.55,
+	tight: 1.15,
+	snug: 1.3,
+	normal: 1.5,
+	loose: 1.75,
 } as const
 
 export const TRACKING_SCALE = [
@@ -50,8 +54,14 @@ export const TRACKING_SCALE = [
 	'0.1em',
 ] as const
 
+export const RADIUS_SCALE = [0, 6, 8, 12, 999] as const
+
 export const DURATION_SCALE = {
-	instant: '100ms', fast: '160ms', default: '240ms', slow: '400ms', gradual: '600ms',
+	instant: '.1s',
+	fast: '.15s',
+	default: '.25s',
+	slow: '.4s',
+	gradual: '.6s',
 } as const
 
 export const EASE_SCALE = {

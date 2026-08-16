@@ -82,13 +82,10 @@ export const getVariantColors: GetPaletteFn = _props => {
 		case 'solid':
 			return {
 				background: {
-					base: alias.accent(),
-					hover: alias.accent('hover'),
+					base: alias.accent.primary(),
+					hover: alias.accent.primary('hover'),
 				},
-				color: {
-					base: alias.color.interactive(),
-					hover: alias.color.interactive('hover'),
-				}
+				color: alias.color.interactive(),
 			}
 		case 'outline':
 			return {
@@ -115,9 +112,9 @@ export const getVariantColors: GetPaletteFn = _props => {
 			}
 		case 'light':
 			return {
-				background: alias.accent('muted'),
+				background: alias.accent.primary('muted'),
 				border: 'currentColor',
-				color: alias.accent(),
+				color: alias.accent.primary(),
 			}
 		case 'dark':
 			return {

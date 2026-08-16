@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react'
 import type { AtLeastOneKey } from '@/types/utils'
 import type { CSSUnit, CSSVars, FontList, HeadingTag, HexCode, Size, Unit } from '@/types/shared'
 import type { PaintVariantsFn } from './tokens/variants'
+import type { AliasTokens } from './tokens/ref/alias'
 
 export type ThemeName =
 	| 'dark'
@@ -15,15 +16,15 @@ export type ColorScheme =
 export interface SiteTheme {
 	paintVariants: PaintVariantsFn
 
-	name: ThemeName
-	setName: (theme: ThemeName) => void
+
+	tokens: AliasTokens
 
 	scale: { size: number }
 
 	fontFamily: FontStyle<'fontFamily', 'sans'>
 	fontSize: number[] | FontStyle<'fontSize', 'md'>
 	fontWeight: number[] | FontStyle<'fontWeight', 'regular'>
-	lineHeight: FontStyle<'lineHeight'>
+	lineHeight: Style<CSSProperties['lineHeight'], ThemeLineHeight, 'normal'>
 
 	// headings: FontStyles<TagFontStyles, HeadingTag, 'h1'>
 
@@ -31,41 +32,22 @@ export interface SiteTheme {
 	breakpoints: Style<CSSUnit, Size>
 	radius: number[]
 
-	duration: Style<CSSUnit, ThemeDuration, 'default'>
-	easing: Style<`cubic-bezier(${string})`, ThemeEasing, BaseVarKey>
+	duration: Style<CSSProperties['transitionDuration'], ThemeDuration, 'default'>
+	easing: Style<ThemeEasingValues, ThemeEasing, BaseVarKey>
 
 	subcomponents?: Record<string, {
 		cssVars?: (theme: SiteTheme, props: unknown, ctx: unknown) => Partial<Record<string, CSSVars>>
 	}>
 }
 
-// export interface SiteTheme {
-// 	paintVariants: PaintVariantsFn
-
-// 	name: ThemeName
-// 	setName: (theme: ThemeName) => void
-
-// 	fontFamily: FontStyle<'fontFamily', 'body'>
-// 	fontSize: number[] | FontStyle<'fontSize', 'md'>
-// 	fontWeight: FontStyle<'fontWeight', 'regular'>
-// 	lineHeight: FontStyle<'lineHeight'>
-
-// 	headings: FontStyles<TagFontStyles, HeadingTag, 'h1'>
-
-// 	colors: Record<ColorScheme, HexCode[]>
-// 	breakpoints: Style<CSSUnit, Size>
-// 	radius: CSSUnit[]
-// 	// radius: Style<CSSUnit, Size | 'pill', 'md'>
-
-// 	duration: Style<CSSUnit, ThemeDuration, BaseVarKey>
-// 	easing: Style<`cubic-bezier(${string})`, ThemeEasing, BaseVarKey>
-
-// 	subcomponents?: Record<string, {
-// 		cssVars?: (theme: SiteTheme, props: any, ctx: unknown) => Partial<Record<string, CSSVars>>
-// 	}>
-// }
-
 export type BaseVarKey = 'base'
+
+type ThemeLineHeight =
+	| 'exact'
+	| 'tight'
+	| 'snug'
+	| 'normal'
+	| 'loose'
 
 type ThemeDuration =
 	| 'default'
@@ -79,6 +61,9 @@ type ThemeEasing =
 	| 'in'
 	| 'out'
 	| 'inOut'
+
+type ThemeEasingValues =
+	CSSProperties['transitionTimingFunction'] | `cubic-bezier(${string})`
 
 type StyleList<
     Keys extends PropertyKey,

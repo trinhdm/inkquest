@@ -1,5 +1,5 @@
-import { tokn } from '../ref'
-import type { ThemeConfig } from './theme'
+import { tokn } from '../../ref'
+import type { ThemeConfig } from '../theme'
 
 export interface BackgroundTokens {
 	page: string
@@ -7,7 +7,7 @@ export interface BackgroundTokens {
 	card: { base: string; hover: string }
 }
 
-export const backgroundTokens = ({ scheme, name }: ThemeConfig): BackgroundTokens => ({
+export const getBackgroundTokens = ({ scheme, name }: ThemeConfig): BackgroundTokens => ({
 	page: name === 'dark'
 		? tokn[scheme]('100')
 		: tokn[scheme]('300'),

@@ -1,17 +1,19 @@
 import { aliasVar } from './shared'
 import { createAccessor, createStateAccessor, createValueRef } from './accessor'
-import type { PrimaryTokens } from '../config/colors'
-import type { BorderColorTokens, BorderRadiusTokens } from '../config/border'
-import type { BackgroundTokens } from '../config/backgrounds'
-import type { ColorTokens } from '../config/colors'
-import type { SpaceTokens } from '../config/space'
-import type { TypographyTokens } from '../config/typography'
+import type {
+	AccentTokens, BackgroundTokens,
+	BorderColorTokens, BorderRadiusTokens, ColorTokens,
+	SpaceTokens, TypographyTokens
+} from '../config'
 
 /** References into already-built semantic tokens. Nesting mirrors config/'s composition — a new semantic category needs a matching entry here. */
 
 const themeTokens = {
 	theme: createValueRef(aliasVar, 'theme'),
-	primary: createStateAccessor<PrimaryTokens>(aliasVar, 'primary'),
+	accent: {
+		primary: createStateAccessor<AccentTokens['primary']>(aliasVar, 'accent', 'primary'),
+		secondary: createStateAccessor<AccentTokens['secondary']>(aliasVar, 'accent', 'secondary'),
+	}
 }
 
 const propertyTokens = {
