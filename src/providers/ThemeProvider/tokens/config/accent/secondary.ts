@@ -13,7 +13,7 @@ export const getSecondaryTokens = (config: ThemeConfig): SecondaryTokens => {
 	}
 
 	const { colors } = byTheme(config, secondaryColors),
-		hues = colorMod(colors.get('200'))
+		hues = colorMod(colors.get('100'))
 
 	return hues
 }

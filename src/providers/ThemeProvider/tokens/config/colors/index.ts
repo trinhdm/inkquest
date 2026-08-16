@@ -38,8 +38,8 @@ export const getColorTokens = (config: ThemeConfig): ColorTokens => {
 		text: {
 			base: colors.alt('100'),
 			inverse: colors.theme('100'),
-			primary: alias.accent.secondary('tint'),
-			secondary: alias.accent.secondary(),
+			primary: alias.accent.secondary(),
+			secondary: alias.accent.secondary('active'),
 			tertiary: alias.accent.secondary('shade'),
 			on: {
 				accent: colors.theme('100'),
@@ -51,8 +51,8 @@ export const getColorTokens = (config: ThemeConfig): ColorTokens => {
 		},
 		action: {
 			base: alias.accent.primary(),
-			hover: alias.accent.primary('shade'),
-			active: alias.accent.primary('tint'),
+			hover: alias.accent.primary('hover'),
+			active: alias.accent.primary('active'),
 			muted: alias.accent.primary('muted'),
 		},
 		danger: colorMod('red'),

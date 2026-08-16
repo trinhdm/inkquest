@@ -1,10 +1,12 @@
 import type { COLOR_TOKENS } from '../scales'
+import type { TokenStatesList } from '../token.types'
 
-export interface ColorMixtures {
+export interface ColorMixtures
+	extends TokenStatesList<'color'> {
 	base: string
 	bright: string
 	dim: string
-	dusty: string
+	// dusty: string
 	muted: string
 	shade: string
 	tint: string

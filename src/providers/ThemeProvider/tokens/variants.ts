@@ -177,7 +177,7 @@ export const getVariantColors: GetPaletteFn = _props => {
 					return {
 						background: {
 							base: token(),
-							hover: token('shade'),
+							hover: token('hover'),
 						},
 						color: alias.color.text('on', 'accent'),
 					}
