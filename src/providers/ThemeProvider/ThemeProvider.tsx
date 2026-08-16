@@ -2,7 +2,7 @@
 
 import { createContext, use, useMemo, type ReactNode } from 'react'
 import { mergeTheme } from './theme'
-import { useThemeName } from '@/hooks/useThemeName'
+// import { useThemeName } from '@/hooks/useThemeName'
 import { DEFAULT_THEME } from './constants'
 import type { SiteTheme } from './theme.types'
 
@@ -26,24 +26,24 @@ export const ThemeProvider = ({
 	theme,
 }: ThemeProviderProps) => {
 	const currentTheme = useSafeTheme()
-	// const mergedTheme = useMemo(
-	// 	() => mergeTheme(currentTheme, theme),
-	// 	[currentTheme, theme]
-	// )
+	const mergedTheme = useMemo(
+		() => mergeTheme(currentTheme, theme),
+		[currentTheme, theme]
+	)
 
-	const { themeName, setThemeName } = useThemeName()
+	// const { themeName, setThemeName } = useThemeName()
+	// // const mergedTheme = useMemo(() => ({
+	// // 	...mergeTheme(currentTheme, theme),
+	// // 	name: (() => themeName)(),
+	// // 	setName: setThemeName,
+	// // }), [currentTheme, theme, themeName, setThemeName])
+
+	// const mergedData = useMemo(() => mergeTheme(currentTheme, theme), [currentTheme, theme])
 	// const mergedTheme = useMemo(() => ({
-	// 	...mergeTheme(currentTheme, theme),
-	// 	name: (() => themeName)(),
+	// 	...mergedData,
+	// 	name: themeName,
 	// 	setName: setThemeName,
-	// }), [currentTheme, theme, themeName, setThemeName])
-
-	const mergedData = useMemo(() => mergeTheme(currentTheme, theme), [currentTheme, theme])
-	const mergedTheme = useMemo(() => ({
-		...mergedData,
-		name: themeName,
-		setName: setThemeName,
-	}), [mergedData, themeName, setThemeName])
+	// }), [mergedData, themeName, setThemeName])
 
 	// useEffect(() => {
 	// 	if (typeof window === 'undefined') return

@@ -1,24 +1,30 @@
-import { Geist, Geist_Mono } from "next/font/google"
+import { Archivo, Archivo_Black, Space_Mono } from 'next/font/google'
 import { CssVariables } from '@/components/core/CssVariables'
 import { ScriptInjector } from '@/components/core/ScriptInjector'
 import { ThemeProvider } from '@/providers/ThemeProvider'
 import type { Metadata } from 'next'
 import '@/styles/_global.scss'
 
-const geistSans = Geist({
-	variable: "--font-geist-sans",
-	subsets: ["latin"],
-})
-
-const geistMono = Geist_Mono({
-	variable: "--font-geist-mono",
-	subsets: ["latin"],
-})
-
 export const metadata: Metadata = {
 	title: "Inkquest",
 	description: "Tattoo artist platform",
 }
+
+const archivo = Archivo({
+	variable: '--font-archivo',
+	weight: ['400', '600', '700'],
+	subsets: ['latin'],
+})
+const archivoBlack = Archivo_Black({
+	variable: '--font-archivo-black',
+	weight: '400',
+	subsets: ['latin'],
+})
+const spaceMono = Space_Mono({
+	variable: '--font-space-mono',
+	weight: ['400', '700'],
+	subsets: ['latin'],
+})
 
 export default function RootLayout({
 	children,
@@ -29,7 +35,7 @@ export default function RootLayout({
 		<html
 			suppressHydrationWarning
 			lang="en"
-			className={`${geistSans.variable} ${geistMono.variable}`}
+			className={`${archivo.variable} ${archivoBlack.variable} ${spaceMono.variable}`}
 		>
 			<head>
 				<ScriptInjector />
