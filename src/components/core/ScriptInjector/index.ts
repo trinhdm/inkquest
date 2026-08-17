@@ -1,3 +1,3 @@
-export { DEFAULT_THEME_NAME, THEME_STORAGE_KEY } from './constants'
+export { DEFAULT_COLOR_SCHEME, SCHEME_STORAGE_KEY } from './constants'
 export { ScriptInjector } from './ScriptInjector'
-export { themeControls } from './themeControls'
+export { schemeControls } from './schemeControls'

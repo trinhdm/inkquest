@@ -1,13 +1,13 @@
 import { Config, THEME_CONFIGS, type ThemeConfig } from './tokens'
 import { tokenGenerator } from './generate'
-import type { SiteTheme, ThemeName, ThemeTokens } from './types'
+import type { ColorScheme, SiteTheme, ThemeTokens } from './types'
 
-const THEME_NAMES = Object.keys(THEME_CONFIGS) as ThemeName[]
-type ThemeTokensList<K extends ThemeName = ThemeName> = Pick<ThemeTokens, K>
+const COLOR_SCHEMES = Object.keys(THEME_CONFIGS) as ColorScheme[]
+type SchemeTokenList<K extends ColorScheme = ColorScheme> = Pick<ThemeTokens, K>
 
-const buildThemeTokens = <K extends ThemeName>(
+const buildThemeTokens = <K extends ColorScheme>(
 	config: ThemeConfig, prefix?: string
-): ThemeTokensList<K>[K] => {
+): SchemeTokenList<K>[K] => {
 	const tokens = {
 		theme: config.name,
 		accent: Config.accent(config),
@@ -51,10 +51,10 @@ export const buildSchemes = (
 	const primitives = buildPrimitiveTokens(theme),
 		staticTokens = buildStaticTokens(prefix)
 
-	const themes = THEME_NAMES.reduce<ThemeTokensList>((schemes, name) => ({
+	const themes = COLOR_SCHEMES.reduce<SchemeTokenList>((schemes, name) => ({
 		...schemes,
 		[name]: buildThemeTokens(THEME_CONFIGS[name], prefix),
-	}), {} as ThemeTokensList)
+	}), {} as SchemeTokenList)
 
 	return {
 		base: { ...primitives, ...staticTokens },

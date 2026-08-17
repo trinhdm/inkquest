@@ -2,7 +2,7 @@ import { ALT_THEME, type ThemeConfig } from '../themeConfig'
 import { alias, base } from '../reference'
 import { colorMix, fromOklch } from '../css'
 import { isObject } from '@/utils/helpers'
-import type { ColorMixtures, StaticColorNames, ThemeName } from '../types'
+import type { ColorMixtures, ColorScheme, StaticColorNames } from '../types'
 
 const getThemeMixer = () => ({
 	dark: base.white(),
@@ -16,17 +16,13 @@ export const colorMod = (color: StaticColorNames | string): ColorMixtures => {
 	const target = isStaticColor(color) ? base[color]() : color,
 		themeMixer = getThemeMixer()
 
+	const lch = { l: -0.045, c: 0.005, h: -0.35 }
+
 	const mixer = {
 		blend: alias.background.page(),
-		shade: themeMixer['light'],
-		tint: themeMixer['dark'],
+		shade: themeMixer[alt],
+		tint: themeMixer[scheme],
 		tone: base.gray(),
-	}
-
-	const lch = {
-		l: -0.045,
-		c: 0.005,
-		h: -0.35,
 	}
 
 	return {
@@ -37,38 +33,35 @@ export const colorMod = (color: StaticColorNames | string): ColorMixtures => {
 		shade: colorMix(mixer.shade, 30, target),
 		bright: colorMix(mixer.tint, 80, target),
 		dim: colorMix(mixer.shade, 80, target),
-		muted: colorMix(mixer.blend, 80, target),
+		muted: colorMix(mixer.blend, 85, target),
 	}
 }
 
-const resolveTheme = <T>(config: ThemeConfig, values?: Record<ThemeName, T>) => {
+const resolveScheme = <T>(config: ThemeConfig, values?: Record<ColorScheme, T>) => {
 	const { name, scheme } = config,
-		themeMixer = getThemeMixer(),
-		mixer = themeMixer[name]
+		isDark = scheme === 'dark'
 
-	const options = isObject(values) && Object.hasOwn(values, name)
-		? values[name]
+	const options = isObject(values) && Object.hasOwn(values, scheme)
+		? values[scheme]
 		: undefined
+	const baseTheme = base[name],
+		baseAlt = base[ALT_THEME[name]]
 
-	const baseTheme = base[scheme],
-		baseAlt = base[ALT_THEME[scheme]],
-		colors = { alt: baseAlt, theme: baseTheme, get: options }
-
-	const isDark = name === 'dark',
-		isLight = name === 'light'
-
-	return { colors, isDark, isLight, mixer }
+	return {
+		colors: { alt: baseAlt, theme: baseTheme, get: options },
+		isDark,
+	}
 }
 
 type ResolvedColors<T> =
-	ReturnType<typeof resolveTheme<T>>['colors']
+	ReturnType<typeof resolveScheme<T>>['colors']
 
 type WithGetColors<T> =
-	Omit<ReturnType<typeof resolveTheme<T>>, 'colors'>
+	Omit<ReturnType<typeof resolveScheme<T>>, 'colors'>
 	& { colors: Omit<ResolvedColors<T>, 'get'> & { get: T } }
 
-export function byTheme<T>(config: ThemeConfig, values: Record<ThemeName, T>): WithGetColors<T>
-export function byTheme(config: ThemeConfig): ReturnType<typeof resolveTheme>
-export function byTheme<T>(config: ThemeConfig, values?: Record<ThemeName, T>) {
-	return resolveTheme(config, values)
+export function byTheme<T>(config: ThemeConfig, values: Record<ColorScheme, T>): WithGetColors<T>
+export function byTheme(config: ThemeConfig): ReturnType<typeof resolveScheme>
+export function byTheme<T>(config: ThemeConfig, values?: Record<ColorScheme, T>) {
+	return resolveScheme(config, values)
 }

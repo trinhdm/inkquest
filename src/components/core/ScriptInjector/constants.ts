@@ -1,4 +1,6 @@
-import type { ThemeName } from '@/lib/theme'
+import { PREFIX_CSS_SELECTOR } from '@/utils/constants'
+import type { ColorScheme } from '@/lib/theme'
 
-export const DEFAULT_THEME_NAME: ThemeName = 'dark'
-export const THEME_STORAGE_KEY: string = 'theme'
+export const DEFAULT_COLOR_SCHEME: ColorScheme = 'dark'
+export const SCHEME_STORAGE_KEY: string = `theme`
+// export const SCHEME_STORAGE_KEY: string = `${PREFIX_CSS_SELECTOR}-scheme`

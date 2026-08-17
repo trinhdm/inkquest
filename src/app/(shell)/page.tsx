@@ -3,13 +3,13 @@
 import Image from "next/image"
 import styles from "./page.module.css"
 import { Button } from '@/components/core/buttons/Button'
-import { useThemeName } from '@/hooks/useThemeName'
+import { useColorScheme } from '@/hooks/useColorScheme'
 // import { useTheme } from '@/providers/ThemeProvider'
 import { Icon } from '@/components/core/Icon/Icon'
 import { Badge } from '@/components/core/Badge'
 
 export default function Home() {
-  const { setThemeName } = useThemeName()
+  const { setColorScheme } = useColorScheme()
   // console.log({ themeName })
   return (
     <div className={styles.page}>
@@ -24,8 +24,8 @@ export default function Home() {
         />
         <div className={styles.intro}>
           <h1>To get started, edit the page.tsx file.</h1>
-          <Button onClick={ () => setThemeName('dark') }>dark</Button>
-          <Button variant="ghost" onClick={ () => setThemeName('light') }>light</Button>
+          <Button onClick={ () => setColorScheme('dark') }>dark</Button>
+          <Button variant="ghost" onClick={ () => setColorScheme('light') }>light</Button>
           <br /><br />
 
           <Button variant="solid">solid</Button>

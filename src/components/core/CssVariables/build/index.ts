@@ -1,2 +1,2 @@
 export { resolveCssVars } from './resolver'
-export { serializeCssVars } from './serializer'
+export { serializeCssVars, serializeVariantSchemes } from './serializer'

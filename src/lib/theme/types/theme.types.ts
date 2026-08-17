@@ -6,29 +6,27 @@ import type { GetVariantColorsFn, PaintVariantsFn } from '../variants'
 import type { SemanticTokens } from '../reference'
 
 export type ThemeName =
+	typeof THEME_SCHEMES[number]
+
+export type ColorScheme =
 	| 'dark'
 	| 'light'
 
-export type ColorScheme =
+export type ColorScales =
 	keyof typeof COLOR_TOKENS
 
 export type ColorScaleKey = {
-	[K in ColorScheme]: (typeof COLOR_TOKENS)[K] extends readonly string[] ? K : never
-}[ColorScheme]
+	[K in ColorScales]: (typeof COLOR_TOKENS)[K] extends readonly string[] ? K : never
+}[ColorScales]
 // 'ink' | 'oxblood' | 'ghost' | 'paper' | 'crimson' | 'ghost'
 
 export type FlatColorKey =
-	Exclude<ColorScheme, ColorScaleKey>
-
-export type PaletteName =
-	typeof THEME_SCHEMES[number]
+	Exclude<ColorScales, ColorScaleKey>
 
 export type ThemeTokens<V = unknown> =
-	Record<ThemeName | 'base', CSSVars<V>>
+	Record<ColorScheme | 'base', CSSVars<V>>
 
 export type BaseVarKey = 'base'
-
-export type OmitBaseKey<T> = Exclude<keyof T, BaseVarKey>
 
 export interface SiteTheme {
 	getVariantColors: GetVariantColorsFn

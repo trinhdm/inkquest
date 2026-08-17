@@ -1,5 +1,5 @@
 export type {
-	BaseVarKey, PaletteName,
+	BaseVarKey, ColorScheme,
 	SiteTheme, ThemeName, ThemeTokens,
 } from './theme.types'
 

@@ -1,4 +1,4 @@
-import { base } from '../../reference'
+import { alias, base } from '../../reference'
 import { byTheme } from '../utils'
 import type { ThemeConfig } from '../../themeConfig'
 
@@ -6,6 +6,7 @@ export interface BackgroundTokens {
 	page: string
 	surface: string
 	card: { base: string; hover: string }
+	control: string
 }
 
 export const getBackgroundTokens = (config: ThemeConfig): BackgroundTokens => {
@@ -28,6 +29,7 @@ export const getBackgroundTokens = (config: ThemeConfig): BackgroundTokens => {
 		card: {
 			base: colors.get.card,
 			hover: colors.theme('400')
-		}
+		},
+		control: alias.background.card(),
 	}
 }

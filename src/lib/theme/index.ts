@@ -10,6 +10,6 @@ export { getVariantColors, paintVariants } from './variants'
 export { setThemeCSS, type ThemeCSSConfig } from './setThemeCSS'
 
 export type {
-	BaseVarKey, ColorVariable,
+	BaseVarKey, ColorVariable, ColorScheme,
 	SiteTheme, ThemeName, ThemeTokens,
 } from './types'

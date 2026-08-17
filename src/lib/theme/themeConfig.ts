@@ -1,22 +1,22 @@
-import type { PaletteName, ThemeName } from './types'
+import type { ColorScheme, ThemeName } from './types'
 
 export interface ThemeConfig {
 	readonly name: ThemeName
-	readonly scheme: PaletteName
+	readonly scheme: ColorScheme
 }
 
-export const THEME_CONFIGS: Record<ThemeName, ThemeConfig> = {
+export const THEME_CONFIGS: Record<ColorScheme, ThemeConfig> = {
 	dark: {
-		name: 'dark',
-		scheme: 'ink',
+		name: 'ink',
+		scheme: 'dark',
 	},
 	light: {
-		name: 'light',
-		scheme: 'paper',
+		name: 'paper',
+		scheme: 'light',
 	},
 }
 
-export const ALT_THEME: Record<PaletteName, PaletteName> = {
+export const ALT_THEME: Record<ThemeName, ThemeName> = {
 	ink: 'paper',
 	paper: 'ink',
 }

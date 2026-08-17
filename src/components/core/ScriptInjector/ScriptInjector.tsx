@@ -1,22 +1,22 @@
 import { buildScript } from './buildScript'
 import type { ComponentProps } from 'react'
-import type { ThemeName } from '@/lib/theme'
+import type { ColorScheme } from '@/lib/theme'
 
 interface ScriptInjectorProps
 	extends ComponentProps<'script'> {
-	defaultTheme?: ThemeName
+	defaultScheme?: ColorScheme
 }
 
 export const ScriptInjector = ({
-	defaultTheme,
+	defaultScheme,
 	...props
 }: ScriptInjectorProps) => {
-	const script = buildScript({ theme: defaultTheme })
+	const script = buildScript({ scheme: defaultScheme })
 
 	return (
 		<script
 			{ ...props }
-			data-theme-script
+			data-scheme-script
 			dangerouslySetInnerHTML={{ __html: script }}
 			// suppressHydrationWarning
 		/>
