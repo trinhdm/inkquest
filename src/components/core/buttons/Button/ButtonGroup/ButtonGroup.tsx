@@ -4,8 +4,8 @@ import {
 } from 'react'
 import { Box, polymorphic, type BoxProps } from '@/components/core/Box'
 import { useProps, useStyles, useVariantStyles } from '@/hooks'
-import classes from '../Button.module.scss'
 import type { Button } from '../Button'
+import classes from '../Button.module.scss'
 
 export interface ButtonGroupProps extends BoxProps {
 	children?: ReactNode
@@ -31,6 +31,25 @@ const derivePriority = (index: number): Button.Priority => {
 		i = index < max ? index : max - 1
 	return PRIORITY_ROLES[i]
 }
+
+type Props = Pick<ButtonGroupProps, 'children' | 'disabled' | 'hasPriority'>
+
+const childrenWithProps = ({ children, disabled, hasPriority }: Props) => (
+	Children.map(children, (child, index) => {
+		if (!isValidElement<Button.Props>(child)) return null
+		const propsCh = {}
+
+		if (hasPriority && !Object.hasOwn(child.props, 'priority')) {
+			const priority = derivePriority(index)
+			Object.assign(propsCh, { priority })
+		}
+
+		if (disabled)
+			Object.assign(propsCh, { disabled })
+
+		return cloneElement(child, { ...child.props, ...propsCh })
+	})
+)
 
 export const ButtonGroup = polymorphic<ButtonGroupSpecs>(_props => {
 	useVariantStyles(NAME)
@@ -62,20 +81,7 @@ export const ButtonGroup = polymorphic<ButtonGroupSpecs>(_props => {
 			{ ...styles('root') }
 			{ ...rest }
 		>
-			{ Children.map(children, (child, index) => {
-				if (!isValidElement<Button.Props>(child)) return null
-				const propsCh = {}
-
-				if (hasPriority && !Object.hasOwn(child.props, 'priority')) {
-					const priority = derivePriority(index)
-					Object.assign(propsCh, { priority })
-				}
-
-				if (disabled)
-					Object.assign(propsCh, { disabled })
-
-				return cloneElement(child, { ...child.props, ...propsCh })
-			}) }
+			{ childrenWithProps(props) }
 		</Box>
 	)
 }, classes)

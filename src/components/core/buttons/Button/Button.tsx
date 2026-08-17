@@ -71,6 +71,41 @@ type ButtonSpecs = {
 
 const NAME = 'Button' as const
 
+type Styles = ReturnType<typeof useStyles<ButtonSpecs>>
+
+const buildSections = (children: ReactNode, styles: Styles) => {
+	const label: ReactNode[] = []
+	let left: ReactNode = null,
+		right: ReactNode = null
+
+	Children.toArray(children).forEach(child => {
+		if (isValidElement<ButtonSectionProps>(child) && child.type === ButtonSection) {
+			const isLeft = 'left' in child.props && child.props.left,
+				taken = isLeft ? left : right
+
+			if (!taken) {
+				if (isLeft) left = child
+				else right = child
+			} else if (process.env.NODE_ENV !== 'production') {
+				console.warn(`${NAME}: multiple ${NAME}.Section[${isLeft ? 'left' : 'right'}] found; only the first is rendered.`)
+			}
+			return
+		}
+
+		label.push(child)
+	})
+
+	if (!left && !right) return label
+
+	return (
+		<>
+			{ left }
+			<Box as="span" { ...styles('label') }>{ label }</Box>
+			{ right }
+		</>
+	)
+}
+
 const cssVars = setThemeCSS<ButtonSpecs>((theme, _props) => {
 	// const colors = theme.getVariantColors({ theme, ..._props })
 	// // const { tokens } = theme
@@ -100,6 +135,7 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 		children,
 		disabled,
 		fullWidth,
+		loading,
 		priority,
 		size,
 		variant,
@@ -108,26 +144,6 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 
 	const component = Object.hasOwn(rest, 'href') && rest.href
 		? Link : as
-
-	const label: ReactNode[] = []
-	let left: ReactNode = null,
-		right: ReactNode = null
-
-	Children.toArray(children).forEach(child => {
-		if (isValidElement<ButtonSectionProps>((child)) && child.type === ButtonSection) {
-			const isLeft = 'left' in child.props && child.props.left,
-				taken = isLeft ? left : right
-
-			if (!taken) {
-				if (isLeft) left = child
-				else right = child
-			} else if (process.env.NODE_ENV !== 'production') {
-				console.warn(`${NAME}: multiple ${NAME}.Section[${isLeft ? 'left' : 'right'}] found; only the first is rendered.`)
-			} return
-		}
-
-		label.push(child)
-	})
 
 	return (
 		<Box
@@ -142,14 +158,7 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 			{ ...rest }
 		>
 			<Box as="span" { ...styles('inner') }>
-				{ (left || right)
-					? (
-						<>
-							{ left ?? <></> }
-							<Box as="span" { ...styles('label') }>{ label }</Box>
-							{ right ?? <></> }
-						</>
-					) : label }
+				{ buildSections(children, styles) }
 			</Box>
 		</Box>
 	)
