@@ -6,7 +6,7 @@ export {
 } from './scales'
 
 export { buildSchemes } from './buildSchemes'
-export { getVariantColors, paintVariants } from './variants'
+export { getVariantColors, paintVariants } from './tokens'
 export { semanticTokens as tokens } from './reference'
 export { setThemeCSS, type ThemeCSSConfig } from './setThemeCSS'
 

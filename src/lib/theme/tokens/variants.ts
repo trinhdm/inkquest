@@ -1,12 +1,12 @@
-import { alias } from './reference'
+import { alias } from '../reference'
 import { deepMerge } from '@/utils/helpers'
-import { tokenGenerator } from './generate'
+import { tokenGenerator } from '../generate'
 import type { ValidSpecs } from '@/types/spec'
 import type {
 	Priority, Tone, Variant,
 	PaletteTokens, VariantTokens,
 	SemanticVariantProps, SiteTheme,
-} from './types'
+} from '../types'
 
 interface GetPaletteArgs<S extends ValidSpecs<S>> {
 	prefix?: string
