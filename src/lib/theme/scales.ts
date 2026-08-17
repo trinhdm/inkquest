@@ -88,3 +88,9 @@ export const EASE_SCALE = {
 } as const
 
 export const SCREEN_SIZE_SCALE = [ 360, 768, 1080, 1280, 1440, 1920 ] as const
+
+export const CONTAINER_SIZE_SCALE = {
+	sm: 1040,
+	md: 1136,
+	lg: 1200,
+}

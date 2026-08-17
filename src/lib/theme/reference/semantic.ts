@@ -3,7 +3,7 @@ import type {
 	AccentTokens, BackgroundTokens,
 	BorderColorTokens, BorderRadiusTokens, ColorTokens,
 	SpaceTokens, TypographyTokens
-} from '../config/types'
+} from '../tokens'
 
 const themeTokens = {
 	theme: token.endPath(aliasVar, 'theme'),

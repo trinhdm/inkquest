@@ -1,7 +1,7 @@
-import { alias, base } from '../../reference'
+import { alias } from '../../reference'
 import { byTheme, colorMod } from '../utils'
-import type { ColorMixtures } from '../types'
-import type { ThemeConfig } from '../theme'
+import type { ColorMixtures } from '../../types'
+import type { ThemeConfig } from '../../themeConfig'
 
 export interface ColorTokens {
 	text: {

@@ -1,6 +1,6 @@
 import { PREFIX_CSS_SELECTOR } from '@/utils/constants'
 import { formatToken } from '../format'
-import type { TokenVar } from '../token.types'
+import type { TokenVar } from '../types/token.types'
 
 const getTokenVar = (path: string[], prefix?: string): TokenVar =>
 	`var(${formatToken({ path, prefix })})`

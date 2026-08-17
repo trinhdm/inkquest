@@ -1,5 +1,5 @@
-import { Config, THEME_CONFIGS, type ThemeConfig } from './tokens/config'
-import { tokenGenerator } from './tokens/generate'
+import { Config, THEME_CONFIGS, type ThemeConfig } from './tokens'
+import { tokenGenerator } from './generate'
 import type { SiteTheme, ThemeName, ThemeTokens } from './types'
 
 const THEME_NAMES = Object.keys(THEME_CONFIGS) as ThemeName[]

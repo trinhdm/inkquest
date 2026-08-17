@@ -1,9 +1,13 @@
-import { COLOR_TOKENS, THEME_SCHEMES } from './scales'
+import { COLOR_TOKENS, THEME_SCHEMES } from '../scales'
 import type { CSSProperties } from 'react'
 import type { AtLeastOneKey } from '@/types/utils'
 import type { CSSUnit, CSSVars, FontList, HexCode, Size, Unit } from '@/types/shared'
-import type { SemanticTokens } from './tokens'
-import type { PaintVariantsFn } from './variants'
+import type { GetVariantColorsFn, PaintVariantsFn } from '../variants'
+import type { SemanticTokens } from '../reference'
+
+export type ThemeName =
+	| 'dark'
+	| 'light'
 
 export type ColorScheme =
 	keyof typeof COLOR_TOKENS
@@ -15,20 +19,19 @@ export type ColorScaleKey = {
 
 export type FlatColorKey =
 	Exclude<ColorScheme, ColorScaleKey>
-// 'danger' | 'success' | 'warning' | 'info'
 
 export type PaletteName =
 	typeof THEME_SCHEMES[number]
-// 'ink' | 'paper' — only the tagged ones
-
-export type ThemeName =
-	| 'dark'
-	| 'light'
 
 export type ThemeTokens<V = unknown> =
 	Record<ThemeName | 'base', CSSVars<V>>
 
+export type BaseVarKey = 'base'
+
+export type OmitBaseKey<T> = Exclude<keyof T, BaseVarKey>
+
 export interface SiteTheme {
+	getVariantColors: GetVariantColorsFn
 	paintVariants: PaintVariantsFn
 
 	tokens: SemanticTokens
@@ -44,6 +47,7 @@ export interface SiteTheme {
 	colors:
 		& { [K in FlatColorKey]: HexCode }
 		& { [K in ColorScaleKey]: readonly HexCode[] }
+
 	breakpoints: Style<CSSUnit, Size>
 	radius: number[]
 
@@ -51,13 +55,12 @@ export interface SiteTheme {
 	easing: Style<ThemeEasingValues, ThemeEasing, BaseVarKey>
 
 	screenSize: number[]
+	// containerSize: {}
 
 	subcomponents?: Record<string, {
 		cssVars?: (theme: SiteTheme, props: unknown, ctx: unknown) => Partial<Record<string, CSSVars>>
 	}>
 }
-
-export type BaseVarKey = 'base'
 
 type ThemeLineHeight =
 	| 'exact'
@@ -110,21 +113,21 @@ type FontStyle<
 > =
 	Style<CSSProperties[K], FontList[K], RK, K>
 
-interface FontStyles<
-	V,
-	Keys extends PropertyKey,
-	RK extends Keys | undefined = undefined,
-> {
-	fontFamily?: FontStyle<'fontFamily'>
-	fontWeight?: FontStyle<'fontWeight'>
-	tagName: Style<V, Keys, RK>
-}
+// interface FontStyles<
+// 	V,
+// 	Keys extends PropertyKey,
+// 	RK extends Keys | undefined = undefined,
+// > {
+// 	fontFamily?: FontStyle<'fontFamily'>
+// 	fontWeight?: FontStyle<'fontWeight'>
+// 	tagName: Style<V, Keys, RK>
+// }
 
-interface TagFontStyles {
-	fontSize: FontStyle<'fontSize'>
-	fontWeight?: FontStyle<'fontWeight'>
-	lineHeight?: FontStyle<'lineHeight'>
-}
+// interface TagFontStyles {
+// 	fontSize: FontStyle<'fontSize'>
+// 	fontWeight?: FontStyle<'fontWeight'>
+// 	lineHeight?: FontStyle<'lineHeight'>
+// }
 
 // consistent value helpers
 

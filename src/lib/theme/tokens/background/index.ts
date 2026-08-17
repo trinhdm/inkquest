@@ -1,6 +1,6 @@
 import { base } from '../../reference'
 import { byTheme } from '../utils'
-import type { ThemeConfig } from '../theme'
+import type { ThemeConfig } from '../../themeConfig'
 
 export interface BackgroundTokens {
 	page: string

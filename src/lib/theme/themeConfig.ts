@@ -1,4 +1,4 @@
-import type { PaletteName, ThemeName } from '../../types'
+import type { PaletteName, ThemeName } from './types'
 
 export interface ThemeConfig {
 	readonly name: ThemeName

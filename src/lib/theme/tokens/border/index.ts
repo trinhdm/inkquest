@@ -1,6 +1,6 @@
 import { getBorderColorTokens, type BorderColorTokens } from './color'
 import { getBorderRadiusTokens, type BorderRadiusTokens } from './radius'
-import type { ThemeConfig } from '../theme'
+import type { ThemeConfig } from '../../themeConfig'
 
 interface BorderTokens {
 	color: ({ scheme }: ThemeConfig) => BorderColorTokens

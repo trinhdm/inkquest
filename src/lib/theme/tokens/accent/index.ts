@@ -1,6 +1,6 @@
 import { getPrimaryTokens, type PrimaryTokens } from './primary'
 import { getSecondaryTokens, type SecondaryTokens } from './secondary'
-import type { ThemeConfig } from '../theme'
+import type { ThemeConfig } from '../../themeConfig'
 
 export interface AccentTokens {
 	primary: PrimaryTokens

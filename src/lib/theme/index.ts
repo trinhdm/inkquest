@@ -4,8 +4,12 @@ export {
 	DURATION_SCALE, EASE_SCALE, RADIUS_SCALE,
 } from './scales'
 
-export { alias as tokens } from './tokens'
+export { alias as tokens } from './reference'
 export { buildSchemes } from './buildSchemes'
-export { paintVariants, type ColorVariable } from './variants'
+export { getVariantColors, paintVariants } from './variants'
 export { setThemeCSS, type ThemeCSSConfig } from './setThemeCSS'
-export type { BaseVarKey, SiteTheme, ThemeName } from './types'
+
+export type {
+	BaseVarKey, ColorVariable,
+	SiteTheme, ThemeName, ThemeTokens,
+} from './types'

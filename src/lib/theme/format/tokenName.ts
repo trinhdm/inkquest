@@ -1,6 +1,6 @@
 import { _is } from './checks'
 import { toKebabCase } from '@/utils/helpers'
-import type { BaseVarKey } from '../../types'
+import type { BaseVarKey } from '../types'
 import type { CSSVars } from '@/types/shared'
 
 export interface CSSVarArgs<T> {

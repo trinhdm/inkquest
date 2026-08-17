@@ -1,62 +1,12 @@
-import { alias } from './tokens/reference'
+import { alias } from './reference'
 import { deepMerge } from '@/utils/helpers'
-import { tokenGenerator } from './tokens/generate'
-import type { BaseVarKey, SiteTheme } from './types'
-import type { CSSVariable } from '@/types/shared'
-import type { TokenGroup, TokenStatesList } from './tokens/token.types'
+import { tokenGenerator } from './generate'
 import type { ValidSpecs } from '@/types/spec'
-
-export type Variant =
-	| 'solid' | 'outline' | 'ghost' | 'light' | 'dark'
-	| 'success' | 'warning' | 'danger' | 'info'
-
-export type Priority =
-	| 'primary' | 'secondary' | 'tertiary'
-
-type Tone =
-	| 'neutral' | 'action'
-	| 'danger' | 'warning' | 'success' | 'info'
-
-interface SemanticVariantProps {
-	priority?: Priority
-	// variant?: Variant
-}
-
-interface ColorPalette {
-	background?: TokenGroup<'backgroundColor'>
-	border?: TokenGroup<'borderColor'>
-	color?: TokenGroup<'color'>
-}
-
-type StateKey =
-	keyof TokenStatesList<any>
-
-type StateSuffix<K extends StateKey> =
-	K extends BaseVarKey ? '' : `-${K}`
-
-type StateVariable<
-	S extends string,
-	T extends keyof ColorPalette,
-	K extends StateKey = StateKey
-> = `--${S}-${T}${StateSuffix<K>}` extends CSSVariable
-	? `--${S}-${T}${StateSuffix<K>}`
-	: never
-
-export type ColorVariable<
-    S extends string,
-    T extends keyof ColorPalette = keyof ColorPalette
-> = StateVariable<Lowercase<S>, T>
-
-type StateToken<V, K extends StateKey> =
-	V extends Record<K, infer X>
-		? X
-		: K extends BaseVarKey ? V : undefined
-
-type PaletteVars<S extends string> =
-	& { [T in keyof ColorPalette as StateVariable<S, T, BaseVarKey>]-?: StateToken<ColorPalette[T], BaseVarKey> }
-	& { [T in keyof ColorPalette as StateVariable<S, T, Exclude<StateKey, BaseVarKey>>]-?: StateToken<ColorPalette[T], Exclude<StateKey, BaseVarKey>> }
-
-
+import type {
+	Priority, Tone, Variant,
+	PaletteTokens, VariantTokens,
+	SemanticVariantProps, SiteTheme,
+} from './types'
 
 interface GetPaletteArgs<S extends ValidSpecs<S>> {
 	prefix?: string
@@ -65,9 +15,9 @@ interface GetPaletteArgs<S extends ValidSpecs<S>> {
 }
 
 export type GetPaletteFn =
-	<S extends ValidSpecs<S>>(args: GetPaletteArgs<S> & Omit<S['props'], 'name'> & SemanticVariantProps) => Partial<ColorPalette>
+	<S extends ValidSpecs<S>>(args: GetPaletteArgs<S> & Omit<S['props'], 'name'> & SemanticVariantProps) => Partial<VariantTokens>
 
-const DEFAULT_PALETTE: ColorPalette = {
+const DEFAULT_PALETTE: VariantTokens = {
 	background: { base: 'transparent', hover: 'transparent' },
 	border: { base: 'transparent', hover: 'transparent' },
 	color: { base: 'inherit', hover: 'inherit' },
@@ -105,7 +55,7 @@ const TONE_ACCESSORS: Record<Tone, ToneAccessor> = {
 	info: fromMixture(alias.color.info),
 }
 
-const PRIORITY_SHAPES: Record<Priority, (tone: ToneAccessor) => Partial<ColorPalette>> = {
+const PRIORITY_SHAPES: Record<Priority, (tone: ToneAccessor) => Partial<VariantTokens>> = {
 	primary: tone => ({
 		background: {
 			base:	tone.base(),
@@ -137,7 +87,7 @@ const PRIORITY_SHAPES: Record<Priority, (tone: ToneAccessor) => Partial<ColorPal
 	}),
 }
 
-const SPECIAL_VARIANTS: Record<'light' | 'dark', (tone: ToneAccessor) => Partial<ColorPalette>> = {
+const SPECIAL_VARIANTS: Record<'light' | 'dark', (tone: ToneAccessor) => Partial<VariantTokens>> = {
 	light: tone => ({
 		background:	tone.subtle(),
 		border:		'currentColor',
@@ -150,7 +100,7 @@ const SPECIAL_VARIANTS: Record<'light' | 'dark', (tone: ToneAccessor) => Partial
 		background: tone.dim(),
 		border:		tone.subtle(),
 		color: {
-			base:	alias.color.text('secondary'),
+			base:	tone.emphasis(),
 			hover:	alias.color.text('primary'),
 		},
 	}),
@@ -168,9 +118,14 @@ const hasVariant = <S extends ValidSpecs<S>>(
 	return 'variant' in args && args.variant !== undefined
 }
 
-const getVariantColors = <S extends ValidSpecs<S>>(
+export type GetVariantColorsFn =
+	<S extends ValidSpecs<S>>(
+		_props: GetPaletteArgs<S> & Omit<S['props'], 'name'> & SemanticVariantProps
+	) => Partial<VariantTokens>
+
+export const getVariantColors = <S extends ValidSpecs<S>>(
 	_props: GetPaletteArgs<S> & Omit<S['props'], 'name'> & SemanticVariantProps
-): Partial<ColorPalette> => {
+): Partial<VariantTokens> => {
 	if (!hasVariant(_props))
 		return DEFAULT_PALETTE
 
@@ -188,7 +143,6 @@ const getVariantColors = <S extends ValidSpecs<S>>(
 	if (isStructural) {
 		role = STRUCTURAL_VARIANTS[variant as keyof typeof STRUCTURAL_VARIANTS]
 		tone = variant === 'solid' ? 'action' : 'neutral'
-		console.log(role)
 	}
 
 	return PRIORITY_SHAPES[role](TONE_ACCESSORS[tone])
@@ -196,22 +150,22 @@ const getVariantColors = <S extends ValidSpecs<S>>(
 
 
 interface SetPaletteArgs<S extends string> {
-    colors: ColorPalette
+    colors: VariantTokens
     name: S
 }
 
 export type SetPaletteFn =
-    <S extends string>(args: SetPaletteArgs<S>) => PaletteVars<Lowercase<S>>
+    <S extends string>(args: SetPaletteArgs<S>) => PaletteTokens<Lowercase<S>>
 
 const setVariantColors = <S extends string>(
 	{ colors, name }: SetPaletteArgs<S>
-): PaletteVars<Lowercase<S>> => {
+): PaletteTokens<Lowercase<S>> => {
 	type N = Lowercase<typeof name>
 	const namespace = `${name.toLowerCase() as N}` as const,
 		palette = deepMerge(DEFAULT_PALETTE, colors),
 		vars = tokenGenerator(palette, namespace)
 
-	return vars as PaletteVars<N>
+	return vars as PaletteTokens<N>
 }
 
 
@@ -223,11 +177,11 @@ interface PaintVariantsArgs<S extends ValidSpecs<S>, N extends string>
 export type PaintVariantsFn =
 	<S extends ValidSpecs<S>, N extends string>(
 		args: PaintVariantsArgs<S, N> & S['props']
-	) => PaletteVars<Lowercase<N>>
+	) => PaletteTokens<Lowercase<N>>
 
 export const paintVariants = <S extends ValidSpecs<S>, N extends string>(
 	_props: PaintVariantsArgs<S, N> & S['props']
-): PaletteVars<Lowercase<N>> => {
+): PaletteTokens<Lowercase<N>> => {
 	const { name, ...props } = _props,
 		colors = getVariantColors<S>(props),
 		variables = setVariantColors({ colors, name })
