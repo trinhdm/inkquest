@@ -1,2 +1,7 @@
 export { primitiveTokens as base } from './primitive'
-export { semanticTokens as alias, type SemanticTokens } from './semantic'
+
+export {
+	aliasTokens as alias,
+	semanticTokens,
+	type SemanticTokens,
+} from './semantic'

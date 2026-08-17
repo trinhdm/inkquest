@@ -4,9 +4,9 @@ export {
 	DURATION_SCALE, EASE_SCALE, RADIUS_SCALE,
 } from './scales'
 
-export { alias as tokens } from './reference'
 export { buildSchemes } from './buildSchemes'
 export { getVariantColors, paintVariants } from './variants'
+export { semanticTokens as tokens } from './reference'
 export { setThemeCSS, type ThemeCSSConfig } from './setThemeCSS'
 
 export type {

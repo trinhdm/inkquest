@@ -30,10 +30,7 @@ const propertyTokens = {
 	},
 }
 
-/** References into already-built semantic tokens. Nesting mirrors config/'s composition — a new semantic category needs a matching entry here. */
 export const semanticTokens = {
-	...themeTokens,
-	...propertyTokens,
 	background: {
 		page: token.endPath(aliasVar, 'background', 'page'),
 		card: token.optPath<BackgroundTokens['card']>(aliasVar, 'background', 'card'),
@@ -59,6 +56,13 @@ export const semanticTokens = {
 	motion: {
 		interactive: token.endPath(aliasVar, 'motion', 'interactive'),
 	},
+}
+
+/** References into already-built semantic tokens. Nesting mirrors config/'s composition — a new semantic category needs a matching entry here. */
+export const aliasTokens = {
+	...themeTokens,
+	...propertyTokens,
+	...semanticTokens,
 }
 
 /** The shape useTheme() exposes to components — see SiteTheme.alias in theme.types.ts. */

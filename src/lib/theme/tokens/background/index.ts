@@ -1,5 +1,5 @@
 import { alias, base } from '../../reference'
-import { byTheme } from '../utils'
+import { byScheme } from '../utils'
 import type { ThemeConfig } from '../../themeConfig'
 
 export interface BackgroundTokens {
@@ -21,7 +21,7 @@ export const getBackgroundTokens = (config: ThemeConfig): BackgroundTokens => {
 		}
 	}
 
-	const { colors } = byTheme(config, bgColors)
+	const { colors } = byScheme(config, bgColors)
 
 	return {
 		page: colors.get.page,

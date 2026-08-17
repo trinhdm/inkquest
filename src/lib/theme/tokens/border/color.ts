@@ -1,5 +1,5 @@
 import { base } from '../../reference'
-import { byTheme } from '../utils'
+import { byScheme } from '../utils'
 import type { ThemeConfig } from '../../themeConfig'
 
 export interface BorderColorTokens {
@@ -8,7 +8,7 @@ export interface BorderColorTokens {
 }
 
 export const getBorderColorTokens = (config: ThemeConfig): BorderColorTokens => {
-	const { colors } = byTheme(config)
+	const { colors } = byScheme(config)
 
 	return {
 		base: colors.theme('500'),

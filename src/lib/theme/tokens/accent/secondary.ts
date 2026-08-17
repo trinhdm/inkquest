@@ -1,5 +1,5 @@
 import { base } from '../../reference'
-import { byTheme, colorMod } from '../utils'
+import { byScheme } from '../utils'
 import type { ColorMixtures } from '../../types'
 import type { ThemeConfig } from '../../themeConfig'
 
@@ -12,8 +12,8 @@ export const getSecondaryTokens = (config: ThemeConfig): SecondaryTokens => {
 		light: base.smoke,
 	}
 
-	const { colors } = byTheme(config, secondaryColors),
-		hues = colorMod(colors.get('100'))
+	const { colors, modColor } = byScheme(config, secondaryColors),
+		hues = modColor(colors.get('100'))
 
 	return hues
 }

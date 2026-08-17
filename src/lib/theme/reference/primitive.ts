@@ -6,29 +6,33 @@ import type {
 	SCREEN_SIZE_SCALE,
 } from '../scales'
 
+export const baseColorTokens = {
+   // hex color scales — step label = position, in hundreds
+   ink: token.path<ThemeColor<'ink'>>(baseVar, 'ink'),
+   oxblood: token.path<ThemeColor<'oxblood'>>(baseVar, 'oxblood'),
+   ghost: token.path<ThemeColor<'ghost'>>(baseVar, 'ghost'),
+
+   paper: token.path<ThemeColor<'paper'>>(baseVar, 'paper'),
+   crimson: token.path<ThemeColor<'crimson'>>(baseVar, 'crimson'),
+   smoke: token.path<ThemeColor<'smoke'>>(baseVar, 'smoke'),
+
+   // static colors
+   red: token.endPath(baseVar, 'red'),
+   green: token.endPath(baseVar, 'green'),
+   yellow: token.endPath(baseVar, 'yellow'),
+   blue: token.endPath(baseVar, 'blue'),
+   white: token.endPath(baseVar, 'white'),
+   gray: token.endPath(baseVar, 'gray'),
+   black: token.endPath(baseVar, 'black'),
+}
+
 /**
  * One accessor per primitive token category — primitive.brand('100') -> var(--brand-100).
  * Each field's key type is derived straight from its backing scale in scales.ts,
  * so adding/removing a scale step never requires touching a type by hand.
  */
 export const primitiveTokens = {
-	// hex color scales — step label = position, in hundreds
-	ink: token.path<ThemeColor<'ink'>>(baseVar, 'ink'),
-	oxblood: token.path<ThemeColor<'oxblood'>>(baseVar, 'oxblood'),
-	ghost: token.path<ThemeColor<'ghost'>>(baseVar, 'ghost'),
-
-	paper: token.path<ThemeColor<'paper'>>(baseVar, 'paper'),
-	crimson: token.path<ThemeColor<'crimson'>>(baseVar, 'crimson'),
-	smoke: token.path<ThemeColor<'smoke'>>(baseVar, 'smoke'),
-
-	// static colors
-	red: token.endPath(baseVar, 'red'),
-	green: token.endPath(baseVar, 'green'),
-	yellow: token.endPath(baseVar, 'yellow'),
-	blue: token.endPath(baseVar, 'blue'),
-	white: token.endPath(baseVar, 'white'),
-	gray: token.endPath(baseVar, 'gray'),
-	black: token.endPath(baseVar, 'black'),
+	...baseColorTokens,
 
 	size: token.path<`${number}`>(baseVar, 'size'),
 	screenSize: token.path<`${typeof SCREEN_SIZE_SCALE[number]}`>(baseVar, 'screenSize'),

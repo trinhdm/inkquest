@@ -1,1 +1,1 @@
-export { colorMix, fromOklch } from './cssMixers'
+export { colorMix, fromOklch, scaleLCH } from './cssMixers'

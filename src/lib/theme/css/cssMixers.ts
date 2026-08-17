@@ -69,3 +69,39 @@ export const fromOklch = (
 	const alphaPart = alpha !== undefined ? ` / ${alpha}` as const : ''
 	return `oklch(from ${color} calc(l + ${l}) calc(c + ${c}) calc(h + ${h})${alphaPart})`
 }
+
+
+type ExtractUnit<T extends string> =
+	T extends `${infer N extends number}${infer U}`
+		? U extends "" ? never : U
+		: never
+
+type OKLCHArgs =
+	| FromOKLCHArgs
+	// | ToOKLCHArgs
+
+export const scaleLCH = (lch: OKLCHArgs, factor: number) =>
+	(Object.keys(lch) as (keyof OKLCHArgs)[]).reduce<OKLCHArgs>((acc, key) => {
+		const value = lch[key]
+		let total: OKLCHArgs[typeof key]
+
+		if (typeof value === 'number') {
+			total = (factor * value) as FromOKLCHArgs[typeof key]
+			acc[key] = total
+		}
+
+		return acc
+
+		// if (typeof value === 'string') {
+		// 	const num = parseFloat(value),
+		// 		unit = value.replace(/[\d.-]/g, '') as ExtractUnit<typeof value>
+
+		// 	if (Number.isNaN(num))
+		// 		total = num
+
+		// 	if (!Number.isNaN(num)) {
+		// 		total = factor * num
+		// 		// if (unit) total = `${total}${unit}` as ToOKLCHArgs[typeof key]
+		// 	}
+		// }
+	}, {})

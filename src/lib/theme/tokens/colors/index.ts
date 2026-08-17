@@ -1,5 +1,5 @@
 import { alias } from '../../reference'
-import { byTheme, colorMod } from '../utils'
+import { byScheme } from '../utils'
 import type { ColorMixtures } from '../../types'
 import type { ThemeConfig } from '../../themeConfig'
 
@@ -24,6 +24,10 @@ export interface ColorTokens {
 		active: string
 		muted: string
 	}
+	control: {
+		base: string
+		hover: string
+	}
 	danger: ColorMixtures
 	success: ColorMixtures
 	warning: ColorMixtures
@@ -31,8 +35,7 @@ export interface ColorTokens {
 }
 
 export const getColorTokens = (config: ThemeConfig): ColorTokens => {
-	const { colors } = byTheme(config)
-	const scaleBase = colors.theme('100')
+	const { colors, modColor } = byScheme(config)
 
 	return {
 		text: {
@@ -42,7 +45,7 @@ export const getColorTokens = (config: ThemeConfig): ColorTokens => {
 			secondary: alias.accent.secondary('active'),
 			tertiary: alias.accent.secondary('shade'),
 			on: {
-				accent: colors.theme('100'),
+				accent: alias.color.text('inverse'),
 			},
 		},
 		link: {
@@ -55,9 +58,13 @@ export const getColorTokens = (config: ThemeConfig): ColorTokens => {
 			active: alias.accent.primary('active'),
 			muted: alias.accent.primary('muted'),
 		},
-		danger: colorMod('red'),
-		success: colorMod('green'),
-		warning: colorMod('yellow'),
-		info: colorMod('blue'),
+		control: {
+			base: alias.color.text('tertiary'),
+			hover: alias.color.text('primary'),
+		},
+		danger: modColor('red'),
+		success: modColor('green'),
+		warning: modColor('yellow'),
+		info: modColor('blue'),
 	}
 }
