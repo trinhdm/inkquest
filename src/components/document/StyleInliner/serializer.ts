@@ -1,4 +1,4 @@
-import { SCHEME_STORAGE_KEY } from '../../ScriptInjector'
+import { SCHEME_STORAGE_KEY } from '../ScriptInjector'
 import type { ThemeTokens } from '@/lib/theme'
 import type { VariantScheme } from '@/lib/theme/buildVariantSchemes'
 
@@ -45,7 +45,7 @@ interface SerializeArgs {
 	tokens: ThemeTokens
 }
 
-export const serializeCssVars = ({
+export const serializeStyles = ({
 	hasIndent = true,
 	lsKey = SCHEME_STORAGE_KEY,
 	selector,

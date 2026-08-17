@@ -7,7 +7,7 @@ interface ResolveCSSProps {
 	prefix?: string
 }
 
-export const resolveCssVars = ({ current, override, prefix }: ResolveCSSProps) => {
+export const resolveStyles = ({ current, override, prefix }: ResolveCSSProps) => {
 	const currentVars = buildSchemes(current, prefix)
 	let cssVars = currentVars
 
