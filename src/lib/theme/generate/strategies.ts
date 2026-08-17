@@ -1,7 +1,7 @@
 import { formatToken, getShorthand } from '../format'
+import { isFontShorthandMatch, labelStep, toEntry } from './utils'
 import { isObject } from '@/utils/helpers'
 import { rem } from '@/lib/general'
-import { isFontShorthandMatch, labelStep, toEntry } from './utils'
 import type { GeneratorStrategy } from './types'
 
 const primitiveStrategy: GeneratorStrategy<string> = {

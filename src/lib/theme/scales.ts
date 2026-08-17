@@ -59,26 +59,30 @@ export const FONT_SIZE_SCALE = [10, 12, 14, 16, 20, 24, 32, 48, 96] as const
 export const FONT_WEIGHT_SCALE = [400, 600, 700] as const
 
 export const LINE_HEIGHT_SCALE = {
-	exact: 1,
-	tight: 1.15,
-	snug: 1.3,
-	normal: 1.5,
-	loose: 1.75,
+	exact:	1,
+	tight:	1.15,
+	snug:	1.3,
+	normal:	1.5,
+	loose:	1.7,
 } as const
 
-export const TRACKING_SCALE = [
-	'0.08em',
-	'0.1em',
-] as const
+export const TRACKING_SCALE = {
+	xs:		'-0.03em',
+	sm:		'-0.01em',
+	md:		'0.02em',
+	lg:		'0.04em',
+	xl:		'0.06em',
+	xxl:	'0.1em',
+} as const
 
 export const RADIUS_SCALE = [0, 6, 8, 12, 999] as const
 
 export const DURATION_SCALE = {
-	instant: '.1s',
-	fast: '.2s',
-	default: '.3s',
-	slow: '.4s',
-	gradual: '.6s',
+	instant:	'.1s',
+	fast:		'.2s',
+	default:	'.3s',
+	slow:		'.4s',
+	gradual:	'.6s',
 } as const
 
 export const EASE_SCALE = {

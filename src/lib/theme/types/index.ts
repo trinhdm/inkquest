@@ -6,6 +6,8 @@ export type {
 export type {
 	ColorMixtures, ThemeColor,
 	PaddedIndexLabels, StaticColorNames,
+	TokenStateHues, TokenStatesList,
+	TokenVariableShape,
 } from './token.types'
 
 export type {

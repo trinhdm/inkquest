@@ -1,5 +1,6 @@
-import { Config, THEME_CONFIGS, type ThemeConfig } from './tokens'
 import { tokenGenerator } from './generate'
+import { Tokens } from './tokens'
+import { THEME_CONFIGS, type ThemeConfig } from './themeConfig'
 import type { ColorScheme, SiteTheme, ThemeTokens } from './types'
 
 const COLOR_SCHEMES = Object.keys(THEME_CONFIGS) as ColorScheme[]
@@ -10,10 +11,10 @@ const buildThemeTokens = <K extends ColorScheme>(
 ): SchemeTokenList<K>[K] => {
 	const tokens = {
 		theme: config.name,
-		accent: Config.accent(config),
-		color: Config.color(config),
-		background: Config.background(config),
-		border: Config.border.color(config),
+		accent: Tokens.accent(config),
+		color: Tokens.color(config),
+		background: Tokens.background(config),
+		border: Tokens.border.color(config),
 	}
 
 	return tokenGenerator(tokens, prefix)
@@ -23,12 +24,13 @@ const buildStaticTokens = <K extends keyof ThemeTokens>(
 	prefix?: string
 ): ThemeTokens[K] => {
 	const tokens = {
-		font: Config.typography(),
-		space: Config.space(),
+		font: Tokens.typography(),
+		space: Tokens.space(),
+		pad: Tokens.padding(),
 		border: {
-			radius: Config.border.radius(),
+			radius: Tokens.border.radius(),
 		},
-		motion: Config.motion(),
+		motion: Tokens.motion(),
 	}
 
 	return tokenGenerator(tokens, prefix)

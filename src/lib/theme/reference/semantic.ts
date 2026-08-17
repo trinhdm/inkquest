@@ -30,6 +30,7 @@ const propertyTokens = {
 	},
 }
 
+// limit component usage to only semantic tokens
 export const semanticTokens = {
 	background: {
 		page: token.endPath(aliasVar, 'background', 'page'),

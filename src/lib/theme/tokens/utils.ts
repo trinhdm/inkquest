@@ -2,7 +2,7 @@ import { ALT_THEME, type ThemeConfig } from '../themeConfig'
 import { alias, base } from '../reference'
 import { colorMix, fromOklch, scaleLCH } from '../css'
 import { isObject } from '@/utils/helpers'
-import type { ColorMixtures, ColorScheme, StaticColorNames } from '../types'
+import type { ColorScheme, StaticColorNames, TokenStateHues } from '../types'
 
 const getThemeMixer = () => ({
 	dark: base.white(),
@@ -18,7 +18,7 @@ interface ColorModArgs {
 	scheme: ColorScheme
 }
 
-const colorMod = ({ alt, color, scheme }: ColorModArgs): ColorMixtures => {
+const colorMod = ({ alt, color, scheme }: ColorModArgs): TokenStateHues => {
 	const target = isStaticColor(color) ? base[color]() : color,
 		themeMixer = getThemeMixer()
 
@@ -35,9 +35,9 @@ const colorMod = ({ alt, color, scheme }: ColorModArgs): ColorMixtures => {
 		base: target,
 		hover: fromOklch(target, lch),
 		active: fromOklch(target, scaleLCH(lch, 2)),
-		tint: colorMix(mixer.tint, 30, target),
+		tint: colorMix(mixer.tint, 20, target),
 		shade: colorMix(mixer.shade, 30, target),
-		bright: colorMix(mixer.tint, 80, target),
+		bright: colorMix(mixer.tint, 50, target),
 		dim: colorMix(mixer.shade, 80, target),
 		muted: colorMix(mixer.blend, 85, target),
 	}

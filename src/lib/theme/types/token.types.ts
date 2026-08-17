@@ -5,6 +5,10 @@ import type { COLOR_TOKENS } from '../scales'
 export type TokenVar =
 	`var(${keyof CSSVars})`
 
+export type TokenVariableShape =
+	| `${TokenVar}`
+	| `${TokenVar} ${TokenVar}`
+
 type TokenItem<T extends keyof CSSProperties = 'color'> =
 	CSSProperties[T]
 
@@ -12,24 +16,29 @@ export interface TokenStatesList<T extends keyof CSSProperties = 'color'> {
 	base: TokenItem<T>
 	hover: TokenItem<T>
 	active?: TokenItem<T>
-	disabled?: TokenItem<T>
+	disable?: TokenItem<T>
 	focus?: TokenItem<T>
-	pressed?: TokenItem<T>
-	selected?: TokenItem<T>
+	press?: TokenItem<T>
+	select?: TokenItem<T>
 }
 
 export type TokenGroup<T extends keyof CSSProperties> =
 	| TokenItem<T>
 	| TokenStatesList<T>
 
-export interface ColorMixtures
-	extends TokenStatesList {
+export interface ColorMixtures {
 	base: string
 	bright: string
 	dim: string
 	muted: string
 	shade: string
 	tint: string
+}
+
+export interface TokenStateHues
+	extends Omit<ColorMixtures, 'base'>,
+		Omit<TokenStatesList, 'base'> {
+	base: (ColorMixtures | TokenStatesList)['base']
 }
 
 

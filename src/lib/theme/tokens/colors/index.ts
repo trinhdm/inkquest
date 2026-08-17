@@ -1,7 +1,7 @@
 import { alias } from '../../reference'
 import { byScheme } from '../utils'
-import type { ColorMixtures } from '../../types'
 import type { ThemeConfig } from '../../themeConfig'
+import type { TokenStateHues } from '../../types'
 
 export interface ColorTokens {
 	text: {
@@ -18,20 +18,16 @@ export interface ColorTokens {
 		base: string
 		hover: string
 	}
-	action: {
-		base: string
-		hover: string
-		active: string
-		muted: string
-	}
+	action: Pick<TokenStateHues,
+		'base' | 'hover' | 'active' | 'select' | 'disable'>
 	control: {
 		base: string
 		hover: string
 	}
-	danger: ColorMixtures
-	success: ColorMixtures
-	warning: ColorMixtures
-	info: ColorMixtures
+	danger: TokenStateHues
+	success: TokenStateHues
+	warning: TokenStateHues
+	info: TokenStateHues
 }
 
 export const getColorTokens = (config: ThemeConfig): ColorTokens => {
@@ -56,7 +52,8 @@ export const getColorTokens = (config: ThemeConfig): ColorTokens => {
 			base: alias.accent.primary(),
 			hover: alias.accent.primary('hover'),
 			active: alias.accent.primary('active'),
-			muted: alias.accent.primary('muted'),
+			select: alias.accent.primary('tint'),
+			disable: alias.accent.primary('muted'),
 		},
 		control: {
 			base: alias.color.text('tertiary'),

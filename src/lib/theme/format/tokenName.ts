@@ -26,8 +26,8 @@ const formatFontName = (name: string) => {
 const formatName = <T,>({ path }: CSSVarArgs<T>): string => {
 	let name = toKebabCase(path[0])
 
-	if (_is.FontName(name))
-		name = formatFontName(name)
+	// if (_is.FontName(name))
+	// 	name = formatFontName(name)
 
 	// if (_is.Plural(name))
 	// 	name = name.slice(0, -1)

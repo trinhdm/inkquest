@@ -1,7 +1,7 @@
 import { COLOR_TOKENS, THEME_SCHEMES } from '../scales'
 import type { CSSProperties } from 'react'
 import type { AtLeastOneKey } from '@/types/utils'
-import type { CSSUnit, CSSVars, FontList, HexCode, Size, Unit } from '@/types/shared'
+import type { CSSUnit, CSSVars, FontList, HexCode, Unit } from '@/types/shared'
 import type { GetVariantColorsFn, PaintVariantsFn } from '../variants'
 import type { SemanticTokens } from '../reference'
 
@@ -35,30 +35,39 @@ export interface SiteTheme {
 	tokens: SemanticTokens
 
 	scale: { size: number }
-
-	fontFamily: FontStyle<'fontFamily', 'sans'>
-	fontSize: number[] | FontStyle<'fontSize', 'md'>
-	fontWeight: number[] | FontStyle<'fontWeight', 'regular'>
-	lineHeight: Style<CSSProperties['lineHeight'], ThemeLineHeight, 'normal'>
-
-	// headings: FontStyles<TagFontStyles, HeadingTag, 'h1'>
 	colors:
 		& { [K in FlatColorKey]: HexCode }
 		& { [K in ColorScaleKey]: readonly HexCode[] }
 
-	breakpoints: Style<CSSUnit, Size>
+	fontFamily: FontStyle<'fontFamily', 'sans'>
+	fontSize: number[] | FontStyle<'fontSize', 'md'>
+	fontWeight: number[] | FontStyle<'fontWeight', 'regular'>
+	lineHeight: Style<'lineHeight', ThemeLineHeight, 'normal'>
+	tracking: Style<'letterSpacing', ThemeSizeScale, 'md'>
+
+	duration: Style<'transitionDuration', ThemeDuration, 'default'>
+	easing: Style<'transitionTimingFunction', ThemeEasing, BaseVarKey>
+
 	radius: number[]
-
-	duration: Style<CSSProperties['transitionDuration'], ThemeDuration, 'default'>
-	easing: Style<ThemeEasingValues, ThemeEasing, BaseVarKey>
-
 	screenSize: number[]
 	// containerSize: {}
+
+	// headings: FontStyles<TagFontStyles, HeadingTag, 'h1'>
+	// breakpoints: Style<CSSUnit, Size>
 
 	subcomponents?: Record<string, {
 		cssVars?: (theme: SiteTheme, props: unknown, ctx: unknown) => Partial<Record<string, CSSVars>>
 	}>
 }
+
+type ThemeSizeScale =
+	| 'xxs'
+	| 'xs'
+	| 'sm'
+	| 'md'
+	| 'lg'
+	| 'xl'
+	| 'xxl'
 
 type ThemeLineHeight =
 	| 'exact'
@@ -94,7 +103,7 @@ type StyleList<
 			? ConsistentValues<Keys, true, number extends V ? V : undefined>
 			: AtLeastOneKey<Record<Keys, V>>
 
-export type Style<
+type BaseStyle<
     V,
     Keys extends PropertyKey,
     RK extends Keys | undefined = undefined,
@@ -105,11 +114,19 @@ export type Style<
 		? Extract<StyleList<Keys, V, Name>, Record<RK, unknown>>
 		: StyleList<Keys, V, Name>)
 
+type Style<
+    P extends keyof CSSProperties,
+	Keys extends PropertyKey,
+    RK extends Keys | undefined = undefined,
+	Name extends PropertyKey = PropertyKey,
+> =
+	BaseStyle<CSSProperties[P], Keys, RK, Name>
+
 type FontStyle<
     K extends keyof FontList,
     RK extends FontList[K] | undefined = undefined,
 > =
-	Style<CSSProperties[K], FontList[K], RK, K>
+	BaseStyle<CSSProperties[K], FontList[K], RK, K>
 
 // interface FontStyles<
 // 	V,

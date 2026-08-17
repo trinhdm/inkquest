@@ -43,10 +43,10 @@ export interface FontPropertyTokens {
 
 export const getFontPropertyTokens = (): FontPropertyTokens => ({
 	fontFamily: {
-		display:	base.font('black'),
-		heading:	base.font('sans'),
-		body:		base.font('sans'),
-		data:		base.font('mono'),
+		display:	base.fontFamily('black'),
+		heading:	base.fontFamily('sans'),
+		body:		base.fontFamily('sans'),
+		data:		base.fontFamily('mono'),
 	},
 	fontSize: {
 		display:	base.fontSize('96'),
@@ -63,9 +63,9 @@ export const getFontPropertyTokens = (): FontPropertyTokens => ({
 		control:	base.fontSize('10'),
 	},
 	fontWeight: {
-		normal:		base.weight('400'),
-		medium:		base.weight('600'),
-		bold:		base.weight('700'),
+		normal:		base.fontWeight('400'),
+		medium:		base.fontWeight('600'),
+		bold:		base.fontWeight('700'),
 	},
 	lineHeight: {
 		none:		base.lineHeight('exact'),
