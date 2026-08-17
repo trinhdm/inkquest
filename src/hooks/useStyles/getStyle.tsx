@@ -18,25 +18,27 @@ const mergeVars = (vars: (ResolvedVars | undefined)[]) => {
 }
 
 export const getStyles = <S extends ValidSpecs<S>>({
+	check,
 	cssVars,
 	name,
 	props,
 	selector,
-	theme,
+	// theme,
 }: SharedConfig<S>) => {
-	const themeName = (Array.isArray(name) ? name : [name]).filter((n) => n) as string[]
-	const stylesCtx = {}
+	return {}
+	// const themeName = (Array.isArray(name) ? name : [name]).filter((n) => n) as string[]
+	// const stylesCtx = {}
 
-	const resolvedVars = mergeVars([
-		...themeName.map((n) => theme.subcomponents?.[n]?.cssVars?.(theme, props, stylesCtx)),
-		cssVars?.(theme, props, stylesCtx),
-	])
+	// const resolvedVars = mergeVars([
+	// 	...themeName.map((n) => theme.subcomponents?.[n]?.cssVars?.(theme, props, stylesCtx)),
+	// 	cssVars?.(theme, props, stylesCtx),
+	// ])
 
 	// console.log(cssVars?.(theme, props, stylesCtx))
 
-	const vars = Object.hasOwn(resolvedVars, selector) && selector === 'root'
-		? resolvedVars[selector]
-		: {}
+	// const vars = Object.hasOwn(resolvedVars, selector) && check.isRoot
+	// 	? resolvedVars[selector]
+	// 	: {}
 
-	return { ...vars }
+	// return { ...vars }
 }

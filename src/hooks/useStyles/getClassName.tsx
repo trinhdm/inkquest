@@ -1,5 +1,4 @@
 import cx from 'clsx'
-import { keyWithValue } from '@/utils/helpers'
 import type { SharedConfig } from './useStyles'
 import type { ValidSpecs } from '@/types/spec'
 
@@ -8,6 +7,7 @@ const getBaseClass = <S extends ValidSpecs<S>>(
 ) => {
 	if (!name) return
 	let baseName = name
+	// let baseName = toKebabCase(name).slice(1)
 
 	if (prefix) baseName = `${prefix}-${baseName}`
 	if (selector !== 'root') baseName += `__${selector}`
@@ -41,18 +41,16 @@ const resolveSelectorClass = <S extends ValidSpecs<S>,>(
 }
 
 export const getClassName = <S extends ValidSpecs<S>>(options: SharedConfig<S>): string => {
-	const { props, selector } = options,
-		isRoot = selector === 'root',
-		isUnstyled = keyWithValue(['unstyled', true], props) ? props.unstyled : false
-
-	if (isUnstyled) return ''
+	const { check } = options
 
 	const baseClass = getBaseClass(options),
 		propClass = resolvePropClass(options),
 		selectorClass = resolveSelectorClass(options, baseClass)
 
+	if (check.isUnstyled) return cx(baseClass)
+
 	const className = cx(selectorClass, {
-		[`${propClass}`]: isRoot,
+		[`${propClass}`]: check.isRoot,
 	})
 
 	return className
