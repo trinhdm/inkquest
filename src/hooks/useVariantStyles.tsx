@@ -2,7 +2,7 @@
 
 import { useInsertionEffect } from 'react'
 import { buildVariantSchemes } from '@/lib/theme/buildVariantSchemes'
-import { serializeVariantSchemes } from '@/components/document'
+import { serializeStyles } from '@/components/document'
 
 const registered = new Set<string>()
 
@@ -17,7 +17,7 @@ export const useVariantStyles = (name: string) => {
 
 		registered.add(name)
 
-		const css = serializeVariantSchemes(buildVariantSchemes(name))
+		const css = serializeStyles(buildVariantSchemes(name))
 		if (!css) return
 
 		const style = document.createElement('style')

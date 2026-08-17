@@ -2,8 +2,8 @@
 
 import Image from "next/image"
 import styles from "./page.module.css"
-import { Button } from '@/components/core/buttons/Button'
 import { useColorScheme } from '@/hooks/useColorScheme'
+import { Button } from '@/components/core/buttons/Button'
 // import { useTheme } from '@/providers/ThemeProvider'
 import { Icon } from '@/components/core/Icon/Icon'
 import { Badge } from '@/components/core/Badge'

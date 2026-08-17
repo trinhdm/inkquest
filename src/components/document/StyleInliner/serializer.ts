@@ -1,15 +1,23 @@
 import { SCHEME_STORAGE_KEY } from '../ScriptInjector'
-import type { ThemeTokens } from '@/lib/theme'
-import type { VariantScheme } from '@/lib/theme/buildVariantSchemes'
+import type { CssRule, ThemeTokens } from '@/lib/theme'
 
-const BASE_SELECTORS = [':root'] as const
+const BASE_SELECTORS = ':root, :host'
 
-interface DeclarationBlockArgs
-	extends Pick<SerializeArgs, 'hasIndent'> {
-	input: Record<string, unknown>
-}
+export const standardizeRules = (
+	tokens: ThemeTokens,
+	lsKey = SCHEME_STORAGE_KEY
+): CssRule[] =>
+	(Object.keys(tokens) as (keyof ThemeTokens)[])
+		.filter(name => Object.keys(tokens[name]).length)
+		.map(name => ({
+			selector: name === 'base' ? BASE_SELECTORS : `[data-${lsKey}="${name}"]`,
+			vars: tokens[name],
+		}))
 
-const declarationBlock = ({ input, hasIndent }: DeclarationBlockArgs) => {
+const declarationBlock = ({ input, hasIndent }: {
+	input: Record<string, unknown>,
+	hasIndent?: boolean
+}) => {
 	const block = Object.entries(input)
 		.map(([property, value]) => {
 			const declaration = `${property}: ${value};`
@@ -20,59 +28,11 @@ const declarationBlock = ({ input, hasIndent }: DeclarationBlockArgs) => {
 	return hasIndent ? `\n${block}\n` : ` ${block} `
 }
 
-interface ListSelectorsArgs
-	extends Omit<SerializeArgs, 'tokens'> {
-	name: keyof SerializeArgs['tokens']
-}
-
-const listSelectors = ({
-	hasIndent,
-	lsKey,
-	name,
-	selector,
-}: ListSelectorsArgs) => {
-	const selectors = !!selector ? [selector] : BASE_SELECTORS,
-		attr = name === 'base' ? '' : `[data-${lsKey}="${name}"]`,
-		space = hasIndent ? `\n` : ` `
-
-	return selectors.map(s => `${s}${attr}`).join(`,${space}`)
-}
-
-interface SerializeArgs {
-	hasIndent?: boolean
-	lsKey?: string
-	selector?: string
-	tokens: ThemeTokens
-}
-
-export const serializeStyles = ({
-	hasIndent = true,
-	lsKey = SCHEME_STORAGE_KEY,
-	selector,
-	tokens,
-}: SerializeArgs) => {
-	const tokenList = Object.keys(tokens) as (keyof typeof tokens)[]
-	const rules = tokenList.map(name => {
-		const input = tokens[name]
-		if (!Object.keys(input).length) return
-
-		const declaration = declarationBlock({ input, hasIndent }),
-			selectors = listSelectors({ name, selector, hasIndent, lsKey })
-
-		return `${selectors} {${declaration}}`
-	})
-		.filter(Boolean)
-		.join(`\n\n`)
-
-	return rules
-}
-
-
-export const serializeVariantSchemes = (
-	schemes: VariantScheme[],
+export const serializeStyles = (
+	rules: CssRule[],
 	hasIndent: boolean = true
 ) =>
-	schemes
+	rules
 		.filter(({ vars }) => Object.keys(vars).length)
 		.map(({ selector, vars }) => `${selector} {${declarationBlock({ input: vars, hasIndent })}}`)
 		.join(hasIndent ? '\n\n' : ' ')

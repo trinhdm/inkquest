@@ -1,23 +1,20 @@
 import { enumerateVariantPalettes } from './tokens/variants'
 import { tokenGenerator } from './generate'
 import { PREFIX_CSS_SELECTOR } from '@/utils/constants'
-import type { CSSVars } from '@/types/shared'
+import type { CssRule } from './types'
 
-export interface VariantScheme {
-	selector: string
-	vars: CSSVars
-}
-
-export const buildVariantSchemes = (name: string): VariantScheme[] => {
+export const buildVariantSchemes = (name: string): CssRule[] => {
 	const namespace = name.toLowerCase(),
-		rootClass = `${PREFIX_CSS_SELECTOR}-${name}`
+		rootClass = `${PREFIX_CSS_SELECTOR}-${name}`,
+		palettes = enumerateVariantPalettes()
 
-	return enumerateVariantPalettes().map(({ variant, priority, palette }) => {
-		const vars = tokenGenerator(palette, namespace)
-		const state = priority
-			? `[data-variant="${variant}"][data-priority="${priority}"]`
-			: `[data-variant="${variant}"]`
+	return palettes.map(({ palette, priority, variant }) => {
+		const dataVariant = `[data-variant="${variant}"]`,
+			vars = tokenGenerator(palette, namespace)
 
-		return { selector: `.${rootClass}${state}`, vars }
+		let selector = `.${rootClass}${dataVariant}`
+		if (priority) selector += `[data-priority="${priority}"]`
+
+		return { selector, vars }
 	})
 }

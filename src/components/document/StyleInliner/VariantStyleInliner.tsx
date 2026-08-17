@@ -1,5 +1,5 @@
 import { buildVariantSchemes } from '@/lib/theme/buildVariantSchemes'
-import { serializeVariantSchemes } from './serializer'
+import { serializeStyles } from './serializer'
 import type { ComponentProps } from 'react'
 
 interface VariantStyleInlinerProps
@@ -8,10 +8,8 @@ interface VariantStyleInlinerProps
 }
 
 export const VariantStyleInliner = ({ names, ...props }: VariantStyleInlinerProps) => {
-	const css = names
-		.map(name => serializeVariantSchemes(buildVariantSchemes(name)))
-		.filter(Boolean)
-		.join('\n\n')
+	const tokens = names.flatMap(buildVariantSchemes),
+		css = serializeStyles(tokens)
 
 	if (!css) return null
 

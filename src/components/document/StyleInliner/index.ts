@@ -1,3 +1,3 @@
-export { serializeVariantSchemes } from './serializer'
+export { serializeStyles } from './serializer'
 export { StyleInliner } from './StyleInliner'
 export { VariantStyleInliner } from './VariantStyleInliner'

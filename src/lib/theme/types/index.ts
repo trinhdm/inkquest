@@ -11,7 +11,7 @@ export type {
 } from './token.types'
 
 export type {
-	ColorVariable,
+	ColorVariable, CssRule,
 	Priority, Tone, Variant,
 	PaletteTokens, VariantTokens,
 	SemanticVariantProps,

@@ -1,5 +1,5 @@
 import type { BaseVarKey } from './theme.types'
-import type { CSSVariable } from '@/types/shared'
+import type { CSSVariable, CSSVars } from '@/types/shared'
 import type { TokenGroup, TokenStatesList } from './token.types'
 
 export type Variant =
@@ -57,3 +57,8 @@ type PaletteOptions<S extends string, K extends StateKey> =
 
 export type PaletteTokens<S extends string> =
 	PaletteOptions<S, BaseVarKey>
+
+export interface CssRule {
+	selector: string
+	vars: CSSVars
+}

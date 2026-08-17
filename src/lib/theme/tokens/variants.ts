@@ -8,22 +8,6 @@ import type {
 	SemanticVariantProps, SiteTheme,
 } from '../types'
 
-interface GetPaletteArgs<S extends ValidSpecs<S>> {
-	prefix?: string
-	theme: SiteTheme
-	variant?: S['variant']
-}
-
-export type GetPaletteFn =
-	<S extends ValidSpecs<S>>(args: GetPaletteArgs<S> & Omit<S['props'], 'name'> & SemanticVariantProps) => Partial<VariantTokens>
-
-const DEFAULT_PALETTE: VariantTokens = {
-	background: { base: 'transparent', hover: 'transparent' },
-	border: { base: 'transparent', hover: 'transparent' },
-	color: { base: 'inherit', hover: 'inherit' },
-}
-
-
 interface ToneAccessor {
 	base: () => string
 	strong: () => string
@@ -39,6 +23,12 @@ const fromMixture = (token: typeof alias.color.danger): ToneAccessor => ({
 	subtle: () => token('muted'),
 	dim: () => token('dim'),
 })
+
+const DEFAULT_PALETTE: VariantTokens = {
+	background: { base: 'transparent', hover: 'transparent' },
+	border: { base: 'transparent', hover: 'transparent' },
+	color: { base: 'inherit', hover: 'inherit' },
+}
 
 const TONE_ACCESSORS: Record<Tone, ToneAccessor> = {
 	neutral: {
@@ -112,24 +102,22 @@ const STRUCTURAL_VARIANTS: Record<'solid' | 'outline' | 'ghost', Priority> = {
 	ghost: 'tertiary',
 }
 
+interface GetPaletteArgs<S extends ValidSpecs<S>> {
+	prefix?: string
+	theme: SiteTheme
+	variant?: S['variant']
+}
+
 const hasVariant = <S extends ValidSpecs<S>>(
 	args: GetPaletteArgs<S>
 ): args is GetPaletteArgs<S> & { variant: NonNullable<S['variant']> } => {
 	return 'variant' in args && args.variant !== undefined
 }
 
-export type GetVariantColorsFn =
-	<S extends ValidSpecs<S>>(
-		_props: GetPaletteArgs<S> & Omit<S['props'], 'name'> & SemanticVariantProps
-	) => Partial<VariantTokens>
+const mergePalette = (palette: Partial<VariantTokens>): VariantTokens =>
+	deepMerge(DEFAULT_PALETTE, palette)
 
-export const getVariantColors = <S extends ValidSpecs<S>>(
-	_props: GetPaletteArgs<S> & Omit<S['props'], 'name'> & SemanticVariantProps
-): Partial<VariantTokens> => {
-	if (!hasVariant(_props))
-		return DEFAULT_PALETTE
-
-	const { theme, priority, variant, ...props } = _props
+const resolveVariants = ({ variant, priority }: Omit<VariantPalette, 'palette'>) => {
 	let tone: Tone = 'action'
 	const isSpecial = variant in SPECIAL_VARIANTS,
 		isStructural = variant in STRUCTURAL_VARIANTS
@@ -145,32 +133,22 @@ export const getVariantColors = <S extends ValidSpecs<S>>(
 		tone = variant === 'solid' ? 'action' : 'neutral'
 	}
 
-	return PRIORITY_SHAPES[role](TONE_ACCESSORS[tone])
+	const result = PRIORITY_SHAPES[role](TONE_ACCESSORS[tone]),
+		palette = mergePalette(result)
+
+	return palette
 }
 
+const resolvePalette = ({ variant, priority }: Omit<VariantPalette, 'palette'>) => {
+	const result = resolveVariants({ priority, variant }),
+		palette = mergePalette(result)
 
-interface SetPaletteArgs<S extends string> {
-    colors: VariantTokens
-    name: S
-}
-
-export type SetPaletteFn =
-    <S extends string>(args: SetPaletteArgs<S>) => PaletteTokens<Lowercase<S>>
-
-const setVariantColors = <S extends string>(
-	{ colors, name }: SetPaletteArgs<S>
-): PaletteTokens<Lowercase<S>> => {
-	type N = Lowercase<typeof name>
-	const namespace = `${name.toLowerCase() as N}` as const,
-		palette = deepMerge(DEFAULT_PALETTE, colors),
-		vars = tokenGenerator(palette, namespace)
-
-	return vars as PaletteTokens<N>
+	return palette
 }
 
 
 interface PaintVariantsArgs<S extends ValidSpecs<S>, N extends string>
-    extends GetPaletteArgs<S> {
+    extends GetPaletteArgs<S>, SemanticVariantProps {
     name: N
 }
 
@@ -182,47 +160,68 @@ export type PaintVariantsFn =
 export const paintVariants = <S extends ValidSpecs<S>, N extends string>(
 	_props: PaintVariantsArgs<S, N> & S['props']
 ): PaletteTokens<Lowercase<N>> => {
-	const { name, ...props } = _props,
-		colors = getVariantColors<S>(props),
-		variables = setVariantColors({ colors, name })
+	const { name, ...props } = _props
+	let palette: VariantTokens = DEFAULT_PALETTE
 
-	return variables
+	if (hasVariant(_props)) {
+		const { priority, variant } = props
+		palette = resolvePalette({ priority, variant: variant as Variant })
+	}
+
+	type LN = Lowercase<typeof name>
+	const namespace = `${name.toLowerCase() as LN}` as const,
+		vars = tokenGenerator(palette as ReturnType<typeof deepMerge>, namespace)
+
+	return vars as PaletteTokens<LN>
 }
 
 
-export interface VariantPaletteEntry {
-	variant: Variant
-	priority?: Priority
+export interface VariantPalette {
 	palette: Partial<VariantTokens>
+	priority?: Priority
+	variant: Variant
 }
 
-const combinePalettes = (palette: Partial<VariantTokens>) =>
-	deepMerge(DEFAULT_PALETTE, palette)
-
-export const enumerateVariantPalettes = (): VariantPaletteEntry[] => {
-	const semanticTones = ['danger', 'warning', 'success', 'info'] as const
-	const priorities = ['primary', 'secondary', 'tertiary'] as const
+export const enumerateVariantPalettes = (): VariantPalette[] => {
+	const priorities = ['primary', 'secondary', 'tertiary'] as const,
+		semanticTones = ['danger', 'warning', 'success', 'info'] as const
+	const special = (Object.keys(SPECIAL_VARIANTS) as (keyof typeof SPECIAL_VARIANTS)[]),
+		structural = (Object.keys(STRUCTURAL_VARIANTS) as (keyof typeof STRUCTURAL_VARIANTS)[])
 
 	const semantic = semanticTones.flatMap(tone =>
 		priorities.map(priority => ({
 			variant: tone as Variant,
+			palette: resolvePalette({ priority, variant: tone as Variant }),
 			priority,
-			palette: combinePalettes(PRIORITY_SHAPES[priority](TONE_ACCESSORS[tone])),
 		}))
 	)
 
-	const structural = (Object.keys(STRUCTURAL_VARIANTS) as (keyof typeof STRUCTURAL_VARIANTS)[]).map(variant => ({
+	const structured = structural.map(variant => ({
 		variant: variant as Variant,
-		palette: combinePalettes(PRIORITY_SHAPES[STRUCTURAL_VARIANTS[variant]](
-			TONE_ACCESSORS[variant === 'solid' ? 'action' : 'neutral']
-		)),
+		palette: resolvePalette({ variant: variant as Variant }),
 	}))
 
-	const special = (Object.keys(SPECIAL_VARIANTS) as (keyof typeof SPECIAL_VARIANTS)[]).map(variant => ({
+	const specialize = special.map(variant => ({
 		variant: variant as Variant,
-		palette: combinePalettes(SPECIAL_VARIANTS[variant](TONE_ACCESSORS.action)),
+		palette: resolvePalette({ variant: variant as Variant }),
 	}))
 
-	return [...semantic, ...structural, ...special]
+	return [...structured, ...specialize, ...semantic]
 }
 
+
+export type GetVariantColorsFn =
+	<S extends ValidSpecs<S>>(
+		_props: GetPaletteArgs<S> & Omit<S['props'], 'name'> & SemanticVariantProps
+	) => Partial<VariantTokens>
+
+export const getVariantColors = <S extends ValidSpecs<S>>(
+	_props: GetPaletteArgs<S> & Omit<S['props'], 'name'> & SemanticVariantProps
+): Partial<VariantTokens> => {
+	if (!hasVariant(_props))
+		return DEFAULT_PALETTE
+
+	const { priority, variant } = _props
+
+	return resolveVariants({ priority, variant: variant as Variant })
+}

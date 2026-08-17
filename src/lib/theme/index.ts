@@ -11,6 +11,6 @@ export { semanticTokens as tokens } from './reference'
 export { setThemeCSS, type ThemeCSSConfig } from './setThemeCSS'
 
 export type {
-	BaseVarKey, ColorVariable, ColorScheme,
+	BaseVarKey, ColorScheme, ColorVariable, CssRule,
 	SiteTheme, ThemeName, ThemeTokens,
 } from './types'
