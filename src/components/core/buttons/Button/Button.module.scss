@@ -1,36 +1,34 @@
 .inkq-Button {
-	--button-padding: var(--inkq-space-inset-sm) var(--inkq-space-inset-lg);
-
-	background-color: var(--button-background, var(--inkq-accent));
-    border-radius: var(--inkq-border-radius-sm);
-    border: 1px solid var(--button-border, var(--inkq-accent));
-	color: var(--button-color, var(--inkq-color-link));
-    cursor: pointer;
+	background-color: var(--button-background, var(--inkq-background-backup));
+    border-radius: var(--inkq-border-radius-chip);
+    border: 1px solid var(--button-border, var(--inkq-border-backup));
+	color: var(--button-color, var(--inkq-color-backup));
 	display: inline-block;
-	font-size: var(--inkq-font-size-label);
-    font-weight: var(--inkq-font-weight-bold);
-    letter-spacing: 0.01em;
-	line-height: 1;
+	font: var(--inkq-font-label);
+    letter-spacing: var(--inkq-font-tracking-stat);
     opacity: 1;
 	overflow: hidden;
-    padding: var(--button-padding);
+    padding: var(--inkq-pad-chip);
 	position: relative;
-	touch-action: manipulation;
     text-decoration: none;
-    transition: var(--inkq-motion-interactive);
+	touch-action: manipulation;
+    transition: var(--inkq-motion-box);
 	user-select: none;
 	vertical-align: middle;
 	width: auto;
 
-	&:hover {
-		background-color: var(--button-background-hover, var(--inkq-accent-hover));
-		border-color: var(--button-border-hover, var(--inkq-accent-hover));
-		color: var(--button-color-hover, var(--inkq-color-link-hover));
+	&:enabled:hover {
+		background-color: var(--button-background-hover, var(--button-background));
+		border-color: var(--button-border-hover, var(--button-border));
 	}
 
 	&:where([data-block]) {
 		display: block;
 		width: 100%;
+	}
+
+	&:where([data-disabled]) {
+		opacity: var(--inkq-opacity-disabled);
 	}
 
 	&__inner {

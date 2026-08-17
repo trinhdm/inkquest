@@ -1,12 +1,13 @@
 import Link from 'next/link'
-import { Box, polymorphic, type BoxProps } from '../../Box'
-import { setThemeCSS } from '@/lib/theme'
-import { useProps, useStyles } from '@/hooks'
-
-import type { ReactNode } from 'react'
-import type { ColorVariable } from '@/providers/ThemeProvider'
-
+import { Box, polymorphic, type BoxProps } from '@/components/core/Box'
+import {
+	ButtonGroup,
+	type ButtonGroupProps, type ButtonGroupSpecs
+} from './ButtonGroup'
+import { setThemeCSS, type ColorVariable } from '@/lib/theme'
+import { useProps, useStyles, useVariantStyles } from '@/hooks'
 import classes from './Button.module.scss'
+import type { ReactNode } from 'react'
 
 type ButtonSize =
 	| 'sm'
@@ -17,7 +18,6 @@ type ButtonPriority =
 	| 'primary'
 	| 'secondary'
 	| 'tertiary'
-	| 'accent'
 
 type ButtonVariant =
 	| 'dark'
@@ -29,47 +29,50 @@ type ButtonVariant =
 	| 'warning'
 	| 'danger'
 
-type ButtonVars = ColorVariable<_Prefix>
+// type ButtonVars = ColorVariable<typeof NAME>
 
 interface ButtonProps extends BoxProps {
 	children: ReactNode
+	disabled?: boolean
 	fullWidth?: boolean
 	href?: string
 	icon?: React.ReactNode | {
 		color?: string
-		name?: React.ReactNode
+		name: string
 		position?: 'left' | 'right'
-		size?: ButtonSize
 	}
+	loading?: boolean
 	priority?: ButtonPriority
 	size?: ButtonSize
 	variant?: ButtonVariant
 }
 
 type ButtonSpecs = {
-	// asdf: ''
-	cssVars: { root: ButtonVars }
+	// cssVars: { root: ButtonVars }
 	default: { component: 'button' }
 	props: ButtonProps
+	subcomponents: {
+		Group: typeof ButtonGroup,
+	}
 }
 
 const NAME = 'Button' as const
-const PREFIX = `${NAME.toLowerCase() as Lowercase<typeof NAME>}` as const
-
-type _Prefix = Lowercase<typeof NAME>
 
 const cssVars = setThemeCSS<ButtonSpecs>((theme, _props) => {
-	// // if (!Object.hasOwn(_props, 'variant')) return {}
-	// const colors = theme.variantColors({ theme, ..._props }),
-	// 	variables = theme.variantTokens({ colors, name: PREFIX })
-	// 	// console.log(theme)
+	// const colors = theme.getVariantColors({ theme, ..._props })
+	// // const { tokens } = theme
+	// console.log({ colors })
 
 	return {
-		root: theme.paintVariants({ name: PREFIX, theme, ..._props }),
+		root: {
+			// ...variants,
+			// '--button-pad': `${tokens.space.inset('sm')} ${tokens.space.inset('lg')}`,
+		}
 	}
 })
 
 export const Button = polymorphic<ButtonSpecs>(_props => {
+	useVariantStyles(NAME)
 	const props = useProps(NAME, _props)
 	const styles = useStyles<ButtonSpecs>({
 		name: NAME,
@@ -81,6 +84,7 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 	const {
 		as,
 		children,
+		disabled,
 		fullWidth,
 		href,
 		priority,
@@ -93,8 +97,13 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 
 	return (
 		<Box
-			// role="group"
 			as={ component }
+			data={ {
+				variant,
+				priority,
+				disabled,
+				block: !!fullWidth,
+			} }
 			{ ...styles('root') }
 			{ ...rest }
 		>
@@ -105,15 +114,14 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 			</Box>
 		</Box>
 	)
-})
+}, classes)
 
-Button.classes = classes
 Button.displayName = NAME
+Button.Group = ButtonGroup
 
 Button.setDefaults({
 	props: {
 		as: 'button',
-		priority: 'primary',
 		size: 'sm',
 		variant: 'solid',
 	}
@@ -126,4 +134,9 @@ export declare namespace Button {
 	export type Priority = ButtonPriority
 	export type Size = ButtonSize
 	export type Variant = ButtonVariant
+
+	export namespace Group {
+		export type Props = ButtonGroupProps
+		export type Specs = ButtonGroupSpecs
+	}
 }

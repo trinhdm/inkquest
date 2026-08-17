@@ -24,11 +24,55 @@ a {
 }
 
 :disabled,
+[aria-disabled="true"],
 [data-disabled],
 [disabled] {
 	cursor: not-allowed;
-	pointer-events: none;
+	// pointer-events: none;
+	transition: none;
 	user-select: none;
 	-webkit-touch-callout: none;
 	-webkit-user-drag: none;
+}
+
+
+/**
+ *	hard-coded token backups
+ *	in case stylesheets fail to inject
+ */
+
+[data-variant^="primary"] {
+	--inkq-background-backup: var(--inkq-color-action-muted);
+	--inkq-border-backup: var(--inkq-color-action-hover);
+	--inkq-color-backup: var(--inkq-color-action);
+}
+
+[data-variant^="secondary"] {
+	--inkq-background-backup: var(--inkq-color-text-muted);
+	--inkq-border-backup: var(--inkq-color-text-hover);
+	--inkq-color-backup: var(--inkq-color-text);
+}
+
+[data-variant^="danger"] {
+	--inkq-background-backup: var(--inkq-color-danger-muted);
+	--inkq-border-backup: var(--inkq-color-danger-hover);
+	--inkq-color-backup: var(--inkq-color-danger);
+}
+
+[data-variant^="warning"] {
+	--inkq-background-backup: var(--inkq-color-warning-muted);
+	--inkq-border-backup: var(--inkq-color-warning-hover);
+	--inkq-color-backup: var(--inkq-color-warning);
+}
+
+[data-variant^="success"] {
+	--inkq-background-backup: var(--inkq-color-success-muted);
+	--inkq-border-backup: var(--inkq-color-success-hover);
+	--inkq-color-backup: var(--inkq-color-success);
+}
+
+[data-variant^="info"] {
+	--inkq-background-backup: var(--inkq-color-info-muted);
+	--inkq-border-backup: var(--inkq-color-info-hover);
+	--inkq-color-backup: var(--inkq-color-info);
 }
