@@ -3,7 +3,6 @@ import {
 	type CSSProperties, type ReactNode,
 } from 'react'
 import { Box, polymorphic, type BoxProps } from '@/components/core/Box'
-// import { setThemeCSS } from '@/lib/theme'
 import { useProps, useStyles, useVariantStyles } from '@/hooks'
 import classes from '../Button.module.scss'
 import type { Button } from '../Button'
@@ -20,12 +19,10 @@ export interface ButtonGroupProps extends BoxProps {
 }
 
 export type ButtonGroupSpecs = {
-	// cssVars: { root: ButtonGroupVars }
 	default: { component: 'div' }
 	props: ButtonGroupProps
 }
 
-// type ButtonVars = ColorVariable<typeof NAME>
 const NAME = 'ButtonGroup' as const
 const PRIORITY_ROLES: Button.Priority[] = ['primary', 'secondary', 'tertiary'] as const
 
@@ -35,19 +32,12 @@ const derivePriority = (index: number): Button.Priority => {
 	return PRIORITY_ROLES[i]
 }
 
-// const cssVars = setThemeCSS<ButtonGroupSpecs>((theme, _props) => {
-// 	return {
-// 		root: {}
-// 	}
-// })
-
 export const ButtonGroup = polymorphic<ButtonGroupSpecs>(_props => {
 	useVariantStyles(NAME)
 	const props = useProps(NAME, _props)
 	const styles = useStyles<ButtonGroupSpecs>({
 		name: NAME,
 		classes,
-		// cssVars,
 		props,
 	})
 
@@ -65,8 +55,8 @@ export const ButtonGroup = polymorphic<ButtonGroupSpecs>(_props => {
 		<Box
 			as={ as }
 			data={ {
-				direction: orientation === 'vertical' && 'vertical',
-				block: !!fullWidth,
+				direction: (orientation === 'vertical' && 'vertical') || null,
+				block: !!fullWidth || null,
 			} }
 			role="group"
 			{ ...styles('root') }

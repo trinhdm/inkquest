@@ -1,9 +1,10 @@
 import { setDefaultProps } from '@/lib/registries'
 
-import type {
-	ComponentType,
-	NamedExoticComponent,
-	ReactNode,
+import {
+	memo,
+	type ComponentType,
+	type NamedExoticComponent,
+	type ReactNode,
 } from 'react'
 
 import type {
@@ -47,6 +48,7 @@ export interface MethodsBase<
 	P = _PolymorphicProps<S>,
 	D = _DefaultComponent<S>
 > {
+	classes?: Record<string, string>
 	setDefaults: (args: D) => D
 	withProps: (props: P) => C
 }
@@ -66,10 +68,14 @@ type _FactoryComponent<S extends Specs> =
 export const factory = <
 	S extends Specs,
 	C extends object = _FactoryComponent<S>
->(target: (props: _FactoryProps<S>) => ReactNode) => {
+>(
+	target: (props: _FactoryProps<S>) => ReactNode,
+	classes?: Record<string, string>
+) => {
 	type FC = _FactoryComponent<S>
+	const BaseComponent = memo(target) as unknown as FC
 
-	const BaseComponent = target as unknown as FC
+	if (classes) BaseComponent.classes = classes
 
 	BaseComponent.setDefaults = (args: _DefaultComponent<S>) => {
 		const { displayName } = BaseComponent
@@ -78,7 +84,7 @@ export const factory = <
 			throw new Error('cannot set defaultProps: missing `displayName`')
 
 		if (args?.props && Object.keys(args.props).length) {
-			const props = { unstyled: false, ...args.props }
+			const props = { unstyled: 'false', ...args.props }
 			setDefaultProps(displayName, props)
 		}
 

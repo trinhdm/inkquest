@@ -20,6 +20,7 @@
 	&:enabled:hover {
 		background-color: var(--button-background-hover, var(--button-background));
 		border-color: var(--button-border-hover, var(--button-border));
+		cursor: pointer;
 	}
 
 	&:where([data-block]) {
@@ -34,9 +35,14 @@
 	&__inner {
 		align-items: center;
 		display: flex;
-		gap: var(--inkq-space-inset-sm);
+		gap: var(--inkq-space-inset-sm) var(--inkq-space-inset-xs);
 		justify-content: center;
 		position: relative;
+	}
+
+	&__section {
+		align-items: center;
+		display: inline-flex;
 	}
 }
 

@@ -1,7 +1,24 @@
 import { getDefaultProps } from '@/lib/registries'
+import { hasValue } from '@/utils/helpers'
+
+type DataAttributes<T extends Record<string, any>> = {
+	[K in keyof T as `data-${string & K}`]: string
+}
+
+export const toDataAttributes = <T extends Record<string, any>>(data: T | undefined) => {
+	if (!data) return {} as DataAttributes<T>
+	const attrs = Object.entries(data)
+
+	return attrs.reduce<DataAttributes<T>>((acc, [key, value]) => {
+		const k = `data-${key}` as keyof DataAttributes<T>
+		if (hasValue(value)) acc[k] = value
+		return acc
+	}, {} as DataAttributes<T>)
+}
 
 type FilteredProps<T extends object> = {
-	[K in keyof T]: T[K] extends undefined ? never : T[K]
+	[K in keyof T]: T[K] extends undefined
+		? never : T[K]
 }
 
 export const filterProps = <T extends object>(
@@ -12,8 +29,13 @@ export const filterProps = <T extends object>(
 		const value = props[key] as FilteredProps<T>[typeof key]
 		let isValid = Object.hasOwn(props, key)
 
-		if (omitEmpty) isValid = isValid && !!value
-		if (isValid) acc[key] = value
+		if (key === 'data' && value) {
+			const dataAttrs = toDataAttributes(value)
+			if (dataAttrs) acc = { ...acc, ...dataAttrs }
+		} else {
+			if (omitEmpty) isValid = isValid && !!value
+			if (isValid) acc[key] = value
+		}
 
 		return acc
 	}, {} as FilteredProps<T>)

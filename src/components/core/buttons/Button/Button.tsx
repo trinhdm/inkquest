@@ -4,10 +4,15 @@ import {
 	ButtonGroup,
 	type ButtonGroupProps, type ButtonGroupSpecs
 } from './ButtonGroup'
+import {
+	ButtonSection,
+	type ButtonSectionProps, type ButtonSectionSpecs,
+} from './ButtonSection'
 import { setThemeCSS, type ColorVariable } from '@/lib/theme'
 import { useProps, useStyles, useVariantStyles } from '@/hooks'
+import { Children, isValidElement, type ReactNode } from 'react'
+import type { ComponentPropsWithoutRef, MouseEventHandler } from 'react'
 import classes from './Button.module.scss'
-import type { ReactNode } from 'react'
 
 type ButtonSize =
 	| 'sm'
@@ -31,20 +36,27 @@ type ButtonVariant =
 
 // type ButtonVars = ColorVariable<typeof NAME>
 
-interface ButtonProps extends BoxProps {
+export type ButtonProps = BoxProps & (LinkButtonProps | NativeButtonProps) & {
 	children: ReactNode
 	disabled?: boolean
 	fullWidth?: boolean
-	href?: string
-	icon?: React.ReactNode | {
-		color?: string
-		name: string
-		position?: 'left' | 'right'
-	}
 	loading?: boolean
 	priority?: ButtonPriority
 	size?: ButtonSize
 	variant?: ButtonVariant
+}
+
+interface LinkButtonProps {
+	href: string
+	onClick?: never
+	rel?: ComponentPropsWithoutRef<'a'>['rel']
+	target?: ComponentPropsWithoutRef<'a'>['target']
+}
+
+interface NativeButtonProps {
+	href?: never
+	onClick?: MouseEventHandler<HTMLButtonElement>
+	type?: ComponentPropsWithoutRef<'button'>['type']
 }
 
 type ButtonSpecs = {
@@ -53,6 +65,7 @@ type ButtonSpecs = {
 	props: ButtonProps
 	subcomponents: {
 		Group: typeof ButtonGroup,
+		Section: typeof ButtonSection,
 	}
 }
 
@@ -66,6 +79,7 @@ const cssVars = setThemeCSS<ButtonSpecs>((theme, _props) => {
 	return {
 		root: {
 			// ...variants,
+			// '--button-height': 36px,		// .button__inner height: 0.5 * --button-height
 			// '--button-pad': `${tokens.space.inset('sm')} ${tokens.space.inset('lg')}`,
 		}
 	}
@@ -86,14 +100,34 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 		children,
 		disabled,
 		fullWidth,
-		href,
 		priority,
 		size,
 		variant,
 		...rest
 	} = props
 
-	const component = (href ? Link : undefined) ?? as
+	const component = Object.hasOwn(rest, 'href') && rest.href
+		? Link : as
+
+	const label: ReactNode[] = []
+	let left: ReactNode = null,
+		right: ReactNode = null
+
+	Children.toArray(children).forEach(child => {
+		if (isValidElement<ButtonSectionProps>((child)) && child.type === ButtonSection) {
+			const isLeft = 'left' in child.props && child.props.left,
+				taken = isLeft ? left : right
+
+			if (!taken) {
+				if (isLeft) left = child
+				else right = child
+			} else if (process.env.NODE_ENV !== 'production') {
+				console.warn(`${NAME}: multiple ${NAME}.Section[${isLeft ? 'left' : 'right'}] found; only the first is rendered.`)
+			} return
+		}
+
+		label.push(child)
+	})
 
 	return (
 		<Box
@@ -102,15 +136,20 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 				variant,
 				priority,
 				disabled,
-				block: !!fullWidth,
+				block: !!fullWidth || null,
 			} }
 			{ ...styles('root') }
 			{ ...rest }
 		>
 			<Box as="span" { ...styles('inner') }>
-				<Box as="span" { ...styles('label') }>
-					{ children }
-				</Box>
+				{ (left || right)
+					? (
+						<>
+							{ left ?? <></> }
+							<Box as="span" { ...styles('label') }>{ label }</Box>
+							{ right ?? <></> }
+						</>
+					) : label }
 			</Box>
 		</Box>
 	)
@@ -118,6 +157,7 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 
 Button.displayName = NAME
 Button.Group = ButtonGroup
+Button.Section = ButtonSection
 
 Button.setDefaults({
 	props: {
@@ -138,5 +178,10 @@ export declare namespace Button {
 	export namespace Group {
 		export type Props = ButtonGroupProps
 		export type Specs = ButtonGroupSpecs
+	}
+
+	export namespace Section {
+		export type Props = ButtonSectionProps
+		export type Specs = ButtonSectionSpecs
 	}
 }

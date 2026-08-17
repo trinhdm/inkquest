@@ -9,7 +9,9 @@ export const keyWithValue = <
 	K extends keyof T = keyof T,
 	V = T[K],
 	Target extends T = T,
->(entry: [K, V] | K, obj: T): obj is Target => {
+>(entry: [K, V] | K, obj?: T): obj is Target => {
+	if (!isObject(obj)) return false
+
 	let key = entry as K, value
 	const hasValue = Array.isArray(entry)
 

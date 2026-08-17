@@ -21,6 +21,7 @@ type PolymorphicSpec<
 	// V = S['props'] extends { variant?: infer PV } ? PV : never,
 > = Specs<K, S['props']>
 	& ExtendedSpecs<S> & {
+			subcomponents?: S['subcomponents']
 			variant?: S['props'] extends { variant?: infer VP }
 				? VP extends string
 					? Exclude<VP, undefined>
@@ -39,7 +40,10 @@ export type PolymorphicSpecs<S extends ValidSpecs<S>> =
 const polymorphicFactory = <
 	SC extends ValidSpecs<SC>,
 	S extends PolymorphicSpec<SC> = PolymorphicSpec<SC>
->(target: Parameters<typeof factory<S>>[0]) => {
+>(
+	target: Parameters<typeof factory<S>>[0],
+	classes?: Record<string, string>
+) => {
 	type C = ValueOf<S, 'component'>
 	type P<T> = PolymorphicProps<T, ValueOf<S, 'props'>>
 
@@ -54,7 +58,7 @@ const polymorphicFactory = <
 		& _Methods
 		& _Properties
 
-	return factory<S, PolymorphicComponent>(target)
+	return factory<S, PolymorphicComponent>(target, classes)
 }
 
 type _TopExcessKeys<S> =
@@ -75,8 +79,11 @@ export const polymorphic = <
 	SC extends ValidSpecs<SC>,
 	T extends typeof polymorphicFactory<SC> = typeof polymorphicFactory<SC>,
 	P extends Parameters<T>[0] = Parameters<T>[0],
->(target: P & _ExcessMarker<SC>) =>
-	polymorphicFactory<SC>(target as P)
+>(
+	target: P & _ExcessMarker<SC>,
+	classes?: Record<string, string>
+) =>
+	polymorphicFactory<SC>(target as P, classes)
 
 
 

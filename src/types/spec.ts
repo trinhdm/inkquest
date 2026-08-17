@@ -24,6 +24,7 @@ export interface Specs<
 	attributes?: Record<string, unknown>
 	cssVars?: CSSVars
 	ctx?: unknown
+	data?: Record<string, unknown>
 	default?: (
 			T extends TagName
 				? { component?: T }
@@ -34,7 +35,7 @@ export interface Specs<
 	is?: Partial<Record<_SpecOptions, boolean>>
 	props: P
 	ref?: Ref<T extends TagName ? HTMLElementTagNameMap[T] : unknown>
-	subcomponents?: Record<string, unknown>
+	subcomponents?: Record<string, unknown>		// move this to compound/root
 	variant?: string
 }
 
@@ -43,9 +44,14 @@ export type InferComponentSpec<S> =
 		? K
 		: unknown
 
-export type ValidSpecs<S> =
-	Specs<InferComponentSpec<S>>
+type InferPropsSpec<S> =
+	S extends { props: infer P extends object }
+		? P
+		: object
 
+export type ValidSpecs<S> =
+	Specs<InferComponentSpec<S>, InferPropsSpec<S>>
+	// Specs<InferComponentSpec<S>>
 
 export type PolymorphicSpec<S extends Specs> = {
 	as?: unknown extends InferComponentSpec<S> ? ElementType : InferComponentSpec<S>
@@ -55,7 +61,6 @@ export type InferDefaultProps<S extends Specs> =
 	Partial<S['props']>
 	& PolymorphicSpec<S>
 	& DataAttrs
-
 
 type _InferredDefault<S extends Specs> = (
 		InferComponentSpec<S> extends TagName ? {
@@ -107,6 +112,7 @@ type _RootSpec<V, P> =
 type _Attributes<P,> = _RootSpec<Record<string, unknown>, P>
 type _ClassNames<P,> = _RootSpec<ClassValue, P>
 type _CssVariables<P,> = _RootSpec<CSSVars, P>
+type _DataAttributes<P,> = _RootSpec<Record<string, unknown>, P>
 type _Styles<P,> = _RootSpec<CSSProperties, P>
 type _Unstyled<P,> = _RootSpec<boolean, P>
 type _Variant<P,> = _RootSpec<string, P>
@@ -115,6 +121,7 @@ export interface SpecStructure<P = { is: { compound: false } }> {
 	attributes?: _Attributes<P>
 	classNames?: _ClassNames<P>
 	cssVars?: _CssVariables<P>
+	data?: _DataAttributes<P>
 	styles?: _Styles<P>
 	unstyled?: _Unstyled<P>
 	variant?: _Variant<P>

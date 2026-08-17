@@ -1,8 +1,8 @@
 import cx from 'clsx'
-import { toPolymorphic, type PolymorphicProps } from './Polymorphic'
-import { useTheme } from '@/providers/ThemeProvider'
-import type { ReactNode } from 'react'
+// import { useTheme } from '@/providers/ThemeProvider'
 import { filterProps } from '@/hooks/useProps'
+import { toPolymorphic, type PolymorphicProps } from './Polymorphic'
+import type { ReactNode } from 'react'
 
 export interface BoxProps {
 	children?: ReactNode
@@ -15,15 +15,16 @@ export const Box = toPolymorphic((_props: PolymorphicProps<'div', BoxProps>) => 
 		attributes,
 		classNames,
 		styles,
+		unstyled,
 		...rest
 	} = _props
 
-	const theme = useTheme()
 	const Element = as || 'div'
+	// const theme = useTheme()
 
 	const props = filterProps({
-		...attributes,
 		className: cx(classNames),
+		...attributes,
 		style: styles,
 		...rest
 	}, true)
