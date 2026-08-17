@@ -1,5 +1,5 @@
 import { formatToken, getShorthand } from '../format'
-import { isFontShorthandMatch, labelStep, toEntry } from './utils'
+import { isFontShorthandMatch, labelStep, toEntry, validate } from './utils'
 import { isObject } from '@/utils/helpers'
 import { rem } from '@/lib/general'
 import type { GeneratorStrategy } from './types'
@@ -29,8 +29,10 @@ const shorthandStrategy: GeneratorStrategy<Record<string, unknown>> = {
 
 const arrayStrategy: GeneratorStrategy<unknown[]> = {
 	matches: ({ value }) => Array.isArray(value),
-	run: ({ path, prefix, value }) =>
-		value.flatMap((v, i) => {
+	run: ({ path, prefix, value }) => {
+		const is = validate()
+
+		return value.flatMap((v, i) => {
 			let output = v,
 				step = labelStep(i, v)
 
@@ -38,7 +40,10 @@ const arrayStrategy: GeneratorStrategy<unknown[]> = {
 				if (path[0].toLowerCase().includes('size')) {
 					step = `${v}`
 					output = rem(v)
-				} else if (v > 0 && v % 100 === 0) {
+				} else if (is.percent(v)) {
+					const label = is.integer(v) ? v : 100 * v
+					step = `${label}`
+				} else if (is.weight(v)) {
 					step = `${v}`
 				} else {
 					output = rem(v)
@@ -50,6 +55,7 @@ const arrayStrategy: GeneratorStrategy<unknown[]> = {
 
 			return toEntry({ name, value: output })
 		})
+	}
 }
 
 const scaleStrategy: GeneratorStrategy<number> = {

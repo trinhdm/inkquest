@@ -3,7 +3,8 @@ import type { PaddedIndexLabels, ThemeColor } from '../types'
 import type {
 	FONT_FAMILY_SCALE, FONT_SIZE_SCALE, FONT_WEIGHT_SCALE,
 	LINE_HEIGHT_SCALE, TRACKING_SCALE,
-	DURATION_SCALE, EASE_SCALE, RADIUS_SCALE,
+	DURATION_SCALE, EASE_SCALE,
+	OPACITY_SCALE, RADIUS_SCALE,
 	SCREEN_SIZE_SCALE,
 } from '../scales'
 
@@ -50,9 +51,10 @@ export const primitiveTokens = {
 
 	// small scale — step label = zero-padded position ('01'..'05')
 	radius: token.path<PaddedIndexLabels<typeof RADIUS_SCALE>>(baseVar, 'radius'),
+	opacity: token.path<`${typeof OPACITY_SCALE[number]}`>(baseVar, 'opacity'),
 
 	duration: token.path<keyof typeof DURATION_SCALE>(baseVar, 'duration'),
-	ease: token.optPath<keyof typeof EASE_SCALE>(baseVar, 'ease'),
+	easing: token.optPath<keyof typeof EASE_SCALE>(baseVar, 'easing'),
 }
 
 /** The shape useTheme() exposes to components — see SiteTheme.alias in theme.types.ts. */

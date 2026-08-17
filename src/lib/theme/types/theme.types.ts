@@ -48,6 +48,7 @@ export interface SiteTheme {
 	duration: Style<'transitionDuration', ThemeDuration, 'default'>
 	easing: Style<'transitionTimingFunction', ThemeEasing, BaseVarKey>
 
+	opacity: number[]
 	radius: number[]
 	screenSize: number[]
 	// containerSize: {}
@@ -88,9 +89,6 @@ type ThemeEasing =
 	| 'in'
 	| 'out'
 	| 'inOut'
-
-type ThemeEasingValues =
-	CSSProperties['transitionTimingFunction'] | `cubic-bezier(${string})`
 
 type StyleList<
     Keys extends PropertyKey,

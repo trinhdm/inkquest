@@ -34,3 +34,13 @@ export const isFontShorthandMatch = (value: unknown): value is Record<string, un
 
 export const toEntry = ({ name, value }: Pick<TokenEntry, 'name'> & { value: unknown }): TokenEntry[] =>
 	(!name || isSkippable(value)) ? [] : [{ name, value: String(value) }]
+
+
+export const validate = () => {
+	type N = number
+	return {
+		integer: (num: N) => num % 1 === 0,
+		percent: (num: N) => num >= 0 && num <= 1,
+		weight: (num: N) => num > 0 && num % 100 === 0,
+	}
+}

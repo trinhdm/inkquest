@@ -7,7 +7,8 @@ const COLOR_SCHEMES = Object.keys(THEME_CONFIGS) as ColorScheme[]
 type SchemeTokenList<K extends ColorScheme = ColorScheme> = Pick<ThemeTokens, K>
 
 const buildThemeTokens = <K extends ColorScheme>(
-	config: ThemeConfig, prefix?: string
+	config: ThemeConfig,
+	prefix?: string
 ): SchemeTokenList<K>[K] => {
 	const tokens = {
 		theme: config.name,
@@ -26,6 +27,7 @@ const buildStaticTokens = <K extends keyof ThemeTokens>(
 	const tokens = {
 		font: Tokens.typography(),
 		space: Tokens.space(),
+		opacity: Tokens.opacity(),
 		pad: Tokens.padding(),
 		border: {
 			radius: Tokens.border.radius(),

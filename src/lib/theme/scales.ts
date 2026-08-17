@@ -98,3 +98,5 @@ export const CONTAINER_SIZE_SCALE = {
 	md: 1136,
 	lg: 1200,
 }
+
+export const OPACITY_SCALE = [ 0, .2, .35, .5, .65, .8, 1 ] as const

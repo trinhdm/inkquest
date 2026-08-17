@@ -2,7 +2,7 @@ import { aliasVar, token } from './utils'
 import type {
 	AccentTokens, BackgroundTokens,
 	BorderColorTokens, BorderRadiusTokens, ColorTokens,
-	SpaceTokens, TypographyTokens
+	SpaceTokens, TypographyTokens,
 } from '../tokens'
 
 const themeTokens = {
@@ -21,6 +21,7 @@ const propertyTokens = {
 	fontSize: token.path<TypographyTokens['fontSize']>(aliasVar, 'font', 'size'),
 	fontWeight: token.path<TypographyTokens['fontWeight']>(aliasVar, 'font', 'weight'),
 	lineHeight: token.path<TypographyTokens['lineHeight']>(aliasVar, 'font', 'lineHeight'),
+	letterSpacing: token.path<TypographyTokens['lineHeight']>(aliasVar, 'font', 'tracking'),
 
 	transition: {
 		background: token.endPath(aliasVar, 'motion', 'background'),
@@ -50,6 +51,9 @@ export const semanticTokens = {
 		title: token.endPath(aliasVar, 'font', 'title'),
 		body: token.endPath(aliasVar, 'font', 'body'),
 		label: token.endPath(aliasVar, 'font', 'label'),
+	},
+	opacity: {
+		disabled: token.endPath(aliasVar, 'opacity', 'disabled'),
 	},
 	space: {
 		inset: token.path<SpaceTokens['inset']>(aliasVar, 'space', 'inset'),

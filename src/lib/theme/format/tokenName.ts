@@ -9,19 +9,19 @@ export interface CSSVarArgs<T> {
 	value?: T
 }
 
-const FONT_PART_INDEX = {
-	family: 1,
-	// size: 0,
-	weight: 0,
-} as const
+// const FONT_PART_INDEX = {
+// 	family: 1,
+// 	// size: 0,
+// 	weight: 0,
+// } as const
 
-const formatFontName = (name: string) => {
-	const parts = name.split('-'),
-		index = FONT_PART_INDEX[parts[1] as keyof typeof FONT_PART_INDEX]
-	return typeof index === 'number'
-		? parts.toSpliced(index, 1).join('-')
-		: name
-}
+// const formatFontName = (name: string) => {
+// 	const parts = name.split('-'),
+// 		index = FONT_PART_INDEX[parts[1] as keyof typeof FONT_PART_INDEX]
+// 	return typeof index === 'number'
+// 		? parts.toSpliced(index, 1).join('-')
+// 		: name
+// }
 
 const formatName = <T,>({ path }: CSSVarArgs<T>): string => {
 	let name = toKebabCase(path[0])
@@ -32,8 +32,8 @@ const formatName = <T,>({ path }: CSSVarArgs<T>): string => {
 	// if (_is.Plural(name))
 	// 	name = name.slice(0, -1)
 
-	if (_is.Verb(name))
-		name = name.replace('ing', 'e')
+	// if (_is.Verb(name))
+	// 	name = name.replace('ing', 'e')
 
 	return name
 }
@@ -43,7 +43,13 @@ const formatRoute = <T,>({ path }: CSSVarArgs<T>): CSSVarArgs<T>['path'] => {
 	let route = path
 
 	route = route.flatMap(str => {
-		const part = toKebabCase(str)
+		let part = toKebabCase(str)
+
+		if (part.includes('.')) {
+			const step = parseFloat(part)
+			if (typeof step === 'number' && step < 100)
+				part = `${step * 100}`
+		}
 
 		if (route.length > 2 && part.includes('-'))
 			return [...part.split('-')]

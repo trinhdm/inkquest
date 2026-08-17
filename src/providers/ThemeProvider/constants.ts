@@ -2,8 +2,8 @@ import {
 	BASE_SCALE, COLOR_TOKENS,
 	FONT_FAMILY_SCALE, FONT_SIZE_SCALE, FONT_WEIGHT_SCALE,
 	LINE_HEIGHT_SCALE, TRACKING_SCALE,
-	DURATION_SCALE, EASE_SCALE, RADIUS_SCALE,
-	SCREEN_SIZE_SCALE,
+	DURATION_SCALE, EASE_SCALE, OPACITY_SCALE,
+	RADIUS_SCALE, SCREEN_SIZE_SCALE,
 	getVariantColors, paintVariants, tokens,
 	type SiteTheme,
 } from '@/lib/theme'
@@ -31,8 +31,11 @@ export const DEFAULT_THEME: SiteTheme = {
 	duration: DURATION_SCALE,
 	easing: EASE_SCALE,
 
+	opacity: [...OPACITY_SCALE],
+
 	screenSize: [...SCREEN_SIZE_SCALE],
 	// width: [ 1200 ],
+
 
 	// breakpoints: {
 	// 	xs: rem(360),
