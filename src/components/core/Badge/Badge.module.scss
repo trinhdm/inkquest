@@ -1,0 +1,27 @@
+.inkq-Badge {
+	align-items: center;
+	background-color: var(--badge-background);
+    border: 1px solid var(--badge-border);
+	border-radius: var(--inkq-border-radius-control);
+	color: var(--badge-color);
+	display: inline-flex;
+	font: var(--inkq-font-control);
+	justify-content: center;
+	letter-spacing: .075em;
+	padding: var(--inkq-pad-chip);
+	text-transform: uppercase;
+	white-space: nowrap;
+
+	&__inner {
+		align-items: center;
+		display: flex;
+		gap: var(--inkq-space-inset-sm);
+		justify-content: center;
+		position: relative;
+	}
+
+	&:where([data-block]) {
+		display: block;
+		width: 100%;
+	}
+}
