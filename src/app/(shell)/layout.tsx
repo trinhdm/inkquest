@@ -1,9 +1,16 @@
 import { AppProvider } from '@/providers/AppProvider'
-import { StyleInliner } from '@/components/document/StyleInliner'
+import { StyleInliner, VariantStyleInliner } from '@/components/document'
 
 export default function ShellLayout({ children }: { children: React.ReactNode }) {
+	const VariableStyles = (
+		<>
+			<StyleInliner />
+			<VariantStyleInliner names={ ['Button', 'Badge'] } />
+		</>
+	)
+
 	return (
-		<AppProvider themeStyles={ <StyleInliner /> }>
+		<AppProvider themeStyles={ VariableStyles }>
 			{ children }
 		</AppProvider>
 	)

@@ -188,3 +188,41 @@ export const paintVariants = <S extends ValidSpecs<S>, N extends string>(
 
 	return variables
 }
+
+
+export interface VariantPaletteEntry {
+	variant: Variant
+	priority?: Priority
+	palette: Partial<VariantTokens>
+}
+
+const combinePalettes = (palette: Partial<VariantTokens>) =>
+	deepMerge(DEFAULT_PALETTE, palette)
+
+export const enumerateVariantPalettes = (): VariantPaletteEntry[] => {
+	const semanticTones = ['danger', 'warning', 'success', 'info'] as const
+	const priorities = ['primary', 'secondary', 'tertiary'] as const
+
+	const semantic = semanticTones.flatMap(tone =>
+		priorities.map(priority => ({
+			variant: tone as Variant,
+			priority,
+			palette: combinePalettes(PRIORITY_SHAPES[priority](TONE_ACCESSORS[tone])),
+		}))
+	)
+
+	const structural = (Object.keys(STRUCTURAL_VARIANTS) as (keyof typeof STRUCTURAL_VARIANTS)[]).map(variant => ({
+		variant: variant as Variant,
+		palette: combinePalettes(PRIORITY_SHAPES[STRUCTURAL_VARIANTS[variant]](
+			TONE_ACCESSORS[variant === 'solid' ? 'action' : 'neutral']
+		)),
+	}))
+
+	const special = (Object.keys(SPECIAL_VARIANTS) as (keyof typeof SPECIAL_VARIANTS)[]).map(variant => ({
+		variant: variant as Variant,
+		palette: combinePalettes(SPECIAL_VARIANTS[variant](TONE_ACCESSORS.action)),
+	}))
+
+	return [...semantic, ...structural, ...special]
+}
+

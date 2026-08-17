@@ -1,5 +1,5 @@
 import { Archivo, Archivo_Black, Space_Mono } from 'next/font/google'
-import { ScriptInjector } from '@/components/document/ScriptInjector'
+import { ScriptInjector } from '@/components/document'
 import type { Metadata } from 'next'
 import '@/styles/_global.scss'
 
