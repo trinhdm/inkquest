@@ -39,3 +39,21 @@
 		position: relative;
 	}
 }
+
+.inkq-ButtonGroup {
+	display: flex;
+	gap: var(--inkq-space-inset-sm);
+	max-width: fit-content;
+	padding-block: var(--inkq-space-inset-sm);
+
+	&:where([data-direction="vertical"]) {
+		flex-direction: column;
+	}
+
+	&:where([data-block]) {
+		flex: 1 1 100%;
+		justify-content: space-between;
+		max-width: none;
+		width: 100%;
+	}
+}
