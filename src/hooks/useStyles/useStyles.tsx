@@ -9,10 +9,10 @@ import type { ValidSpecs } from '@/types/spec'
 
 interface StyleOptions<S extends ValidSpecs<S>> {
 	readonly classes?: Record<string, string>
-	cssVars?: ThemeCSSConfig<S>
 	name?: string
 	prefix?: string
 	props: S['props']
+	tokens?: ThemeCSSConfig<S>
 	// unstyled?: boolean
 }
 
@@ -62,7 +62,7 @@ export const useStyles = <S extends ValidSpecs<S>>(
 			const check = {
 				isRoot: selector === ROOT_SELECTOR,
 				isUnstyled: Object.hasOwn(opts.props, 'unstyled')
-					&& (opts.props as Record<'unstyled', unknown>).unstyled === "true"
+					&& !!(opts.props as Record<'unstyled', unknown>).unstyled
 			}
 
 			const args = { ...base, check, config, selector } as SharedConfig<S>
@@ -76,5 +76,5 @@ export const useStyles = <S extends ValidSpecs<S>>(
 			return values
 		}) as StyleConfig<S>
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [hasOpts, opts.name, opts.classes, opts.cssVars, opts.props])
+	}, [hasOpts, opts.name, opts.classes, opts.tokens, opts.props])
 }

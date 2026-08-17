@@ -106,7 +106,7 @@ const buildSections = (children: ReactNode, styles: Styles) => {
 	)
 }
 
-const cssVars = setThemeCSS<ButtonSpecs>((theme, _props) => {
+const tokens = setThemeCSS<ButtonSpecs>((theme, _props) => {
 	// const colors = theme.getVariantColors({ theme, ..._props })
 	// // const { tokens } = theme
 	// console.log({ colors })
@@ -126,8 +126,8 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 	const styles = useStyles<ButtonSpecs>({
 		name: NAME,
 		classes,
-		cssVars,
 		props,
+		tokens,
 	})
 
 	const {
