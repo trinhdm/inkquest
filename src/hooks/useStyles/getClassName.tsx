@@ -7,7 +7,6 @@ const getBaseClass = <S extends ValidSpecs<S>>(
 ) => {
 	if (!name) return
 	let baseName = name
-	// let baseName = toKebabCase(name).slice(1)
 
 	if (prefix) baseName = `${prefix}-${baseName}`
 	if (selector !== 'root') baseName += `__${selector}`
@@ -15,45 +14,16 @@ const getBaseClass = <S extends ValidSpecs<S>>(
 	return baseName
 }
 
-const resolvePropClass = <S extends ValidSpecs<S>>(
-	{ classes, props }: SharedConfig<S>
-) => {
-	if (!classes) return
-	const classList = new Set<string>(),
-		entries = Object.entries(props)
+export const getClassName = <S extends ValidSpecs<S>>(
+	options: SharedConfig<S>
+): string => {
+	const { check, classes } = options
+	if (check.isUnstyled) return ''
 
-	entries.forEach(([k, v]) => classList.add(classes[`${k}--${v}`]))
+	const baseClass = getBaseClass(options)
+	if (!baseClass) return ''
 
-	return cx([...classList])
-}
-
-const resolveSelectorClass = <S extends ValidSpecs<S>,>(
-	options: SharedConfig<S>,
-	baseClass?: string
-) => {
-	if (!baseClass) return
-	const { classes } = options,
-		classList = new Set<string>([baseClass])
-
-	if (!!classes) classList.add(classes[baseClass])
-
-	return cx([...classList])
-}
-
-export const getClassName = <S extends ValidSpecs<S>>(options: SharedConfig<S>): string => {
-	const { check } = options
-
-	const baseClass = getBaseClass(options),
-		propClass = resolvePropClass(options),
-		selectorClass = resolveSelectorClass(options, baseClass)
-
-	if (check.isUnstyled) return cx(baseClass)
-
-	const className = cx(selectorClass, {
-		[`${propClass}`]: check.isRoot,
-	})
-
-	return className
+	return cx(baseClass, classes?.[baseClass])
 }
 
 
