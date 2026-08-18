@@ -17,13 +17,8 @@ import type {
 type _PolymorphicProps<S extends Specs> =
 	S['props']
 	& PolymorphicSpec<S>
-	// & PickStartsWith<PolymorphicProps<InferComponentSpec<S>, S['props']>, 'on'>
-
-// type Test<S extends Specs, P1> =
-// 	OverrideProps<_PolymorphicProps<S>, Pick<S, 'attributes' | 'id' | 'ref'>>
 
 type _FactoryProps<S extends Specs> =
-	// Pick<S, 'ref'>
 	& Pick<S, 'attributes' | 'id' | 'ref'>
 	& _PolymorphicProps<S>
 	// & PickStartsWith<PolymorphicProps<InferComponentSpec<S>, S['props']>, 'on'>
@@ -35,8 +30,6 @@ type _DefaultComponent<S extends Specs, P = InferDefaultProps<S>> = {
 			? unknown extends InferComponentSpec<S>
 				? Required<Pick<P, 'as'>>
 				: Pick<P, 'as'>
-				// ? Pick<P, 'as'>
-				// : Required<Pick<P, 'as'>>
 			: never
 		)
 }

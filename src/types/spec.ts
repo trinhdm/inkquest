@@ -1,15 +1,7 @@
-// import type {
-// 	ChangeEventHandler,
-// 	FocusEventHandler,
-// 	KeyboardEventHandler,
-// 	MouseEventHandler,
-// } from 'react'
-
 import type { CSSProperties, ElementType, Ref } from 'react'
 import type { ClassValue } from 'clsx'
 import type { CSSVars, DataAttrs } from './shared/html'
 
-// export type TagName = keyof HTMLElementTagNameMap
 export type TagName =
 	| keyof HTMLElementTagNameMap
 	| keyof SVGElementTagNameMap
@@ -138,23 +130,3 @@ export interface SpecStructure<P = { is: { compound: false } }> {
 	unstyled?: _Unstyled<P>
 	variant?: _Variant<P>
 }
-
-
-// type _Handler<T = unknown> = (...args: T[]) => unknown
-
-// export interface EventHandlers<
-// 	N extends ValidElement,
-// 	T = N extends TagName ? HTMLElementTagNameMap[N] : Element
-// > {
-// 	onBlur?: FocusEventHandler<T>
-// 	// onChange?: ChangeEventHandler<T>
-// 	onClick?: MouseEventHandler<T>
-// 	onFocus?: FocusEventHandler<T>
-// 	onKeyDown?: KeyboardEventHandler<T>
-// 	// onMouseDown?: MouseEventHandler<T>
-// 	// onMouseEnter?: MouseEventHandler<T>
-// 	// onMouseOut?: MouseEventHandler<T>
-// 	// onMouseOver?: MouseEventHandler<T>
-// 	// onMouseUp?: MouseEventHandler<T>
-// }
-
