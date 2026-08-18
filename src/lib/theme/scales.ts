@@ -54,9 +54,9 @@ export const FONT_FAMILY_SCALE = {
 	sans: `'Archivo', -apple-system, BlinkMacSystemFont, sans-serif`,
 } as const
 
-export const FONT_SIZE_SCALE = [10, 12, 14, 16, 20, 24, 32, 48, 96] as const
+export const FONT_SIZE_SCALE = [ 10, 12, 14, 16, 20, 24, 32, 48, 96 ] as const
 
-export const FONT_WEIGHT_SCALE = [400, 600, 700] as const
+export const FONT_WEIGHT_SCALE = [ 400, 600, 700 ] as const
 
 export const LINE_HEIGHT_SCALE = {
 	exact:	1,
@@ -75,7 +75,7 @@ export const TRACKING_SCALE = {
 	xxl:	'0.1em',
 } as const
 
-export const RADIUS_SCALE = [0, 6, 8, 12, 999] as const
+export const RADIUS_SCALE = [ 0, 6, 8, 12, 999 ] as const
 
 export const DURATION_SCALE = {
 	instant:	'.1s',
@@ -86,12 +86,17 @@ export const DURATION_SCALE = {
 } as const
 
 export const EASE_SCALE = {
-	base: 'cubic-bezier(0.4, 0, 0.2, 1)',
-	out: 'cubic-bezier(0.16, 1, 0.3, 1)',
-	inOut: 'cubic-bezier(0.65, 0, 0.35, 1)',
+	base:	'cubic-bezier(0.4, 0, 0.2, 1)',
+	out:	'cubic-bezier(0.16, 1, 0.3, 1)',
+	inOut:	'cubic-bezier(0.65, 0, 0.35, 1)',
 } as const
 
-export const SCREEN_SIZE_SCALE = [ 360, 768, 1080, 1280, 1440, 1920 ] as const
+export const SCREEN_SCALE = [
+	320, 480,
+	768, 1024,
+	1280, 1440,
+	1536, 1920,
+] as const
 
 export const CONTAINER_SIZE_SCALE = {
 	sm: 1040,
@@ -100,3 +105,5 @@ export const CONTAINER_SIZE_SCALE = {
 }
 
 export const OPACITY_SCALE = [ 0, .2, .35, .5, .65, .8, 1 ] as const
+
+//	shadows (elevation)

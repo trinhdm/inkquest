@@ -35,7 +35,7 @@ interface LineHeightTokens {
 }
 
 export interface FontPropertyTokens {
-	fontFamily: FontFamilyTokens
+	fontFamily: FontFamilyTokens		// font stack tokens?
 	fontSize: FontSizeTokens
 	fontWeight: FontWeightTokens
 	lineHeight: LineHeightTokens

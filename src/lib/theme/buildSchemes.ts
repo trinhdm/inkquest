@@ -27,6 +27,8 @@ const buildStaticTokens = <K extends keyof ThemeTokens>(
 	const tokens = {
 		font: Tokens.typography(),
 		space: Tokens.space(),
+		breakpoint: Tokens.breakpoint(),
+		container: Tokens.container(),
 		opacity: Tokens.opacity(),
 		pad: Tokens.padding(),
 		border: {

@@ -16,7 +16,6 @@ export interface ElementTokens {
 		md: string
 		lg: string
 	}
-	container: string
 }
 
 export const getElementTokens = (): ElementTokens => ({
@@ -36,5 +35,4 @@ export const getElementTokens = (): ElementTokens => ({
 		lg: base.size('40'),
 		// xl: base.size('56'),
 	},
-	container: base.screenSize('1280'),
 })

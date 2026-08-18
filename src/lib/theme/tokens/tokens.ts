@@ -9,8 +9,10 @@ import { getTypographyTokens } from './typography'
 export const Tokens = {
 	accent: getAccentTokens,
 	background: getBackgroundTokens,
+	breakpoint: getLayoutTokens.breakpoint,
 	border: getBorderTokens,
 	color: getColorTokens,
+	container: getLayoutTokens.container,
 	element: getLayoutTokens.element,
 	motion: getMotionTokens,
 	opacity: getOpacityTokens,

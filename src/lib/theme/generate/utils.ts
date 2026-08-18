@@ -40,7 +40,7 @@ export const validate = () => {
 	type N = number
 	return {
 		integer: (num: N) => num % 1 === 0,
-		percent: (num: N) => num >= 0 && num <= 1,
+		percent: (num: N) => num > 0 && num <= 1,
 		weight: (num: N) => num > 0 && num % 100 === 0,
 	}
 }

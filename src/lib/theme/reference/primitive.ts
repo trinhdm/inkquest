@@ -5,7 +5,7 @@ import type {
 	LINE_HEIGHT_SCALE, TRACKING_SCALE,
 	DURATION_SCALE, EASE_SCALE,
 	OPACITY_SCALE, RADIUS_SCALE,
-	SCREEN_SIZE_SCALE,
+	SCREEN_SCALE,
 } from '../scales'
 
 const baseColorTokens = {
@@ -47,7 +47,7 @@ export const primitiveTokens = {
 	...baseColorTokens,
 	...baseFontTokens,
 
-	screenSize: token.path<`${typeof SCREEN_SIZE_SCALE[number]}`>(baseVar, 'screenSize'),
+	screen: token.path<`${typeof SCREEN_SCALE[number]}`>(baseVar, 'screenSize'),
 
 	// small scale — step label = zero-padded position ('01'..'05')
 	radius: token.path<PaddedIndexLabels<typeof RADIUS_SCALE>>(baseVar, 'radius'),

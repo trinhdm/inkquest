@@ -2,7 +2,7 @@ import { aliasVar, token } from './utils'
 import type {
 	AccentTokens, BackgroundTokens,
 	BorderColorTokens, BorderRadiusTokens, ColorTokens,
-	SpaceTokens, TypographyTokens,
+	LayoutTokens, SpaceTokens, TypographyTokens,
 } from '../tokens'
 
 const themeTokens = {
@@ -37,6 +37,8 @@ export const semanticTokens = {
 		page: token.endPath(aliasVar, 'background', 'page'),
 		card: token.optPath<BackgroundTokens['card']>(aliasVar, 'background', 'card'),
 	},
+	breakpoint: token.path<ReturnType<LayoutTokens['breakpoint']>>(aliasVar, 'breakpoint'),
+	container: token.path<ReturnType<LayoutTokens['container']>>(aliasVar, 'container'),
 	color: {
 		text: token.optPath<ColorTokens['text']>(aliasVar, 'color', 'text'),
 		link: token.optPath<ColorTokens['link']>(aliasVar, 'color', 'link'),
