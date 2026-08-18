@@ -9,7 +9,17 @@ import type { CSSProperties, ElementType, Ref } from 'react'
 import type { ClassValue } from 'clsx'
 import type { CSSVars, DataAttrs } from './shared/html'
 
-export type TagName = keyof HTMLElementTagNameMap
+// export type TagName = keyof HTMLElementTagNameMap
+export type TagName =
+	| keyof HTMLElementTagNameMap
+	| keyof SVGElementTagNameMap
+
+export type TagElement<T> =
+	T extends keyof HTMLElementTagNameMap
+		? HTMLElementTagNameMap[T]
+		: T extends keyof SVGElementTagNameMap
+			? SVGElementTagNameMap[T]
+			: unknown
 
 type _SpecOptions =
 	| 'compound'					// compound components cannot have styles
@@ -34,7 +44,7 @@ export interface Specs<
 	id?: string
 	is?: Partial<Record<_SpecOptions, boolean>>
 	props: P
-	ref?: Ref<T extends TagName ? HTMLElementTagNameMap[T] : unknown>
+	ref?: Ref<TagElement<T>>
 	subcomponents?: Record<string, unknown>		// move this to compound/root
 	variant?: string
 }
@@ -54,7 +64,9 @@ export type ValidSpecs<S> =
 	// Specs<InferComponentSpec<S>>
 
 export type PolymorphicSpec<S extends Specs> = {
-	as?: unknown extends InferComponentSpec<S> ? ElementType : InferComponentSpec<S>
+	as?: unknown extends InferComponentSpec<S>
+		? ElementType
+		: InferComponentSpec<S>
 }
 
 export type InferDefaultProps<S extends Specs> =
@@ -65,7 +77,7 @@ export type InferDefaultProps<S extends Specs> =
 type _InferredDefault<S extends Specs> = (
 		InferComponentSpec<S> extends TagName ? {
 			component: InferComponentSpec<S>
-			ref: HTMLElementTagNameMap[InferComponentSpec<S>]
+			ref: TagElement<InferComponentSpec<S>>
 		} : {
 			component?: never
 			ref?: never

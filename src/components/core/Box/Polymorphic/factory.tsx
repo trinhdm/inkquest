@@ -33,8 +33,10 @@ type _DefaultComponent<S extends Specs, P = InferDefaultProps<S>> = {
 	props?: P & (
 		'as' extends keyof P
 			? unknown extends InferComponentSpec<S>
-				? Pick<P, 'as'>
-				: Required<Pick<P, 'as'>>
+				? Required<Pick<P, 'as'>>
+				: Pick<P, 'as'>
+				// ? Pick<P, 'as'>
+				// : Required<Pick<P, 'as'>>
 			: never
 		)
 }
@@ -84,7 +86,7 @@ export const factory = <
 			throw new Error('cannot set defaultProps: missing `displayName`')
 
 		if (args?.props && Object.keys(args.props).length) {
-			const props = { unstyled: 'false', ...args.props }
+			const props = { unstyled: false, ...args.props }
 			setDefaultProps(displayName, props)
 		}
 
