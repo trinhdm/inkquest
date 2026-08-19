@@ -1,7 +1,6 @@
 import {
 	Children, cloneElement, Fragment, isValidElement,
-	type ComponentType,
-	type CSSProperties, type ReactElement, type ReactNode,
+	type ComponentType, type CSSProperties, type ReactNode,
 } from 'react'
 import { Box, polymorphic, type BoxProps } from '@/components/core/Box'
 import { useProps, useStyles, useVariantStyles } from '@/hooks'
@@ -28,19 +27,21 @@ export type ButtonGroupSpecs = {
 	props: ButtonGroupProps
 }
 
-type Props = Pick<ButtonGroupProps, 'children' | 'disabled' | 'hasPriority'>
+type Props = ButtonGroupProps
 
 const childrenWithProps = (
-	{ children, disabled, hasPriority }: Props
-): ReturnType<typeof cloneElement<Button.Props>>[] => (
-	Children.map(children, (child, index) => {
+	parentProps: Props
+): ReturnType<typeof cloneElement<Button.Props>>[] => {
+	const { children, disabled, hasPriority, loading } = parentProps
+
+	return Children.map(children, (child, index) => {
 		if (!isValidElement<Button.Props>(child)) return null
 
 		const childType = child.type as ComponentType<Button.Props>,
 			propsCh = {}
 
 		if (childType === Fragment)
-			return childrenWithProps({ ...child.props, disabled, hasPriority })
+			return childrenWithProps({ ...parentProps, children: child.props.children })
 		else if (childType.displayName !== 'Button')
 			return null
 
@@ -52,9 +53,12 @@ const childrenWithProps = (
 		if (typeof disabled === 'boolean')
 			Object.assign(propsCh, { disabled })
 
+		if (typeof loading === 'boolean')
+			Object.assign(propsCh, { loading })
+
 		return cloneElement(child, { ...child.props, ...propsCh })
 	}) as ReturnType<typeof cloneElement<Button.Props>>[]
-)
+}
 
 const derivePriority = (index: number): Button.Priority => {
 	const max = PRIORITY_ROLES.length,
@@ -73,15 +77,21 @@ export const ButtonGroup = polymorphic<ButtonGroupSpecs>(_props => {
 		disabled,
 		fullWidth,
 		hasPriority,
+		loading,
 		orientation,
 		...rest
 	} = props
 
+	const direction = (orientation === 'vertical' && 'vertical') || null
+
 	return (
 		<Box
 			as={ as }
+			attributes={ {
+				aria: { orientation: direction }
+			} }
 			data={ {
-				direction: (orientation === 'vertical' && 'vertical') || null,
+				orientation: direction,
 				block: !!fullWidth || null,
 			} }
 			role="group"

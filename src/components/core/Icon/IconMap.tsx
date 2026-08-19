@@ -95,7 +95,7 @@ export const ICON_MAP = {
 	...USER_SETTING_MAP,
 	camera: Camera,
 	media: Image,
-	load: LoaderCircle,
+	loading: LoaderCircle,
 	location: MapPin,
 	private: Lock,
 	rating: Star,

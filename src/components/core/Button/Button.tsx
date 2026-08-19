@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Children, cloneElement, isValidElement, type ReactNode } from 'react'
 import { Box, polymorphic, type BoxProps } from '@/components/core/Box'
 import {
 	ButtonGroup,
@@ -8,10 +9,10 @@ import {
 	ButtonSection,
 	type ButtonSectionProps, type ButtonSectionSpecs,
 } from './ButtonSection'
+import { Icon } from '../Icon'
 import { setThemeCSS, type ColorVariable } from '@/lib/theme'
 import { useProps, useStyles, useVariantStyles } from '@/hooks'
-import { Children, cloneElement, isValidElement, type ReactNode } from 'react'
-import type { ComponentPropsWithoutRef, MouseEventHandler, Ref } from 'react'
+import type { ComponentProps, ComponentPropsWithoutRef, MouseEventHandler, Ref } from 'react'
 import classes from './Button.module.scss'
 
 const NAME = 'Button' as const,
@@ -55,8 +56,6 @@ interface LinkButtonProps
 	href: string
 	onClick?: never
 	ref?: Ref<HTMLAnchorElement>
-	// rel?: ComponentPropsWithoutRef<'a'>['rel']
-	// target?: ComponentPropsWithoutRef<'a'>['target']
 }
 
 interface NativeButtonProps
@@ -64,17 +63,16 @@ interface NativeButtonProps
 	href?: never
 	onClick?: MouseEventHandler<HTMLButtonElement>
 	ref?: Ref<HTMLButtonElement>
-	// type?: ComponentPropsWithoutRef<'button'>['type']
 }
 
 interface ButtonSpecs {
-	// cssVars: { root: ButtonVars }
 	default: { component: typeof DEFAULT_TAG }
 	props: ButtonProps
 	subcomponents: {
 		Group: typeof ButtonGroup
 		Section: typeof ButtonSection
 	}
+	// tokens: { root: ButtonVars }
 }
 
 type Styles = ReturnType<typeof useStyles<ButtonSpecs>>
@@ -102,15 +100,28 @@ const buildSections = (children: ReactNode, styles: Styles) => {
 		label.push(child)
 	})
 
-	if (!left && !right) return label
-
-	return (
-		<>
-			{ left }
-			<Box as="span" { ...styles('label') }>{ label }</Box>
-			{ right }
-		</>
+	const innerEl = (
+		<Box as="span" { ...styles('label') }>
+			{ label }
+		</Box>
 	)
+
+	if (!left && !right) return innerEl
+	return <>{ left }{ innerEl }{ right }</>
+
+}
+
+const getTextFromChildren = (children: ReactNode): string => {
+	let text = ''
+
+	Children.toArray(children).forEach(child => {
+		if (typeof child === 'string' || typeof child === 'number')
+			text += child
+		else if (isValidElement<ButtonSectionProps>(child) && child.props?.children)
+			text += getTextFromChildren(child.props?.children)
+	})
+
+	return text.trim()
 }
 
 const tokens = setThemeCSS<ButtonSpecs>((theme, _props) => {
@@ -144,16 +155,20 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 		...rest
 	} = props
 
-	const data = {
+	const ariaLabel = getTextFromChildren(children),
+		aria = { label: !!ariaLabel.length ? false : ariaLabel }
+
+	let data: ComponentProps<typeof Box>['data'] = {
 		variant,
 		priority,
-		disabled,
 		block: !!fullWidth || null,
+		loading: !!loading || null,
 	}
 
-	const sharedProps = { data, ...styles('root') }
+	const sharedProps = { aria, data, ...styles('root') }
 	const inner = (
 		<Box as="span" { ...styles('inner') }>
+			{ loading && <Icon { ...styles('icon') } size={ 18 } type="loading" /> }
 			{ buildSections(children, styles) }
 		</Box>
 	)
@@ -162,6 +177,8 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 		// narrows `rest` typing (`LinkButtonProps | NativeButtonProps`)
 		// by excluding `NativeButtonProps` from `rest`
 		// this allows `rest` to be properly typed
+
+		data = { ...data, disabled: !!disabled || null }
 
 		return (
 			<Box

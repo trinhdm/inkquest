@@ -1,8 +1,8 @@
-import type { ReactNode } from 'react'
-import type { Meta, StoryObj } from '@storybook/nextjs-vite'
-import { ButtonSection } from './ButtonSection'
+import { SIZE_OPTIONS, VARIANT_OPTIONS } from '../options.story'
 import { Button } from '../Button'
 import { Icon } from '@/components/core/Icon'
+import type { ReactNode } from 'react'
+import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
 const Row = ({ children }: { children: ReactNode }) => (
 	<div style={ { display: 'flex', gap: 24, flexWrap: 'wrap' } }>{ children }</div>
@@ -17,7 +17,7 @@ const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 
 // `variant`/`size`/`disabled`/`loading` aren't `ButtonSection` props —
 // they're story-only controls that feed the `Button` wrapping the sections.
-type ButtonSectionStoryArgs = ButtonSection.Props & {
+type ButtonSectionStoryArgs = Button.Section.Props & {
 	variant: Button.Variant
 	size: Button.Size
 	disabled?: boolean
@@ -25,17 +25,17 @@ type ButtonSectionStoryArgs = ButtonSection.Props & {
 }
 
 const meta: Meta<ButtonSectionStoryArgs> = {
-	component: ButtonSection,
+	component: Button.Section,
 	title: 'Core/Button/Button.Section',
 	tags: ['autodocs'],
 	argTypes: {
 		variant: {
 			control: 'select',
-			options: ['solid', 'outline', 'ghost', 'light', 'dark', 'success', 'warning', 'danger'],
+			options: VARIANT_OPTIONS,
 		},
 		size: {
 			control: 'select',
-			options: ['sm', 'md', 'lg'],
+			options: SIZE_OPTIONS,
 		},
 		disabled: { control: 'boolean' },
 		loading: { control: 'boolean' },
@@ -46,12 +46,16 @@ const meta: Meta<ButtonSectionStoryArgs> = {
 	},
 	// `ButtonSection.Props`'s `left`/`right` discriminated union breaks
 	// contextual inference on the destructured params, so annotate explicitly.
-	render: ({ variant, size, disabled, loading }: ButtonSectionStoryArgs) => (
-		<Button variant={ variant } size={ size } disabled={ disabled } loading={ loading }>
-			<ButtonSection left><Icon type="download" /></ButtonSection>
-			Download
-		</Button>
-	),
+	render: ({ variant, size, disabled, loading }: ButtonSectionStoryArgs) => {
+		const buttonProps = { variant, size, disabled, loading }
+
+		return (
+			<Button { ...buttonProps }>
+				<Button.Section left><Icon type="download" /></Button.Section>
+				Download
+			</Button>
+		)
+	},
 }
 
 export default meta
@@ -60,27 +64,39 @@ type Story = StoryObj<ButtonSectionStoryArgs>
 export const Default: Story = {}
 
 export const Sides: Story = {
-	render: ({ variant, size, disabled, loading }: ButtonSectionStoryArgs) => (
-		<Row>
-			<Group label="left">
-				<Button variant={ variant } size={ size } disabled={ disabled } loading={ loading }>
-					<ButtonSection left><Icon type="download" /></ButtonSection>
-					Download
-				</Button>
-			</Group>
-			<Group label="right">
-				<Button variant={ variant } size={ size } disabled={ disabled } loading={ loading }>
-					Continue
-					<ButtonSection right><Icon type="right-arrow" /></ButtonSection>
-				</Button>
-			</Group>
-			<Group label="both">
-				<Button variant={ variant } size={ size } disabled={ disabled } loading={ loading }>
-					<ButtonSection left><Icon type="download" /></ButtonSection>
-					Download
-					<ButtonSection right><Icon type="right-arrow" /></ButtonSection>
-				</Button>
-			</Group>
-		</Row>
-	),
+	render: ({ variant, size, disabled, loading }: ButtonSectionStoryArgs) => {
+		const buttonProps = { variant, size, disabled, loading }
+
+		return (
+			<Row>
+				<Group label="left">
+					<Button { ...buttonProps }>
+						<Button.Section left>
+							<Icon type="download" />
+						</Button.Section>
+						Download
+					</Button>
+				</Group>
+				<Group label="right">
+					<Button { ...buttonProps }>
+						Continue
+						<Button.Section right>
+							<Icon type="right-arrow" />
+						</Button.Section>
+					</Button>
+				</Group>
+				<Group label="both">
+					<Button { ...buttonProps }>
+						<Button.Section left>
+							<Icon type="download" />
+						</Button.Section>
+						Download
+						<Button.Section right>
+							<Icon type="right-arrow" />
+						</Button.Section>
+					</Button>
+				</Group>
+			</Row>
+		)
+	},
 }

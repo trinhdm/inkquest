@@ -1,81 +1,175 @@
-import type { Meta, StoryObj } from '@storybook/nextjs-vite'
-import { expect, within } from 'storybook/test'
-import { ButtonGroup } from './ButtonGroup'
+import {
+	BOOLEAN_OPTIONS, ORIENTATION_OPTIONS,
+	SIZE_OPTIONS, VARIANT_OPTIONS,
+} from '../options.story'
+import { expect, userEvent, within } from 'storybook/test'
 import { Button } from '../Button'
+import type { ReactNode } from 'react'
+import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
-const meta: Meta<typeof ButtonGroup> = {
-	component: ButtonGroup,
+const Row = ({ children }: { children: ReactNode }) => (
+	<div style={ { display: 'flex', gap: 24, flexWrap: 'wrap' } }>{ children }</div>
+)
+
+const Group = ({ label, children }: { label: string, children: ReactNode }) => (
+	<div style={ { display: 'flex', flexDirection: 'column', gap: 8 } }>
+		<span style={ { fontSize: 12, fontWeight: 600, opacity: 0.6 } }>{ label }</span>
+		{ children }
+	</div>
+)
+
+// `variant`/`size` aren't `ButtonGroup` props — they're story-only controls
+// that feed the `Button` children rendered inside the group.
+type ButtonGroupStoryArgs = Button.Group.Props & {
+	variant: Button.Variant
+	size: Button.Size
+}
+
+// templatized repeated `children` instead of re-declaring the same JSX block
+const renderGroup = ({ variant, size }: ButtonGroupStoryArgs) => {
+	const buttonProps = { variant, size }
+	return (
+		<>
+			<Button { ...buttonProps }>Save</Button>
+			<Button { ...buttonProps }>Edit</Button>
+			<Button { ...buttonProps }>Delete</Button>
+		</>
+	)
+}
+
+const meta: Meta<ButtonGroupStoryArgs> = {
+	component: Button.Group,
 	title: 'Core/Button/Button.Group',
 	argTypes: {
+		variant: {
+			control: 'select',
+			options: VARIANT_OPTIONS,
+		},
+		size: {
+			control: 'select',
+			options: SIZE_OPTIONS,
+		},
 		orientation: {
 			control: 'select',
-			options: ['horizontal', 'vertical'],
+			options: ORIENTATION_OPTIONS,
 		},
+		disabled: { control: 'boolean' },
+		hasPriority: { control: 'boolean' },
+		loading: { control: 'boolean' },
 	},
 	args: {
-		children: (
-			<>
-				<Button>Save</Button>
-				<Button>Edit</Button>
-				<Button>Delete</Button>
-			</>
-		),
+		hasPriority: true,
+		variant: 'solid',
+		size: 'md',
 	},
+	render: ({ size, variant, ...args }) => (
+		<Button.Group { ...args }>
+			{ renderGroup({ size, variant }) }
+		</Button.Group>
+	),
 }
 
 export default meta
-type Story = StoryObj<typeof ButtonGroup>
+type Story = StoryObj<ButtonGroupStoryArgs>
 
 export const Default: Story = {}
 
 export const Orientations: Story = {
-	render: () => (
-		<>
-			<ButtonGroup orientation="horizontal">
-				<Button>Save</Button>
-				<Button>Edit</Button>
-				<Button>Delete</Button>
-			</ButtonGroup>
-			<ButtonGroup orientation="vertical">
-				<Button>Save</Button>
-				<Button>Edit</Button>
-				<Button>Delete</Button>
-			</ButtonGroup>
-		</>
+	render: ({ size, variant, ...args }) => (
+		<Row>
+			{ ORIENTATION_OPTIONS.map(orientation => (
+				<Group key={ orientation } label={ orientation }>
+					<Button.Group { ...args } orientation={ orientation }>
+						{ renderGroup({ size, variant }) }
+					</Button.Group>
+				</Group>
+			)) }
+		</Row>
 	),
 }
 
 export const HasPriority: Story = {
-	render: () => (
-		<>
-			<ButtonGroup hasPriority>
-				<Button>Save</Button>
-				<Button>Edit</Button>
-				<Button>Delete</Button>
-			</ButtonGroup>
-			<ButtonGroup hasPriority={ false }>
-				<Button>Save</Button>
-				<Button>Edit</Button>
-				<Button>Delete</Button>
-			</ButtonGroup>
-		</>
+	parameters: { controls: { exclude: ['hasPriority'] } },
+	render: ({ size, variant, ...args }) => (
+		<Row>
+			{ BOOLEAN_OPTIONS.map(hasPriority => (
+				<Group key={ String(hasPriority) } label={ String(hasPriority) }>
+					<Button.Group { ...args } hasPriority={ hasPriority }>
+						{ renderGroup({ size, variant }) }
+					</Button.Group>
+				</Group>
+			)) }
+		</Row>
+	),
+}
+
+export const Loading: Story = {
+	parameters: { controls: { exclude: ['loading'] } },
+	render: ({ size, variant, ...args }) => (
+		<Row>
+			{ BOOLEAN_OPTIONS.map(loading => (
+				<Group key={ String(loading) } label={ String(loading) }>
+					<Button.Group { ...args } loading={ loading }>
+						{ renderGroup({ size, variant }) }
+					</Button.Group>
+				</Group>
+			)) }
+		</Row>
 	),
 }
 
 export const Disabled: Story = {
-	args: { disabled: true },
+	parameters: { controls: { exclude: ['disabled'] } },
+	render: ({ size, variant, ...args }) => (
+		<Row>
+			{ BOOLEAN_OPTIONS.map(disabled => (
+				<Group key={ String(disabled) } label={ String(disabled) }>
+					<Button.Group { ...args } disabled={ disabled }>
+						{ renderGroup({ size, variant }) }
+					</Button.Group>
+				</Group>
+			)) }
+		</Row>
+	),
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement)
 		const buttons = canvas.getAllByRole('button')
 
-		expect(buttons).toHaveLength(3)
-		for (const button of buttons) {
-			await expect(button).toHaveAttribute('data-disabled')
+		expect(buttons).toHaveLength(6)
+
+		const [disabledGroup, enabledGroup] = [buttons.slice(0, 3), buttons.slice(3)]
+
+		for (const button of disabledGroup) {
+			await expect(button).toHaveAttribute('disabled')
 		}
+		for (const button of enabledGroup) {
+			await expect(button).not.toHaveAttribute('disabled')
+		}
+
+		// native `disabled` buttons drop out of the tab sequence entirely,
+		// so tabbing from a blurred state should skip the whole disabled
+		// group and land directly on the first enabled-group button
+		await userEvent.tab()
+		for (const button of disabledGroup)
+			await expect(button).not.toHaveFocus()
+		await expect(enabledGroup[0]).toHaveFocus()
 	},
 }
 
 export const FullWidth: Story = {
-	args: { fullWidth: true },
-	parameters: { layout: 'padded' },
+	parameters: {
+		layout: 'padded',
+		controls: { exclude: ['fullWidth'] },
+	},
+	render: ({ size, variant, ...args }) => (
+		<div style={ { display: 'flex', flexDirection: 'column', gap: 24 } }>
+			{ BOOLEAN_OPTIONS.map(fullWidth => (
+				<Group key={ String(fullWidth) } label={ String(fullWidth) }>
+					<Button.Group { ...args } fullWidth={ fullWidth }>
+						{ renderGroup({ size, variant }) }
+					</Button.Group>
+				</Group>
+			)) }
+		</div>
+	),
 }

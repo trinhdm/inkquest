@@ -1,4 +1,6 @@
 .inkq-button {
+	$name: &;
+
 	background-color: var(--button-background, var(--inkq-background-backup));
     border-radius: var(--inkq-border-radius-chip);
     border: 1px solid var(--button-border, var(--inkq-border-backup));
@@ -6,30 +8,33 @@
 	display: inline-block;
 	font: var(--inkq-font-label);
     letter-spacing: var(--inkq-font-tracking-stat);
-    opacity: 1;
 	overflow: hidden;
     padding: var(--inkq-pad-chip);
 	position: relative;
     text-decoration: none;
 	touch-action: manipulation;
-    transition: var(--inkq-motion-box);
+    transition: var(--inkq-motion-colors);
 	user-select: none;
 	vertical-align: middle;
 	width: auto;
 
-	&:enabled:hover {
+	&::after {
+		background-color: inherit;
+		content: '';
+		display: block;
+		height: 100%;
+		inset: 0;
+		opacity: 0;
+		position: absolute;
+		transition: var(--inkq-motion-colors), var(--inkq-motion-opacity);
+		width: 100%;
+		z-index: 1;
+	}
+
+	&:hover:where(:enabled, :not(:disabled, [data-disabled])) {
 		background-color: var(--button-background-hover, var(--button-background));
 		border-color: var(--button-border-hover, var(--button-border));
 		cursor: pointer;
-	}
-
-	&:where([data-block]) {
-		display: block;
-		width: 100%;
-	}
-
-	&:where([data-disabled]) {
-		opacity: var(--inkq-opacity-disabled);
 	}
 
 	&__inner {
@@ -44,6 +49,43 @@
 		align-items: center;
 		display: inline-flex;
 	}
+
+	&__icon {
+		display: inline-block;
+		inset: auto;
+		opacity: 0;
+		position: absolute;
+		z-index: 5;
+	}
+
+	&:where([data-block]) {
+		display: block;
+		width: 100%;
+	}
+
+	&:where([data-disabled]) {
+		background-color: rgb(from var(--button-background, var(--inkq-background-backup)) r g b / var(--inkq-opacity-disabled));
+		// opacity: var(--inkq-opacity-disabled);
+	}
+
+	&:where([data-loading]) {
+		pointer-events: none;
+
+		&::after {
+			opacity: 1;
+		}
+
+		#{$name}__label,
+		#{$name}__section {
+			opacity: 0;
+		}
+
+		#{$name}__icon {
+			animation:
+				fadeIn var(--duration-default) ease-out var(--duration-instant) forwards,
+				spin 2s linear calc(var(--duration-gradual) - var(--duration-default)) infinite;
+		}
+	}
 }
 
 .inkq-button-group {
@@ -52,14 +94,33 @@
 	max-width: fit-content;
 	padding-block: var(--inkq-space-inset-sm);
 
-	&:where([data-direction="vertical"]) {
-		flex-direction: column;
-	}
-
 	&:where([data-block]) {
 		flex: 1 1 100%;
 		justify-content: space-between;
 		max-width: none;
 		width: 100%;
+	}
+
+	&:where([data-direction="vertical"]) {
+		flex-direction: column;
+	}
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+
+@keyframes spin {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
 	}
 }
