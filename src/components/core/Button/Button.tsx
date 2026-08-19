@@ -11,8 +11,11 @@ import {
 import { setThemeCSS, type ColorVariable } from '@/lib/theme'
 import { useProps, useStyles, useVariantStyles } from '@/hooks'
 import { Children, isValidElement, type ReactNode } from 'react'
-import type { ComponentPropsWithoutRef, MouseEventHandler } from 'react'
+import type { ComponentPropsWithoutRef, MouseEventHandler, Ref } from 'react'
 import classes from './Button.module.scss'
+
+const NAME = 'Button' as const,
+	DEFAULT_TAG = 'button' as const
 
 type ButtonSize =
 	| 'sm'
@@ -36,7 +39,8 @@ type ButtonVariant =
 
 // type ButtonVars = ColorVariable<typeof NAME>
 
-export type ButtonProps = BoxProps & (LinkButtonProps | NativeButtonProps) & {
+export type ButtonProps = BoxProps
+	& (LinkButtonProps | NativeButtonProps) & {
 	children: ReactNode
 	disabled?: boolean
 	fullWidth?: boolean
@@ -46,30 +50,32 @@ export type ButtonProps = BoxProps & (LinkButtonProps | NativeButtonProps) & {
 	variant?: ButtonVariant
 }
 
-interface LinkButtonProps {
+interface LinkButtonProps
+	extends ComponentPropsWithoutRef<'a'> {
 	href: string
 	onClick?: never
-	rel?: ComponentPropsWithoutRef<'a'>['rel']
-	target?: ComponentPropsWithoutRef<'a'>['target']
+	ref?: Ref<HTMLAnchorElement>
+	// rel?: ComponentPropsWithoutRef<'a'>['rel']
+	// target?: ComponentPropsWithoutRef<'a'>['target']
 }
 
-interface NativeButtonProps {
+interface NativeButtonProps
+	extends ComponentPropsWithoutRef<'button'> {
 	href?: never
 	onClick?: MouseEventHandler<HTMLButtonElement>
-	type?: ComponentPropsWithoutRef<'button'>['type']
+	ref?: Ref<HTMLButtonElement>
+	// type?: ComponentPropsWithoutRef<'button'>['type']
 }
 
-type ButtonSpecs = {
+interface ButtonSpecs {
 	// cssVars: { root: ButtonVars }
-	default: { component: 'button' }
+	default: { component: typeof DEFAULT_TAG }
 	props: ButtonProps
 	subcomponents: {
-		Group: typeof ButtonGroup,
-		Section: typeof ButtonSection,
+		Group: typeof ButtonGroup
+		Section: typeof ButtonSection
 	}
 }
-
-const NAME = 'Button' as const
 
 type Styles = ReturnType<typeof useStyles<ButtonSpecs>>
 
@@ -142,24 +148,43 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 		...rest
 	} = props
 
-	const component = Object.hasOwn(rest, 'href') && rest.href
-		? Link : as
+	const data = {
+		variant,
+		priority,
+		disabled,
+		block: !!fullWidth || null,
+	}
+
+	const sharedProps = { data, ...styles('root') }
+	const inner = (
+		<Box as="span" { ...styles('inner') }>
+			{ buildSections(children, styles) }
+		</Box>
+	)
+
+	if ('href' in rest) {
+		// narrows `rest` typing (`LinkButtonProps | NativeButtonProps`)
+		// by excluding `NativeButtonProps` from `rest`
+		// this allows `rest` to be properly typed
+
+		return (
+			<Box
+				as={ Link }
+				{ ...sharedProps }
+				{ ...rest as Extract<typeof rest, LinkButtonProps> }
+			>
+				{ inner }
+			</Box>
+		)
+	}
 
 	return (
 		<Box
-			as={ component }
-			data={ {
-				variant,
-				priority,
-				disabled,
-				block: !!fullWidth || null,
-			} }
-			{ ...styles('root') }
+			as={ as }
+			{ ...sharedProps }
 			{ ...rest }
 		>
-			<Box as="span" { ...styles('inner') }>
-				{ buildSections(children, styles) }
-			</Box>
+			{ inner }
 		</Box>
 	)
 }, classes)
@@ -170,7 +195,7 @@ Button.Section = ButtonSection
 
 Button.setDefaults({
 	props: {
-		as: 'button',
+		as: DEFAULT_TAG,
 		size: 'sm',
 		variant: 'solid',
 	}

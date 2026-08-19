@@ -18,8 +18,16 @@ type _PolymorphicProps<S extends Specs> =
 	S['props']
 	& PolymorphicSpec<S>
 
+// only pull `ref` from Specs when the component's own props don't already
+// declare one — letting a component override, instead of intersecting with,
+// the auto-derived `Ref<TagElement<T>>` (see Box/Spec audit, Button.tsx)
+type _SpecsPickKeys<S extends Specs> =
+	| 'attributes'
+	| 'id'
+	| ('ref' extends keyof S['props'] ? never : 'ref')
+
 type _FactoryProps<S extends Specs> =
-	& Pick<S, 'attributes' | 'id' | 'ref'>
+	& Pick<S, _SpecsPickKeys<S>>
 	& _PolymorphicProps<S>
 	// & PickStartsWith<PolymorphicProps<InferComponentSpec<S>, S['props']>, 'on'>
 	// PolymorphicProps<InferComponentSpec<S>, _PolymorphicProps<S>>
@@ -86,7 +94,12 @@ export const factory = <
 		return args
 	}
 
-	BaseComponent.withProps = (props: Parameters<typeof target>[0]): FC => {
+	// cast the assignment itself, matching `memo(target) as unknown as FC`
+	// above: `_FactoryProps<S>` is conditional on `S['props']` now (for the
+	// ref-override support), which TypeScript can't verify generically
+	// against `MethodsBase`'s simpler default `P`/`C` for an abstract `S` —
+	// even though any concrete `S` satisfies it. See Box/Spec audit.
+	BaseComponent.withProps = ((props: Parameters<typeof target>[0]): FC => {
 		type P = Parameters<typeof target>[0]
 
 		const TempComponent = BaseComponent as ComponentType<P>,
@@ -96,7 +109,7 @@ export const factory = <
 		ExtendWith.setDefaults = BaseComponent.setDefaults
 
 		return ExtendWith as unknown as FC
-	}
+	}) as unknown as MethodsBase<S>['withProps']
 
 	return BaseComponent as unknown as C
 }

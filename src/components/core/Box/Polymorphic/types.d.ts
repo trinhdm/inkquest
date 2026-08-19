@@ -3,7 +3,7 @@ import type { InferComponentSpec } from '@/types/spec'
 
 export type ValidElement =
 	| keyof JSX.IntrinsicElements
-	| JSXElementConstructor<unknown>
+	| JSXElementConstructor<any>
 
 export type AsTag<C, P = C> = 'as' extends keyof P
 	? P['as']

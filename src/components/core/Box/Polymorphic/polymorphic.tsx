@@ -9,7 +9,7 @@ import type {
 } from 'react'
 
 import type { AsTag, ValidElement } from './types'
-import type { SpecStructure } from '@/types/spec'
+import type { SpecStructure, TagName } from '@/types/spec'
 
 type _BaseProps<C extends ValidElement> = JSX.LibraryManagedAttributes<
 	C,
@@ -27,9 +27,6 @@ export type ExtendedProps<C extends ValidElement, P2 = object> = OverrideProps<
 
 //	InheritedProps
 
-type _ExtractProps<T> =
-	T extends { (props: infer P): unknown } ? P : never
-
 export type PropertiesBase<P extends ComponentProps<ElementType>> = Omit<
 	FunctionComponent<P>,
 	never
@@ -45,13 +42,18 @@ export type PolymorphicProps<C, P> =
 			: P & { as?: ElementType }
 	)
 
-export const toPolymorphic = <T,>(target: T) => {
+export const toPolymorphic = <
+	C0 extends TagName | ValidElement,
+	P0 extends object,
+>(
+	target: (props: PolymorphicProps<C0, P0>) => ReactElement | null
+) => {
 	interface _Component {
-		<C = 'div', P = _ExtractProps<C>>(props: PolymorphicProps<C, P>): ReactElement | null
+		<C extends TagName | ValidElement>(props: PolymorphicProps<C, P0>): ReactElement | null
 	}
 
 	type PolymorphicBase = _Component
- 		& PropertiesBase<ComponentProps<ElementType>>
+		 & PropertiesBase<ComponentProps<ElementType>>
 
 	return target as PolymorphicBase
 }
