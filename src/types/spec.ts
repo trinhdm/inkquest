@@ -24,7 +24,6 @@ export interface Specs<
 	P extends object = object,
 > {
 	attributes?: Record<string, unknown>
-	cssVars?: CSSVars
 	ctx?: unknown
 	data?: Record<string, unknown>
 	default?: (
@@ -38,6 +37,7 @@ export interface Specs<
 	props: P
 	ref?: Ref<TagElement<T>>
 	subcomponents?: Record<string, unknown>		// move this to compound/root
+	tokens?: CSSVars
 	variant?: string
 }
 
@@ -79,9 +79,9 @@ type _InferredDefault<S extends Specs> = (
 
 type _CompoundComponentSpec<S extends Specs> = {
 	classNames?: never
-	cssVars?: never
 	default?: _InferredDefault<S>
 	styles?: never
+	tokens?: never
 	unstyled?: never
 }
 
@@ -90,9 +90,9 @@ type _RootComponentSpec<
 	T extends SpecStructure<S> = SpecStructure<S>
 > = {
 	classNames?: T['classNames']
-	cssVars?: T['cssVars']
 	default?: _InferredDefault<S>
 	styles?: T['styles']
+	tokens?: T['tokens']
 	unstyled?: T['unstyled']
 }
 
@@ -115,7 +115,7 @@ type _RootSpec<V, P> =
 
 type _Attributes<P,> = _RootSpec<Record<string, unknown>, P>
 type _ClassNames<P,> = _RootSpec<ClassValue, P>
-type _CssVariables<P,> = _RootSpec<CSSVars, P>
+type _CssTokens<P,> = _RootSpec<CSSVars, P>
 type _DataAttributes<P,> = _RootSpec<Record<string, unknown>, P>
 type _Styles<P,> = _RootSpec<CSSProperties, P>
 type _Unstyled<P,> = _RootSpec<boolean, P>
@@ -124,9 +124,9 @@ type _Variant<P,> = _RootSpec<string, P>
 export interface SpecStructure<P = { is: { compound: false } }> {
 	attributes?: _Attributes<P>
 	classNames?: _ClassNames<P>
-	cssVars?: _CssVariables<P>
 	data?: _DataAttributes<P>
 	styles?: _Styles<P>
+	tokens?: _CssTokens<P>
 	unstyled?: _Unstyled<P>
 	variant?: _Variant<P>
 }

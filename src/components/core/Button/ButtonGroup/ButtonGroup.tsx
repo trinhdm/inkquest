@@ -7,6 +7,10 @@ import { useProps, useStyles, useVariantStyles } from '@/hooks'
 import type { Button } from '../Button'
 import classes from '../Button.module.scss'
 
+const PRIORITY_ROLES: Button.Priority[] = ['primary', 'secondary', 'tertiary'] as const
+const NAME = 'ButtonGroup' as const,
+	TAG = 'div' as const
+
 export interface ButtonGroupProps extends BoxProps {
 	children?: ReactNode
 	fullWidth?: boolean
@@ -19,17 +23,8 @@ export interface ButtonGroupProps extends BoxProps {
 }
 
 export type ButtonGroupSpecs = {
-	default: { component: 'div' }
+	default: { component: typeof TAG }
 	props: ButtonGroupProps
-}
-
-const NAME = 'ButtonGroup' as const
-const PRIORITY_ROLES: Button.Priority[] = ['primary', 'secondary', 'tertiary'] as const
-
-const derivePriority = (index: number): Button.Priority => {
-	const max = PRIORITY_ROLES.length,
-		i = index < max ? index : max - 1
-	return PRIORITY_ROLES[i]
 }
 
 type Props = Pick<ButtonGroupProps, 'children' | 'disabled' | 'hasPriority'>
@@ -51,14 +46,16 @@ const childrenWithProps = ({ children, disabled, hasPriority }: Props) => (
 	})
 )
 
+const derivePriority = (index: number): Button.Priority => {
+	const max = PRIORITY_ROLES.length,
+		i = index < max ? index : max - 1
+	return PRIORITY_ROLES[i]
+}
+
 export const ButtonGroup = polymorphic<ButtonGroupSpecs>(_props => {
 	useVariantStyles(NAME)
 	const props = useProps(NAME, _props)
-	const styles = useStyles<ButtonGroupSpecs>({
-		name: NAME,
-		classes,
-		props,
-	})
+	const styles = useStyles<ButtonGroupSpecs>(NAME, { classes, props })
 
 	const {
 		as,
@@ -89,7 +86,7 @@ export const ButtonGroup = polymorphic<ButtonGroupSpecs>(_props => {
 ButtonGroup.displayName = NAME
 ButtonGroup.setDefaults({
 	props: {
-		as: 'div',
+		as: TAG,
 		hasPriority: true,
 		orientation: 'horizontal',
 	}

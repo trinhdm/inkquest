@@ -1,15 +1,19 @@
 import cx from 'clsx'
+import { toKebabCase } from '@/utils/helpers'
 import type { SharedConfig } from './useStyles'
 import type { ValidSpecs } from '@/types/spec'
 
-const getBaseClass = <S extends ValidSpecs<S>>(
-	{ name, prefix, selector }: SharedConfig<S>
-) => {
-	if (!name) return
-	let baseName = name
+const getBaseClass = <S extends ValidSpecs<S>>({
+	check,
+	name,
+	prefix,
+	selector,
+}: SharedConfig<S>): string | undefined => {
+	if (check.isUnstyled) return
+	let baseName = toKebabCase(name)
 
 	if (prefix) baseName = `${prefix}-${baseName}`
-	if (selector !== 'root') baseName += `__${selector}`
+	if (!check.isRoot) baseName += `__${selector}`
 
 	return baseName
 }
@@ -17,11 +21,15 @@ const getBaseClass = <S extends ValidSpecs<S>>(
 export const getClassName = <S extends ValidSpecs<S>>(
 	options: SharedConfig<S>
 ): string => {
-	const { check, classes } = options
-	if (check.isUnstyled) return ''
+	const { classes } = options,
+		baseClass = getBaseClass(options)
 
-	const baseClass = getBaseClass(options)
 	if (!baseClass) return ''
 
-	return cx(baseClass, classes?.[baseClass])
+	const classList = [baseClass],
+		styleClass = classes?.[baseClass]
+
+	if (styleClass) classList.push(styleClass)
+
+	return cx(...classList)
 }

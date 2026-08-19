@@ -10,7 +10,7 @@ import {
 } from './ButtonSection'
 import { setThemeCSS, type ColorVariable } from '@/lib/theme'
 import { useProps, useStyles, useVariantStyles } from '@/hooks'
-import { Children, isValidElement, type ReactNode } from 'react'
+import { Children, cloneElement, isValidElement, type ReactNode } from 'react'
 import type { ComponentPropsWithoutRef, MouseEventHandler, Ref } from 'react'
 import classes from './Button.module.scss'
 
@@ -90,8 +90,9 @@ const buildSections = (children: ReactNode, styles: Styles) => {
 				taken = isLeft ? left : right
 
 			if (!taken) {
-				if (isLeft) left = child
-				else right = child
+				let clone = cloneElement(child, { parentName: NAME })
+				if (isLeft) left = clone
+				else right = clone
 			} else if (process.env.NODE_ENV !== 'production') {
 				console.warn(`${NAME}: multiple ${NAME}.Section[${isLeft ? 'left' : 'right'}] found; only the first is rendered.`)
 			}
@@ -129,12 +130,7 @@ const tokens = setThemeCSS<ButtonSpecs>((theme, _props) => {
 export const Button = polymorphic<ButtonSpecs>(_props => {
 	useVariantStyles(NAME)
 	const props = useProps(NAME, _props)
-	const styles = useStyles<ButtonSpecs>({
-		name: NAME,
-		classes,
-		props,
-		tokens,
-	})
+	const styles = useStyles<ButtonSpecs>(NAME, { classes, props, tokens })
 
 	const {
 		as,

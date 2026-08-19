@@ -19,11 +19,7 @@ interface IconSpecs {
 export const Icon = polymorphic<IconSpecs>(_props => {
 	useVariantStyles(NAME)
 	const props = useProps(NAME, _props)
-	const styles = useStyles<IconSpecs>({
-		name: NAME,
-		classes,
-		props,
-	})
+	const styles = useStyles<IconSpecs>(NAME, { classes, props })
 
 	const {
 		as,

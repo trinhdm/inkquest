@@ -1,4 +1,4 @@
-.inkq-Button {
+.inkq-button {
 	background-color: var(--button-background, var(--inkq-background-backup));
     border-radius: var(--inkq-border-radius-chip);
     border: 1px solid var(--button-border, var(--inkq-border-backup));
@@ -35,7 +35,7 @@
 	&__inner {
 		align-items: center;
 		display: flex;
-		gap: var(--inkq-space-inset-sm) var(--inkq-space-inset-xs);
+		gap: var(--inkq-space-inset-sm) var(--inkq-space-inset-min);
 		justify-content: center;
 		position: relative;
 	}
@@ -46,7 +46,7 @@
 	}
 }
 
-.inkq-ButtonGroup {
+.inkq-button-group {
 	display: flex;
 	gap: var(--inkq-space-inset-sm);
 	max-width: fit-content;

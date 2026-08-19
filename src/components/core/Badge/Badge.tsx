@@ -1,8 +1,11 @@
 import { Box, polymorphic, type BoxProps } from '@/components/core/Box'
 import { useProps, useStyles, useVariantStyles } from '@/hooks'
 // import { setThemeCSS, type ColorVariable } from '@/lib/theme'
-import classes from './Badge.module.scss'
 import type { ReactNode } from 'react'
+import classes from './Badge.module.scss'
+
+const NAME = 'Badge' as const,
+	TAG = 'div' as const
 
 type BadgeVariant =
 	| 'dark'
@@ -26,11 +29,9 @@ interface BadgeProps extends BoxProps {
 
 type BadgeSpecs = {
 	// cssVars: { root: BadgeVars }
-	default: { component: 'div' }
+	default: { component: typeof TAG }
 	props: BadgeProps
 }
-
-const NAME = 'Badge' as const
 
 // const cssVars = setThemeCSS<BadgeSpecs>((theme, _props) => {
 // 	return {
@@ -41,12 +42,7 @@ const NAME = 'Badge' as const
 export const Badge = polymorphic<BadgeSpecs>(_props => {
 	useVariantStyles(NAME)
 	const props = useProps(NAME, _props)
-	const styles = useStyles<BadgeSpecs>({
-		name: NAME,
-		classes,
-		// cssVars,
-		props,
-	})
+	const styles = useStyles<BadgeSpecs>(NAME, { classes, props })
 
 	const {
 		as,
@@ -76,7 +72,7 @@ export const Badge = polymorphic<BadgeSpecs>(_props => {
 Badge.displayName = NAME
 Badge.setDefaults({
 	props: {
-		as: 'div',
+		as: TAG,
 		shape: 'pill',
 		variant: 'light',
 	}

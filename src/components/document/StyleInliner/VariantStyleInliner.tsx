@@ -9,15 +9,15 @@ interface VariantStyleInlinerProps
 
 export const VariantStyleInliner = ({ names, ...props }: VariantStyleInlinerProps) => {
 	const tokens = names.flatMap(buildVariantSchemes),
-		css = serializeStyles(tokens)
+		styles = serializeStyles(tokens)
 
-	if (!css) return null
+	if (!styles) return null
 
 	return (
 		<style
 			{ ...props }
 			data-variant-vars
-			dangerouslySetInnerHTML={{ __html: css }}
+			dangerouslySetInnerHTML={{ __html: styles }}
 		/>
 	)
 }

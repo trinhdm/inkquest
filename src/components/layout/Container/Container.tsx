@@ -19,11 +19,7 @@ interface ContainerSpecs {
 export const Container = polymorphic<ContainerSpecs>(_props => {
 	useVariantStyles(NAME)
 	const props = useProps(NAME, _props)
-	const styles = useStyles<ContainerSpecs>({
-		name: NAME,
-		classes,
-		props,
-	})
+	const styles = useStyles<ContainerSpecs>(NAME, { classes, props })
 
 	const {
 		as,

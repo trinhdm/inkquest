@@ -1,11 +1,12 @@
 import { enumerateVariantPalettes } from './tokens/variants'
+import { toKebabCase } from '@/utils/helpers'
 import { tokenGenerator } from './generate'
 import { PREFIX_CSS_SELECTOR } from '@/utils/constants'
 import type { CssRule } from './types'
 
 export const buildVariantSchemes = (name: string): CssRule[] => {
-	const namespace = name.toLowerCase(),
-		rootClass = `${PREFIX_CSS_SELECTOR}-${name}`,
+	const namespace = toKebabCase(name),
+		rootClass = `${PREFIX_CSS_SELECTOR}-${namespace}`,
 		palettes = enumerateVariantPalettes()
 
 	return palettes.map(({ palette, priority, variant }) => {

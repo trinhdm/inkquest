@@ -55,15 +55,13 @@ export const buildSchemes = (
 	prefix?: string
 ): ThemeTokens => {
 	const primitives = buildPrimitiveTokens(theme),
-		staticTokens = buildStaticTokens(prefix)
+		staticTokens = buildStaticTokens(prefix),
+		base = { ...primitives, ...staticTokens }
 
 	const themes = COLOR_SCHEMES.reduce<SchemeTokenList>((schemes, name) => ({
 		...schemes,
 		[name]: buildThemeTokens(THEME_CONFIGS[name], prefix),
 	}), {} as SchemeTokenList)
 
-	return {
-		base: { ...primitives, ...staticTokens },
-		...themes,
-	}
+	return { base, ...themes }
 }

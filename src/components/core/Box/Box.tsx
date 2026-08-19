@@ -13,7 +13,9 @@ export const Box = toPolymorphic((_props: PolymorphicProps<'div', BoxProps>) => 
 	const {
 		as,
 		attributes,
+		className,
 		classNames,
+		style,
 		styles,
 		unstyled,
 		...rest
@@ -23,10 +25,10 @@ export const Box = toPolymorphic((_props: PolymorphicProps<'div', BoxProps>) => 
 	// const theme = useTheme()
 
 	const props = filterProps({
-		className: cx(classNames),
+		className: cx(classNames, className),
 		...attributes,
-		style: styles,
-		...rest
+		...rest,
+		style: { ...style, ...styles },
 	}, true)
 
 	return <Element { ...props } />

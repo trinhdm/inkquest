@@ -87,8 +87,8 @@ export const factory = <
 			throw new Error('cannot set defaultProps: missing `displayName`')
 
 		if (args?.props && Object.keys(args.props).length) {
-			const props = { unstyled: false, ...args.props }
-			setDefaultProps(displayName, props)
+			// const props = { unstyled: false, ...args.props }
+			setDefaultProps(displayName, args.props)
 		}
 
 		return args

@@ -9,7 +9,6 @@ import type { ValidSpecs } from '@/types/spec'
 
 interface StyleOptions<S extends ValidSpecs<S>> {
 	readonly classes?: Record<string, string>
-	name?: string
 	prefix?: string
 	props: S['props']
 	tokens?: ThemeCSSConfig<S>
@@ -23,35 +22,38 @@ export interface SharedConfig<S extends ValidSpecs<S>>
 		isUnstyled: boolean
 	}
 	config: object | undefined
+	name: string
 	selector: string
 	// theme: SiteTheme
 }
 
-type StyleResult = {
-	className?: string
-	style?: CSSProperties
-}
-
-type StyleConfig<S extends ValidSpecs<S>> = (
+type StyleFn<S extends ValidSpecs<S>> = (
 	selector: SharedConfig<S>['selector'],
 	config?: SharedConfig<S>['config']
 ) => StyleResult
 
+type StyleResult = {
+	classNames?: string
+	styles?: CSSProperties
+}
+
 const ROOT_SELECTOR = 'root'
-const BASE_OPTIONS = {
-	prefix: PREFIX_CSS_SELECTOR,
+const DEFAULT_OPTIONS = {
+	prefix: PREFIX_CSS_SELECTOR,		// store this in context
 }
 
 export const useStyles = <S extends ValidSpecs<S>>(
+	name: string,
 	opts: StyleOptions<S>
-): StyleConfig<S> => {
+): StyleFn<S> => {
 	// const theme = useTheme()
-	const hasOpts = !!Object.keys(opts).length
+	const choices = Object.keys(opts),
+		hasOptions = !!choices.length
 
 	return useMemo(() => {
-		if (!hasOpts) return (() => ({})) as StyleConfig<S>
+		if (!hasOptions) return (() => ({ classNames: '', styles: {} })) as StyleFn<S>
 
-		const base = { ...BASE_OPTIONS, ...opts },
+		const options: StyleOptions<S> = { ...DEFAULT_OPTIONS, ...opts },
 			cache = new Map<string, StyleResult>()
 
 		return ((selector, config) => {
@@ -61,20 +63,20 @@ export const useStyles = <S extends ValidSpecs<S>>(
 
 			const check = {
 				isRoot: selector === ROOT_SELECTOR,
-				isUnstyled: Object.hasOwn(opts.props, 'unstyled')
-					&& !!(opts.props as Record<'unstyled', unknown>).unstyled
+				isUnstyled: Object.hasOwn(options.props, 'unstyled')
+					&& !!(options.props as Record<'unstyled', unknown>).unstyled
 			}
 
-			const args = { ...base, check, config, selector } as SharedConfig<S>
+			const args: SharedConfig<S> = { ...options, check, config, name, selector }
 			const values = {
 				...getAttributes(args),
-				className: getClassName(args),
-				style: getStyles(args),
+				classNames: getClassName(args),
+				styles: getStyles(args),
 			}
 
 			cache.set(cacheKey, values)
 			return values
-		}) as StyleConfig<S>
+		}) as StyleFn<S>
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [hasOpts, opts.name, opts.classes, opts.tokens, opts.props])
+	}, [hasOptions, name, ...choices])
 }

@@ -5,7 +5,7 @@ type DataAttributes<T extends Record<string, any>> = {
 	[K in keyof T as `data-${string & K}`]: string
 }
 
-export const toDataAttributes = <T extends Record<string, any>>(data: T | undefined) => {
+const toDataAttributes = <T extends Record<string, any>>(data: T | undefined) => {
 	if (!data) return {} as DataAttributes<T>
 	const attrs = Object.entries(data)
 

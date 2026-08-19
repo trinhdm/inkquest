@@ -2,6 +2,9 @@ import { Box, polymorphic, type BoxProps } from '@/components/core/Box'
 import { useProps, useStyles, useVariantStyles } from '@/hooks'
 import classes from '../Button.module.scss'
 
+const NAME = 'ButtonSection' as const,
+	TAG = 'span' as const
+
 interface LeftButtonSectionProps {
 	left: true
 	right?: never
@@ -14,30 +17,25 @@ interface RightButtonSectionProps {
 export type ButtonSectionProps = BoxProps & (
 	| LeftButtonSectionProps
 	| RightButtonSectionProps
-)
-
-export type ButtonSectionSpecs = {
-	default: { component: 'span' }
-	props: ButtonSectionProps
+) & {
+	as?: never
+	parentName?: string
 }
 
-const NAME = 'ButtonSection' as const,
-	TAG = 'span' as const
+export type ButtonSectionSpecs = {
+	default: { component: typeof TAG }
+	props: ButtonSectionProps
+}
 
 export const ButtonSection = polymorphic<ButtonSectionSpecs>(_props => {
 	useVariantStyles(NAME)
 	const props = useProps(NAME, _props)
-	const styles = useStyles<ButtonSectionSpecs>({
-		name: NAME,
-		classes,
-		props,
-	})
-
-	const { as, children, left, ...rest } = props
+	const { as, children, left, right, parentName, ...rest } = props
+	const styles = useStyles<ButtonSectionSpecs>(parentName ?? NAME, { classes, props })
 
 	return (
 		<Box
-			as="span"
+			as={ TAG }
 			data={ { side: left ? 'left' : 'right' } }
 			{ ...styles('section') }
 			{ ...rest }
@@ -48,12 +46,7 @@ export const ButtonSection = polymorphic<ButtonSectionSpecs>(_props => {
 }, classes)
 
 ButtonSection.displayName = NAME
-ButtonSection.setDefaults({
-	props: {
-		as: 'span',
-		left: true,
-	}
-})
+ButtonSection.setDefaults({ props: { left: true } })
 
 export declare namespace ButtonSection {
 	export type Props = ButtonSectionProps
