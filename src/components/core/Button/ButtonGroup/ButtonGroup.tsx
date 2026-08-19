@@ -1,6 +1,7 @@
 import {
-	Children, cloneElement, isValidElement,
-	type CSSProperties, type ReactNode,
+	Children, cloneElement, Fragment, isValidElement,
+	type ComponentType,
+	type CSSProperties, type ReactElement, type ReactNode,
 } from 'react'
 import { Box, polymorphic, type BoxProps } from '@/components/core/Box'
 import { useProps, useStyles, useVariantStyles } from '@/hooks'
@@ -29,21 +30,30 @@ export type ButtonGroupSpecs = {
 
 type Props = Pick<ButtonGroupProps, 'children' | 'disabled' | 'hasPriority'>
 
-const childrenWithProps = ({ children, disabled, hasPriority }: Props) => (
+const childrenWithProps = (
+	{ children, disabled, hasPriority }: Props
+): ReturnType<typeof cloneElement<Button.Props>>[] => (
 	Children.map(children, (child, index) => {
 		if (!isValidElement<Button.Props>(child)) return null
-		const propsCh = {}
+
+		const childType = child.type as ComponentType<Button.Props>,
+			propsCh = {}
+
+		if (childType === Fragment)
+			return childrenWithProps({ ...child.props, disabled, hasPriority })
+		else if (childType.displayName !== 'Button')
+			return null
 
 		if (hasPriority && !Object.hasOwn(child.props, 'priority')) {
 			const priority = derivePriority(index)
 			Object.assign(propsCh, { priority })
 		}
 
-		if (disabled)
+		if (typeof disabled === 'boolean')
 			Object.assign(propsCh, { disabled })
 
 		return cloneElement(child, { ...child.props, ...propsCh })
-	})
+	}) as ReturnType<typeof cloneElement<Button.Props>>[]
 )
 
 const derivePriority = (index: number): Button.Priority => {
