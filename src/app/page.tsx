@@ -26,7 +26,7 @@ export default function Home() {
 				<div>
 					<h1>To get started, edit the page.tsx file.</h1>
 
-					<Button.Group orientation="vertical">
+					<Button.Group id="theme-selection" orientation="vertical">
 						<Button key="test123" onClick={ () => setColorScheme('dark') }>
 							<Button.Section left>
 								<Icon size={ 16 } type="dark-theme" />
@@ -41,7 +41,7 @@ export default function Home() {
 						</Button>
 					</Button.Group>
 
-					<Button.Group>
+					<Button.Group className="variants">
 						<Button variant="solid">solid</Button>
 						<Button variant="outline">outline</Button>
 						<Button variant="ghost">ghost</Button>
@@ -62,7 +62,7 @@ export default function Home() {
 						</Button.Group>
 					)) }
 
-					<Button>
+					<Button loading>
 						<Button.Section left>
 							<Icon size={ 16 } type="left-caret" />
 						</Button.Section>

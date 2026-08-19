@@ -1,5 +1,6 @@
 import { Archivo, Archivo_Black, Space_Mono } from 'next/font/google'
-import { ScriptInjector } from '@/components/document'
+import { AppProvider } from '@/providers/AppProvider'
+import { ScriptInjector, StyleInliner, VariantStyleInliner } from '@/components/document'
 import type { Metadata } from 'next'
 import '@/styles/_global.scss'
 
@@ -31,6 +32,16 @@ const fontsList = `${archivo.variable} ${archivoBlack.variable} ${spaceMono.vari
 export default function RootLayout({
 	children,
 }: Readonly<{ children: React.ReactNode }>) {
+	const ComponentWithVariants = [
+		'Button', 'Badge',
+	]
+	const VariableStyles = (
+		<>
+			<StyleInliner />
+			<VariantStyleInliner names={ ComponentWithVariants } />
+		</>
+	)
+
 	return (
 		<html
 			suppressHydrationWarning
@@ -41,7 +52,9 @@ export default function RootLayout({
 				<ScriptInjector />
 			</head>
 			<body>
-				{ children }
+				<AppProvider themeStyles={ VariableStyles }>
+					{ children }
+				</AppProvider>
 			</body>
 		</html>
 	)
