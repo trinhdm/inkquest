@@ -1,0 +1,25 @@
+.inkq-Container {
+	margin: 0 auto;
+	max-width: var(--inkq-container-app-width);
+	padding: var(--inkq-container-app-padding);
+
+	// background-color: var(--container-background);
+    // border: 1px solid var(--container-border);
+	// border-radius: var(--inkq-border-radius-control);
+	// color: var(--container-color);
+	// font: var(--inkq-font-control);
+	// letter-spacing: .075em;
+
+	&__inner {
+		// align-items: center;
+		// display: flex;
+		// gap: var(--inkq-space-inset-sm);
+		// justify-content: center;
+		position: relative;
+	}
+
+	&:where([data-block]) {
+		display: block;
+		width: 100%;
+	}
+}
