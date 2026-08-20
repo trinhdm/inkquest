@@ -10,7 +10,7 @@ export type ThemeCSSConfig<S extends ValidSpecs<S>> = (
 	theme: SiteTheme,
 	props: S['props'],
 	ctx: S['ctx']
-) => _ConvertCSSVars<S['cssVars']>
+) => _ConvertCSSVars<S['tokens']>
 
 export const setThemeCSS = <S extends ValidSpecs<S>>(settings: ThemeCSSConfig<S>) => {
 	return settings

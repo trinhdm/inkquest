@@ -3,19 +3,13 @@
 import { useInsertionEffect } from 'react'
 import { buildVariantSchemes } from '@/lib/theme/buildVariantSchemes'
 import { serializeStyles } from '@/components/document'
-
-const registered = new Set<string>()
+import { hasInjectedVariantStyles, markVariantStylesInjected } from '@/lib/registries/variantStyleRegistry'
 
 export const useVariantStyles = (name: string) => {
 	useInsertionEffect(() => {
-		if (registered.has(name)) return
+		if (hasInjectedVariantStyles(name)) return
 
-		if (document.querySelector(`[data-variant-vars="${name}"]`)) {
-			registered.add(name)
-			return
-		}
-
-		registered.add(name)
+		markVariantStylesInjected(name)
 
 		const css = serializeStyles(buildVariantSchemes(name))
 		if (!css) return
