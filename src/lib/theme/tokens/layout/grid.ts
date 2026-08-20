@@ -66,8 +66,8 @@ export const getComponentTokens = () => ({
 export interface GridTokens {
 	container: {
 		app: string
-		page: string
-		compact: string
+		// page: string
+		// compact: string
 	}
 }
 

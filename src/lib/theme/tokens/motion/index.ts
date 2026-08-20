@@ -1,5 +1,5 @@
 import { getTransitionPresetTokens, type TransitionPresetTokens } from './presets'
-import { getTransitionPropertyTokens, type TransitionPropertyTokens } from './properties'
+import { getTransitionPropertyTokens, type TransitionPropertyTokens } from './transitions/properties'
 
 export interface MotionTokens
 	extends TransitionPropertyTokens, TransitionPresetTokens {}

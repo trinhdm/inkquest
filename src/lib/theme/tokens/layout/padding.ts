@@ -6,5 +6,5 @@ export interface PaddingTokens {
 }
 
 export const getPaddingTokens = (): PaddingTokens => ({
-	chip: `${alias.space.inset('sm')} ${alias.space.inset('lg')}`,
+	chip: `${alias.space.inset('xxs')} ${alias.space.inset('xs')}`,
 })
