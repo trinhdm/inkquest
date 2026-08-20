@@ -1,24 +1,15 @@
 
 export const isObject = <T extends Record<string, unknown>>(target: unknown): target is T =>
-	!!target
-	&& target?.constructor === Object
-	&& !Array.isArray(target)
+	!!target && target?.constructor === Object && !Array.isArray(target)
 
 export const keyWithValue = <
-	T extends object,
-	K extends keyof T = keyof T,
-	V = T[K],
-	Target extends T = T,
+	T extends object, K extends keyof T = keyof T, V = T[K], Target extends T = T,
 >(entry: [K, V] | K, obj?: T): obj is Target => {
 	if (!isObject(obj)) return false
-
 	let key = entry as K, value
 	const hasValue = Array.isArray(entry)
-
 	if (hasValue) ([key, value] = entry)
-
-	return Object.hasOwn(obj, key)
-		&& hasValue ? (obj as any)[key] === value : !!(obj as any)[key]
+	return Object.hasOwn(obj, key) && hasValue ? (obj as any)[key] === value : !!(obj as any)[key]
 }
 
 const deepKeys = <T extends Record<string, unknown>>(obj: T, prefix = '') => {

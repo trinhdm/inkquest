@@ -1,4 +1,5 @@
 
+type Aria = `aria-${string}`
 export type DataAttrs = Record<`data-${string}`, unknown>
 
 export type CSSVariable = `--${string}`

@@ -4,13 +4,13 @@ import { getAttributes } from './getAttributes'
 import { getClassName } from './getClassName'
 import { getStyles } from './getStyle'
 import { PREFIX_CSS_SELECTOR } from '@/utils/constants'
-import type { SiteTheme, ThemeCSSConfig } from '@/lib/theme'
-import type { ValidSpecs } from '@/types/spec'
+import type { PolymorphicSpec, ValidSpecs } from '@/types/spec'
+import type { ThemeCSSConfig } from '@/lib/theme'
 
 interface StyleOptions<S extends ValidSpecs<S>> {
 	readonly classes?: Record<string, string>
 	prefix?: string
-	props: S['props']
+	props: S['props'] & PolymorphicSpec<S>
 	tokens?: ThemeCSSConfig<S>
 	// unstyled?: boolean
 }
@@ -61,10 +61,11 @@ export const useStyles = <S extends ValidSpecs<S>>(
 			const cached = cache.get(cacheKey)
 			if (cached) return cached
 
+			const specProps: S['props'] = options.props
 			const check = {
 				isRoot: selector === ROOT_SELECTOR,
-				isUnstyled: Object.hasOwn(options.props, 'unstyled')
-					&& !!(options.props as Record<'unstyled', unknown>).unstyled
+				isUnstyled: Object.hasOwn(specProps, 'unstyled')
+					&& !!(specProps as Record<'unstyled', unknown>).unstyled
 			}
 
 			const args: SharedConfig<S> = { ...options, check, config, name, selector }

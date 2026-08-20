@@ -1,8 +1,25 @@
 import { getDefaultProps } from '@/lib/registries'
-import { hasValue } from '@/utils/helpers'
+import { hasValue, toKebabCase } from '@/utils/helpers'
 
 type DataAttributes<T extends Record<string, any>, S extends string> = {
 	[K in keyof T as `${S}-${string & K}`]: string
+}
+
+const formatAttribute = (key: string) => {
+	let attribute = key,
+		parts = [] as string[],
+		prefix = ''
+
+	if (key.startsWith('aria-') || key.startsWith('data-')) {
+		([prefix, ...parts] = key.split('-'))
+		attribute = parts.join('-')
+		parts = [prefix]
+	}
+
+	attribute = toKebabCase(attribute)
+	parts.push(attribute)
+
+	return parts.join('-')
 }
 
 const prefixAttributes = <T extends Record<string, any>, S extends string>(
