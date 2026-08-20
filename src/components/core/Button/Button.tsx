@@ -13,6 +13,7 @@ import { Icon } from '../Icon'
 import { setThemeCSS, type ColorVariable } from '@/lib/theme'
 import { useProps, useStyles, useVariantStyles } from '@/hooks'
 import type { ComponentPropsWithoutRef, MouseEventHandler, Ref } from 'react'
+import type { Route } from 'next'
 import classes from './Button.module.scss'
 
 const NAME = 'Button' as const,
@@ -51,9 +52,9 @@ export type ButtonProps = BoxProps
 	variant?: ButtonVariant
 }
 
-interface LinkButtonProps
+interface LinkButtonProps<T extends string = string>
 	extends ComponentPropsWithoutRef<'a'> {
-	href: string
+	href: Route<T>
 	onClick?: never
 	ref?: Ref<HTMLAnchorElement>
 }
