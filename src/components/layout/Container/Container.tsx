@@ -31,8 +31,8 @@ export const Container = polymorphic<ContainerSpecs>(_props => {
 	return (
 		<Box
 			as={ as }
-			data={ {
-				block: !!fullWidth || null,
+			attributes={ {
+				data: { block: !!fullWidth || null },
 			} }
 			{ ...styles('root') }
 			{ ...rest }

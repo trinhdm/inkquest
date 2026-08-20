@@ -25,6 +25,7 @@ export interface ButtonGroupProps extends BoxProps {
 export type ButtonGroupSpecs = {
 	default: { component: typeof TAG }
 	props: ButtonGroupProps
+	specIs: { compound: true }
 }
 
 type Props = ButtonGroupProps
@@ -82,17 +83,17 @@ export const ButtonGroup = polymorphic<ButtonGroupSpecs>(_props => {
 		...rest
 	} = props
 
-	const direction = (orientation === 'vertical' && 'vertical') || null
+	const direction = (orientation === 'vertical' && 'vertical') || undefined
 
 	return (
 		<Box
 			as={ as }
 			attributes={ {
-				aria: { orientation: direction }
-			} }
-			data={ {
-				orientation: direction,
-				block: !!fullWidth || null,
+				aria: { orientation: direction },
+				data: {
+					orientation: direction,
+					block: !!fullWidth || null,
+				},
 			} }
 			role="group"
 			{ ...styles('root') }

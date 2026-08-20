@@ -12,7 +12,7 @@ import {
 import { Icon } from '../Icon'
 import { setThemeCSS, type ColorVariable } from '@/lib/theme'
 import { useProps, useStyles, useVariantStyles } from '@/hooks'
-import type { ComponentProps, ComponentPropsWithoutRef, MouseEventHandler, Ref } from 'react'
+import type { ComponentPropsWithoutRef, MouseEventHandler, Ref } from 'react'
 import classes from './Button.module.scss'
 
 const NAME = 'Button' as const,
@@ -158,7 +158,7 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 	const ariaLabel = getTextFromChildren(children),
 		aria = { label: !!ariaLabel.length ? false : ariaLabel }
 
-	let data: ComponentProps<typeof Box>['data'] = {
+	let data: Record<string, unknown> = {
 		variant,
 		priority,
 		block: !!fullWidth || null,

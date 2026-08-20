@@ -4,6 +4,7 @@ import {
 } from './options.story'
 import { Button } from './Button'
 import { expect, fn, userEvent, within } from 'storybook/test'
+import { getDefaultProps } from '@/lib/registries'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
@@ -15,7 +16,7 @@ const Row = ({ children }: { children: ReactNode }) => (
 
 const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 	<div style={ { display: 'flex', flexDirection: 'column', gap: 8 } }>
-		<span style={ { fontSize: 12, fontWeight: 600, opacity: 0.6 } }>
+		<span style={ { font: 'var(--inkq-font-control)', letterSpacing: '.15em', textTransform: 'uppercase', opacity: 0.6 } }>
 			{ label }
 		</span>
 		<div style={ { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } }>
@@ -50,10 +51,8 @@ const meta: Meta<typeof Button> = {
 		onClick: { action: 'clicked' },
 	},
 	args: {
+		...getDefaultProps<Button.Props>('Button') as Partial<NativeButtonArgs>,
 		children: 'Button',
-		variant: 'solid',
-		// priority: 'primary',
-		size: 'md',
 		onClick: fn(),
 	},
 }

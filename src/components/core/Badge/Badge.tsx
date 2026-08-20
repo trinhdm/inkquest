@@ -55,9 +55,11 @@ export const Badge = polymorphic<BadgeSpecs>(_props => {
 	return (
 		<Box
 			as={ as }
-			data={ {
-				variant,
-				block: !!fullWidth || null,
+			attributes={ {
+				data: {
+					variant,
+					block: !!fullWidth || null,
+				}
 			} }
 			{ ...styles('root') }
 			{ ...rest }

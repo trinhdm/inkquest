@@ -4,6 +4,7 @@ import {
 } from '../options.story'
 import { expect, userEvent, within } from 'storybook/test'
 import { Button } from '../Button'
+import { getDefaultProps } from '@/lib/registries'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
@@ -13,7 +14,9 @@ const Row = ({ children }: { children: ReactNode }) => (
 
 const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 	<div style={ { display: 'flex', flexDirection: 'column', gap: 8 } }>
-		<span style={ { fontSize: 12, fontWeight: 600, opacity: 0.6 } }>{ label }</span>
+		<span style={ { font: 'var(--inkq-font-control)', letterSpacing: '.15em', textTransform: 'uppercase', opacity: 0.6 } }>
+			{ label }
+		</span>
 		{ children }
 	</div>
 )
@@ -37,6 +40,13 @@ const renderGroup = ({ variant, size }: ButtonGroupStoryArgs) => {
 	)
 }
 
+// `hasPriority`/`orientation` are real `ButtonGroup` defaults; `variant`/`size`
+// are Button's own defaults, since those two fields only ever feed the
+// `Button` children here — pulled separately rather than spreading both
+// registries together, since they'd otherwise collide on the shared `as` key.
+const buttonGroupDefaults = getDefaultProps<Button.Group.Props>('ButtonGroup')
+const buttonDefaults = getDefaultProps<Button.Props>('Button')
+
 const meta: Meta<ButtonGroupStoryArgs> = {
 	component: Button.Group,
 	title: 'Core/Button/Button.Group',
@@ -58,9 +68,10 @@ const meta: Meta<ButtonGroupStoryArgs> = {
 		loading: { control: 'boolean' },
 	},
 	args: {
-		hasPriority: true,
-		variant: 'solid',
-		size: 'md',
+		hasPriority: buttonGroupDefaults.hasPriority,
+		orientation: buttonGroupDefaults.orientation,
+		variant: buttonDefaults.variant,
+		size: buttonDefaults.size,
 	},
 	render: ({ size, variant, ...args }) => (
 		<Button.Group { ...args }>

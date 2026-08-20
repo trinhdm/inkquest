@@ -1,6 +1,7 @@
 import { SIZE_OPTIONS, VARIANT_OPTIONS } from '../options.story'
 import { Button } from '../Button'
 import { Icon } from '@/components/core/Icon'
+import { getDefaultProps } from '@/lib/registries'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
@@ -10,8 +11,12 @@ const Row = ({ children }: { children: ReactNode }) => (
 
 const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 	<div style={ { display: 'flex', flexDirection: 'column', gap: 8 } }>
-		<span style={ { fontSize: 12, fontWeight: 600, opacity: 0.6 } }>{ label }</span>
-		<div style={ { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } }>{ children }</div>
+		<span style={ { font: 'var(--inkq-font-control)', letterSpacing: '.15em', textTransform: 'uppercase', opacity: 0.6 } }>
+			{ label }
+		</span>
+		<div style={ { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } }>
+			{ children }
+		</div>
 	</div>
 )
 
@@ -23,6 +28,10 @@ type ButtonSectionStoryArgs = Button.Section.Props & {
 	disabled?: boolean
 	loading?: boolean
 }
+
+// `variant`/`size` here only ever feed the `Button` wrapper, so they come
+// from Button's own registered defaults rather than a hand-typed guess.
+const buttonDefaults = getDefaultProps<Button.Props>('Button')
 
 const meta: Meta<ButtonSectionStoryArgs> = {
 	component: Button.Section,
@@ -41,8 +50,8 @@ const meta: Meta<ButtonSectionStoryArgs> = {
 		loading: { control: 'boolean' },
 	},
 	args: {
-		variant: 'solid',
-		size: 'md',
+		variant: buttonDefaults.variant,
+		size: buttonDefaults.size,
 	},
 	// `ButtonSection.Props`'s `left`/`right` discriminated union breaks
 	// contextual inference on the destructured params, so annotate explicitly.
