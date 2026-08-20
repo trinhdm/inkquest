@@ -12,6 +12,7 @@ export interface BoxProps {
 export const Box = toPolymorphic((_props: PolymorphicProps<'div', BoxProps>) => {
 	const {
 		as,
+		attributes,
 		className,
 		classNames,
 		style,
@@ -25,6 +26,7 @@ export const Box = toPolymorphic((_props: PolymorphicProps<'div', BoxProps>) => 
 
 	const props = filterProps({
 		className: cx(classNames, className),
+		...attributes,
 		...rest,
 		style: { ...style, ...styles },
 	}, true)

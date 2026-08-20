@@ -27,29 +27,27 @@ export type ExtendedProps<C extends ValidElement, P2 = object> = OverrideProps<
 
 //	InheritedProps
 
-export type PropertiesBase<P extends ComponentProps<ElementType>> = Omit<
-	FunctionComponent<P>,
-	never
->
+export type PropertiesBase<P extends ComponentProps<ElementType>> =
+	Pick<FunctionComponent<P>, 'displayName'>
 
 export type PolymorphicProps<C, P> =
-	SpecStructure<P> & (
-		C extends ValidElement
-			? ExtendedProps<C, P> & {
-					as?: AsTag<C, P>
-					ref?: Ref<ComponentRef<C>>
-				}
-			: P & { as?: ElementType }
-	)
+    SpecStructure<C> & (
+        C extends ValidElement
+            ? ExtendedProps<C, P> & {
+                    as?: AsTag<C, P>
+                    ref?: Ref<ComponentRef<C>>
+                }
+            : P & { as?: ElementType }
+    )
 
 export const toPolymorphic = <
-	C0 extends TagName | ValidElement,
+	C0 extends ValidElement,
 	P0 extends object,
 >(
 	target: (props: PolymorphicProps<C0, P0>) => ReactElement | null
 ) => {
 	interface _Component {
-		<C extends TagName | ValidElement>(props: PolymorphicProps<C, P0>): ReactElement | null
+		<C extends ValidElement>(props: PolymorphicProps<C, P0>): ReactElement | null
 	}
 
 	type PolymorphicBase = _Component

@@ -1,4 +1,4 @@
-import type { CSSProperties, ElementType, Ref } from 'react'
+import type { AriaAttributes, ComponentProps, CSSProperties, ElementType, HTMLAttributes, JSX, Ref } from 'react'
 import type { ClassValue } from 'clsx'
 import type { CSSVars, DataAttrs } from './shared/html'
 
@@ -13,19 +13,51 @@ export type TagElement<T> =
 			? SVGElementTagNameMap[T]
 			: unknown
 
+type Aria = `aria-${string}`
+
+type TagAria<T extends TagName> = Pick<
+	ComponentProps<T>,
+	Extract<keyof ComponentProps<T>, Aria>
+>
+
+type RemoveAriaPrefix<T> = {
+	[K in keyof T as K extends `aria-${infer Rest}` ? Rest : never]: T[K]
+}
+
+type AriaBag<T> = T extends TagName
+	? RemoveAriaPrefix<TagAria<T>>
+	: RemoveAriaPrefix<AriaAttributes>
+
+type TagAttributes<T> = Omit<HTMLAttributes<TagElement<T>>, keyof AriaAttributes> & {
+	aria?: AriaBag<T>
+	data?: Record<string, unknown>
+}
+
+interface BoxAttributes<T> {
+	aria?: AriaBag<T>
+	data?: Record<string, unknown>
+}
+
 type _SpecOptions =
 	| 'compound'					// compound components cannot have styles
 	| 'disabled'
 	| 'focusable'
+	| 'loading'
+	| 'selectable'
 	| 'unstyled'
+
+export type SpecIs = Partial<Record<_SpecOptions, boolean>>
+
+type _IsCompound<Is> =
+	[Is] extends [{ compound: true }] ? true : false
 
 export interface Specs<
 	T = unknown,
 	P extends object = object,
 > {
-	attributes?: Record<string, unknown>
+	attributes?: TagAttributes<T>
 	ctx?: unknown
-	data?: Record<string, unknown>
+	// data?: Record<string, unknown>
 	default?: (
 			T extends TagName
 				? { component?: T }
@@ -33,9 +65,9 @@ export interface Specs<
 		)
 		& { props?: Partial<P> }
 	id?: string
-	is?: Partial<Record<_SpecOptions, boolean>>
 	props: P
 	ref?: Ref<TagElement<T>>
+	specIs?: SpecIs
 	subcomponents?: Record<string, unknown>		// move this to compound/root
 	tokens?: CSSVars
 	variant?: string
@@ -56,9 +88,9 @@ export type ValidSpecs<S> =
 	// Specs<InferComponentSpec<S>>
 
 export type PolymorphicSpec<S extends Specs> = {
-	as?: unknown extends InferComponentSpec<S>
-		? ElementType
-		: InferComponentSpec<S>
+    as?: unknown extends InferComponentSpec<S>
+        ? ElementType
+        : InferComponentSpec<S>
 }
 
 export type InferDefaultProps<S extends Specs> =
@@ -81,6 +113,7 @@ type _CompoundComponentSpec<S extends Specs> = {
 	classNames?: never
 	default?: _InferredDefault<S>
 	styles?: never
+	// subcomponents?: never
 	tokens?: never
 	unstyled?: never
 }
@@ -89,22 +122,23 @@ type _RootComponentSpec<
 	S extends Specs,
 	T extends SpecStructure<S> = SpecStructure<S>
 > = {
-	classNames?: T['classNames']
+	classNames?: ClassValue
 	default?: _InferredDefault<S>
-	styles?: T['styles']
-	tokens?: T['tokens']
-	unstyled?: T['unstyled']
+	styles?: CSSProperties
+	// subcomponents?: Record<string, unknown>		// move this to compound/root
+	tokens?: CSSVars
+	unstyled?: boolean
 }
 
 export type ExtendedSpecs<S extends Specs> =
-	NonNullable<S['is']>['compound'] extends true
+	_IsCompound<S['specIs']> extends true
 		? _CompoundComponentSpec<S>
 		: _RootComponentSpec<S>
 
 type _CompoundSpec<P,> =
-	'is' extends keyof P
-		? 'compound' extends keyof P['is']
-			? P['is']['compound']
+	'specIs' extends keyof P
+		? 'compound' extends keyof P['specIs']
+			? P['specIs']['compound']
 			: false
 		: false
 
@@ -113,20 +147,19 @@ type _RootSpec<V, P> =
 		? never
 		: V
 
-type _Attributes<P,> = _RootSpec<Record<string, unknown>, P>
-type _ClassNames<P,> = _RootSpec<ClassValue, P>
-type _CssTokens<P,> = _RootSpec<CSSVars, P>
-type _DataAttributes<P,> = _RootSpec<Record<string, unknown>, P>
-type _Styles<P,> = _RootSpec<CSSProperties, P>
-type _Unstyled<P,> = _RootSpec<boolean, P>
-type _Variant<P,> = _RootSpec<string, P>
+// type _Attributes<P,> = _RootSpec<Record<string, unknown>, P>
+// type _ClassNames<P,> = _RootSpec<ClassValue, P>
+// type _CssTokens<P,> = _RootSpec<CSSVars, P>
+// type _DataAttributes<P,> = _RootSpec<Record<string, unknown>, P>
+// type _Styles<P,> = _RootSpec<CSSProperties, P>
+// type _Unstyled<P,> = _RootSpec<boolean, P>
+// type _Variant<P,> = _RootSpec<string, P>
 
-export interface SpecStructure<P = { is: { compound: false } }> {
-	attributes?: _Attributes<P>
-	classNames?: _ClassNames<P>
-	data?: _DataAttributes<P>
-	styles?: _Styles<P>
-	tokens?: _CssTokens<P>
-	unstyled?: _Unstyled<P>
-	variant?: _Variant<P>
+export interface SpecStructure<T = unknown> {
+	attributes?: BoxAttributes<T>
+	classNames?: ClassValue
+	styles?: CSSProperties
+	tokens?: CSSVars
+	unstyled?: boolean
+	variant?: string
 }
