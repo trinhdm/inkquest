@@ -1,4 +1,5 @@
 import { setDefaultProps } from '@/lib/registries'
+import type { Simplify } from '@/types/utils'
 
 import {
 	memo,
@@ -43,7 +44,7 @@ type _DefaultComponent<S extends Specs, P = InferDefaultProps<S>> = {
 }
 
 type _Component<S extends Specs> =
-	NamedExoticComponent<_FactoryProps<S>>
+	NamedExoticComponent<Simplify<_FactoryProps<S>>>
 
 export interface MethodsBase<
 	S extends Specs,

@@ -1,7 +1,7 @@
 import { COLOR_TOKENS, THEME_SCHEMES } from '../scales'
 import type { CSSProperties } from 'react'
-import type { AtLeastOneKey } from '@/types/utils'
-import type { CSSUnit, CSSVars, FontList, HexCode, Unit } from '@/types/shared'
+import type { AtLeastOneKeyOf } from '@/types/utils'
+import type { CSSVars, HexCode, Unit } from '@/types/shared'
 import type { GetVariantColorsFn, PaintVariantsFn } from '../tokens'
 import type { SemanticTokens } from '../reference'
 
@@ -39,9 +39,9 @@ export interface SiteTheme {
 		& { [K in FlatColorKey]: HexCode }
 		& { [K in ColorScaleKey]: readonly HexCode[] }
 
-	fontFamily: FontStyle<'fontFamily', 'sans'>
-	fontSize: number[] | FontStyle<'fontSize', 'md'>
-	fontWeight: number[] | FontStyle<'fontWeight', 'regular'>
+	fontFamily: Record<'black' | 'sans' | 'mono', string>
+	fontSize: number[]
+	fontWeight: number[]
 	lineHeight: Style<'lineHeight', ThemeLineHeight, 'normal'>
 	tracking: Style<'letterSpacing', ThemeSizeScale, 'md'>
 
@@ -51,10 +51,6 @@ export interface SiteTheme {
 	opacity: number[]
 	radius: number[]
 	screenSize: number[]
-	// containerSize: {}
-
-	// headings: FontStyles<TagFontStyles, HeadingTag, 'h1'>
-	// breakpoints: Style<CSSUnit, Size>
 
 	subcomponents?: Record<string, {
 		cssVars?: (theme: SiteTheme, props: unknown, ctx: unknown) => Partial<Record<string, CSSVars>>
@@ -95,11 +91,11 @@ type StyleList<
     V,
     Name extends PropertyKey = PropertyKey,
 > =
-    V extends CSSUnit
+    V extends `${number}${Unit}`
 		? ConsistentValues<Keys, true>
 		: Name extends ConsistentProperty
 			? ConsistentValues<Keys, true, number extends V ? V : undefined>
-			: AtLeastOneKey<Record<Keys, V>>
+			: AtLeastOneKeyOf<Keys, V>
 
 type BaseStyle<
     V,
@@ -120,28 +116,6 @@ type Style<
 > =
 	BaseStyle<CSSProperties[P], Keys, RK, Name>
 
-type FontStyle<
-    K extends keyof FontList,
-    RK extends FontList[K] | undefined = undefined,
-> =
-	BaseStyle<CSSProperties[K], FontList[K], RK, K>
-
-// interface FontStyles<
-// 	V,
-// 	Keys extends PropertyKey,
-// 	RK extends Keys | undefined = undefined,
-// > {
-// 	fontFamily?: FontStyle<'fontFamily'>
-// 	fontWeight?: FontStyle<'fontWeight'>
-// 	tagName: Style<V, Keys, RK>
-// }
-
-// interface TagFontStyles {
-// 	fontSize: FontStyle<'fontSize'>
-// 	fontWeight?: FontStyle<'fontWeight'>
-// 	lineHeight?: FontStyle<'lineHeight'>
-// }
-
 // consistent value helpers
 
 type ConsistentProperty =
@@ -156,18 +130,19 @@ type ConsistentType<
 	T extends undefined
 		? never
 		: Optional extends true
-			? AtLeastOneKey<Record<K, T>>
+			? AtLeastOneKeyOf<K, T>
 			: Record<K, T>
 
 type ConsistentUnit<
-	K extends PropertyKey,
-	Optional extends boolean = false,
-	U extends string = Unit,
-> = {
-		[V in U]: Optional extends true
-			? AtLeastOneKey<Record<K, `${number}${V}`>>
-			: Record<K, `${number}${V}`>
-	}[U]
+    K extends PropertyKey,
+    Optional extends boolean = false,
+    U extends string = Unit,
+> =
+	// `${number}${U}` already distributes over U on its own — the mapped
+	// type + [U] indexed-access unwrap above was a redundant second pass.
+	Optional extends true
+		? AtLeastOneKeyOf<K, `${number}${U}`>
+		: Record<K, `${number}${U}`>
 
 type ConsistentValues<
 	K extends PropertyKey,
