@@ -55,6 +55,10 @@ const ICON_TYPE_OPTIONS: readonly IconType[] = [
 
 const SIZE_OPTIONS: readonly number[] = [16, 24, 32, 48]
 
+// Local, not shared: `Icon` has no subcomponent family, matching `Badge`'s/
+// `Container`'s own local `BOOLEAN_OPTIONS`, used by the `Unstyled` story.
+const BOOLEAN_OPTIONS = [true, false] as const
+
 const Row = ({ children }: { children: ReactNode }) => (
 	<div style={ { display: 'flex', gap: 24, flexWrap: 'wrap' } }>
 		{ children }
@@ -95,6 +99,10 @@ const meta: Meta<typeof Icon> = {
 		size: {
 			control: 'number',
 			description: 'Pixel size applied to both the `width` and `height` of the underlying Lucide SVG icon.',
+		},
+		unstyled: {
+			control: 'boolean',
+			description: 'Inherited from `BoxProps`. When true, the `styles(\'root\')` call `Icon` makes returns an empty class name instead of its `inkq-icon` base class on the rendered `<svg>` — see the `Unstyled` story.',
 		},
 	},
 	args: {
@@ -205,5 +213,32 @@ export const UnrecognizedType: Story = {
 		// `Icon.tsx`: `const component = ICON_MAP[type]; if (!component) return
 		// null` — an unrecognized `type` renders nothing at all.
 		await expect(canvasElement.querySelector('svg')).not.toBeInTheDocument()
+	},
+}
+
+// `unstyled` strips the base `inkq-icon` class `useStyles`/`getClassName.tsx`
+// applies to the root element — verified against `Icon.tsx`'s own render,
+// which only ever calls `styles('root')` (no other selector) on the rendered
+// Lucide `<svg>`.
+export const Unstyled: Story = {
+	parameters: { controls: { exclude: ['unstyled'] } },
+	render: (args) => (
+		<Row>
+			{ BOOLEAN_OPTIONS.map(unstyled => (
+				<Group key={ String(unstyled) } label={ String(unstyled) }>
+					<Icon { ...args as Icon.Props } unstyled={ unstyled } />
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const svgs = canvasElement.querySelectorAll('svg')
+
+		await expect(svgs).toHaveLength(BOOLEAN_OPTIONS.length)
+
+		const [unstyledSvg, styledSvg] = svgs
+
+		await expect(styledSvg).toHaveClass('inkq-icon')
+		await expect(unstyledSvg).not.toHaveClass('inkq-icon')
 	},
 }

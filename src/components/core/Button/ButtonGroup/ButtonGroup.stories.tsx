@@ -66,6 +66,10 @@ const meta: Meta<ButtonGroupStoryArgs> = {
 		disabled: { control: 'boolean' },
 		hasPriority: { control: 'boolean' },
 		loading: { control: 'boolean' },
+		unstyled: {
+			control: 'boolean',
+			description: 'Inherited from `BoxProps`. When true, the `styles(\'root\')` call `ButtonGroup` makes returns an empty class name instead of its `inkq-button-group` base class on the group\'s root element — see the `Unstyled` story. Does not cascade to the child `Button`s inside it (`unstyled` isn\'t among the props `childrenWithProps` forwards).',
+		},
 	},
 	args: {
 		hasPriority: buttonGroupDefaults.hasPriority,
@@ -183,4 +187,36 @@ export const FullWidth: Story = {
 			)) }
 		</div>
 	),
+}
+
+// `unstyled` strips the base `inkq-button-group` class `useStyles`/
+// `getClassName.tsx` applies to the group's root element (rendered with
+// `role="group"`) — verified against `ButtonGroup.tsx`'s own render, which
+// only ever calls `styles('root')` (no other selector). It has no effect on
+// the child `Button`s' own styling, since `ButtonGroup` doesn't forward
+// `unstyled` through `childrenWithProps`.
+export const Unstyled: Story = {
+	parameters: { controls: { exclude: ['unstyled'] } },
+	render: ({ size, variant, ...args }) => (
+		<Row>
+			{ BOOLEAN_OPTIONS.map(unstyled => (
+				<Group key={ String(unstyled) } label={ String(unstyled) }>
+					<Button.Group { ...args } unstyled={ unstyled }>
+						{ renderGroup({ size, variant }) }
+					</Button.Group>
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			groups = canvas.getAllByRole('group')
+
+		expect(groups).toHaveLength(2)
+
+		const [isUnstyled, isStyled] = groups
+
+		await expect(isStyled).toHaveClass('inkq-button-group')
+		await expect(isUnstyled).not.toHaveClass('inkq-button-group')
+	},
 }

@@ -61,6 +61,10 @@ const meta: Meta<typeof Badge> = {
 			control: 'boolean',
 			description: 'Stretches the badge to fill its container\'s width.',
 		},
+		unstyled: {
+			control: 'boolean',
+			description: 'Inherited from `BoxProps`. When true, every `styles(selector)` call `Badge` makes (`root` and `inner`) returns an empty class name instead of its `inkq-badge`/`inkq-badge__inner` base class — see the `Unstyled` story.',
+		},
 	},
 	args: {
 		children: 'Badge',
@@ -175,5 +179,44 @@ export const AsElement: Story = {
 
 		await expect(asDiv.tagName).toBe('DIV')
 		await expect(asSpan.tagName).toBe('SPAN')
+	},
+}
+
+// `unstyled` strips the base `inkq-badge`/`inkq-badge__inner` classes
+// `useStyles`/`getClassName.tsx` applies to the root and inner wrapper
+// elements — verified against `Badge.tsx`'s own render, which calls
+// `styles('root')` on the root `Box` and `styles('inner')` on the nested
+// `<Box as="span">` wrapping `children`.
+export const Unstyled: Story = {
+	parameters: { controls: { exclude: ['unstyled'] } },
+	render: (args) => (
+		<Row>
+			{ BOOLEAN_OPTIONS.map(unstyled => (
+				<Group key={ String(unstyled) } label={ String(unstyled) }>
+					<Badge { ...args as Badge.Props } unstyled={ unstyled } />
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			badges = canvas.getAllByText('Badge')
+
+		await expect(badges).toHaveLength(2)
+
+		// `badges` here ARE the inner `<Box as="span">` elements (`children`
+		// renders directly inside them) — the `data-variant` attribute (set
+		// unconditionally by `Badge.tsx`, independent of `unstyled`) still
+		// reaches the root element regardless, so it's a safe way to walk up
+		// to it even when `unstyled` strips the root's own class name.
+		const [unstyledInner, styledInner] = badges,
+			unstyledRoot = unstyledInner.closest('[data-variant]') as HTMLElement,
+			styledRoot = styledInner.closest('[data-variant]') as HTMLElement
+
+		await expect(styledRoot).toHaveClass('inkq-badge')
+		await expect(unstyledRoot).not.toHaveClass('inkq-badge')
+
+		await expect(styledInner).toHaveClass('inkq-badge__inner')
+		await expect(unstyledInner).not.toHaveClass('inkq-badge__inner')
 	},
 }

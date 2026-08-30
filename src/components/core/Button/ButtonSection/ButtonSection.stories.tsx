@@ -1,5 +1,6 @@
-import { SIZE_OPTIONS, VARIANT_OPTIONS } from '../options.story'
+import { BOOLEAN_OPTIONS, SIZE_OPTIONS, VARIANT_OPTIONS } from '../options.story'
 import { Button } from '../Button'
+import { expect, within } from 'storybook/test'
 import { Icon } from '@/components/core/Icon'
 import { getDefaultProps } from '@/lib/registries'
 import type { ReactNode } from 'react'
@@ -48,6 +49,10 @@ const meta: Meta<ButtonSectionStoryArgs> = {
 		},
 		disabled: { control: 'boolean' },
 		loading: { control: 'boolean' },
+		unstyled: {
+			control: 'boolean',
+			description: 'Inherited from `BoxProps`. When true, the `styles(\'section\')` call `ButtonSection` makes returns an empty class name instead of its `inkq-button__section` base class (nested inside `Button`, which clones sections with `parentName="Button"`) — see the `Unstyled` story. Set directly on `Button.Section` itself, independent of the wrapping `Button`\'s own `unstyled` state.',
+		},
 	},
 	args: {
 		variant: buttonDefaults.variant,
@@ -107,5 +112,45 @@ export const Sides: Story = {
 				</Group>
 			</Row>
 		)
+	},
+}
+
+// `unstyled` strips the base `inkq-button__section` class `useStyles`/
+// `getClassName.tsx` applies to this section's `<span data-side="...">`
+// wrapper — verified against `ButtonSection.tsx`'s own render, which only
+// ever calls `styles('section')`. Set only on the `Button.Section` here (not
+// on the wrapping `Button`), to isolate its own, independent effect.
+export const Unstyled: Story = {
+	parameters: { controls: { exclude: ['unstyled'] } },
+	render: ({ variant, size, disabled, loading }: ButtonSectionStoryArgs) => {
+		const buttonProps = { variant, size, disabled, loading }
+
+		return (
+			<Row>
+				{ BOOLEAN_OPTIONS.map(unstyled => (
+					<Group key={ String(unstyled) } label={ String(unstyled) }>
+						<Button { ...buttonProps }>
+							<Button.Section left unstyled={ unstyled }>
+								<Icon type="download" />
+							</Button.Section>
+							Download
+						</Button>
+					</Group>
+				)) }
+			</Row>
+		)
+	},
+	play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+		const canvas = within(canvasElement),
+			buttons = canvas.getAllByRole('button')
+
+		expect(buttons).toHaveLength(2)
+
+		const [unstyledButton, styledButton] = buttons,
+			unstyledSection = unstyledButton.querySelector('[data-side="left"]'),
+			styledSection = styledButton.querySelector('[data-side="left"]')
+
+		await expect(styledSection).toHaveClass('inkq-button__section')
+		await expect(unstyledSection).not.toHaveClass('inkq-button__section')
 	},
 }

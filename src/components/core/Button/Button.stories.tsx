@@ -48,6 +48,10 @@ const meta: Meta<typeof Button> = {
 			control: 'select',
 			options: SIZE_OPTIONS,
 		},
+		unstyled: {
+			control: 'boolean',
+			description: 'Inherited from `BoxProps`. When true, every `styles(selector)` call `Button` makes (`root`, `inner`, `label`, and `icon` when `loading`) returns an empty class name instead of its `inkq-button*` base class — see the `Unstyled` story.',
+		},
 		onClick: { action: 'clicked' },
 	},
 	args: {
@@ -201,6 +205,49 @@ export const DisabledState: Story = {
 
 		await userEvent.click(isNotDisabled)
 		await expect(args.onClick).toHaveBeenCalledOnce()
+	},
+}
+
+// `unstyled` strips the base `inkq-*` class `useStyles`/`getClassName.tsx`
+// would otherwise apply to EVERY selector this component styles (`root`,
+// `inner`, `label`) — not just the root element — since `check.isUnstyled` is
+// derived once from `props.unstyled` and reused across every `styles(...)`
+// call `Button` makes. Verified against `Button.tsx`'s own render: root is
+// the `<button>` itself (`inkq-button`), wrapping an inner `<span>`
+// (`inkq-button__inner`) that wraps a label `<span>` (`inkq-button__label`).
+export const Unstyled: Story = {
+	parameters: { controls: { exclude: ['unstyled'] } },
+	render: (args) => (
+		<Row>
+			{ BOOLEAN_OPTIONS.map(unstyled => (
+				<Group key={ String(unstyled) } label={ String(unstyled) }>
+					<Button { ...args as NativeButtonArgs } unstyled={ unstyled } />
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			buttons = canvas.getAllByRole('button')
+
+		expect(buttons).toHaveLength(2)
+
+		const [isUnstyled, isStyled] = buttons
+
+		await expect(isStyled).toHaveClass('inkq-button')
+		await expect(isUnstyled).not.toHaveClass('inkq-button')
+
+		const styledInner = isStyled.querySelector('span'),
+			unstyledInner = isUnstyled.querySelector('span')
+
+		await expect(styledInner).toHaveClass('inkq-button__inner')
+		await expect(unstyledInner).not.toHaveClass('inkq-button__inner')
+
+		const styledLabel = styledInner?.querySelector('span'),
+			unstyledLabel = unstyledInner?.querySelector('span')
+
+		await expect(styledLabel).toHaveClass('inkq-button__label')
+		await expect(unstyledLabel).not.toHaveClass('inkq-button__label')
 	},
 }
 

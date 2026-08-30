@@ -45,6 +45,10 @@ const meta: Meta<typeof Container> = {
 			control: 'boolean',
 			description: 'Stretches the container to fill its parent\'s width (adds `data-block`/`display: block; width: 100%`).',
 		},
+		unstyled: {
+			control: 'boolean',
+			description: 'Inherited from `BoxProps`. When true, every `styles(selector)` call `Container` makes (`root` and `inner`) returns an empty class name instead of its `inkq-container`/`inkq-container__inner` base class — see the `Unstyled` story.',
+		},
 	},
 	args: {
 		...getDefaultProps<Container.Props>('Container'),
@@ -138,4 +142,48 @@ export const NestedContent: Story = {
 		),
 	},
 	parameters: { layout: 'padded' },
+}
+
+// `unstyled` strips the base `inkq-container`/`inkq-container__inner`
+// classes `useStyles`/`getClassName.tsx` applies to the root and inner
+// wrapper elements — verified against `Container.tsx`'s own render, which
+// calls `styles('root')` on the root `Box` and `styles('inner')` on the
+// nested `<Box as="span">` wrapping `children`.
+export const Unstyled: Story = {
+	parameters: {
+		layout: 'padded',
+		controls: { exclude: ['unstyled'] },
+	},
+	render: (args) => (
+		<Row>
+			{ BOOLEAN_OPTIONS.map(unstyled => (
+				<Group key={ String(unstyled) } label={ String(unstyled) }>
+					<Container { ...args as Container.Props } unstyled={ unstyled } />
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			items = canvas.getAllByText('Container content')
+
+		await expect(items).toHaveLength(2)
+
+		// Unlike `FullWidth`/`AsElement` above, `unstyled=true` strips the
+		// literal `.inkq-container` class `ROOT_SELECTOR` keys off of, so it
+		// can't be reused here. The text sits one level down inside the
+		// internal `<Box as="span">` wrapper, and that wrapper is always a
+		// direct child of the root `<Box as="div">` in this story (`as` isn't
+		// overridden here), so walking up to the nearest `<div>` ancestor
+		// reaches the root reliably regardless of `unstyled`.
+		const [unstyledInner, styledInner] = items,
+			unstyledRoot = unstyledInner.closest('div') as HTMLElement,
+			styledRoot = styledInner.closest('div') as HTMLElement
+
+		await expect(styledRoot).toHaveClass('inkq-container')
+		await expect(unstyledRoot).not.toHaveClass('inkq-container')
+
+		await expect(styledInner).toHaveClass('inkq-container__inner')
+		await expect(unstyledInner).not.toHaveClass('inkq-container__inner')
+	},
 }
