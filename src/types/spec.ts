@@ -33,14 +33,14 @@ type RemoveAriaPrefix<T> = {
 type AriaName =
 	RemoveAriaPrefix<AriaAttributes>
 
-export interface BoxAttributes {
+export interface SpecAttributes {
 	aria?: AriaName
 	data?: Record<string, unknown>
 }
 
 type TagAttributes<T> =
 	Omit<HTMLAttributes<TagElement<T>>, keyof AriaAttributes>
-	& BoxAttributes
+	& SpecAttributes
 
 type _SpecOptions =
 	| 'compound'					// compound components cannot have styles

@@ -8,8 +8,7 @@ const getBaseClass = <S extends ValidSpecs<S>>({
 	name,
 	prefix,
 	selector,
-}: SharedConfig<S>): string | undefined => {
-	if (check.isUnstyled) return
+}: SharedConfig<S>): string => {
 	let baseName = toKebabCase(name)
 
 	if (prefix) baseName = `${prefix}-${baseName}`
@@ -19,17 +18,16 @@ const getBaseClass = <S extends ValidSpecs<S>>({
 }
 
 export const getClassName = <S extends ValidSpecs<S>>(
-	options: SharedConfig<S>
+	config: SharedConfig<S>
 ): string => {
-	const { classes } = options,
-		baseClass = getBaseClass(options)
-
-	if (!baseClass) return ''
+	const { check, classes } = config,
+		baseClass = getBaseClass(config)
 
 	const classList = [baseClass],
 		styleClass = classes?.[baseClass]
 
-	if (styleClass) classList.push(styleClass)
+	if (styleClass && !check.isUnstyled)
+		classList.push(styleClass)
 
 	return cx(...classList)
 }

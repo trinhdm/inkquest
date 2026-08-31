@@ -1,7 +1,7 @@
 
 export const hasValue = <V,>(
 	value: V
-) => {
+): boolean => {
 	if (value === null || value === undefined)
 		return false
 	if (typeof value === 'string')
@@ -14,3 +14,4 @@ export const hasValue = <V,>(
 		return value?.constructor === Object && Object.keys(value).length > 0
 	return true
 }
+

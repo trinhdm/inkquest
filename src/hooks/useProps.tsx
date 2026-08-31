@@ -1,40 +1,4 @@
 import { getDefaultProps } from '@/lib/registries'
-import { hasValue, toKebabCase } from '@/utils/helpers'
-
-type DataAttributes<T extends Record<string, any>, S extends string> = {
-	[K in keyof T as `${S}-${string & K}`]: string
-}
-
-const formatAttribute = (key: string) => {
-	let attribute = key,
-		parts = [] as string[],
-		prefix = ''
-
-	if (key.startsWith('aria-') || key.startsWith('data-')) {
-		([prefix, ...parts] = key.split('-'))
-		attribute = parts.join('-')
-		parts = [prefix]
-	}
-
-	attribute = toKebabCase(attribute)
-	parts.push(attribute)
-
-	return parts.join('-')
-}
-
-const prefixAttributes = <T extends Record<string, any>, S extends string>(
-	attributes: T | undefined,
-	prefix: S
-): DataAttributes<T, S> | undefined => {
-	if (!attributes) return
-	const attrs = Object.entries(attributes)
-
-	return attrs.reduce<DataAttributes<T, S>>((acc, [key, value]) => {
-		const k = `${prefix}-${key}` as keyof DataAttributes<T, S>
-		if (hasValue(value)) acc[k] = value
-		return acc
-	}, {} as DataAttributes<T, S>)
-}
 
 type FilteredProps<T extends object> = {
 	[K in keyof T]: T[K] extends undefined
@@ -49,33 +13,54 @@ export const filterProps = <T extends object>(
 		const value = props[key] as FilteredProps<T>[typeof key]
 		let isValid = Object.hasOwn(props, key)
 
-		if ((key === 'aria' || key === 'data') && value) {
-			const attrs = prefixAttributes(value, key)
-			if (attrs) acc = { ...acc, ...attrs }
-		} else {
-			if (omitEmpty) isValid = isValid && !!value
-			if (isValid) acc[key] = value
-		}
+		if (omitEmpty) isValid = isValid && !!value
+		if (isValid) acc[key] = value
 
 		return acc
 	}, {} as FilteredProps<T>)
 )
 
-export const useProps = <T extends object>(
+type StyleableProps = {
+	classNames?: unknown
+	styles?: unknown
+}
+
+type RenamedProps<T extends StyleableProps> = Omit<T, 'classNames' | 'styles'> & {
+	className?: T['classNames']
+	style?: T['styles']
+}
+
+export const useProps = <T extends object & StyleableProps>(
 	name: string | undefined | (string | undefined)[],
-	props: T
+	_props: T
 ): T => {
-	let defaultProps = {} as Partial<T>
+	let props = {} as T,
+		incProps = _props as RenamedProps<T>
 
 	if (name) {
 		const component = Array.isArray(name)
 			? name.filter(Boolean).join('.')
 			: name
-		defaultProps = getDefaultProps<T>(component)
+		let defaultProps = getDefaultProps<T>(component)
+
+		if (Object.keys(defaultProps).length) {
+			defaultProps = filterProps(defaultProps)
+			props = { ...props, ...defaultProps }
+		}
 	}
 
-	const defaults = filterProps(defaultProps),
-		filtered = filterProps(props)
+	if (Object.hasOwn(_props, 'classNames') || Object.hasOwn(_props, 'styles')) {
+		const { classNames, styles, ...rest } = _props
+		incProps = { ...rest }
 
-	return { ...defaults, ...filtered } as T
+		if (Object.hasOwn(_props, 'classNames') && classNames)
+			Object.assign(incProps, { className: classNames })
+
+		if (Object.hasOwn(_props, 'styles') && styles)
+			Object.assign(incProps, { style: styles })
+	}
+
+	const filtered = filterProps(incProps)
+
+	return { ...props, ...filtered } as T
 }

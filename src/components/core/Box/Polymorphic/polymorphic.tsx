@@ -10,9 +10,9 @@ import type {
 } from 'react'
 
 import type { AsTag, ValidElement } from './types'
-import type { BoxAttributes } from '@/types/spec'
 import type { ClassValue } from 'clsx'
 import type { CSSVars } from '@/types/shared'
+import type { SpecAttributes } from '@/types/spec'
 
 type _BaseProps<C extends ValidElement> =
 	JSX.LibraryManagedAttributes<
@@ -34,7 +34,7 @@ export type PropertiesBase<P extends ComponentProps<ElementType>> =
 	Pick<FunctionComponent<P>, 'displayName'>
 
 interface SpecStructure {
-	attributes?: BoxAttributes
+	attributes?: SpecAttributes
 	classNames?: ClassValue
 	styles?: CSSProperties
 	tokens?: CSSVars
