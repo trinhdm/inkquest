@@ -1,5 +1,5 @@
 import { Box, polymorphic, type BoxProps } from '@/components/core/Box'
-import { useProps, useStyles, useVariantStyles } from '@/hooks'
+import { useProps, useStyles } from '@/hooks'
 import type { ReactNode } from 'react'
 import classes from './Container.module.scss'
 
@@ -17,7 +17,6 @@ interface ContainerSpecs {
 }
 
 export const Container = polymorphic<ContainerSpecs>(_props => {
-	useVariantStyles(NAME)
 	const props = useProps(NAME, _props)
 	const styles = useStyles<ContainerSpecs>(NAME, { classes, props })
 

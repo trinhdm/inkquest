@@ -1,22 +1,56 @@
 'use client'
 
 import { useInsertionEffect } from 'react'
-import { buildVariantSchemes } from '@/lib/theme/buildVariantSchemes'
-import { serializeStyles } from '@/components/document'
+// import { buildVariantSchemes } from '@/lib/theme/buildVariantSchemes'
+// import { serializeStyles } from '@/components/document'
 import { hasInjectedVariantStyles, markVariantStylesInjected } from '@/lib/registries/variantStyleRegistry'
 
-export const useVariantStyles = (name: string) => {
+// import { toKebabCase } from '@/utils/helpers'
+// import { PREFIX_CSS_SELECTOR } from '@/utils/constants'
+// import type { CssRule } from '@/lib/theme'
+
+export const useVariantStyles = (name: string, css?: string) => {
 	useInsertionEffect(() => {
-		if (hasInjectedVariantStyles(name)) return
+		if (!css || hasInjectedVariantStyles(name)) return
 
 		markVariantStylesInjected(name)
 
-		const css = serializeStyles(buildVariantSchemes(name))
-		if (!css) return
-
-		const style = document.createElement('style')
-		style.dataset.variantVars = name
-		style.textContent = css
-		document.head.appendChild(style)
+		const stylesheet = document.createElement('style')
+		stylesheet.dataset.targetVars = name
+		stylesheet.textContent = css
+		document.head.appendChild(stylesheet)
 	}, [name])
 }
+
+
+// export const useVariantStyles = (name: string) => {
+// 	useInsertionEffect(() => {
+// 		if (hasInjectedVariantStyles(name)) return
+
+// 		markVariantStylesInjected(name)
+
+// 		const namespace = !!name ? toKebabCase(name) : 'variant',
+// 			selector = `.${PREFIX_CSS_SELECTOR}-${namespace}`
+
+// 		// const css = serializeStyles(buildVariantSchemes(name))
+// 		const test = {
+// 			selector,
+// 			vars: {
+// 				'--button-background': 'var(--variant-background)',
+// 				'--button-background-hover': 'var(--variant-background-hover)',
+// 				'--button-border': 'var(--variant-border)',
+// 				'--button-border-hover': 'var(--variant-border-hover)',
+// 				'--button-color': 'var(--variant-color)',
+// 			},
+// 		}
+// 		const css = serializeStyles([test])
+// 		console.log('test', { css })
+// 		if (!css) return
+
+// 		const style = document.createElement('style')
+// 		style.dataset.targetVars = name
+// 		style.textContent = css
+// 		console.log(style)
+// 		document.head.appendChild(style)
+// 	}, [name])
+// }

@@ -1,10 +1,10 @@
 .inkq-button {
 	$name: &;
 
-	background-color: var(--button-background, var(--inkq-background-backup));
+	background-color: var(--button-background);
     border-radius: var(--inkq-border-radius-chip);
-    border: 1px solid var(--button-border, var(--inkq-border-backup));
-	color: var(--button-color, var(--inkq-color-backup));
+    border: 1px solid var(--button-border);
+	color: var(--button-color);
 	display: inline-block;
 	font: var(--inkq-font-label);
     letter-spacing: var(--inkq-font-tracking-stat);
@@ -31,12 +31,6 @@
 		z-index: 1;
 	}
 
-	&:hover:where(:enabled, :not(:disabled, [data-disabled])) {
-		background-color: var(--button-background-hover, var(--button-background));
-		border-color: var(--button-border-hover, var(--button-border));
-		cursor: pointer;
-	}
-
 	&__inner {
 		align-items: center;
 		display: flex;
@@ -58,18 +52,28 @@
 		z-index: 5;
 	}
 
+	&:not(
+		:disabled,
+		[data-disabled],
+		[data-loading]
+	):hover {
+		background-color: var(--button-background-hover);
+		border-color: var(--button-border-hover);
+		cursor: pointer;
+	}
+
 	&:where([data-block]) {
 		display: block;
 		width: 100%;
 	}
 
 	&:where([data-disabled]) {
-		background-color: rgb(from var(--button-background, var(--inkq-background-backup)) r g b / var(--inkq-opacity-disabled));
+		background-color: rgb(from var(--button-background) r g b / var(--inkq-opacity-disabled));
 		// opacity: var(--inkq-opacity-disabled);
 	}
 
 	&:where([data-loading]) {
-		pointer-events: none;
+		cursor: progress;
 
 		&::after {
 			opacity: 1;

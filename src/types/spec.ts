@@ -145,3 +145,19 @@ export type ExtendedSpecs<S extends Specs> =
 // 			? P['specIs']['compound']
 // 			: false
 // 		: false
+
+
+
+export type SpecsList<
+	S extends ValidSpecs<S>,
+	K = InferComponentSpec<S>,
+	// V = S['props'] extends { variant?: infer PV } ? PV : never,
+> = Specs<K, S['props']>
+	& ExtendedSpecs<S> & {
+		subcomponents?: S['subcomponents']
+		// variant?: _PropsVariant<S> extends infer VP
+		// 	? VP extends string
+		// 		? Exclude<VP, undefined>
+		// 		: _SpecVariant<S>
+		// 	: never
+	}

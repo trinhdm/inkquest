@@ -4,12 +4,15 @@ import type { ComponentProps } from 'react'
 
 interface VariantStyleInlinerProps
 	extends ComponentProps<'style'> {
-	names: string[]
+	names?: string[]
+	prefix?: string
 }
 
-export const VariantStyleInliner = ({ names, ...props }: VariantStyleInlinerProps) => {
-	const tokens = names.flatMap(buildVariantSchemes),
-		styles = serializeStyles(tokens)
+export const VariantStyleInliner = ({ names, prefix, ...props }: VariantStyleInlinerProps) => {
+	const tokens = !!names?.length
+		? names.flatMap(name => buildVariantSchemes(name, prefix))
+		: buildVariantSchemes('', prefix)
+	const styles = serializeStyles(tokens)
 
 	if (!styles) return null
 

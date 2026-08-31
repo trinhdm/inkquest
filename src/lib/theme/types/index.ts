@@ -1,6 +1,6 @@
 export type {
 	BaseVarKey, ColorScheme,
-	SiteTheme, ThemeName, ThemeTokens,
+	SiteTheme, SiteThemeConfig, ThemeName, ThemeTokens,
 } from './theme.types'
 
 export type {

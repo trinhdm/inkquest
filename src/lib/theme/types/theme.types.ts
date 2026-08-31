@@ -29,10 +29,10 @@ export type ThemeTokens<V = unknown> =
 export type BaseVarKey = 'base'
 
 export interface SiteTheme {
-	getVariantColors: GetVariantColorsFn
-	paintVariants: PaintVariantsFn
+	// getVariantColors: GetVariantColorsFn
+	// paintVariants: PaintVariantsFn
 
-	tokens: SemanticTokens
+	// tokens: SemanticTokens
 
 	scale: { size: number }
 	colors:
@@ -52,6 +52,20 @@ export interface SiteTheme {
 	radius: number[]
 	screenSize: number[]
 
+	// subcomponents?: Record<string, {
+	// 	cssVars?: (theme: SiteTheme, props: unknown, ctx: unknown) => Partial<Record<string, CSSVars>>
+	// }>
+}
+
+export interface SiteThemeConfig
+	extends SemanticTokens {
+	// getVariantColors: GetVariantColorsFn
+	// paintVariants: PaintVariantsFn
+
+	prefixSelector: (name: string) => string
+
+	// config: SiteTheme
+	prefix?: string
 	subcomponents?: Record<string, {
 		cssVars?: (theme: SiteTheme, props: unknown, ctx: unknown) => Partial<Record<string, CSSVars>>
 	}>

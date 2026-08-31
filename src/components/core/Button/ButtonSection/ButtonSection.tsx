@@ -1,5 +1,5 @@
 import { Children, cloneElement, isValidElement, type ReactNode } from 'react'
-import { useProps, useStyles, useVariantStyles } from '@/hooks'
+import { useProps, useStyles} from '@/hooks'
 import { Box, polymorphic, type BoxProps } from '@/components/core/Box'
 import { Icon } from '@/components/core/Icon'
 import classes from '../Button.module.scss'
@@ -7,18 +7,18 @@ import classes from '../Button.module.scss'
 const NAME = 'ButtonSection' as const,
 	TAG = 'span' as const
 
-interface LeftButtonSectionProps {
+interface LeftSectionProps {
 	left: true
 	right?: never
 }
-interface RightButtonSectionProps {
+interface RightSectionProps {
 	left?: never
 	right: true
 }
 
 export type ButtonSectionProps = BoxProps & (
-	| LeftButtonSectionProps
-	| RightButtonSectionProps
+	| LeftSectionProps
+	| RightSectionProps
 ) & {
 	as?: never
 	parentName?: string
@@ -40,10 +40,9 @@ const enforceIconSize = (children: ReactNode): ReactNode =>
 	})
 
 export const ButtonSection = polymorphic<ButtonSectionSpecs>(_props => {
-	useVariantStyles(NAME)
 	const props = useProps(NAME, _props)
-	const { as, children, left, right, parentName, ...rest } = props
-	const styles = useStyles<ButtonSectionSpecs>(parentName ?? NAME, { classes, props })
+	const { as, children, left, right, parentName = NAME, ...rest } = props
+	const styles = useStyles<ButtonSectionSpecs>(parentName, { classes, props })
 
 	return (
 		<Box

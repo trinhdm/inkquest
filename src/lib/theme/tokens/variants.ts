@@ -19,7 +19,7 @@ interface ToneAccessor {
 const fromMixture = (token: typeof alias.color.danger): ToneAccessor => ({
 	base: () => token(),
 	strong: () => token('shade'),
-	emphasis: () => token('active'),
+	emphasis: () => token('hover'),
 	subtle: () => token('muted'),
 	dim: () => token('dim'),
 })
@@ -129,8 +129,11 @@ const resolveVariants = ({ variant, priority }: Omit<VariantPalette, 'palette'>)
 	tone = variant as Tone
 
 	if (isStructural) {
-		role = STRUCTURAL_VARIANTS[variant as keyof typeof STRUCTURAL_VARIANTS]
-		tone = variant === 'solid' ? 'action' : 'neutral'
+		const target = (Object.keys(STRUCTURAL_VARIANTS) as (keyof typeof STRUCTURAL_VARIANTS)[])
+			.find(key => STRUCTURAL_VARIANTS[key] === priority)
+
+		role = STRUCTURAL_VARIANTS[target ?? variant as keyof typeof STRUCTURAL_VARIANTS]
+		tone = role === 'primary' ? 'action' : 'neutral'
 	}
 
 	const result = PRIORITY_SHAPES[role](TONE_ACCESSORS[tone]),
@@ -185,6 +188,7 @@ export interface VariantPalette {
 export const enumerateVariantPalettes = (): VariantPalette[] => {
 	const priorities = ['primary', 'secondary', 'tertiary'] as const,
 		semanticTones = ['danger', 'warning', 'success', 'info'] as const
+
 	const special = (Object.keys(SPECIAL_VARIANTS) as (keyof typeof SPECIAL_VARIANTS)[]),
 		structural = (Object.keys(STRUCTURAL_VARIANTS) as (keyof typeof STRUCTURAL_VARIANTS)[])
 
@@ -201,12 +205,20 @@ export const enumerateVariantPalettes = (): VariantPalette[] => {
 		palette: resolvePalette({ variant: variant as Variant }),
 	}))
 
+	const structured2 = structural.flatMap(variant => {
+		return priorities.map(priority => ({
+			variant: variant as Variant,
+			palette: resolvePalette({ priority, variant: variant as Variant }),
+			priority,
+		}))
+	})
+
 	const specialize = special.map(variant => ({
 		variant: variant as Variant,
 		palette: resolvePalette({ variant: variant as Variant }),
 	}))
 
-	return [...structured, ...specialize, ...semantic]
+	return [...structured, ...structured2, ...specialize, ...semantic]
 }
 
 

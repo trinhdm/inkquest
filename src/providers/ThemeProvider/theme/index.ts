@@ -1,1 +1,1 @@
-export { mergeTheme } from './handleTheme'
+export { handleTheme, mergeTheme } from './handleTheme'

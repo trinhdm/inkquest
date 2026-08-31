@@ -30,3 +30,19 @@ export type AtLeastOneKeyOf<Keys extends PropertyKey, V> = {
 // into one plain object type. Doesn't change what the type *is* — same
 // members, same values — only how much re-walking is needed to display it.
 export type Simplify<T> = { [K in keyof T]: T[K] } & {}
+
+
+type IsUnion<T, U = T> =
+	T extends unknown
+		? [U] extends [T] ? false : true
+		: never
+
+// Resolves to E only when E has exactly one key; otherwise never.
+// Apply as `E & OneKeyOf<E>` so E still infers from the argument —
+// a conditional type is not an inference site, so it constrains without blocking.
+export type OneKeyOf<E> =
+	[keyof E] extends [never]
+		? never
+		: IsUnion<keyof E> extends true
+			? never
+			: E

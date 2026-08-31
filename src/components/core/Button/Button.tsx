@@ -11,10 +11,13 @@ import {
 } from './ButtonSection'
 import { Icon } from '../Icon'
 import { setThemeCSS, type ColorVariable } from '@/lib/theme'
-import { useProps, useStyles, useVariantStyles } from '@/hooks'
+import { useProps, useStyles } from '@/hooks'
 import type { ComponentPropsWithoutRef, MouseEventHandler, Ref } from 'react'
 import type { Route } from 'next'
 import classes from './Button.module.scss'
+
+import { serializeStyles } from '@/components/document'
+// import { getVariantScheme } from '@/lib/theme/buildVariantSchemes'
 
 const NAME = 'Button' as const,
 	DEFAULT_TAG = 'button' as const
@@ -39,7 +42,7 @@ type ButtonVariant =
 	| 'warning'
 	| 'danger'
 
-// type ButtonVars = ColorVariable<typeof NAME>
+type ButtonVars = ColorVariable<typeof NAME>
 
 export type ButtonProps = BoxProps
 	& (LinkButtonProps | NativeButtonProps) & {
@@ -73,13 +76,15 @@ interface ButtonSpecs {
 		Group: typeof ButtonGroup
 		Section: typeof ButtonSection
 	}
-	// tokens: { root: ButtonVars }
+	tokens: { stylesheet?: ButtonVars }
 }
 
-type Styles = ReturnType<typeof useStyles<ButtonSpecs>>
-
-const buildSections = (children: ReactNode, styles: Styles) => {
-	const label: ReactNode[] = []
+const buildSections = (
+	props: ButtonProps,
+	styles: ReturnType<typeof useStyles<ButtonSpecs>>
+) => {
+	const { children, unstyled } = props,
+		label: ReactNode[] = []
 	let left: ReactNode = null,
 		right: ReactNode = null
 
@@ -89,11 +94,11 @@ const buildSections = (children: ReactNode, styles: Styles) => {
 				taken = isLeft ? left : right
 
 			if (!taken) {
-				let clone = cloneElement(child, { parentName: NAME })
+				let clone = cloneElement(child, { parentName: NAME, unstyled })
 				if (isLeft) left = clone
 				else right = clone
 			} else if (process.env.NODE_ENV !== 'production') {
-				console.warn(`${NAME}: multiple ${NAME}.Section[${isLeft ? 'left' : 'right'}] found; only the first is rendered.`)
+				console.warn(`${NAME}: multiple ${NAME}.Section[${isLeft ? 'left' : 'right'}] found; only the first ${NAME}.Section is rendered.`)
 			}
 			return
 		}
@@ -109,7 +114,6 @@ const buildSections = (children: ReactNode, styles: Styles) => {
 
 	if (!left && !right) return innerEl
 	return <>{ left }{ innerEl }{ right }</>
-
 }
 
 const getTextFromChildren = (children: ReactNode): string => {
@@ -127,20 +131,41 @@ const getTextFromChildren = (children: ReactNode): string => {
 
 const tokens = setThemeCSS<ButtonSpecs>((theme, _props) => {
 	// const colors = theme.getVariantColors({ theme, ..._props })
-	// // const { tokens } = theme
 	// console.log({ colors })
 
-	return {
-		root: {
-			// ...variants,
-			// '--button-height': 36px,		// .button__inner height: 0.5 * --button-height
-			// '--button-pad': `${tokens.space.inset('sm')} ${tokens.space.inset('lg')}`,
+	const rootTokens = {}
+
+	if (Object.hasOwn(_props, 'variant')) {
+		const { prefix, prefixSelector } = theme
+		const selector = prefixSelector(NAME)
+		const test = {
+			selector,
+			vars: {
+				'--button-background': `var(--variant-background, var(--${prefix}-background-backup))`,
+				'--button-background-hover': 'var(--variant-background-hover, var(--variant-background))',
+				'--button-border': `var(--variant-border, var(--${prefix}-border-backup))`,
+				'--button-border-hover': 'var(--variant-border-hover, var(--variant-border))',
+				'--button-color': `var(--variant-color, var(--${prefix}-color-backup))`,
+			},
 		}
+
+		const variants = serializeStyles([test]) ?? undefined
+		if (!!variants)
+			Object.assign(rootTokens, { stylesheet: variants })
+	}
+
+	return {
+		...rootTokens,
+		// root: {
+		// 	// ...variants,
+		// 	// '--button-height': 36px,		// .button__inner height: 0.5 * --button-height
+		// 	// '--button-pad': `${tokens.space.inset('sm')} ${tokens.space.inset('lg')}`,
+		// }
 	}
 })
 
 export const Button = polymorphic<ButtonSpecs>(_props => {
-	useVariantStyles(NAME)
+	// useVariantStyles(NAME)
 	const props = useProps(NAME, _props)
 	const styles = useStyles<ButtonSpecs>(NAME, { classes, props, tokens })
 
@@ -157,20 +182,20 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 	} = props
 
 	const ariaLabel = getTextFromChildren(children),
-		aria = { label: !!ariaLabel.length ? false : ariaLabel }
+		aria = { label: !!ariaLabel.length ? undefined : ariaLabel }
 
 	let data: Record<string, unknown> = {
 		variant,
 		priority,
 		block: !!fullWidth || null,
+		disabled: !!disabled || null,
 		loading: !!loading || null,
 	}
 
-	const sharedProps = { aria, data, ...styles('root') }
 	const inner = (
 		<Box as="span" { ...styles('inner') }>
 			{ loading && <Icon { ...styles('icon') } size={ 18 } type="loading" /> }
-			{ buildSections(children, styles) }
+			{ buildSections(props, styles) }
 		</Box>
 	)
 
@@ -179,12 +204,11 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 		// by excluding `NativeButtonProps` from `rest`
 		// this allows `rest` to be properly typed
 
-		data = { ...data, disabled: !!disabled || null }
-
 		return (
 			<Box
 				as={ Link }
-				{ ...sharedProps }
+				attributes={ { aria, data } }
+				{ ...styles('root') }
 				{ ...rest as Extract<typeof rest, LinkButtonProps> }
 			>
 				{ inner }
@@ -195,7 +219,8 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 	return (
 		<Box
 			as={ as }
-			{ ...sharedProps }
+			attributes={ { aria, data } }
+			{ ...styles('root') }
 			{ ...rest }
 		>
 			{ inner }

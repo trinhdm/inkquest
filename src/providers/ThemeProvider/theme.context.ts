@@ -1,4 +1,4 @@
 import { createContext } from 'react'
-import type { SiteTheme } from '@/lib/theme'
+import type { SiteTheme, SiteThemeConfig } from '@/lib/theme'
 
-export const ThemeContext = createContext<SiteTheme | null>(null)
+export const ThemeContext = createContext<(SiteThemeConfig & { config: SiteTheme }) | null>(null)

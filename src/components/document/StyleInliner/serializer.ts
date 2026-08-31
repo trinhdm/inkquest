@@ -17,6 +17,6 @@ const declarationBlock = (
 export const serializeStyles = (
 	rules: CssRule[],
 	hasIndent: boolean = true
-) =>
+): string =>
 	rules.map(({ selector, vars }) => `${selector} {${declarationBlock(vars, hasIndent)}}`)
 		.join(hasIndent ? '\n\n' : ' ')

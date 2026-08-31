@@ -3,7 +3,7 @@ import {
 	type ComponentType, type CSSProperties, type ReactNode,
 } from 'react'
 import { Box, polymorphic, type BoxProps } from '@/components/core/Box'
-import { useProps, useStyles, useVariantStyles } from '@/hooks'
+import { useProps, useStyles } from '@/hooks'
 import type { Button } from '../Button'
 import classes from '../Button.module.scss'
 
@@ -28,12 +28,10 @@ export type ButtonGroupSpecs = {
 	specIs: { compound: true }
 }
 
-type Props = ButtonGroupProps
-
 const childrenWithProps = (
-	parentProps: Props
+	parentProps:ButtonGroupProps
 ): ReturnType<typeof cloneElement<Button.Props>>[] => {
-	const { children, disabled, hasPriority, loading } = parentProps
+	const { children, disabled, hasPriority, loading, unstyled } = parentProps
 
 	return Children.map(children, (child, index) => {
 		if (!isValidElement<Button.Props>(child)) return null
@@ -51,11 +49,13 @@ const childrenWithProps = (
 			Object.assign(propsCh, { priority })
 		}
 
-		if (typeof disabled === 'boolean')
-			Object.assign(propsCh, { disabled })
+		const sharedProps = { disabled, loading, unstyled } as ButtonGroupProps
 
-		if (typeof loading === 'boolean')
-			Object.assign(propsCh, { loading })
+		(Object.keys(sharedProps) as (keyof typeof sharedProps)[]).forEach(prop => {
+			const value = sharedProps[prop]
+			if (typeof value === 'boolean')
+				Object.assign(propsCh, { [prop]: value })
+		})
 
 		return cloneElement(child, { ...child.props, ...propsCh })
 	}) as ReturnType<typeof cloneElement<Button.Props>>[]
@@ -68,7 +68,6 @@ const derivePriority = (index: number): Button.Priority => {
 }
 
 export const ButtonGroup = polymorphic<ButtonGroupSpecs>(_props => {
-	useVariantStyles(NAME)
 	const props = useProps(NAME, _props)
 	const styles = useStyles<ButtonGroupSpecs>(NAME, { classes, props })
 

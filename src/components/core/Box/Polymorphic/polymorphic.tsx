@@ -42,15 +42,27 @@ interface SpecStructure {
 	variant?: string
 }
 
+// export type PolymorphicProps<C, P> =
+// 	{ as?: AsTag<C, P> }
+// 	& (
+// 		C extends ValidElement
+// 			? Omit<ExtendedProps<C, P>, 'as'> & {
+// 					ref?: Ref<ComponentRef<C>>
+// 				}
+// 			: Omit<P, 'as'>
+// 	)
+// 	& SpecStructure
+
+type _Tag<C> = [C] extends [undefined] ? 'div' : NonNullable<C>   // tuple-wrapped: no distribution
+
 export type PolymorphicProps<C, P> =
-	{ as?: AsTag<C, P> }
-	& (
-		C extends ValidElement
-			? Omit<ExtendedProps<C, P>, 'as'> & {
-					ref?: Ref<ComponentRef<C>>
-				}
-			: Omit<P, 'as'>
-	)
+	// bare `C` => a real inference site
+	& { as?: C }
+	// preserves ButtonSection's `as?: never` ban: {as?: C} & {as?: never} => as?: never
+	& ('as' extends keyof P ? { as?: P['as'] } : unknown)
+	& ( _Tag<C> extends ValidElement
+			? Omit<ExtendedProps<_Tag<C>, P>, 'as'>
+			: Omit<P, 'as'> )
 	& SpecStructure
 
 export const toPolymorphic = <
@@ -59,9 +71,15 @@ export const toPolymorphic = <
 >(
 	target: (props: PolymorphicProps<C0, P0>) => ReactElement | null
 ) => {
+	// `| undefined` so `as: 'div' | undefined` is a legal candidate;
+	// `= 'div'` so a *missing* `as` resolves to one tag, not 180
 	interface _Component {
-		<C extends ValidElement>(props: PolymorphicProps<C, P0>): ReactElement | null
+		<C extends ValidElement | undefined = 'div'>(props: PolymorphicProps<C, P0>): ReactElement | null
 	}
+
+	// interface _Component {
+	// 	<C extends ValidElement>(props: PolymorphicProps<C, P0>): ReactElement | null
+	// }
 
 	type PolymorphicBase = _Component
 		& PropertiesBase<ComponentProps<ElementType>>

@@ -1,10 +1,42 @@
+import type { OneKeyOf } from '@/types/utils'
 
 export const isObject = <T extends Record<string, unknown>>(target: unknown): target is T =>
 	!!target && target?.constructor === Object && !Array.isArray(target)
 
+function hasKeyWithValue<
+	T extends object,
+	K extends PropertyKey,
+>(obj: T | undefined, key: K): obj is T & Record<K, unknown>
+function hasKeyWithValue<
+	T extends object,
+	const E extends Record<string, unknown>,
+>(obj: T | undefined, entry: OneKeyOf<E>): obj is T & E
+function hasKeyWithValue(
+	obj: object | undefined,
+	entry: PropertyKey | Record<string, unknown>
+): boolean {
+	let k, v = null
+
+	if (isObject(entry)) ([k, v] = Object.entries(entry)[0])
+	else k = String(entry)
+
+	if (!isObject(obj) || !Object.hasOwn(obj, k))
+		return false
+
+	return v === null ? !!obj[k] : obj[k] === v
+}
+
+export const keyHasValue = hasKeyWithValue
+
 export const keyWithValue = <
-	T extends object, K extends keyof T = keyof T, V = T[K], Target extends T = T,
->(entry: [K, V] | K, obj?: T): obj is Target => {
+	T extends object,
+	K extends keyof T = keyof T,
+	V = T[K],
+	Target extends T = T,
+>(
+	entry: [K, V] | K,
+	obj?: T
+): obj is Target => {
 	if (!isObject(obj)) return false
 	let key = entry as K, value
 	const hasValue = Array.isArray(entry)
