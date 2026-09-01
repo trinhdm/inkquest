@@ -4,15 +4,10 @@ import {
 	LINE_HEIGHT_SCALE, TRACKING_SCALE,
 	DURATION_SCALE, EASE_SCALE, OPACITY_SCALE,
 	RADIUS_SCALE, SCREEN_SCALE,
-	getVariantColors, paintVariants, tokens,
-	type SiteTheme, type SiteThemeConfig,
+	type SiteTheme,
 } from '@/lib/theme'
 
 export const DEFAULT_THEME: SiteTheme = {
-	// getVariantColors,
-	// paintVariants,
-	// tokens,
-
 	scale: {
 		size: BASE_SCALE,
 	},
@@ -35,9 +30,3 @@ export const DEFAULT_THEME: SiteTheme = {
 
 	screenSize: [...SCREEN_SCALE],
 }
-
-// export const THEME_CONFIG: SiteThemeConfig = {
-// 	...tokens,
-// 	getVariantColors,
-// 	paintVariants,
-// }

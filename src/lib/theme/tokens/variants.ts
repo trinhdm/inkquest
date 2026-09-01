@@ -1,11 +1,8 @@
 import { alias } from '../reference'
 import { deepMerge } from '@/utils/helpers'
-import { tokenGenerator } from '../generate'
-import type { ValidSpecs } from '@/types/spec'
 import type {
 	Priority, Tone, Variant,
-	PaletteTokens, VariantTokens,
-	SemanticVariantProps, SiteTheme,
+	VariantTokens,
 } from '../types'
 
 interface ToneAccessor {
@@ -102,18 +99,6 @@ const STRUCTURAL_VARIANTS: Record<'solid' | 'outline' | 'ghost', Priority> = {
 	ghost: 'tertiary',
 }
 
-interface GetPaletteArgs<S extends ValidSpecs<S>> {
-	prefix?: string
-	theme: SiteTheme
-	variant?: S['variant']
-}
-
-const hasVariant = <S extends ValidSpecs<S>>(
-	args: GetPaletteArgs<S>
-): args is GetPaletteArgs<S> & { variant: NonNullable<S['variant']> } => {
-	return 'variant' in args && args.variant !== undefined
-}
-
 const mergePalette = (palette: Partial<VariantTokens>): VariantTokens =>
 	deepMerge(DEFAULT_PALETTE, palette)
 
@@ -148,36 +133,6 @@ const resolvePalette = ({ variant, priority }: Omit<VariantPalette, 'palette'>) 
 
 	return palette
 }
-
-
-interface PaintVariantsArgs<S extends ValidSpecs<S>, N extends string>
-    extends GetPaletteArgs<S>, SemanticVariantProps {
-    name: N
-}
-
-export type PaintVariantsFn =
-	<S extends ValidSpecs<S>, N extends string>(
-		args: PaintVariantsArgs<S, N> & S['props']
-	) => PaletteTokens<Lowercase<N>>
-
-export const paintVariants = <S extends ValidSpecs<S>, N extends string>(
-	_props: PaintVariantsArgs<S, N> & S['props']
-): PaletteTokens<Lowercase<N>> => {
-	const { name, ...props } = _props
-	let palette: VariantTokens = DEFAULT_PALETTE
-
-	if (hasVariant(_props)) {
-		const { priority, variant } = props
-		palette = resolvePalette({ priority, variant: variant as Variant })
-	}
-
-	type LN = Lowercase<typeof name>
-	const namespace = `${name.toLowerCase() as LN}` as const,
-		vars = tokenGenerator(palette as ReturnType<typeof deepMerge>, namespace)
-
-	return vars as PaletteTokens<LN>
-}
-
 
 export interface VariantPalette {
 	palette: Partial<VariantTokens>
@@ -219,21 +174,4 @@ export const enumerateVariantPalettes = (): VariantPalette[] => {
 	}))
 
 	return [...structured, ...structured2, ...specialize, ...semantic]
-}
-
-
-export type GetVariantColorsFn =
-	<S extends ValidSpecs<S>>(
-		_props: GetPaletteArgs<S> & Omit<S['props'], 'name'> & SemanticVariantProps
-	) => Partial<VariantTokens>
-
-export const getVariantColors = <S extends ValidSpecs<S>>(
-	_props: GetPaletteArgs<S> & Omit<S['props'], 'name'> & SemanticVariantProps
-): Partial<VariantTokens> => {
-	if (!hasVariant(_props))
-		return DEFAULT_PALETTE
-
-	const { priority, variant } = _props
-
-	return resolveVariants({ priority, variant: variant as Variant })
 }

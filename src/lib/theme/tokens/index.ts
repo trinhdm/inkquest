@@ -1,7 +1,7 @@
-export {
-	getVariantColors, paintVariants,
-	type GetVariantColorsFn, type PaintVariantsFn,
-} from './variants'
+// export {
+// 	getVariantColors, paintVariants,
+// 	type GetVariantColorsFn, type PaintVariantsFn,
+// } from './variants'
 
 export { Tokens } from './tokens'
 export type { AccentTokens } from './accent'
