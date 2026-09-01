@@ -1,9 +1,11 @@
 import { getDefaultProps } from '@/lib/registries'
 import { filterProps, styleProps } from '@/utils/helpers'
+// import type { PolymorphicProps } from '@/components/core/Box/Polymorphic'
 
 export const useProps = <T extends object>(
 	name: string | undefined | (string | undefined)[],
 	_props: T
+	// _props: PolymorphicProps<E, T>
 ): T => {
 	let props = {} as T
 

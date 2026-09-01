@@ -1,6 +1,6 @@
 // import { useTheme } from '@/providers/ThemeProvider'
 import { handleProps } from './utils/handle-props'
-import { toPolymorphic, type PolymorphicProps } from './Polymorphic'
+import { toPolymorphic } from './Polymorphic'
 import type { ReactNode } from 'react'
 
 const NAME = 'PolymorphicBox' as const
@@ -10,7 +10,7 @@ export interface BoxProps {
 	unstyled?: boolean
 }
 
-export const Box = toPolymorphic((_props: PolymorphicProps<'div', BoxProps>) => {
+export const Box = toPolymorphic<BoxProps, 'div'>((_props) => {
 	const {
 		as,
 		unstyled,

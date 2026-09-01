@@ -1,5 +1,7 @@
 import { hasValue, keyHasValue, toKebabCase } from '@/utils/helpers'
 import type { PolymorphicProps } from '../Polymorphic'
+import type { ElementType } from 'react'
+import type { ExtractHtmlAttributes } from '@/types/spec'
 
 type PrefixedAttributes<T extends Record<string, any>, S extends string> = {
 	[K in keyof T as `${S}-${string & K}`]?: T[K]
@@ -54,11 +56,11 @@ interface CheckOptions {
 }
 
 // unstyled attributes only
-const filterDecorative = <E, P>(
-	data: NonNullable<NonNullable<PolymorphicProps<E, P>['attributes']>['data']>,
+const filterDecorative = <P, E>(
+	data: NonNullable<PolymorphicProps<P, E>['attributes']>['data'],
 	check: CheckOptions
 ) => {
-	if (!check.isUnstyled) return data
+	if (!check.isUnstyled || !data) return data
 
 	return Object.fromEntries(
 		Object.entries(data).filter(([key]) => {
@@ -69,16 +71,19 @@ const filterDecorative = <E, P>(
 	)
 }
 
-const getDataAttrs = <E, P>(
-	data: NonNullable<PolymorphicProps<E, P>['attributes']>['data'],
+const getDataAttrs = <P, E>(
+	data: NonNullable<PolymorphicProps<P, E>['attributes']>['data'],
 	check: CheckOptions
 ) => {
-	const decorative = data && filterDecorative(data, check)
-	return prefixAttributes(decorative, 'data')
+	const dataList = filterDecorative(data, check)
+	return prefixAttributes(dataList, 'data')
 }
 
-const getHtmlAttrs = <E, P>(_props: PolymorphicProps<E, P>, check: CheckOptions) => {
-	const attrs = new Map<string, boolean | string>()
+const getHtmlAttrs = <P, E extends ElementType>(
+	_props: PolymorphicProps<P, E>,
+	check: CheckOptions
+) => {
+	const attrs = new Map<string, unknown>()
 
 	if (_props.as === 'button' && !Object.hasOwn(_props, 'type'))
 		attrs.set('type', 'button')
@@ -87,9 +92,10 @@ const getHtmlAttrs = <E, P>(_props: PolymorphicProps<E, P>, check: CheckOptions)
 		attrs.set('disabled', true)
 
 	return Object.fromEntries(attrs)
+	// as ExtractHtmlAttributes<E>
 }
 
-export const getAttributes = <E, P>(_props: PolymorphicProps<E, P>) => {
+export const getAttributes = <P, E extends ElementType>(_props: PolymorphicProps<P, E>) => {
 	const { as, attributes } = _props
 	const { aria, data } = attributes ?? {}
 

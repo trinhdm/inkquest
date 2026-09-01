@@ -1,6 +1,94 @@
-import type { AriaAttributes, CSSProperties, ElementType, HTMLAttributes, Ref } from 'react'
+import type { AriaAttributes, ComponentProps, ComponentPropsWithoutRef, CSSProperties, ElementType, HTMLAttributes, JSX, Ref } from 'react'
 import type { ClassValue } from 'clsx'
 import type { CSSVars, DataAttrs } from './shared/html'
+// import type { ValidElement } from '@/components/core/Box/Polymorphic/types'
+
+
+export interface SpecsContract {
+	// as?: string
+	attributes?: SpecAttributes
+	classNames?: string
+	id?: string
+	props: Record<string, unknown>
+	ref?: any
+	styles?: CSSProperties
+	unstyled?: boolean
+	// tokens?: CSSVars
+	// variant?: string
+}
+
+export type SpecsDefaultProps<T extends SpecsContract> =
+	Partial<T['props']>
+	// & PolymorphicSpec<S>
+	& SpecAttributes
+
+
+
+type _CompoundSpecs<T extends SpecsContract> = {
+	classNames?: never
+	default?: {
+		component?: never
+		props?: SpecsDefaultProps<T>
+	}
+	styles?: never
+	subcomponents?: never
+	tokens?: never
+	// unstyled?: never
+}
+
+type _RootSpecs<T extends SpecsContract> = {
+	classNames?: T['classNames']
+	default?: {
+		component?: any
+		props?: SpecsDefaultProps<T>
+	}
+	styles?: T['styles']
+	subcomponents?: Record<string, unknown>		// move this to compound/root
+	tokens?: CSSVars
+	// unstyled?: boolean
+}
+
+export type ComponentSpecs<T extends SpecsContract> =
+	T extends { specIs?: { compound: true } }
+		? _CompoundSpecs<T>
+		: _RootSpecs<T>
+
+// type AriaByTag<T extends ValidElement> = Pick<
+// 	HTMLAttributes<T>,
+// 	keyof AriaAttributes
+// >
+
+export type ExtractHtmlAttributes<T extends ElementType> =
+	Omit<
+		ComponentPropsWithoutRef<T>,
+		keyof AriaAttributes
+	>
+
+// // Extract ARIA attributes for a specific HTML tag (e.g., 'button')
+// type ButtonAria = JSX.IntrinsicElements['button'] & AriaAttributes
+
+// // Generic utility to get ARIA attributes for ANY valid HTML tag
+// type ExtractAria<T extends keyof JSX.IntrinsicElements> = Extract<
+// 	keyof JSX.IntrinsicElements[T],
+// 	keyof AriaAttributes
+// >
+
+// type Test = ExtractHtmlAttributes<'button'>
+// type Test2 = Omit<ComponentPropsWithoutRef<'button'>, keyof AriaAttributes>
+
+// type ButtonAriaProps = Pick<
+//   ComponentPropsWithoutRef<'button'>,
+//   Extract<keyof ComponentPropsWithoutRef<'button'>, keyof AriaAttributes>
+// >
+
+
+
+export type AsPolymorphic<S> = {
+    as?: unknown extends InferComponentSpec<S>
+        ? ElementType
+        : InferComponentSpec<S>
+}
+
 
 type _CommonTag =
 	| 'a' | 'button' | 'div' | 'nav' | 'span' | 'svg'
@@ -103,7 +191,7 @@ export type InferDefaultProps<S extends Specs> =
 	& DataAttrs
 
 type _InferredDefault<
-	S extends Specs,
+	S,
 	K = InferComponentSpec<S>,
 > = (
 		K extends keyof _ElementTagMap ? {
@@ -114,50 +202,94 @@ type _InferredDefault<
 			ref?: never
 		}
 	)
-	& { props?: InferDefaultProps<S> }
+	& { props?: object }
+	// & { props?: InferDefaultProps<S> }
 
-type _CompoundComponentSpec<S extends Specs> = {
+type _CompoundComponentSpec<S> = {
 	classNames?: never
 	default?: _InferredDefault<S>
 	styles?: never
-	// subcomponents?: never
+	subcomponents?: never
 	tokens?: never
 	unstyled?: never
 }
 
-type _RootComponentSpec<S extends Specs> = {
+type _RootComponentSpec<S> = {
 	classNames?: ClassValue
 	default?: _InferredDefault<S>
 	styles?: CSSProperties
-	// subcomponents?: Record<string, unknown>		// move this to compound/root
+	subcomponents?: Record<string, unknown>		// move this to compound/root
 	tokens?: CSSVars
 	unstyled?: boolean
 }
 
-export type ExtendedSpecs<S extends Specs> =
-	_IsCompound<S['specIs']> extends true
+export type ExtendedSpecs<S> =
+	S extends { specIs?: { compound: true } }
 		? _CompoundComponentSpec<S>
 		: _RootComponentSpec<S>
 
-// type _CompoundSpec<P,> =
-// 	'specIs' extends keyof P
-// 		? 'compound' extends keyof P['specIs']
-// 			? P['specIs']['compound']
-// 			: false
-// 		: false
-
-
-
-export type SpecsList<
-	S extends ValidSpecs<S>,
+type _InferredTag<
+	S extends Specs,
 	K = InferComponentSpec<S>,
-	// V = S['props'] extends { variant?: infer PV } ? PV : never,
-> = Specs<K, S['props']>
-	& ExtendedSpecs<S> & {
-		subcomponents?: S['subcomponents']
-		// variant?: _PropsVariant<S> extends infer VP
-		// 	? VP extends string
-		// 		? Exclude<VP, undefined>
-		// 		: _SpecVariant<S>
-		// 	: never
-	}
+> =
+	K extends keyof _ElementTagMap
+		? K
+		: never
+
+// A wrapped record type
+type Wrapped<T> = {
+	[K in keyof T]: { value: T[K] }
+}
+
+// Extract the original inner type from the wrapped record
+type UnwrapWrapped<T, K extends string> =
+	T extends { [U in keyof T]: { [P in K]: infer V } } ? V : never
+	// T extends { [K in keyof T]: { value: infer V } } ? V : never
+
+type _UnpackTag<T> = T extends { component?: infer K }
+	? K extends keyof _ElementTagMap
+		? K : never
+	: never
+
+export interface BaseSpecs<P, T> {
+	attributes?: TagAttributes<T>
+	ctx?: unknown
+	default?:
+		{ component?: keyof _ElementTagMap | never }
+		& { props?: Partial<P> }
+	id?: string
+	props: P
+	ref?: Ref<TagElement<T>>
+	specIs?: SpecIs
+	subcomponents?: Record<string, unknown>		// move this to compound/root
+	tokens?: CSSVars
+	variant?: string
+}
+
+export type SpecsList<TObj> = {
+	[K in keyof TObj]: TObj[K] extends BaseSpecs<infer P, infer T>
+		? BaseSpecs<P, T> & ExtendedSpecs<T>
+		: never
+}
+
+// export type SpecsList<TObj> =
+// 	TObj extends BaseSpecs<infer P, infer T>
+// 		? BaseSpecs<P, T> & ExtendedSpecs<T>
+// 		: never
+
+export type SpecsMap<
+	T extends SpecsList<T>,
+> = {
+	[U in keyof T]: T[U]
+}
+
+export type SpecItem<
+	T extends SpecsList<T>,
+	K extends keyof T,
+> =
+	SpecsMap<T>[K]
+	// SpecsMap<T> extends { [P in K]: infer V } ? V : never
+
+// export type SpecsList<TObj extends SiblingMappedShape<TObj>> =
+// TObj & {
+// 	}

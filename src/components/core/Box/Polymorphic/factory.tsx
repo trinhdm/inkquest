@@ -9,31 +9,35 @@ import {
 } from 'react'
 
 import type {
+	AsPolymorphic,
+	ComponentSpecs,
+	SpecsContract,
+
 	InferComponentSpec,
 	InferDefaultProps,
-	PolymorphicSpec,
+	// PolymorphicSpec,
 	Specs,
 } from '@/types/spec'
 
-type _PolymorphicProps<S extends Specs> =
+type _PolymorphicProps<S extends SpecsContract> =
 	S['props']
-	& PolymorphicSpec<S>
+	& AsPolymorphic<S>
 
 // only pull `ref` from Specs when the component's own props don't already
 // declare one — letting a component override, instead of intersecting with,
 // the auto-derived `Ref<TagElement<T>>` (see Box/Spec audit, Button.tsx)
-type _SpecsPickKeys<S extends Specs> =
+type _SpecsPickKeys<S extends SpecsContract> =
 	| 'attributes'
 	| 'id'
 	| ('ref' extends keyof S['props'] ? never : 'ref')
 
-type _FactoryProps<S extends Specs> =
+type _FactoryProps<S extends SpecsContract> =
 	& Pick<S, _SpecsPickKeys<S>>
 	& _PolymorphicProps<S>
 	// & PickStartsWith<PolymorphicProps<InferComponentSpec<S>, S['props']>, 'on'>
 	// PolymorphicProps<InferComponentSpec<S>, _PolymorphicProps<S>>
 
-type _DefaultComponent<S extends Specs, P = InferDefaultProps<S>> = {
+type _DefaultComponent<S extends SpecsContract, P = InferDefaultProps<S>> = {
 	props?: P & (
 		'as' extends keyof P
 			? unknown extends InferComponentSpec<S>
@@ -43,11 +47,11 @@ type _DefaultComponent<S extends Specs, P = InferDefaultProps<S>> = {
 		)
 }
 
-type _Component<S extends Specs> =
+type _Component<S extends SpecsContract> =
 	NamedExoticComponent<Simplify<_FactoryProps<S>>>
 
 export interface MethodsBase<
-	S extends Specs,
+	S extends SpecsContract,
 	C = _Component<S>,
 	P = _PolymorphicProps<S>,
 	D = _DefaultComponent<S>
@@ -58,30 +62,30 @@ export interface MethodsBase<
 }
 
 export type SubcomponentsBase<
-	S extends Specs,
+	S extends SpecsContract,
 	List = S['subcomponents']
 > = List extends Record<string, unknown>
 	? List
 	: Record<string, never>
 
-type _FactoryComponent<S extends Specs> =
+type _FactoryComponent<S extends SpecsContract> =
 	& _Component<S>
-	& SubcomponentsBase<S>
+	// & SubcomponentsBase<S>
 	& MethodsBase<S>
 
 export const factory = <
-	S extends Specs,
-	C extends object = _FactoryComponent<S>
+	T extends SpecsContract,
+	C extends object = _FactoryComponent<T>
 >(
-	target: (props: _FactoryProps<S>) => ReactNode,
+	target: (props: ComponentSpecs<T>) => ReactNode,
 	classes?: Record<string, string>
 ) => {
-	type FC = _FactoryComponent<S>
+	type FC = _FactoryComponent<T>
 	const BaseComponent = memo(target) as unknown as FC
 
 	if (classes) BaseComponent.classes = classes
 
-	BaseComponent.setDefaults = (args: _DefaultComponent<S>) => {
+	BaseComponent.setDefaults = (args: _DefaultComponent<T>) => {
 		const { displayName } = BaseComponent
 
 		if (!displayName)
@@ -110,7 +114,7 @@ export const factory = <
 		ExtendWith.setDefaults = BaseComponent.setDefaults
 
 		return ExtendWith as unknown as FC
-	}) as unknown as MethodsBase<S>['withProps']
+	}) as unknown as MethodsBase<T>['withProps']
 
 	return BaseComponent as unknown as C
 }

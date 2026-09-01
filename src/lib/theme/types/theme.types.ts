@@ -2,7 +2,7 @@ import { COLOR_TOKENS, THEME_SCHEMES } from '../scales'
 import type { CSSProperties } from 'react'
 import type { AtLeastOneKeyOf } from '@/types/utils'
 import type { CSSVars, HexCode, Unit } from '@/types/shared'
-import type { GetVariantColorsFn, PaintVariantsFn } from '../tokens'
+// import type { GetVariantColorsFn, PaintVariantsFn } from '../tokens'
 import type { SemanticTokens } from '../reference'
 
 export type ThemeName =

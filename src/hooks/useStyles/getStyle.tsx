@@ -1,11 +1,11 @@
 // import { filterProps } from '@/utils/helpers'
-import type { CSSVars } from '@/types/shared'
+// import type { CSSVars } from '@/types/shared'
 import type { SharedConfig } from './useStyles'
 import type { ValidSpecs } from '@/types/spec'
 import { useVariantStyles } from '../useVariantStyles'
 // import type { ThemeCSSConfig } from '@/lib/theme'
 
-type ResolvedVars = Partial<Record<string, CSSVars>>
+// type ResolvedVars = Partial<Record<string, CSSVars>>
 
 // const mergeVars = (vars: (ResolvedVars | undefined)[]) => {
 // 	return vars.reduce<ResolvedVars>((acc, current) => {

@@ -60,13 +60,14 @@ const mergeStyleAliases = <T extends object & StyleAliasInput>(
 }
 
 export const styleProps = <T extends object>(
-	_props: T | (T & StyleAliasInput)
-): T | FilteredProps<RenamedProps<T>> => {
+	_props: T
+): FilteredProps<RenamedProps<T>> => {
 	const hasAliases =
 		Object.hasOwn(_props, 'classNames') || Object.hasOwn(_props, 'styles')
 		|| Object.hasOwn(_props, 'className') || Object.hasOwn(_props, 'style')
 
-	if (!hasAliases) return _props
+	if (!hasAliases) return filterProps(_props)
+
 	const { className, classNames, style, styles, ...rest } = _props as T & StyleAliasInput
 	const aliases = mergeStyleAliases(_props)
 
