@@ -8,41 +8,39 @@ import type {
 } from 'react'
 
 import type { SpecsContract } from '@/types/spec'
-// import type { ValidElement } from './types'
 
 type _BaseProps<C extends ElementType> =
 	JSX.LibraryManagedAttributes<
 		C, ComponentProps<C>
 	>
 
-export type OverrideProps<P1 = object, P2 = object> =
+type _OverrideProps<P1 = object, P2 = object> =
 	P2
 	& Omit<P1, keyof P2>
 
-export type ExtendedProps<C extends ElementType, P2 = object> =
-	OverrideProps<
+type _ExtendedProps<C extends ElementType, P2 = object> =
+	_OverrideProps<
 		_BaseProps<C>, P2
 	>
 
+type _Tag<C> = [C] extends [undefined] ? 'div' : NonNullable<C>
+
 export type PropertiesBase<P = object> =
 	Pick<FunctionComponent<P>, 'displayName'>
-
-// type _Tag<C> = [C] extends [undefined] ? 'div' : NonNullable<C>
 
 export type PolymorphicProps<
 	P,
 	C,
 > =
-	& P
 	& Omit<SpecsContract, 'props'>
 	& {
 		as?: 'as' extends keyof P ? P['as'] : C
 		children?: ReactNode
 		unstyled?: boolean
 	}
-	// & ( _Tag<C> extends ElementType
-	// 	? Omit<ExtendedProps<_Tag<C>, P>, 'as'>
-	// 	: Omit<P, 'as'> )
+	& ( _Tag<C> extends ElementType
+		? Omit<_ExtendedProps<_Tag<C>, P>, 'as'>
+		: Omit<P, 'as'> )
 
 export const toPolymorphic = <
 	P0 extends object,

@@ -1,12 +1,11 @@
-import { getAttributes } from './get-attributes'
+import { getAttributes, type AttrSource } from './get-attributes'
 import { styleProps } from '@/utils/helpers'
-import type { PolymorphicProps } from '../Polymorphic'
 
-export const handleProps = <P, E>(_props: PolymorphicProps<P, E>) => {
+export const handleProps = <T extends AttrSource>(_props: T) => {
 	let props = styleProps(_props)
 
 	const { attributes, ...rest } = props,
-		attrs = getAttributes(props)
+		attrs = getAttributes(_props)
 
 	return { ...rest, ...attrs }
 }

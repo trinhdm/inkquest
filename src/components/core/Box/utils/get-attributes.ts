@@ -1,7 +1,16 @@
 import { hasValue, keyHasValue, toKebabCase } from '@/utils/helpers'
 import type { ElementType } from 'react'
-import type { PolymorphicProps } from '../Polymorphic'
+import type { SpecAttributes } from '@/types/spec'
 // import type { ExtractHtmlAttributes } from '@/types/spec'
+
+/** the only fields these helpers read off a component's props */
+export interface AttrSource {
+	as?: ElementType
+	attributes?: SpecAttributes
+	unstyled?: boolean
+}
+
+type DataSpecs = SpecAttributes['data']
 
 type PrefixedAttributes<T extends Record<string, any>, S extends string> = {
 	[K in keyof T as `${S}-${string & K}`]?: T[K]
@@ -57,7 +66,7 @@ interface CheckOptions {
 
 // unstyled attributes only
 const filterDecorative = <P, E>(
-	data: NonNullable<PolymorphicProps<P, E>['attributes']>['data'],
+	data: DataSpecs,
 	check: CheckOptions
 ) => {
 	if (!check.isUnstyled || !data) return data
@@ -72,15 +81,15 @@ const filterDecorative = <P, E>(
 }
 
 const getDataAttrs = <P, E>(
-	data: NonNullable<PolymorphicProps<P, E>['attributes']>['data'],
+	data: DataSpecs,
 	check: CheckOptions
 ) => {
 	const dataList = filterDecorative(data, check)
 	return prefixAttributes(dataList, 'data')
 }
 
-const getHtmlAttrs = <P, E extends ElementType>(
-	_props: PolymorphicProps<P, E>,
+const getHtmlAttrs = (
+	_props: AttrSource,
 	check: CheckOptions
 ) => {
 	const attrs = new Map<string, unknown>()
@@ -95,7 +104,7 @@ const getHtmlAttrs = <P, E extends ElementType>(
 	// as ExtractHtmlAttributes<E>
 }
 
-export const getAttributes = <P, E extends ElementType>(_props: PolymorphicProps<P, E>) => {
+export const getAttributes = (_props: AttrSource) => {
 	const { as, attributes } = _props
 	const { aria, data } = attributes ?? {}
 
