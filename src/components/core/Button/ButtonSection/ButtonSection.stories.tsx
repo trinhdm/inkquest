@@ -21,9 +21,19 @@ const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 	</div>
 )
 
+// `Button.Section.Props` (the `declare namespace` export) is just the raw
+// `ButtonSectionProps` interface — it doesn't include `unstyled`/
+// `attributes`/etc., which only exist on the actual accepted prop type,
+// `PolymorphicProps<ButtonSectionProps, C>`. `Parameters<typeof
+// Button.Section>[0]` reads that real, wrapped type straight off the
+// component itself — `ButtonSectionSpecs`'s `specIs: { compound: true }`
+// makes `as` resolve to `never` (compound components don't take a tag
+// override), so this also correctly excludes `as` from the story's own
+// controls.
+//
 // `variant`/`size`/`disabled`/`loading` aren't `ButtonSection` props —
 // they're story-only controls that feed the `Button` wrapping the sections.
-type ButtonSectionStoryArgs = Button.Section.Props & {
+type ButtonSectionStoryArgs = Parameters<typeof Button.Section>[0] & {
 	variant: Button.Variant
 	size: Button.Size
 	disabled?: boolean
@@ -51,7 +61,7 @@ const meta: Meta<ButtonSectionStoryArgs> = {
 		loading: { control: 'boolean' },
 		unstyled: {
 			control: 'boolean',
-			description: 'Inherited from `BoxProps`. When true, the `styles(\'section\')` call `ButtonSection` makes returns an empty class name instead of its `inkq-button__section` base class (nested inside `Button`, which clones sections with `parentName="Button"`) — see the `Unstyled` story. Set directly on `Button.Section` itself, independent of the wrapping `Button`\'s own `unstyled` state.',
+			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `ButtonSection`\'s own `ButtonSectionProps`. When true, the `styles(\'section\')` call `ButtonSection` makes returns an empty class name instead of its `inkq-button__section` base class (nested inside `Button`, which clones sections with `parentName="Button"`) — see the `Unstyled` story. Set directly on `Button.Section` itself, independent of the wrapping `Button`\'s own `unstyled` state.',
 		},
 	},
 	args: {

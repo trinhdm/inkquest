@@ -1,7 +1,18 @@
 import { Badge } from './Badge'
 import { expect, within } from 'storybook/test'
+import { getDefaultProps } from '@/lib/registries'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+
+// `Badge.Props` (the `declare namespace` export) is just the raw `BadgeProps`
+// interface — it doesn't include `as`/`children`/`unstyled`/`attributes`/etc.
+// (`BadgeProps`'s own `children` field is even commented out in source), all
+// of which only exist on the actual accepted prop type,
+// `PolymorphicProps<BadgeProps, C>`. `Parameters<typeof Badge>[0]` reads that
+// real, wrapped type straight off the component itself — the generic call
+// signature's default `C` resolves to `'div'` here, since `BadgeSpecs`'s
+// `default.component` is `'div'`.
+type BadgeStoryProps = Parameters<typeof Badge>[0]
 
 // Single source of truth for this file's option lists. `Badge` has no
 // subcomponent family (unlike Button/ButtonGroup/ButtonSection), so these
@@ -37,7 +48,9 @@ const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 	</div>
 )
 
-const meta: Meta<typeof Badge> = {
+type Story = StoryObj<BadgeStoryProps>
+
+const meta: Meta<BadgeStoryProps> = {
 	component: Badge,
 	title: 'Core/Badge',
 	argTypes: {
@@ -63,19 +76,16 @@ const meta: Meta<typeof Badge> = {
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Inherited from `BoxProps`. When true, every `styles(selector)` call `Badge` makes (`root` and `inner`) returns an empty class name instead of its `inkq-badge`/`inkq-badge__inner` base class — see the `Unstyled` story.',
+			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Badge`\'s own `BadgeProps`. When true, every `styles(selector)` call `Badge` makes (`root` and `inner`) returns an empty class name instead of its `inkq-badge`/`inkq-badge__inner` base class — see the `Unstyled` story.',
 		},
 	},
 	args: {
+		...getDefaultProps<Badge.Props>('Badge'),
 		children: 'Badge',
-		variant: 'light',
-		shape: 'pill',
-		fullWidth: false,
 	},
 }
 
 export default meta
-type Story = StoryObj<typeof Badge>
 
 export const Default: Story = {}
 
@@ -84,7 +94,7 @@ export const Variants: Story = {
 		<Row>
 			{ VARIANT_OPTIONS.map(variant => (
 				<Group key={ variant } label={ variant }>
-					<Badge { ...args as Badge.Props } variant={ variant } />
+					<Badge { ...args as BadgeStoryProps } variant={ variant } />
 				</Group>
 			)) }
 		</Row>
@@ -96,7 +106,7 @@ export const Shape: Story = {
 		<Row>
 			{ SHAPE_OPTIONS.map(shape => (
 				<Group key={ shape } label={ shape }>
-					<Badge { ...args as Badge.Props } shape={ shape } />
+					<Badge { ...args as BadgeStoryProps } shape={ shape } />
 				</Group>
 			)) }
 		</Row>
@@ -108,7 +118,7 @@ export const Size: Story = {
 		<Row>
 			{ SIZE_OPTIONS.map(size => (
 				<Group key={ size } label={ size }>
-					<Badge { ...args as Badge.Props } size={ size } />
+					<Badge { ...args as BadgeStoryProps } size={ size } />
 				</Group>
 			)) }
 		</Row>
@@ -124,7 +134,7 @@ export const FullWidth: Story = {
 		<div style={ { display: 'flex', flexDirection: 'column', gap: 24 } }>
 			{ BOOLEAN_OPTIONS.map(fullWidth => (
 				<Group key={ String(fullWidth) } label={ String(fullWidth) }>
-					<Badge { ...args as Badge.Props } fullWidth={ fullWidth } />
+					<Badge { ...args as BadgeStoryProps } fullWidth={ fullWidth } />
 				</Group>
 			)) }
 		</div>
@@ -160,10 +170,10 @@ export const AsElement: Story = {
 	render: (args) => (
 		<Row>
 			<Group label='as="div" (default)'>
-				<Badge { ...args as Badge.Props } />
+				<Badge { ...args as BadgeStoryProps } />
 			</Group>
 			<Group label='as="span"'>
-				<Badge { ...args as Badge.Props } as="span" />
+				<Badge { ...args as BadgeStoryProps } as="span" />
 			</Group>
 		</Row>
 	),
@@ -193,7 +203,7 @@ export const Unstyled: Story = {
 		<Row>
 			{ BOOLEAN_OPTIONS.map(unstyled => (
 				<Group key={ String(unstyled) } label={ String(unstyled) }>
-					<Badge { ...args as Badge.Props } unstyled={ unstyled } />
+					<Badge { ...args as BadgeStoryProps } unstyled={ unstyled } />
 				</Group>
 			)) }
 		</Row>

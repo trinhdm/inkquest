@@ -16,7 +16,7 @@ import type { SiteTheme } from '@/lib/theme'
 // A story-scoped `data-testid` wrapper is used (rather than querying
 // `document` globally) because `.storybook/preview.tsx`'s global decorator
 // renders its OWN `<StyleInliner />` (and `<VariantStyleInliner />`) ahead of
-// every story via `AppProvider`'s `themeStyles` prop — a bare
+// every story via `AppProvider` — a bare
 // `document.querySelector('style[data-scheme-style]')` would just as likely
 // match that ambient instance as the one this file's own stories render.
 const TEST_ID = 'style-inliner-story'
@@ -50,7 +50,7 @@ const meta: Meta<typeof StyleInliner> = {
 	argTypes: {
 		theme: {
 			control: false,
-			description: 'Site theme tokens resolved into CSS custom properties via `resolveStyles`. Defaults to `DEFAULT_THEME` (from `@/providers/ThemeProvider/constants`) when omitted.',
+			description: 'Site theme tokens resolved into CSS custom properties via `resolveStyles`. Required — `StyleInliner`\'s `theme ?? DEFAULT_THEME` fallback is currently commented out in source, so an omitted `theme` reaches `resolveStyles` as `undefined` rather than falling back to `DEFAULT_THEME`.',
 		},
 		id: {
 			control: 'text',
@@ -64,6 +64,9 @@ const meta: Meta<typeof StyleInliner> = {
 			control: 'text',
 			description: 'Native CSP `nonce` attribute, passed through via the rest-spread onto the rendered `<style>` element.',
 		},
+	},
+	args: {
+		theme: DEFAULT_THEME,
 	},
 }
 

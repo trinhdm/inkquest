@@ -13,11 +13,10 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 // A story-scoped `data-testid` wrapper is used (rather than querying
 // `document` globally) because `.storybook/preview.tsx`'s global decorator
 // renders its OWN `<VariantStyleInliner names={['Button', 'Badge', 'Icon']} />`
-// (and `<StyleInliner />`) ahead of every story via `AppProvider`'s
-// `themeStyles` prop — that ambient instance always renders a
-// `style[data-variant-vars]` element, so a bare
-// `document.querySelector('style[data-variant-vars]')` could never reliably
-// prove THIS component's own null-render branch, even in the `Empty` story.
+// (and `<StyleInliner />`) ahead of every story via `AppProvider` — that
+// ambient instance always renders a `style[data-variant-vars]` element, so a
+// bare `document.querySelector('style[data-variant-vars]')` could never
+// reliably prove THIS component's own output, even scoped to a single story.
 const TEST_ID = 'variant-style-inliner-story'
 
 // `VariantStyleInliner` isn't built via the `polymorphic()`/`factory()`
@@ -59,7 +58,15 @@ export const Default: Story = {
 		await expect(styleEl).toBeInTheDocument()
 		await expect(styleEl.tagName).toBe('STYLE')
 
-		const expectedStyles = serializeStyles(args.names.flatMap(buildVariantSchemes))
+		// Mirrors `VariantStyleInliner.tsx`'s own `names.flatMap(name =>
+		// buildVariantSchemes(name, prefix))` exactly — passing
+		// `buildVariantSchemes` directly to `flatMap` would leak the array
+		// INDEX into its second `prefix?: string` parameter (e.g. index `1`
+		// for `'badge'` here), producing a selector like
+		// `.1-badge[data-variant=…]` instead of the real `.badge[…]`.
+		const expectedStyles = serializeStyles(
+			(args.names ?? []).flatMap(name => buildVariantSchemes(name, args.prefix))
+		)
 
 		await expect(styleEl.innerHTML).toBe(expectedStyles)
 	},
@@ -74,7 +81,9 @@ export const SingleName: Story = {
 
 		await expect(styleEl).toBeInTheDocument()
 
-		const expectedStyles = serializeStyles(args.names.flatMap(buildVariantSchemes))
+		const expectedStyles = serializeStyles(
+			(args.names ?? []).flatMap(name => buildVariantSchemes(name, args.prefix))
+		)
 
 		await expect(styleEl.innerHTML).toBe(expectedStyles)
 	},
@@ -82,18 +91,22 @@ export const SingleName: Story = {
 
 export const Empty: Story = {
 	args: { names: [] },
-	play: async ({ canvasElement }) => {
+	play: async ({ args, canvasElement }) => {
 		const canvas = within(canvasElement),
 			container = canvas.getByTestId(TEST_ID),
-			styleEl = container.querySelector('style[data-variant-vars]')
+			styleEl = container.querySelector('style[data-variant-vars]') as HTMLStyleElement
 
-		// `names={[]}` -> `[].flatMap(buildVariantSchemes)` -> `[]` ->
-		// `serializeStyles([])` -> `''`, which is falsy, so the component bails
-		// out and renders `null`: no `<style>` element at all, even scoped to
-		// this story's own container (the ambient `style[data-variant-vars]`
-		// rendered by `.storybook/preview.tsx`'s global decorator lives outside
-		// this container, so it can't leak into this assertion).
-		await expect(styleEl).not.toBeInTheDocument()
-		await expect(container).toBeEmptyDOMElement()
+		// `names={[]}` does NOT produce an empty-render branch here:
+		// `VariantStyleInliner.tsx` guards with `!!names?.length`, and `[].length`
+		// is `0` (falsy), so it takes the `else` branch — `buildVariantSchemes('',
+		// prefix)` — rather than `[].flatMap(...)`. `buildVariantSchemes` always
+		// returns a non-empty `CssRule[]` (`enumerateVariantPalettes()` is
+		// independent of the `name` argument), so `serializeStyles(...)` is never
+		// empty and the component still renders its `<style>` tag.
+		await expect(styleEl).toBeInTheDocument()
+
+		const expectedStyles = serializeStyles(buildVariantSchemes('', args.prefix))
+
+		await expect(styleEl.innerHTML).toBe(expectedStyles)
 	},
 }

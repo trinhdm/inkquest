@@ -1,8 +1,6 @@
 import {
 	DEFAULT_COLOR_SCHEME,
 	schemeControls,
-	StyleInliner,
-	VariantStyleInliner,
 } from '../src/components/document'
 import { useEffect } from 'react'
 import { AppProvider } from '../src/providers/AppProvider'
@@ -24,15 +22,12 @@ const decorators: Preview['decorators'] = [(Story) => {
 		schemeControls().applyScheme(DEFAULT_COLOR_SCHEME)
 	}, [])
 
+	// `AppProvider` now renders `<StyleInliner />` and `<VariantStyleInliner />`
+	// itself from its own `{ prefix, theme }`, so the preview no longer injects
+	// them. Note this drops the previous `names={['Button','Badge','Icon']}`
+	// scoping — `AppProvider` emits every variant scheme.
 	return (
-		<AppProvider themeStyles={
-			<>
-				<StyleInliner />
-				<VariantStyleInliner names={
-					['Button', 'Badge', 'Icon']
-				} />
-			</>
-		}>
+		<AppProvider>
 			<Story />
 		</AppProvider>
 	)

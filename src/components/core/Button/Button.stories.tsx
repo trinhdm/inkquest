@@ -25,14 +25,26 @@ const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 	</div>
 )
 
-// `Button.Props` is `BoxProps & (LinkButtonProps | NativeButtonProps) & {...}` —
-// same conditional-interface shape `Button.tsx` itself narrows via
+// `Button.Props` (the `declare namespace` export) is just the RAW
+// `ButtonProps` interface — it does NOT include `as`/`children`/`unstyled`/
+// `attributes`/etc., which only exist on the actual accepted prop type,
+// `PolymorphicProps<ButtonProps, C>`. `Parameters<typeof Button>[0]` reads
+// that real, wrapped type straight off the component itself (no
+// hand-typing/drift risk) — the generic call signature's default `C`
+// resolves to `'button'` here, since `ButtonSpecs`'s `default.component` is
+// `'button'`.
+type ButtonStoryProps = Parameters<typeof Button>[0]
+
+// Still `BoxProps & (LinkButtonProps | NativeButtonProps) & {...}` under the
+// hood — same conditional-interface shape `Button.tsx` itself narrows via
 // `rest as Extract<typeof rest, LinkButtonProps>`. These stories only ever
 // render the native `<button>` branch, so cast the other way: exclude the
 // `href`-carrying (link) branch, leaving a spreadable, non-union shape.
-type NativeButtonArgs = Exclude<Button.Props, { href: string }>
+type NativeButtonArgs = Exclude<ButtonStoryProps, { href: string }>
 
-const meta: Meta<typeof Button> = {
+type Story = StoryObj<ButtonStoryProps>
+
+const meta: Meta<ButtonStoryProps> = {
 	component: Button,
 	title: 'Core/Button',
 	argTypes: {
@@ -50,7 +62,7 @@ const meta: Meta<typeof Button> = {
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Inherited from `BoxProps`. When true, every `styles(selector)` call `Button` makes (`root`, `inner`, `label`, and `icon` when `loading`) returns an empty class name instead of its `inkq-button*` base class — see the `Unstyled` story.',
+			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Button`\'s own `ButtonProps`. When true, every `styles(selector)` call `Button` makes (`root`, `inner`, `label`, and `icon` when `loading`) returns an empty class name instead of its `inkq-button*` base class — see the `Unstyled` story.',
 		},
 		onClick: { action: 'clicked' },
 	},
@@ -62,7 +74,6 @@ const meta: Meta<typeof Button> = {
 }
 
 export default meta
-type Story = StoryObj<typeof Button>
 
 export const Default: Story = {}
 

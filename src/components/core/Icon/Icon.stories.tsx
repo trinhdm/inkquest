@@ -43,6 +43,14 @@ const MISC_TYPES: readonly IconType[] = [
 	'private', 'rating', 'ruler', 'time', 'wrench',
 ]
 
+const ICON_GROUPS: Record<string, readonly IconType[]> = {
+	'arrow / navigation': ARROW_NAV_TYPES,
+	'action': ACTION_TYPES,
+	'control': CONTROL_TYPES,
+	'user / settings': USER_SETTING_TYPES,
+	'misc': MISC_TYPES,
+}
+
 // Full `IconType` union (all 66 keys of `ICON_MAP`), used for `argTypes.type`
 // and as the exhaustive list the `AllIcons` story maps over.
 const ICON_TYPE_OPTIONS: readonly IconType[] = [
@@ -87,7 +95,16 @@ const Section = ({ label, children }: { label: string, children: ReactNode }) =>
 	</div>
 )
 
-const meta: Meta<typeof Icon> = {
+// `Icon.Props` (the `declare namespace` export) is just the raw `IconProps`
+// interface — it doesn't include `as`/`unstyled`/`attributes`/etc., which
+// only exist on the actual accepted prop type, `PolymorphicProps<IconProps,
+// C>`. `Parameters<typeof Icon>[0]` reads that real, wrapped type straight
+// off the component itself — the generic call signature's default `C`
+// resolves to `'svg'` here, since `IconSpecs`'s `default.component` is `'svg'`.
+type IconStoryProps = Parameters<typeof Icon>[0]
+type Story = StoryObj<IconStoryProps>
+
+const meta: Meta<IconStoryProps> = {
 	component: Icon,
 	title: 'Core/Icon',
 	argTypes: {
@@ -100,9 +117,17 @@ const meta: Meta<typeof Icon> = {
 			control: 'number',
 			description: 'Pixel size applied to both the `width` and `height` of the underlying Lucide SVG icon.',
 		},
+		color: {
+			control: 'color',
+			description: 'Forwarded straight through to the underlying Lucide icon component as its `color` prop (sets the SVG\'s `stroke` — Lucide icons are stroke-based, not fill-based). See the `Color` story.',
+		},
+		strokeWidth: {
+			control: 'number',
+			description: 'Forwarded straight through to the underlying Lucide icon component as its `strokeWidth` prop, mapped to the rendered `<svg>`\'s `stroke-width` attribute. See the `StrokeWidth` story.',
+		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Inherited from `BoxProps`. When true, the `styles(\'root\')` call `Icon` makes returns an empty class name instead of its `inkq-icon` base class on the rendered `<svg>` — see the `Unstyled` story.',
+			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Icon`\'s own `IconProps` (which was narrowed from `extends LucideProps, BoxProps` down to just `color`/`size`/`strokeWidth`/`type`). When true, the `styles(\'root\')` call `Icon` makes returns an empty class name instead of its `inkq-icon` base class on the rendered `<svg>` — see the `Unstyled` story.',
 		},
 	},
 	args: {
@@ -114,7 +139,6 @@ const meta: Meta<typeof Icon> = {
 }
 
 export default meta
-type Story = StoryObj<typeof Icon>
 
 export const Default: Story = {}
 
@@ -122,41 +146,15 @@ export const AllIcons: Story = {
 	parameters: { layout: 'padded' },
 	render: () => (
 		<div style={ { display: 'flex', flexDirection: 'column', gap: 32 } }>
-			<Section label="arrow / navigation">
-				{ ARROW_NAV_TYPES.map(type => (
-					<Group key={ type } label={ type }>
-						<Icon type={ type } />
-					</Group>
-				)) }
-			</Section>
-			<Section label="action">
-				{ ACTION_TYPES.map(type => (
-					<Group key={ type } label={ type }>
-						<Icon type={ type } />
-					</Group>
-				)) }
-			</Section>
-			<Section label="control">
-				{ CONTROL_TYPES.map(type => (
-					<Group key={ type } label={ type }>
-						<Icon type={ type } />
-					</Group>
-				)) }
-			</Section>
-			<Section label="user / settings">
-				{ USER_SETTING_TYPES.map(type => (
-					<Group key={ type } label={ type }>
-						<Icon type={ type } />
-					</Group>
-				)) }
-			</Section>
-			<Section label="misc">
-				{ MISC_TYPES.map(type => (
-					<Group key={ type } label={ type }>
-						<Icon type={ type } />
-					</Group>
-				)) }
-			</Section>
+			{ Object.entries(ICON_GROUPS).map(([label, group]) => (
+				<Section label={ label }>
+					{ group.map(type => (
+						<Group key={ type } label={ type }>
+							<Icon type={ type } />
+						</Group>
+					)) }
+				</Section>
+			)) }
 		</div>
 	),
 	play: async ({ canvasElement }) => {
@@ -175,7 +173,7 @@ export const Sizes: Story = {
 		<Row>
 			{ SIZE_OPTIONS.map(size => (
 				<Group key={ size } label={ String(size) }>
-					<Icon { ...args as Icon.Props } size={ size } />
+					<Icon { ...args as IconStoryProps } size={ size } />
 				</Group>
 			)) }
 		</Row>
@@ -194,6 +192,56 @@ export const Sizes: Story = {
 
 			expect(svg).toHaveAttribute('width', expected)
 			expect(svg).toHaveAttribute('height', expected)
+		})
+	},
+}
+
+const COLOR_OPTIONS = ['currentColor', 'crimson', 'seagreen'] as const
+
+export const Color: Story = {
+	render: (args) => (
+		<Row>
+			{ COLOR_OPTIONS.map(color => (
+				<Group key={ color } label={ color }>
+					<Icon { ...args as IconStoryProps } color={ color } />
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		// Lucide's `Icon` maps `color` directly onto the rendered `<svg>`'s
+		// `stroke` attribute (see `lucide-react`'s `Icon.mjs`).
+		const svgs = canvasElement.querySelectorAll('svg')
+
+		await expect(svgs).toHaveLength(COLOR_OPTIONS.length)
+
+		svgs.forEach((svg, index) => {
+			expect(svg).toHaveAttribute('stroke', COLOR_OPTIONS[index])
+		})
+	},
+}
+
+const STROKE_WIDTH_OPTIONS = [1, 2, 4] as const
+
+export const StrokeWidth: Story = {
+	render: (args) => (
+		<Row>
+			{ STROKE_WIDTH_OPTIONS.map(strokeWidth => (
+				<Group key={ strokeWidth } label={ String(strokeWidth) }>
+					<Icon { ...args as IconStoryProps } strokeWidth={ strokeWidth } />
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		// Lucide's `Icon` maps `strokeWidth` directly onto the rendered
+		// `<svg>`'s `stroke-width` attribute (see `lucide-react`'s `Icon.mjs`).
+		const svgs = canvasElement.querySelectorAll('svg')
+
+		await expect(svgs).toHaveLength(STROKE_WIDTH_OPTIONS.length)
+
+		svgs.forEach((svg, index) => {
+			expect(svg).toHaveAttribute('stroke-width', String(STROKE_WIDTH_OPTIONS[index]))
 		})
 	},
 }
@@ -226,7 +274,7 @@ export const Unstyled: Story = {
 		<Row>
 			{ BOOLEAN_OPTIONS.map(unstyled => (
 				<Group key={ String(unstyled) } label={ String(unstyled) }>
-					<Icon { ...args as Icon.Props } unstyled={ unstyled } />
+					<Icon { ...args as IconStoryProps } unstyled={ unstyled } />
 				</Group>
 			)) }
 		</Row>

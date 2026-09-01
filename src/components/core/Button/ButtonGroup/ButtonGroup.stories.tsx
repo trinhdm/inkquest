@@ -21,9 +21,18 @@ const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 	</div>
 )
 
+// `Button.Group.Props` (the `declare namespace` export) is just the raw
+// `ButtonGroupProps` interface — it doesn't include `unstyled`/`attributes`/
+// etc., which only exist on the actual accepted prop type,
+// `PolymorphicProps<ButtonGroupProps, C>`. `Parameters<typeof
+// Button.Group>[0]` reads that real, wrapped type straight off the component
+// itself — `ButtonGroupSpecs`'s `specIs: { compound: true }` makes `as`
+// resolve to `never` (compound components don't take a tag override), so
+// this also correctly excludes `as` from the story's own controls.
+//
 // `variant`/`size` aren't `ButtonGroup` props — they're story-only controls
 // that feed the `Button` children rendered inside the group.
-type ButtonGroupStoryArgs = Button.Group.Props & {
+type ButtonGroupStoryArgs = Parameters<typeof Button.Group>[0] & {
 	variant: Button.Variant
 	size: Button.Size
 }
@@ -66,9 +75,17 @@ const meta: Meta<ButtonGroupStoryArgs> = {
 		disabled: { control: 'boolean' },
 		hasPriority: { control: 'boolean' },
 		loading: { control: 'boolean' },
+		fullWidth: {
+			control: 'boolean',
+			description: 'Stretches the group to fill its container\'s width (adds `data-block`/`aria-orientation` alongside it via `attributes`). See the `FullWidth` story.',
+		},
+		justify: {
+			control: 'text',
+			description: 'NOT destructured anywhere in `ButtonGroup`\'s render, so it falls through `...rest` and is spread onto the root `Box` as a literal `justify="..."` DOM attribute — it has no effect on actual layout/justification despite the name. See the `Justify` story.',
+		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Inherited from `BoxProps`. When true, the `styles(\'root\')` call `ButtonGroup` makes returns an empty class name instead of its `inkq-button-group` base class on the group\'s root element — see the `Unstyled` story. Does not cascade to the child `Button`s inside it (`unstyled` isn\'t among the props `childrenWithProps` forwards).',
+			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `ButtonGroup`\'s own `ButtonGroupProps`. When true, the `styles(\'root\')` call `ButtonGroup` makes returns an empty class name instead of its `inkq-button-group` base class on the group\'s root element — see the `Unstyled` story. It also cascades to the child `Button`s (`childrenWithProps` forwards `disabled`/`loading`/`unstyled` — any boolean value in that shared set — onto each cloned `Button` child, alongside `priority` when `hasPriority` is set).',
 		},
 	},
 	args: {
@@ -192,9 +209,11 @@ export const FullWidth: Story = {
 // `unstyled` strips the base `inkq-button-group` class `useStyles`/
 // `getClassName.tsx` applies to the group's root element (rendered with
 // `role="group"`) — verified against `ButtonGroup.tsx`'s own render, which
-// only ever calls `styles('root')` (no other selector). It has no effect on
-// the child `Button`s' own styling, since `ButtonGroup` doesn't forward
-// `unstyled` through `childrenWithProps`.
+// only ever calls `styles('root')` (no other selector). It ALSO cascades to
+// the child `Button`s: `childrenWithProps` forwards any boolean value from
+// `{ disabled, loading, unstyled }` onto each cloned `Button` child, so
+// passing `unstyled` to `ButtonGroup` strips each child `Button`'s own
+// `inkq-button` class too.
 export const Unstyled: Story = {
 	parameters: { controls: { exclude: ['unstyled'] } },
 	render: ({ size, variant, ...args }) => (
@@ -218,5 +237,31 @@ export const Unstyled: Story = {
 
 		await expect(isStyled).toHaveClass('inkq-button-group')
 		await expect(isUnstyled).not.toHaveClass('inkq-button-group')
+
+		// Cascades to child `Button`s too.
+		const [unstyledButton] = within(isUnstyled).getAllByRole('button'),
+			[styledButton] = within(isStyled).getAllByRole('button')
+
+		await expect(styledButton).toHaveClass('inkq-button')
+		await expect(unstyledButton).not.toHaveClass('inkq-button')
+	},
+}
+
+// `justify` is declared on `ButtonGroupProps` but is NOT destructured
+// anywhere in `ButtonGroup`'s own render — it falls through `...rest` and is
+// spread onto the root `Box` as a literal DOM attribute, with no actual
+// effect on layout/justification.
+export const Justify: Story = {
+	render: ({ size, variant, ...args }) => (
+		<Button.Group { ...args } justify="center">
+			{ renderGroup({ size, variant }) }
+		</Button.Group>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			group = canvas.getByRole('group')
+
+		await expect(group).toHaveAttribute('justify', 'center')
+		await expect(group).not.toHaveStyle({ justifyContent: 'center' })
 	},
 }
