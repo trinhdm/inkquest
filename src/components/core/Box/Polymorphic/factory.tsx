@@ -4,56 +4,84 @@ import type { Simplify } from '@/types/utils'
 import {
 	memo,
 	type ComponentType,
+	type ElementType,
 	type NamedExoticComponent,
 	type ReactNode,
 } from 'react'
 
 import type {
 	AsPolymorphic,
-	ComponentSpecs,
-	SpecsContract,
+	// ComponentSpecs,
+	// SpecsContract,
+	SpecsDefaultProps,
 
 	InferComponentSpec,
-	InferDefaultProps,
+	// InferDefaultProps,
 	// PolymorphicSpec,
 	Specs,
 } from '@/types/spec'
+// import type { PolymorphicProps, PropertiesBase } from './polymorphic'
+// import type { ValueOf } from './types'
 
-type _PolymorphicProps<S extends SpecsContract> =
+// type _PolymorphicProps<S extends Specs> =
+// 	S['props']
+// 	& AsPolymorphic<S>
+
+// type AsPolymorphic<S> = {
+// 	as?: unknown extends InferComponentSpec<S>
+// 		? ElementType
+// 		: InferComponentSpec<S>
+// 	children?: ReactNode
+// 	// unstyled?: boolean
+// }
+
+export type FactoryProps<S extends Specs> =
 	S['props']
 	& AsPolymorphic<S>
+	& {
+		children?: ReactNode
+		unstyled?: boolean
+	}
 
 // only pull `ref` from Specs when the component's own props don't already
 // declare one — letting a component override, instead of intersecting with,
 // the auto-derived `Ref<TagElement<T>>` (see Box/Spec audit, Button.tsx)
-type _SpecsPickKeys<S extends SpecsContract> =
+type _SpecsPickKeys<S extends Specs> =
 	| 'attributes'
 	| 'id'
 	| ('ref' extends keyof S['props'] ? never : 'ref')
 
-type _FactoryProps<S extends SpecsContract> =
+type _OldFactoryProps<S extends Specs> =
 	& Pick<S, _SpecsPickKeys<S>>
-	& _PolymorphicProps<S>
+	& FactoryProps<S>
 	// & PickStartsWith<PolymorphicProps<InferComponentSpec<S>, S['props']>, 'on'>
 	// PolymorphicProps<InferComponentSpec<S>, _PolymorphicProps<S>>
 
-type _DefaultComponent<S extends SpecsContract, P = InferDefaultProps<S>> = {
-	props?: P & (
-		'as' extends keyof P
-			? unknown extends InferComponentSpec<S>
-				? Required<Pick<P, 'as'>>
-				: Pick<P, 'as'>
-			: never
-		)
+// type _DefaultComponent<S extends Specs, P = SpecsDefaultProps<S>> = {
+// 	props?: P & (
+// 		'as' extends keyof P
+// 			? unknown extends InferComponentSpec<S>
+// 				? Required<Pick<P, 'as'>>
+// 				: Pick<P, 'as'>
+// 			: never
+// 		)
+// }
+
+type _DefaultComponent<S extends Specs> = {
+	props?: SpecsDefaultProps<S> & (
+		unknown extends InferComponentSpec<S>
+			? Required<Pick<AsPolymorphic<S>, 'as'>>
+			: unknown
+	)
 }
 
-type _Component<S extends SpecsContract> =
-	NamedExoticComponent<Simplify<_FactoryProps<S>>>
+type _Component<S extends Specs> =
+	NamedExoticComponent<Simplify<_OldFactoryProps<S>>>
 
 export interface MethodsBase<
-	S extends SpecsContract,
+	S extends Specs,
 	C = _Component<S>,
-	P = _PolymorphicProps<S>,
+	P = FactoryProps<S>,
 	D = _DefaultComponent<S>
 > {
 	classes?: Record<string, string>
@@ -62,36 +90,39 @@ export interface MethodsBase<
 }
 
 export type SubcomponentsBase<
-	S extends SpecsContract,
+	S extends Specs,
 	List = S['subcomponents']
 > = List extends Record<string, unknown>
 	? List
 	: Record<string, never>
 
-type _FactoryComponent<S extends SpecsContract> =
+type _FactoryComponent<S extends Specs> =
 	& _Component<S>
-	// & SubcomponentsBase<S>
+	& SubcomponentsBase<S>
 	& MethodsBase<S>
 
 export const factory = <
-	T extends SpecsContract,
+	T extends Specs,
 	C extends object = _FactoryComponent<T>
 >(
-	target: (props: ComponentSpecs<T>) => ReactNode,
+	// target: (props: ComponentSpecs<T>) => ReactNode,
+	target: (props: FactoryProps<T>) => ReactNode,
 	classes?: Record<string, string>
 ) => {
 	type FC = _FactoryComponent<T>
+
 	const BaseComponent = memo(target) as unknown as FC
 
 	if (classes) BaseComponent.classes = classes
 
-	BaseComponent.setDefaults = (args: _DefaultComponent<T>) => {
+	BaseComponent.setDefaults = args => {
 		const { displayName } = BaseComponent
 
 		if (!displayName)
 			throw new Error('cannot set defaultProps: missing `displayName`')
 
 		if (args?.props && Object.keys(args.props).length) {
+			console.log(displayName, { args })
 			// const props = { unstyled: false, ...args.props }
 			setDefaultProps(displayName, args.props)
 		}
@@ -99,12 +130,7 @@ export const factory = <
 		return args
 	}
 
-	// cast the assignment itself, matching `memo(target) as unknown as FC`
-	// above: `_FactoryProps<S>` is conditional on `S['props']` now (for the
-	// ref-override support), which TypeScript can't verify generically
-	// against `MethodsBase`'s simpler default `P`/`C` for an abstract `S` —
-	// even though any concrete `S` satisfies it. See Box/Spec audit.
-	BaseComponent.withProps = ((props: Parameters<typeof target>[0]): FC => {
+	BaseComponent.withProps = props => {
 		type P = Parameters<typeof target>[0]
 
 		const TempComponent = BaseComponent as ComponentType<P>,
@@ -114,7 +140,7 @@ export const factory = <
 		ExtendWith.setDefaults = BaseComponent.setDefaults
 
 		return ExtendWith as unknown as FC
-	}) as unknown as MethodsBase<T>['withProps']
+	}
 
 	return BaseComponent as unknown as C
 }

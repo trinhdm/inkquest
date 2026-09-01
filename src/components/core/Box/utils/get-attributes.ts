@@ -1,7 +1,7 @@
 import { hasValue, keyHasValue, toKebabCase } from '@/utils/helpers'
-import type { PolymorphicProps } from '../Polymorphic'
 import type { ElementType } from 'react'
-import type { ExtractHtmlAttributes } from '@/types/spec'
+import type { PolymorphicProps } from '../Polymorphic'
+// import type { ExtractHtmlAttributes } from '@/types/spec'
 
 type PrefixedAttributes<T extends Record<string, any>, S extends string> = {
 	[K in keyof T as `${S}-${string & K}`]?: T[K]

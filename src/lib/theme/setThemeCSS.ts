@@ -1,6 +1,6 @@
 import type { CSSVariable, CSSVars } from '@/types/shared'
 import type { SiteThemeConfig } from './types'
-import type { SpecsList, ValidSpecs } from '@/types/spec'
+import type { ValidSpecs } from '@/types/spec'
 
 type _ConvertCSSVars<V = CSSVars> = {
 	[K in keyof V]: V[K] extends CSSVariable ? Record<V[K], string | undefined> : never

@@ -1,19 +1,23 @@
 import { getDefaultProps } from '@/lib/registries'
 import { filterProps, styleProps } from '@/utils/helpers'
-// import type { PolymorphicProps } from '@/components/core/Box/Polymorphic'
+import type { FactoryProps } from '@/components/core/Box/Polymorphic/factory'
 
-export const useProps = <T extends object>(
+// type Unwrap<T> = T extends FactoryProps<infer U> ? U : T
+
+export const useProps = <P,>(
 	name: string | undefined | (string | undefined)[],
-	_props: T
-	// _props: PolymorphicProps<E, T>
-): T => {
-	let props = {} as T
+	// _props: T
+	_props: FactoryProps<P>
+) => {
+	// let props = {} as P['props'] & { as?: P['default']['component'] }
+	// let props = {} as P['props'] & AsPolymorphic<P>
+	let props = {} as FactoryProps<P>
 
 	if (name) {
 		const component = Array.isArray(name)
 			? name.filter(Boolean).join('.')
 			: name
-		let defaultProps = getDefaultProps<T>(component)
+		let defaultProps = getDefaultProps<P>(component)
 
 		if (Object.keys(defaultProps).length) {
 			defaultProps = filterProps(defaultProps)

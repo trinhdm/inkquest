@@ -5,28 +5,22 @@ import {
 } from './factory'
 
 import type {
+	AsPolymorphic,
 	ComponentSpecs,
-	// ExtendedSpecs,
-	// InferComponentSpec,
-	BaseSpecs,
 	Specs,
-	SpecsContract,
-	SpecsList,
-	// ValidSpecs,
+	// BaseSpecs,
+	// SpecsContract,
+	// SpecsList,
 } from '@/types/spec'
 
 import type { ReactElement } from 'react'
 import type { PolymorphicProps, PropertiesBase } from './polymorphic'
-import type { ValueOf } from './types'
 
 type _PropsVariant<T extends Specs> =
 	T['props'] extends { variant?: unknown }
 		? NonNullable<T['props']>['variant']
 		: never
 
-// Specs already declares `variant?: string` at the top level — this stays
-// a guarded lookup (not bare S['variant']) so it keeps working if that
-// top-level field is ever narrowed or removed.
 type _SpecVariant<S> =
 	S extends { variant?: unknown } ? S['variant'] : never
 
@@ -47,15 +41,12 @@ type PolymorphicSpec<
 export type PolymorphicSpecs<T extends Specs> =
 	PolymorphicSpec<T>
 
-const polymorphicFactory = <
-	T extends Specs,
-	S extends PolymorphicSpec<T> = PolymorphicSpec<T>
->(
+const polymorphicFactory = <T extends Specs>(
 	target: Parameters<typeof factory<T>>[0],
 	classes?: Record<string, string>
 ) => {
-	type C = ValueOf<S, 'component'>
-	type P<U> = PolymorphicProps<ValueOf<S, 'props'>, U>
+	type C = NonNullable<AsPolymorphic<T>['as']>     // 'svg' for Icon, ElementType if no default
+	type P<U> = PolymorphicProps<T['props'], U>
 
 	type _Component = <U = C>(props: P<U>) => ReactElement
 	type _Subcomponents = SubcomponentsBase<T>
@@ -70,21 +61,6 @@ const polymorphicFactory = <
 
 	return factory<T, PolymorphicComponent>(target, classes)
 }
-
-// type _TopExcessKeys<S> =
-// 	Exclude<keyof S, keyof Specs>
-
-// type _DefaultExcessKeys<S> =
-// 	S extends { default: infer D }
-// 		? Exclude<keyof D, 'component'>
-// 		: never
-
-// type _ExcessMarker<SC> =
-// 	[_TopExcessKeys<SC>] extends [never]
-// 		? [_DefaultExcessKeys<SC>] extends [never]
-// 			? unknown
-// 			: { keyNotDefinedInSpecsDefault: _DefaultExcessKeys<SC> }
-// 		: { keyNotDefinedInSpecs: _TopExcessKeys<SC> }
 
 export const polymorphic = <
 	T extends Specs,

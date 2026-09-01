@@ -3,7 +3,7 @@ import { useTheme } from '@/providers/ThemeProvider'
 import { getClassName } from './getClassName'
 import { getStyles } from './getStyle'
 import { isObject } from '@/utils/helpers'
-import type { PolymorphicSpec, SpecAttributes, SpecsList, ValidSpecs } from '@/types/spec'
+import type { SpecAttributes, ValidSpecs } from '@/types/spec'
 import type { SiteThemeConfig, ThemeCSSConfig } from '@/lib/theme'
 // import type { ThemeCSSMap } from '@/lib/theme/setThemeCSS'
 
