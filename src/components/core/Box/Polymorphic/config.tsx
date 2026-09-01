@@ -8,9 +8,6 @@ import type {
 	AsPolymorphic,
 	ComponentSpecs,
 	Specs,
-	// BaseSpecs,
-	// SpecsContract,
-	// SpecsList,
 } from '@/types/spec'
 
 import type { ReactElement } from 'react'
@@ -24,13 +21,9 @@ type _PropsVariant<T extends Specs> =
 type _SpecVariant<S> =
 	S extends { variant?: unknown } ? S['variant'] : never
 
-type PolymorphicSpec<
-	T extends Specs,
-	// K = InferComponentSpec<T>,
-	// V = S['props'] extends { variant?: infer PV } ? PV : never,
-> = T['props']
+type PolymorphicSpec<T extends Specs> =
+	T['props']
 	& ComponentSpecs<T> & {
-		// subcomponents?: T['subcomponents']
 		variant?: _PropsVariant<T> extends infer VP
 			? VP extends string
 				? Exclude<VP, undefined>

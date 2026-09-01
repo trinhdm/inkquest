@@ -1,9 +1,6 @@
-// import { filterProps } from '@/utils/helpers'
-// import type { CSSVars } from '@/types/shared'
-import type { SharedConfig } from './useStyles'
-import type { ValidSpecs } from '@/types/spec'
+import { keyHasValue } from '@/utils/helpers'
 import { useVariantStyles } from '../useVariantStyles'
-// import type { ThemeCSSConfig } from '@/lib/theme'
+import type { SharedConfig } from './useStyles'
 
 // type ResolvedVars = Partial<Record<string, CSSVars>>
 
@@ -19,15 +16,13 @@ import { useVariantStyles } from '../useVariantStyles'
 // 	}, {})
 // }
 
-export const getStyles = <S extends ValidSpecs<S>>({
-	check,
+export const getStyles = <P,>({
 	name,
 	props,
 	selector,
 	theme,
 	tokens,
-}: SharedConfig<S>) => {
-	// return {}
+}: SharedConfig<P>) => {
 	if (typeof tokens !== 'function') return {}
 
 	// const themeName = (Array.isArray(name) ? name : [name]).filter((n) => n) as string[]
@@ -40,15 +35,16 @@ export const getStyles = <S extends ValidSpecs<S>>({
 
 	const variables = tokens?.(theme, props, stylesCtx)
 
-	if (Object.hasOwn(variables, 'stylesheet')) {
-		const styles = variables['stylesheet']
+	if (keyHasValue(variables, 'stylesheet')) {
+		const styles = variables.stylesheet
 		if (typeof styles === 'string')
 			useVariantStyles(name, styles)
 	}
 
-	if (Object.hasOwn(variables, selector)) {
+	if (keyHasValue(variables, selector)) {
 		const styles = variables[selector]
-		if (typeof styles === 'object') return styles
+		if (typeof styles === 'object' && !!styles)
+			return styles
 	}
 
 	return {}

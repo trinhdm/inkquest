@@ -1,14 +1,13 @@
 import cx from 'clsx'
 import { toKebabCase } from '@/utils/helpers'
 import type { SharedConfig } from './useStyles'
-import type { ValidSpecs } from '@/types/spec'
 
-const getBaseClass = <S extends ValidSpecs<S>>({
+const getBaseClass = <P,>({
 	check,
 	name,
 	prefix,
 	selector,
-}: SharedConfig<S>): string => {
+}: SharedConfig<P>): string => {
 	let baseName = toKebabCase(name)
 
 	if (prefix) baseName = `${prefix}-${baseName}`
@@ -17,8 +16,8 @@ const getBaseClass = <S extends ValidSpecs<S>>({
 	return baseName
 }
 
-export const getClassName = <S extends ValidSpecs<S>>(
-	config: SharedConfig<S>
+export const getClassName = <P,>(
+	config: SharedConfig<P>
 ): string => {
 	const { check, classes } = config,
 		baseClass = getBaseClass(config)

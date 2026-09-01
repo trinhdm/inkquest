@@ -18,6 +18,7 @@ export const Box = toPolymorphic<BoxProps, 'div'>((_props) => {
 	} = handleProps(_props)
 
 	const Element = as || 'div'
+	// console.log(as)
 	// const theme = useTheme()
 
 	return <Element { ...props } />

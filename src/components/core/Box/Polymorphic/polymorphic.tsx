@@ -1,17 +1,16 @@
-import {
-	// memo,
-	type ComponentProps,
-	type ElementType,
-	type FunctionComponent,
-	type JSX,
-	type ReactElement,
-	type ReactNode,
+import type {
+	ComponentProps,
+	ElementType,
+	FunctionComponent,
+	JSX,
+	ReactElement,
+	ReactNode,
 } from 'react'
 
 import type { SpecsContract } from '@/types/spec'
-import type { ValidElement } from './types'
+// import type { ValidElement } from './types'
 
-type _BaseProps<C extends ValidElement> =
+type _BaseProps<C extends ElementType> =
 	JSX.LibraryManagedAttributes<
 		C, ComponentProps<C>
 	>
@@ -20,20 +19,15 @@ export type OverrideProps<P1 = object, P2 = object> =
 	P2
 	& Omit<P1, keyof P2>
 
-export type ExtendedProps<C extends ValidElement, P2 = object> =
+export type ExtendedProps<C extends ElementType, P2 = object> =
 	OverrideProps<
 		_BaseProps<C>, P2
 	>
 
-//	InheritedProps
-
-// export type PropertiesBase<C extends ElementType> =
-// 	Pick<FunctionComponent<ComponentProps<C>>, 'displayName'>
-
-// type _Tag<C> = [C] extends [undefined] ? 'div' : NonNullable<C>   // tuple-wrapped: no distribution
-
 export type PropertiesBase<P = object> =
 	Pick<FunctionComponent<P>, 'displayName'>
+
+// type _Tag<C> = [C] extends [undefined] ? 'div' : NonNullable<C>
 
 export type PolymorphicProps<
 	P,
@@ -46,14 +40,9 @@ export type PolymorphicProps<
 		children?: ReactNode
 		unstyled?: boolean
 	}
-
-	// & ('as' extends keyof P
-	// 	? { as?: P['as'] } & Omit<P, 'as'>
-	// 	: { as?: C } & P
-	// )
-	// & ( _Tag<C> extends ValidElement
-	// 		? Omit<ExtendedProps<_Tag<C>, P>, 'as'>
-	// 		: Omit<P, 'as'> )
+	// & ( _Tag<C> extends ElementType
+	// 	? Omit<ExtendedProps<_Tag<C>, P>, 'as'>
+	// 	: Omit<P, 'as'> )
 
 export const toPolymorphic = <
 	P0 extends object,

@@ -4,36 +4,16 @@ import type { Simplify } from '@/types/utils'
 import {
 	memo,
 	type ComponentType,
-	type ElementType,
 	type NamedExoticComponent,
 	type ReactNode,
 } from 'react'
 
 import type {
 	AsPolymorphic,
-	// ComponentSpecs,
-	// SpecsContract,
-	SpecsDefaultProps,
-
 	InferComponentSpec,
-	// InferDefaultProps,
-	// PolymorphicSpec,
+	SpecsDefaultProps,
 	Specs,
 } from '@/types/spec'
-// import type { PolymorphicProps, PropertiesBase } from './polymorphic'
-// import type { ValueOf } from './types'
-
-// type _PolymorphicProps<S extends Specs> =
-// 	S['props']
-// 	& AsPolymorphic<S>
-
-// type AsPolymorphic<S> = {
-// 	as?: unknown extends InferComponentSpec<S>
-// 		? ElementType
-// 		: InferComponentSpec<S>
-// 	children?: ReactNode
-// 	// unstyled?: boolean
-// }
 
 export type FactoryProps<S extends Specs> =
 	S['props']
@@ -54,25 +34,13 @@ type _SpecsPickKeys<S extends Specs> =
 type _OldFactoryProps<S extends Specs> =
 	& Pick<S, _SpecsPickKeys<S>>
 	& FactoryProps<S>
-	// & PickStartsWith<PolymorphicProps<InferComponentSpec<S>, S['props']>, 'on'>
-	// PolymorphicProps<InferComponentSpec<S>, _PolymorphicProps<S>>
-
-// type _DefaultComponent<S extends Specs, P = SpecsDefaultProps<S>> = {
-// 	props?: P & (
-// 		'as' extends keyof P
-// 			? unknown extends InferComponentSpec<S>
-// 				? Required<Pick<P, 'as'>>
-// 				: Pick<P, 'as'>
-// 			: never
-// 		)
-// }
 
 type _DefaultComponent<S extends Specs> = {
 	props?: SpecsDefaultProps<S> & (
-		unknown extends InferComponentSpec<S>
-			? Required<Pick<AsPolymorphic<S>, 'as'>>
-			: unknown
-	)
+			unknown extends InferComponentSpec<S>
+				? Required<AsPolymorphic<S>>
+				: AsPolymorphic<S>
+		)
 }
 
 type _Component<S extends Specs> =
@@ -105,12 +73,10 @@ export const factory = <
 	T extends Specs,
 	C extends object = _FactoryComponent<T>
 >(
-	// target: (props: ComponentSpecs<T>) => ReactNode,
 	target: (props: FactoryProps<T>) => ReactNode,
 	classes?: Record<string, string>
 ) => {
 	type FC = _FactoryComponent<T>
-
 	const BaseComponent = memo(target) as unknown as FC
 
 	if (classes) BaseComponent.classes = classes
@@ -121,11 +87,8 @@ export const factory = <
 		if (!displayName)
 			throw new Error('cannot set defaultProps: missing `displayName`')
 
-		if (args?.props && Object.keys(args.props).length) {
-			console.log(displayName, { args })
-			// const props = { unstyled: false, ...args.props }
+		if (args?.props && Object.keys(args.props).length)
 			setDefaultProps(displayName, args.props)
-		}
 
 		return args
 	}

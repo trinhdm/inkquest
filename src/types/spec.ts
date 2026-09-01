@@ -14,7 +14,6 @@ export interface SpecsContract {
 
 export type SpecsDefaultProps<T extends Specs> =
 	Partial<T['props']>
-	& AsPolymorphic<T>
 	& SpecAttributes
 
 type _CompoundSpecs<T extends Specs> = {
@@ -62,6 +61,15 @@ export type AsPolymorphic<S> = {
         ? ElementType
         : InferComponentSpec<S>
 }
+
+// export type AsPolymorphic<S> =
+// 	S extends { specIs: { compound: true } }
+// 		? { as?: never }
+// 		: {
+// 			as?: unknown extends InferComponentSpec<S>
+// 				? ElementType
+// 				: InferComponentSpec<S>
+// 		}
 
 type _CommonTag =
 	| 'a' | 'button' | 'div' | 'nav' | 'span' | 'svg'
@@ -143,104 +151,3 @@ type InferPropsSpec<S> =
 export type ValidSpecs<S> =
 	Specs<InferComponentSpec<S>, InferPropsSpec<S>>
 	// Specs<InferComponentSpec<S>>
-
-
-
-// export interface BaseSpecs<P, T> {
-// 	attributes?: TagAttributes<T>
-// 	ctx?: unknown
-// 	default?:
-// 		{ component?: keyof _ElementTagMap | never }
-// 		& { props?: Partial<P> }
-// 	id?: string
-// 	props: P
-// 	ref?: Ref<TagElement<T>>
-// 	specIs?: SpecIs
-// 	subcomponents?: Record<string, unknown>		// move this to compound/root
-// 	tokens?: CSSVars
-// 	variant?: string
-// }
-
-// export type SpecsList<TObj> = {
-// 	[K in keyof TObj]: TObj[K] extends BaseSpecs<infer P, infer T>
-// 		? BaseSpecs<P, T> & ComponentSpecs<T>
-// 		: never
-// }
-
-// export type SpecsMap<
-// 	T extends SpecsList<T>,
-// > = {
-// 	[U in keyof T]: T[U]
-// }
-
-// export type SpecItem<
-// 	T extends SpecsList<T>,
-// 	K extends keyof T,
-// > =
-// 	SpecsMap<T>[K]
-// 	// SpecsMap<T> extends { [P in K]: infer V } ? V : never
-
-// // type _InferredTag<
-// // 	S extends Specs,
-// // 	K = InferComponentSpec<S>,
-// // > =
-// // 	K extends keyof _ElementTagMap
-// // 		? K
-// // 		: never
-
-
-
-// export type InferComponentSpec<S> =
-// 	S extends { default?: { component: unknown } }
-// 		? NonNullable<S['default']>['component']
-// 		: unknown
-
-
-// export type PolymorphicSpec<S extends Specs> = {
-//     as?: unknown extends InferComponentSpec<S>
-//         ? ElementType
-//         : InferComponentSpec<S>
-// }
-
-// type InferDefaultProps<S extends Specs> =
-// 	Partial<S['props']>
-// 	& PolymorphicSpec<S>
-// 	& DataAttrs
-
-// type _InferredDefault<
-// 	S,
-// 	K = InferComponentSpec<S>,
-// > = (
-// 		K extends keyof _ElementTagMap ? {
-// 			component: K
-// 			ref: TagElement<K>
-// 		} : {
-// 			component?: never
-// 			ref?: never
-// 		}
-// 	)
-// 	& { props?: object }
-// 	// & { props?: InferDefaultProps<S> }
-
-// type _CompoundComponentSpec<S> = {
-// 	classNames?: never
-// 	default?: _InferredDefault<S>
-// 	styles?: never
-// 	subcomponents?: never
-// 	tokens?: never
-// 	unstyled?: never
-// }
-
-// type _RootComponentSpec<S> = {
-// 	classNames?: ClassValue
-// 	default?: _InferredDefault<S>
-// 	styles?: CSSProperties
-// 	subcomponents?: Record<string, unknown>		// move this to compound/root
-// 	tokens?: CSSVars
-// 	unstyled?: boolean
-// }
-
-// export type ExtendedSpecs<S> =
-// 	S extends { specIs?: { compound: true } }
-// 		? _CompoundComponentSpec<S>
-// 		: _RootComponentSpec<S>

@@ -2,21 +2,24 @@ import { useMemo, type CSSProperties } from 'react'
 import { useTheme } from '@/providers/ThemeProvider'
 import { getClassName } from './getClassName'
 import { getStyles } from './getStyle'
-import { isObject } from '@/utils/helpers'
-import type { SpecAttributes, ValidSpecs } from '@/types/spec'
+import { isObject, keyHasValue } from '@/utils/helpers'
+import type { SpecAttributes } from '@/types/spec'
 import type { SiteThemeConfig, ThemeCSSConfig } from '@/lib/theme'
-// import type { ThemeCSSMap } from '@/lib/theme/setThemeCSS'
 
-
-// export type SpecThemeCSSMap<TObj extends SpecsList<TObj>, K2 extends string> = {
-// 	[K in keyof TObj]: TObj[K][K2]
+// interface StyleOptions<T,> {
+// 	readonly classes?: Record<string, string>
+// 	prefix?: string
+// 	props: T
+// 	tokens?: ThemeCSSConfig<T>
 // }
 
-interface StyleOptions<T,> {
+type TokensFn<P> = (theme: SiteThemeConfig, props: P, ctx: unknown) => unknown
+
+interface StyleOptions<P> {
 	readonly classes?: Record<string, string>
 	prefix?: string
-	props: T
-	tokens?: ThemeCSSConfig<T>
+	props: P
+	tokens?: TokensFn<P>
 }
 
 interface SelectorArgs {
@@ -28,8 +31,8 @@ interface SelectorArgs {
 	selector: string
 }
 
-export interface SharedConfig<S,>
-	extends SelectorArgs, StyleOptions<S> {
+export interface SharedConfig<P>
+	extends SelectorArgs, StyleOptions<P> {
 	name: string
 	theme: SiteThemeConfig
 }
@@ -50,14 +53,12 @@ interface StyleResult {
 
 const ROOT_SELECTOR = 'root'
 
-const isUnstyled = <S extends ValidSpecs<S>>(props: StyleOptions<S>['props']): boolean =>
-	isObject(props)
-	&& Object.hasOwn(props, 'unstyled')
-	&& !!(props as S['props'] & Record<'unstyled', unknown>).unstyled
+const isUnstyled = <P,>(props: StyleOptions<P>['props']): boolean =>
+	isObject(props) && keyHasValue(props, { unstyled: true })
 
-export const useStyles = <T,>(
+export const useStyles = <P,>(
 	name: string,
-	opts: StyleOptions<T>
+	opts: StyleOptions<P>
 ): StyleFn => {
 	const theme = useTheme()
 	const choices = Object.keys(opts),
@@ -65,7 +66,6 @@ export const useStyles = <T,>(
 
 	return useMemo<StyleFn>(() => {
 		if (!hasOptions) return (() => ({ classNames: '', styles: {} }))
-		// console.log({ props: opts.props })
 
 		const prefix = opts.prefix ?? theme.prefix,
 			args = { ...opts, name, prefix, theme },
@@ -85,7 +85,7 @@ export const useStyles = <T,>(
 
 			// const args: SelectorArgs = { check, config, selector }
 			// Object.assign(options, args)
-			const options: SharedConfig<T> = { ...args, check, config, selector }
+			const options: SharedConfig<P> = { ...args, check, config, selector }
 
 			const values = {
 				classNames: getClassName(options),
