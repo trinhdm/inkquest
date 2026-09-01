@@ -1,7 +1,6 @@
 import { hasValue, keyHasValue, toKebabCase } from '@/utils/helpers'
 import type { ElementType } from 'react'
-import type { SpecAttributes } from '@/types/spec'
-// import type { ExtractHtmlAttributes } from '@/types/spec'
+import type { SpecAttributes } from '@/types/shared'
 
 /** the only fields these helpers read off a component's props */
 export interface AttrSource {

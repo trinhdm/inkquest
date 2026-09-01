@@ -1,6 +1,3 @@
-import { setDefaultProps } from '@/lib/registries'
-import type { Simplify } from '@/types/utils'
-
 import {
 	memo,
 	type ComponentType,
@@ -8,13 +5,10 @@ import {
 	type ReactNode,
 } from 'react'
 
-import type {
-	AsPolymorphic,
-	InferComponentSpec,
-	Specs,
-} from '@/types/spec'
+import { setDefaultProps } from '@/lib/registries'
+import type { AsPolymorphic, InferComponentSpec, Specs } from './specs.types'
 
-export type FactoryProps<S extends Specs> =
+type FactoryProps<S extends Specs> =
 	S['props']
 	& AsPolymorphic<S>
 	& {
@@ -44,7 +38,7 @@ type _DefaultComponent<S extends Specs> = {
 }
 
 type _Component<S extends Specs> =
-	NamedExoticComponent<Simplify<_OldFactoryProps<S>>>
+	NamedExoticComponent<_OldFactoryProps<S>>
 
 export interface MethodsBase<
 	S extends Specs,

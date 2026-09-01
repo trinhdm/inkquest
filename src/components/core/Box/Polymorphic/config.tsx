@@ -4,9 +4,9 @@ import {
 	type SubcomponentsBase,
 } from './factory'
 
-import type { AsPolymorphic, Specs } from '@/types/spec'
-import type { ReactElement } from 'react'
+import type { AsPolymorphic, Specs } from './specs.types'
 import type { PolymorphicProps, PropertiesBase } from './polymorphic'
+import type { ReactElement } from 'react'
 
 const polymorphicFactory = <T extends Specs>(
 	target: Parameters<typeof factory<T>>[0],

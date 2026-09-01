@@ -1,6 +1,5 @@
-import type { AriaAttributes, ComponentPropsWithoutRef, CSSProperties, ElementType, HTMLAttributes, Ref } from 'react'
-import type { CSSVars } from './shared/html'
-
+import type { CSSProperties, ElementType, Ref } from 'react'
+import type { CSSVars, SpecAttributes } from '@/types/shared'
 
 export interface SpecsContract {
 	attributes?: SpecAttributes
@@ -12,10 +11,6 @@ export interface SpecsContract {
 	unstyled?: boolean
 }
 
-// export type SpecsDefaultProps<T extends Specs> =
-// 	Partial<T['props']>
-// 	& SpecAttributes
-
 interface SpecsBase<T = unknown, P extends object = object> {
 	attributes?: SpecAttributes
 	ctx?: unknown
@@ -25,7 +20,8 @@ interface SpecsBase<T = unknown, P extends object = object> {
 	// variant?: string
 }
 
-interface _CompoundSpecs<P extends object = object> extends SpecsBase<unknown, P> {
+interface _CompoundSpecs<P extends object = object>
+	extends SpecsBase<unknown, P> {
 	classNames?: never
 	default?: {
 		component?: never
@@ -36,7 +32,8 @@ interface _CompoundSpecs<P extends object = object> extends SpecsBase<unknown, P
 	tokens?: never
 }
 
-interface _RootSpecs<T = unknown, P extends object = object> extends SpecsBase<T, P> {
+interface _RootSpecs<T = unknown, P extends object = object>
+	extends SpecsBase<T, P> {
 	classNames?: SpecsContract['classNames']
 	default?: {
 		component?: any
@@ -51,11 +48,7 @@ export type Specs<T = unknown, P extends object = object> =
 	| _RootSpecs<T, P>
 	| _CompoundSpecs<P>
 
-export type ExtractHtmlAttributes<T extends ElementType> =
-	Omit<
-		ComponentPropsWithoutRef<T>,
-		keyof AriaAttributes
-	>
+
 
 export type InferComponentSpec<S> =
 	S extends { default: { component: infer C } }
@@ -94,19 +87,3 @@ type TagElement<T> =
 		: T extends keyof _ElementTagMap
 			? _ElementTagMap[T]
 			: unknown
-
-type RemoveAriaPrefix<T> = {
-	[K in keyof T as K extends `aria-${infer Rest}` ? Rest : never]: T[K]
-}
-
-type AriaName =
-	RemoveAriaPrefix<AriaAttributes>
-
-export interface SpecAttributes {
-	aria?: AriaName
-	data?: Record<string, unknown>
-}
-
-// type TagAttributes<T> =
-// 	Omit<HTMLAttributes<TagElement<T>>, keyof AriaAttributes>
-// 	& SpecAttributes

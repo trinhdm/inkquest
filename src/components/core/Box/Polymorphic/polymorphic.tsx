@@ -3,16 +3,19 @@ import type {
 	ElementType,
 	FunctionComponent,
 	JSX,
+	JSXElementConstructor,
 	ReactElement,
 	ReactNode,
 } from 'react'
 
-import type { SpecsContract } from '@/types/spec'
+import type { SpecsContract } from './specs.types'
 
-type _BaseProps<C extends ElementType> =
-	JSX.LibraryManagedAttributes<
-		C, ComponentProps<C>
-	>
+type _BaseProps<C> =
+	C extends keyof JSX.IntrinsicElements
+		? JSX.IntrinsicElements[C]
+		: C extends JSXElementConstructor<infer P>
+			? P
+			: object
 
 type _OverrideProps<P1 = object, P2 = object> =
 	P2
