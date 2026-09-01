@@ -2,12 +2,12 @@ import cx from 'clsx'
 import { toKebabCase } from '@/utils/helpers'
 import type { SharedConfig } from './useStyles'
 
-const getBaseClass = <P,>({
+const getBaseClass = <P extends object, V extends object>({
 	check,
 	name,
 	prefix,
 	selector,
-}: SharedConfig<P>): string => {
+}: SharedConfig<P, V>): string => {
 	let baseName = toKebabCase(name)
 
 	if (prefix) baseName = `${prefix}-${baseName}`
@@ -16,8 +16,8 @@ const getBaseClass = <P,>({
 	return baseName
 }
 
-export const getClassName = <P,>(
-	config: SharedConfig<P>
+export const getClassName = <P extends object, V extends object>(
+	config: SharedConfig<P, V>
 ): string => {
 	const { check, classes } = config,
 		baseClass = getBaseClass(config)

@@ -12,38 +12,56 @@ export interface SpecsContract {
 	unstyled?: boolean
 }
 
-export type SpecsDefaultProps<T extends Specs> =
+export type SpecsDefaultProps<T extends ComponentSpecs> =
 	Partial<T['props']>
 	& SpecAttributes
 
-type _CompoundSpecs<T extends Specs> = {
+interface SpecsBase<T = unknown, P extends object = object> {
+	attributes?: TagAttributes<T>
+	// className?: string
+	ctx?: unknown
+	id?: string
+	props: P
+	ref?: Ref<TagElement<T>>
+	// style?: CSSProperties
+	// variant?: string
+}
+
+interface _CompoundSpecs<P extends object = object> extends SpecsBase<unknown, P> {
 	classNames?: never
 	default?: {
 		component?: never
-		props?: SpecsDefaultProps<T>
+		// props?: _ComponentSpecsProps<T>
 	}
+	specIs: { compound: true }
 	styles?: never
 	subcomponents?: never
 	tokens?: never
 	// unstyled?: never
 }
 
-type _RootSpecs<T extends Specs> = {
+interface _RootSpecs<T = unknown, P extends object = object> extends SpecsBase<T, P> {
 	classNames?: SpecsContract['classNames']
 	default?: {
 		component?: any
-		props?: SpecsDefaultProps<T>
+		// props?: _ComponentSpecsProps<T>
 	}
+	specIs?: { compound: false }
 	styles?: SpecsContract['styles']
-	subcomponents?: Record<string, unknown>		// move this to compound/root
+	subcomponents?: Record<string, unknown>
 	tokens?: CSSVars
 	// unstyled?: boolean
 }
 
-export type ComponentSpecs<T extends Specs> =
-	T extends { specIs: { compound: true } }
-		? _CompoundSpecs<T>
-		: _RootSpecs<T>
+export type ComponentSpecs<T = unknown, P extends object = object> = (
+	| _RootSpecs<T, P>
+	| _CompoundSpecs<P>
+)
+
+// export type ComponentSpecs<T extends SpecsContract> =
+// 	T extends { specIs: { compound: true } }
+// 		? _CompoundSpecs<T>
+// 		: _RootSpecs<T>
 
 export type ExtractHtmlAttributes<T extends ElementType> =
 	Omit<
@@ -56,20 +74,20 @@ export type InferComponentSpec<S> =
 		? C
 		: unknown
 
-export type AsPolymorphic<S> = {
-    as?: unknown extends InferComponentSpec<S>
-        ? ElementType
-        : InferComponentSpec<S>
-}
+// export type AsPolymorphic<S> = {
+//     as?: unknown extends InferComponentSpec<S>
+//         ? ElementType
+//         : InferComponentSpec<S>
+// }
 
-// export type AsPolymorphic<S> =
-// 	S extends { specIs: { compound: true } }
-// 		? { as?: never }
-// 		: {
-// 			as?: unknown extends InferComponentSpec<S>
-// 				? ElementType
-// 				: InferComponentSpec<S>
-// 		}
+export type AsPolymorphic<S> =
+	S extends { specIs: { compound: true } }
+		? { as?: never }
+		: {
+			as?: unknown extends InferComponentSpec<S>
+				? ElementType
+				: InferComponentSpec<S>
+		}
 
 type _CommonTag =
 	| 'a' | 'button' | 'div' | 'nav' | 'span' | 'svg'
@@ -111,43 +129,43 @@ type TagAttributes<T> =
 	Omit<HTMLAttributes<TagElement<T>>, keyof AriaAttributes>
 	& SpecAttributes
 
-type _SpecOptions =
-	| 'compound'					// compound components cannot have styles
-	| 'disabled'
-	| 'focusable'
-	| 'loading'
-	| 'selectable'
-	// | 'unstyled'
+// type _SpecOptions =
+// 	| 'compound'					// compound components cannot have styles
+// 	| 'disabled'
+// 	| 'focusable'
+// 	| 'loading'
+// 	| 'selectable'
+// 	// | 'unstyled'
 
-export type SpecIs =
-	Partial<Record<_SpecOptions, boolean>>
+// export type SpecIs =
+// 	Partial<Record<_SpecOptions, boolean>>
 
-export interface Specs<
-	T = unknown,
-	P extends object = object,
-> {
-	attributes?: TagAttributes<T>
-	ctx?: unknown
-	default?: (
-			T extends keyof _ElementTagMap
-				? { component?: T }
-				: { component?: unknown extends T ? unknown : never }
-		)
-		& { props?: Partial<P> }
-	id?: string
-	props: P
-	ref?: Ref<TagElement<T>>
-	specIs?: SpecIs
-	subcomponents?: Record<string, unknown>		// move this to compound/root
-	tokens?: CSSVars
-	variant?: string
-}
+// export interface Specs<
+// 	T = unknown,
+// 	P extends object = object,
+// > {
+// 	attributes?: TagAttributes<T>
+// 	ctx?: unknown
+// 	default?: (
+// 			T extends keyof _ElementTagMap
+// 				? { component?: T }
+// 				: { component?: unknown extends T ? unknown : never }
+// 		)
+// 		& { props?: Partial<P> }
+// 	id?: string
+// 	props: P
+// 	ref?: Ref<TagElement<T>>
+// 	specIs?: SpecIs
+// 	subcomponents?: Record<string, unknown>		// move this to compound/root
+// 	tokens?: CSSVars
+// 	variant?: string
+// }
 
-type InferPropsSpec<S> =
-	S extends { props: object }
-		? S['props']
-		: object
+// type InferPropsSpec<S> =
+// 	S extends { props: object }
+// 		? S['props']
+// 		: object
 
-export type ValidSpecs<S> =
-	Specs<InferComponentSpec<S>, InferPropsSpec<S>>
-	// Specs<InferComponentSpec<S>>
+// export type ValidSpecs<S> =
+// 	Specs<InferComponentSpec<S>, InferPropsSpec<S>>
+// 	// Specs<InferComponentSpec<S>>

@@ -16,13 +16,13 @@ import type { SharedConfig } from './useStyles'
 // 	}, {})
 // }
 
-export const getStyles = <P,>({
+export const getStyles = <P extends object, V extends object>({
 	name,
 	props,
 	selector,
 	theme,
 	tokens,
-}: SharedConfig<P>) => {
+}: SharedConfig<P, V>) => {
 	if (typeof tokens !== 'function') return {}
 
 	// const themeName = (Array.isArray(name) ? name : [name]).filter((n) => n) as string[]

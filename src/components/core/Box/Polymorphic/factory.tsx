@@ -10,13 +10,16 @@ import {
 
 import type {
 	AsPolymorphic,
+	ComponentSpecs,
 	InferComponentSpec,
+	// SpecsContract,
 	SpecsDefaultProps,
-	Specs,
+	// Specs,
 } from '@/types/spec'
 
-export type FactoryProps<S extends Specs> =
+export type FactoryProps<S extends ComponentSpecs> =
 	S['props']
+	// & ComponentSpecs<S>
 	& AsPolymorphic<S>
 	& {
 		children?: ReactNode
@@ -26,28 +29,29 @@ export type FactoryProps<S extends Specs> =
 // only pull `ref` from Specs when the component's own props don't already
 // declare one — letting a component override, instead of intersecting with,
 // the auto-derived `Ref<TagElement<T>>` (see Box/Spec audit, Button.tsx)
-type _SpecsPickKeys<S extends Specs> =
+type _SpecsPickKeys<S extends ComponentSpecs> =
 	| 'attributes'
 	| 'id'
 	| ('ref' extends keyof S['props'] ? never : 'ref')
 
-type _OldFactoryProps<S extends Specs> =
+type _OldFactoryProps<S extends ComponentSpecs> =
 	& Pick<S, _SpecsPickKeys<S>>
 	& FactoryProps<S>
 
-type _DefaultComponent<S extends Specs> = {
-	props?: SpecsDefaultProps<S> & (
-			unknown extends InferComponentSpec<S>
-				? Required<AsPolymorphic<S>>
-				: AsPolymorphic<S>
-		)
+type _DefaultComponent<S extends ComponentSpecs> = {
+	props?: SpecsDefaultProps<S>
+		& (S extends { specIs: { compound: true } }
+			? { as?: never }
+			: unknown extends InferComponentSpec<S>
+					? Required<AsPolymorphic<S>>
+					: AsPolymorphic<S>)
 }
 
-type _Component<S extends Specs> =
+type _Component<S extends ComponentSpecs> =
 	NamedExoticComponent<Simplify<_OldFactoryProps<S>>>
 
 export interface MethodsBase<
-	S extends Specs,
+	S extends ComponentSpecs,
 	C = _Component<S>,
 	P = FactoryProps<S>,
 	D = _DefaultComponent<S>
@@ -58,19 +62,19 @@ export interface MethodsBase<
 }
 
 export type SubcomponentsBase<
-	S extends Specs,
+	S extends ComponentSpecs,
 	List = S['subcomponents']
 > = List extends Record<string, unknown>
 	? List
 	: Record<string, never>
 
-type _FactoryComponent<S extends Specs> =
+type _FactoryComponent<S extends ComponentSpecs> =
 	& _Component<S>
 	& SubcomponentsBase<S>
 	& MethodsBase<S>
 
 export const factory = <
-	T extends Specs,
+	T extends ComponentSpecs,
 	C extends object = _FactoryComponent<T>
 >(
 	target: (props: FactoryProps<T>) => ReactNode,

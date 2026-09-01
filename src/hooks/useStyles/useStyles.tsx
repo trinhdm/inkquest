@@ -2,24 +2,15 @@ import { useMemo, type CSSProperties } from 'react'
 import { useTheme } from '@/providers/ThemeProvider'
 import { getClassName } from './getClassName'
 import { getStyles } from './getStyle'
-import { isObject, keyHasValue } from '@/utils/helpers'
+import { keyHasValue } from '@/utils/helpers'
 import type { SpecAttributes } from '@/types/spec'
 import type { SiteThemeConfig, ThemeCSSConfig } from '@/lib/theme'
 
-// interface StyleOptions<T,> {
-// 	readonly classes?: Record<string, string>
-// 	prefix?: string
-// 	props: T
-// 	tokens?: ThemeCSSConfig<T>
-// }
-
-type TokensFn<P> = (theme: SiteThemeConfig, props: P, ctx: unknown) => unknown
-
-interface StyleOptions<P> {
+interface StyleOptions<P extends object, V extends object = object> {
 	readonly classes?: Record<string, string>
 	prefix?: string
 	props: P
-	tokens?: TokensFn<P>
+	tokens?: ThemeCSSConfig<P, V>
 }
 
 interface SelectorArgs {
@@ -31,8 +22,8 @@ interface SelectorArgs {
 	selector: string
 }
 
-export interface SharedConfig<P>
-	extends SelectorArgs, StyleOptions<P> {
+export interface SharedConfig<P extends object, V extends object = object>
+	extends SelectorArgs, StyleOptions<P, V> {
 	name: string
 	theme: SiteThemeConfig
 }
@@ -53,12 +44,12 @@ interface StyleResult {
 
 const ROOT_SELECTOR = 'root'
 
-const isUnstyled = <P,>(props: StyleOptions<P>['props']): boolean =>
-	isObject(props) && keyHasValue(props, { unstyled: true })
+const isUnstyled = <P extends object>(props: StyleOptions<P>['props']): boolean =>
+	keyHasValue(props, { unstyled: true })
 
-export const useStyles = <P,>(
+export const useStyles = <P extends object, V extends object = object>(
 	name: string,
-	opts: StyleOptions<P>
+	opts: StyleOptions<P, V>
 ): StyleFn => {
 	const theme = useTheme()
 	const choices = Object.keys(opts),
@@ -85,7 +76,7 @@ export const useStyles = <P,>(
 
 			// const args: SelectorArgs = { check, config, selector }
 			// Object.assign(options, args)
-			const options: SharedConfig<P> = { ...args, check, config, selector }
+			const options: SharedConfig<P, V> = { ...args, check, config, selector }
 
 			const values = {
 				classNames: getClassName(options),
