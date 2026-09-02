@@ -76,7 +76,7 @@ const meta: Meta<BadgeStoryProps> = {
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Badge`\'s own `BadgeProps`. When true, every `styles(selector)` call `Badge` makes (`root` and `inner`) returns an empty class name instead of its `inkq-badge`/`inkq-badge__inner` base class — see the `Unstyled` story.',
+			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Badge`\'s own `BadgeProps`. The semantic base class (`inkq-badge`, `inkq-badge__inner`) is ALWAYS emitted regardless of this prop — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it, for every `styles(selector)` call `Badge` makes (`root` and `inner`). It also strips non-state `data-*` attributes (like `data-variant`) from the root element — see the `Unstyled` story.',
 		},
 	},
 	args: {
@@ -192,11 +192,14 @@ export const AsElement: Story = {
 	},
 }
 
-// `unstyled` strips the base `inkq-badge`/`inkq-badge__inner` classes
-// `useStyles`/`getClassName.tsx` applies to the root and inner wrapper
-// elements — verified against `Badge.tsx`'s own render, which calls
-// `styles('root')` on the root `Box` and `styles('inner')` on the nested
-// `<Box as="span">` wrapping `children`.
+// `unstyled` does NOT remove the base `inkq-badge`/`inkq-badge__inner`
+// classes `useStyles`/`getClassName.tsx` applies to the root and inner
+// wrapper elements — per `getClassName.tsx`, the base class is now ALWAYS
+// emitted (`classList = [baseClass]` unconditionally). It only suppresses
+// the CSS-module-hashed class normally appended alongside it — verified
+// against `Badge.tsx`'s own render, which calls `styles('root')` on the root
+// `Box` and `styles('inner')` on the nested `<Box as="span">` wrapping
+// `children`.
 export const Unstyled: Story = {
 	parameters: { controls: { exclude: ['unstyled'] } },
 	render: (args) => (
@@ -215,18 +218,30 @@ export const Unstyled: Story = {
 		await expect(badges).toHaveLength(2)
 
 		// `badges` here ARE the inner `<Box as="span">` elements (`children`
-		// renders directly inside them) — the `data-variant` attribute (set
-		// unconditionally by `Badge.tsx`, independent of `unstyled`) still
-		// reaches the root element regardless, so it's a safe way to walk up
-		// to it even when `unstyled` strips the root's own class name.
+		// renders directly inside them). Unlike `FullWidth`/`AsElement` above,
+		// this can't walk up via `[data-variant]` — `unstyled` makes
+		// `get-attributes.ts`'s `filterDecorative` strip the (non-state)
+		// `variant` data key entirely from the unstyled instance's `attributes`.
+		// The base `.inkq-badge` class is a safe anchor instead, since it's
+		// never stripped by `unstyled`.
 		const [unstyledInner, styledInner] = badges,
-			unstyledRoot = unstyledInner.closest('[data-variant]') as HTMLElement,
-			styledRoot = styledInner.closest('[data-variant]') as HTMLElement
+			unstyledRoot = unstyledInner.closest('.inkq-badge') as HTMLElement,
+			styledRoot = styledInner.closest('.inkq-badge') as HTMLElement
+
+		// The hashed CSS-module class is build-generated, so assert on its
+		// presence/shape rather than a literal hash: any class beyond the
+		// semantic base class means the module class survived.
+		const hasModuleClass = (el: Element, base: string) =>
+			Array.from(el.classList).some(c => c !== base)
 
 		await expect(styledRoot).toHaveClass('inkq-badge')
-		await expect(unstyledRoot).not.toHaveClass('inkq-badge')
+		await expect(unstyledRoot).toHaveClass('inkq-badge')
+		expect(hasModuleClass(styledRoot, 'inkq-badge')).toBe(true)
+		expect(hasModuleClass(unstyledRoot, 'inkq-badge')).toBe(false)
 
 		await expect(styledInner).toHaveClass('inkq-badge__inner')
-		await expect(unstyledInner).not.toHaveClass('inkq-badge__inner')
+		await expect(unstyledInner).toHaveClass('inkq-badge__inner')
+		expect(hasModuleClass(styledInner, 'inkq-badge__inner')).toBe(true)
+		expect(hasModuleClass(unstyledInner, 'inkq-badge__inner')).toBe(false)
 	},
 }

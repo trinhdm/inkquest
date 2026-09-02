@@ -15,8 +15,8 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 // spread directly into `ICON_MAP`) purely for story scannability — `Icon`
 // itself has no notion of these categories.
 const ARROW_NAV_TYPES: readonly IconType[] = [
-	'down-arrow', 'down-caret', 'left-arrow', 'left-caret',
-	'right-arrow', 'right-caret', 'up-arrow', 'up-caret',
+	'arrow-down', 'caret-down', 'arrow-left', 'caret-left',
+	'arrow-right', 'caret-right', 'arrow-up', 'caret-up',
 	'add', 'close', 'confirm', 'remove',
 	'alert-tooltip', 'info-tooltip', 'warn-tooltip',
 ]
@@ -264,9 +264,12 @@ export const UnrecognizedType: Story = {
 	},
 }
 
-// `unstyled` strips the base `inkq-icon` class `useStyles`/`getClassName.tsx`
-// applies to the root element — verified against `Icon.tsx`'s own render,
-// which only ever calls `styles('root')` (no other selector) on the rendered
+// `unstyled` does NOT remove the base `inkq-icon` class `useStyles`/
+// `getClassName.tsx` applies to the root element — per `getClassName.tsx`,
+// the base class is now ALWAYS emitted (`classList = [baseClass]`
+// unconditionally). It only suppresses the CSS-module-hashed class normally
+// appended alongside it — verified against `Icon.tsx`'s own render, which
+// only ever calls `styles('root')` (no other selector) on the rendered
 // Lucide `<svg>`.
 export const Unstyled: Story = {
 	parameters: { controls: { exclude: ['unstyled'] } },
@@ -286,7 +289,16 @@ export const Unstyled: Story = {
 
 		const [unstyledSvg, styledSvg] = svgs
 
+		// The hashed CSS-module class is build-generated, so assert on its
+		// presence/shape rather than a literal hash: any class beyond the
+		// semantic base class (and Lucide's own `lucide`/`lucide-*` classes)
+		// means the module class survived.
+		const hasModuleClass = (el: Element, base: string) =>
+			Array.from(el.classList).some(c => c !== base && !c.startsWith('lucide'))
+
 		await expect(styledSvg).toHaveClass('inkq-icon')
-		await expect(unstyledSvg).not.toHaveClass('inkq-icon')
+		await expect(unstyledSvg).toHaveClass('inkq-icon')
+		expect(hasModuleClass(styledSvg, 'inkq-icon')).toBe(true)
+		expect(hasModuleClass(unstyledSvg, 'inkq-icon')).toBe(false)
 	},
 }

@@ -85,7 +85,7 @@ const meta: Meta<ButtonGroupStoryArgs> = {
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `ButtonGroup`\'s own `ButtonGroupProps`. When true, the `styles(\'root\')` call `ButtonGroup` makes returns an empty class name instead of its `inkq-button-group` base class on the group\'s root element — see the `Unstyled` story. It also cascades to the child `Button`s (`childrenWithProps` forwards `disabled`/`loading`/`unstyled` — any boolean value in that shared set — onto each cloned `Button` child, alongside `priority` when `hasPriority` is set).',
+			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `ButtonGroup`\'s own `ButtonGroupProps`. The semantic base class (`inkq-button-group`) on the group\'s root element is ALWAYS emitted regardless of this prop — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it, via the `styles(\'root\')` call `ButtonGroup` makes — see the `Unstyled` story. It also cascades to the child `Button`s: `ButtonGroup` flattens its children (`flattenChildren` — recursing into `Fragment`s, dropping any element whose `displayName` isn\'t `\'Button\'`) and wraps EACH surviving child in its own `ButtonGroupProvider`, publishing `{ disabled, loading, priority, unstyled }`. Each `Button` reads that context via `useButtonGroupProps`, which fills a key on the Button\'s own raw props ONLY when that key is entirely absent there (checked with `Object.hasOwn` on the raw, pre-merge props, and skipping any `undefined` context value) — so a child `Button`\'s own prop, including an explicit `disabled={false}` inside a disabled group, always wins over the group\'s context value.',
 		},
 	},
 	args: {
@@ -118,6 +118,14 @@ export const Orientations: Story = {
 			)) }
 		</Row>
 	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			groups = canvas.getAllByRole('group'),
+			[rowGroup, columnGroup] = groups
+
+		await expect(rowGroup).toHaveAttribute('aria-orientation')
+		await expect(columnGroup).toHaveAttribute('data-orientation', 'vertical')
+	},
 }
 
 export const HasPriority: Story = {
@@ -131,8 +139,43 @@ export const HasPriority: Story = {
 					</Button.Group>
 				</Group>
 			)) }
+			<Group label="clamped (4 buttons — derivePriority maxes out at tertiary)">
+				<Button.Group { ...args } hasPriority>
+					<Button { ...{ variant, size } }>First</Button>
+					<Button { ...{ variant, size } }>Second</Button>
+					<Button { ...{ variant, size } }>Third</Button>
+					<Button { ...{ variant, size } }>Fourth</Button>
+				</Button.Group>
+			</Group>
 		</Row>
 	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			groups = canvas.getAllByRole('group')
+
+		expect(groups).toHaveLength(3)
+
+		const [withPriority, withoutPriority, clamped] = groups,
+			withPriorityButtons = within(withPriority).getAllByRole('button'),
+			withoutPriorityButtons = within(withoutPriority).getAllByRole('button'),
+			clampedButtons = within(clamped).getAllByRole('button')
+
+		const expectedPriorities: Button.Priority[] = ['primary', 'secondary', 'tertiary']
+		for (const [index, button] of withPriorityButtons.entries())
+			await expect(button).toHaveAttribute('data-priority', expectedPriorities[index])
+
+		for (const button of withoutPriorityButtons)
+			await expect(button).not.toHaveAttribute('data-priority')
+
+		// `derivePriority` clamps any index at/beyond `PRIORITY_ROLES.length`
+		// (3) to the last role, `tertiary` — the 4th button gets the same
+		// `tertiary` as the 3rd, not a new/undefined role.
+		expect(clampedButtons).toHaveLength(4)
+		await expect(clampedButtons[0]).toHaveAttribute('data-priority', 'primary')
+		await expect(clampedButtons[1]).toHaveAttribute('data-priority', 'secondary')
+		await expect(clampedButtons[2]).toHaveAttribute('data-priority', 'tertiary')
+		await expect(clampedButtons[3]).toHaveAttribute('data-priority', 'tertiary')
+	},
 }
 
 export const Loading: Story = {
@@ -206,14 +249,21 @@ export const FullWidth: Story = {
 	),
 }
 
-// `unstyled` strips the base `inkq-button-group` class `useStyles`/
-// `getClassName.tsx` applies to the group's root element (rendered with
-// `role="group"`) — verified against `ButtonGroup.tsx`'s own render, which
-// only ever calls `styles('root')` (no other selector). It ALSO cascades to
-// the child `Button`s: `childrenWithProps` forwards any boolean value from
-// `{ disabled, loading, unstyled }` onto each cloned `Button` child, so
-// passing `unstyled` to `ButtonGroup` strips each child `Button`'s own
-// `inkq-button` class too.
+// `unstyled` does NOT remove the base `inkq-button-group` class
+// `useStyles`/`getClassName.tsx` applies to the group's root element
+// (rendered with `role="group"`) — per `getClassName.tsx`, the base class is
+// now ALWAYS emitted (`classList = [baseClass]` unconditionally). It only
+// suppresses the CSS-module-hashed class normally appended alongside it —
+// verified against `ButtonGroup.tsx`'s own render, which only ever calls
+// `styles('root')` (no other selector). It ALSO cascades to the child
+// `Button`s: each surviving child (after `flattenChildren` drops non-`Button`
+// elements and flattens `Fragment`s) is wrapped in its own
+// `ButtonGroupProvider` publishing `{ disabled, loading, priority, unstyled }`,
+// and each `Button` fills its own `unstyled` from that context via
+// `useButtonGroupProps` ONLY because none of these children set `unstyled`
+// themselves — so passing `unstyled` to `ButtonGroup` suppresses each child
+// `Button`'s own hashed module class too (same "base always present, module
+// class suppressed" contract, one level down).
 export const Unstyled: Story = {
 	parameters: { controls: { exclude: ['unstyled'] } },
 	render: ({ size, variant, ...args }) => (
@@ -235,15 +285,25 @@ export const Unstyled: Story = {
 
 		const [isUnstyled, isStyled] = groups
 
+		// The hashed CSS-module class is build-generated, so assert on its
+		// presence/shape rather than a literal hash: any class beyond the
+		// semantic base class means the module class survived.
+		const hasModuleClass = (el: Element, base: string) =>
+			Array.from(el.classList).some(c => c !== base)
+
 		await expect(isStyled).toHaveClass('inkq-button-group')
-		await expect(isUnstyled).not.toHaveClass('inkq-button-group')
+		await expect(isUnstyled).toHaveClass('inkq-button-group')
+		expect(hasModuleClass(isStyled, 'inkq-button-group')).toBe(true)
+		expect(hasModuleClass(isUnstyled, 'inkq-button-group')).toBe(false)
 
 		// Cascades to child `Button`s too.
 		const [unstyledButton] = within(isUnstyled).getAllByRole('button'),
 			[styledButton] = within(isStyled).getAllByRole('button')
 
 		await expect(styledButton).toHaveClass('inkq-button')
-		await expect(unstyledButton).not.toHaveClass('inkq-button')
+		await expect(unstyledButton).toHaveClass('inkq-button')
+		expect(hasModuleClass(styledButton, 'inkq-button')).toBe(true)
+		expect(hasModuleClass(unstyledButton, 'inkq-button')).toBe(false)
 	},
 }
 
@@ -263,5 +323,60 @@ export const Justify: Story = {
 
 		await expect(group).toHaveAttribute('justify', 'center')
 		await expect(group).not.toHaveStyle({ justifyContent: 'center' })
+	},
+}
+
+// `flattenChildren` (`ButtonGroup.tsx`) recurses into `Fragment`s (flattening
+// their children into the same list) and drops any element whose
+// `displayName` isn't `'Button'` — a raw `<span>` (or any other non-`Button`
+// element) simply renders nothing; it's excluded before the
+// `ButtonGroupProvider` wrap/map, not merely hidden.
+export const NonButtonChildren: Story = {
+	render: ({ size, variant, ...args }) => (
+		<Button.Group { ...args }>
+			<>
+				<Button { ...{ variant, size } }>Fragment child A</Button>
+				<Button { ...{ variant, size } }>Fragment child B</Button>
+			</>
+			<span>not a Button — dropped by flattenChildren</span>
+			<Button { ...{ variant, size } }>Trailing</Button>
+		</Button.Group>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			group = canvas.getByRole('group'),
+			buttons = canvas.getAllByRole('button')
+
+		expect(buttons).toHaveLength(3)
+		await expect(canvas.queryByText('not a Button — dropped by flattenChildren')).not.toBeInTheDocument()
+		expect(group.children).toHaveLength(3)
+	},
+}
+
+// Own props on a child `Button` beat the group's `ButtonGroupProvider`
+// context value, per `useButtonGroupProps`' `Object.hasOwn` guard on the
+// child's raw props — even when the group publishes the opposite value.
+export const ChildOverrides: Story = {
+	render: ({ size, variant, ...args }) => (
+		<Button.Group { ...args } disabled loading={ false }>
+			<Button { ...{ variant, size } }>Inherits disabled</Button>
+			<Button { ...{ variant, size } } disabled={ false }>Own disabled=false wins</Button>
+			<Button { ...{ variant, size } } loading>Own loading=true wins</Button>
+		</Button.Group>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			buttons = canvas.getAllByRole('button')
+
+		expect(buttons).toHaveLength(3)
+
+		const [inherited, ownDisabledFalse, ownLoadingTrue] = buttons
+
+		await expect(inherited).toHaveAttribute('disabled')
+		await expect(ownDisabledFalse).not.toHaveAttribute('disabled')
+
+		// the group publishes `loading={false}`; this child's own `loading`
+		// still wins over it
+		await expect(ownLoadingTrue).toHaveAttribute('data-loading', 'true')
 	},
 }

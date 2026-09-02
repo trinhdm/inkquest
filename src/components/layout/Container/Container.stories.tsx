@@ -57,7 +57,7 @@ const meta: Meta<ContainerStoryProps> = {
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Container`\'s own `ContainerProps`. When true, every `styles(selector)` call `Container` makes (`root` and `inner`) returns an empty class name instead of its `inkq-container`/`inkq-container__inner` base class — see the `Unstyled` story.',
+			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Container`\'s own `ContainerProps`. The semantic base class (`inkq-container`, `inkq-container__inner`) is ALWAYS emitted regardless of this prop — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it, for every `styles(selector)` call `Container` makes (`root` and `inner`) — see the `Unstyled` story.',
 		},
 	},
 	args: {
@@ -153,11 +153,13 @@ export const NestedContent: Story = {
 	parameters: { layout: 'padded' },
 }
 
-// `unstyled` strips the base `inkq-container`/`inkq-container__inner`
+// `unstyled` does NOT remove the base `inkq-container`/`inkq-container__inner`
 // classes `useStyles`/`getClassName.tsx` applies to the root and inner
-// wrapper elements — verified against `Container.tsx`'s own render, which
-// calls `styles('root')` on the root `Box` and `styles('inner')` on the
-// nested `<Box>` wrapping `children`.
+// wrapper elements — per `getClassName.tsx`, the base class is now ALWAYS
+// emitted (`classList = [baseClass]` unconditionally). It only suppresses
+// the CSS-module-hashed class normally appended alongside it — verified
+// against `Container.tsx`'s own render, which calls `styles('root')` on the
+// root `Box` and `styles('inner')` on the nested `<Box>` wrapping `children`.
 export const Unstyled: Story = {
 	parameters: {
 		layout: 'padded',
@@ -178,21 +180,29 @@ export const Unstyled: Story = {
 
 		await expect(items).toHaveLength(2)
 
-		// Unlike `FullWidth`/`AsElement` above, `unstyled=true` strips the
-		// literal `.inkq-container` class `ROOT_SELECTOR` keys off of, so it
-		// can't be reused here. The internal `<Box>` wrapper is now a plain
-		// `div` (same tag as the root), so `.closest('div')` would just match
-		// itself instead of walking up — go via `parentElement` instead, since
-		// the inner wrapper is always a direct child of the root `Box` in this
-		// story (`as` isn't overridden here).
-		const [unstyledInner, styledInner] = items,
-			unstyledRoot = unstyledInner.parentElement as HTMLElement,
-			styledRoot = styledInner.parentElement as HTMLElement
+		// `ROOT_SELECTOR` (`.inkq-container`) reliably reaches the root in BOTH
+		// groups now, since the base class is never stripped by `unstyled`
+		// (unlike before this change, when it had to be reached via
+		// `parentElement` for the unstyled instance).
+		const [unstyledRoot, styledRoot] = items.map(
+			item => item.closest(ROOT_SELECTOR) as HTMLElement
+		)
+		const [unstyledInner, styledInner] = items
+
+		// The hashed CSS-module class is build-generated, so assert on its
+		// presence/shape rather than a literal hash: any class beyond the
+		// semantic base class means the module class survived.
+		const hasModuleClass = (el: Element, base: string) =>
+			Array.from(el.classList).some(c => c !== base)
 
 		await expect(styledRoot).toHaveClass('inkq-container')
-		await expect(unstyledRoot).not.toHaveClass('inkq-container')
+		await expect(unstyledRoot).toHaveClass('inkq-container')
+		expect(hasModuleClass(styledRoot, 'inkq-container')).toBe(true)
+		expect(hasModuleClass(unstyledRoot, 'inkq-container')).toBe(false)
 
 		await expect(styledInner).toHaveClass('inkq-container__inner')
-		await expect(unstyledInner).not.toHaveClass('inkq-container__inner')
+		await expect(unstyledInner).toHaveClass('inkq-container__inner')
+		expect(hasModuleClass(styledInner, 'inkq-container__inner')).toBe(true)
+		expect(hasModuleClass(unstyledInner, 'inkq-container__inner')).toBe(false)
 	},
 }
