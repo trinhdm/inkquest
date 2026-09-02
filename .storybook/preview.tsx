@@ -4,6 +4,7 @@ import {
 } from '../src/components/document'
 import { useEffect } from 'react'
 import { AppProvider } from '../src/providers/AppProvider'
+import { inkqDark } from './theme'
 // import { DocsContainer } from '@storybook/addon-docs/blocks'
 import type { Addon_StorySortComparatorV7 } from 'storybook/internal/types'
 import type { Preview } from '@storybook/nextjs-vite'
@@ -53,8 +54,11 @@ const preview: Preview = {
 			},
 		},
 
+		// Themes the Docs page chrome (prose, headings, ArgsTable, code
+		// blocks). Shares one theme object with `manager.ts` so the sidebar
+		// and the Docs page can't drift apart.
 		docs: {
-			// theme: ensure(themes.dark),
+			theme: inkqDark,
 			toc: true,
 		},
 

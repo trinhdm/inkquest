@@ -17,13 +17,6 @@ const config: StorybookConfig = {
 	"staticDirs": [
 		"../public"
 	],
-	previewHead: (head) => `${head}
-<style>
-	/* addon-docs forces the live-story preview box to white; let it follow the app's theme instead */
-	html[data-inkq-scheme] .sbdocs-preview {
-		background: var(--inkq-background-page);
-	}
-</style>`,
 }
 
 export default config
