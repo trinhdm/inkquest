@@ -1,0 +1,35 @@
+.inkq-menu {
+	align-items: center;
+	display: flex;
+	gap: var(--inkq-space-inset-xxs) var(--inkq-space-inset-md);
+	position: relative;
+}
+
+.inkq-menu-item {
+	align-items: center;
+	display: flex;
+	font: var(--inkq-font-label);
+	gap: var(--inkq-space-inset-min);
+	position: relative;
+
+	&__label {
+		color: var(--inkq-color-link);
+		text-decoration: none;
+
+		&:not(span) {
+			&:hover {
+				color: var(--inkq-color-link-hover);
+			}
+		}
+	}
+
+	& > .inkq-menu {
+		align-items: flex-start;
+		background-color: var(--inkq-background-page);
+		flex-direction: column;
+		padding-top: var(--inkq-space-inset-min);
+		position: absolute;
+		top: 100%;
+		z-index: 2;
+	}
+}

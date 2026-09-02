@@ -1,5 +1,6 @@
+
 .inkq-navbar {
-	background-color: var(--inkq-background-page);
+	// background-color: var(--inkq-background-page);
 	margin: 0 auto;
 	max-width: var(--inkq-container-app-width);
 	padding: var(--inkq-container-app-padding);
@@ -27,35 +28,5 @@
 	&:where([data-block]) {
 		display: block;
 		width: 100%;
-	}
-}
-
-.inkq-navmenu {
-	align-items: center;
-	display: flex;
-	gap: var(--inkq-space-inset-xxs) var(--inkq-space-inset-md);
-	position: relative;
-}
-
-.inkq-navitem {
-	align-items: center;
-	display: flex;
-	font: var(--inkq-font-label);
-	gap: var(--inkq-space-inset-min);
-	position: relative;
-
-	&__label {
-		color: var(--text-tertiary);
-		text-decoration: none;
-	}
-
-	& > .inkq-navmenu {
-		align-items: flex-start;
-		background-color: var(--inkq-background-page);
-		flex-direction: column;
-		padding-top: var(--inkq-space-inset-min);
-		position: absolute;
-		top: 100%;
-		z-index: 2;
 	}
 }

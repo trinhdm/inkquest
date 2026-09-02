@@ -3,29 +3,39 @@ import { useEffect, useRef, useState } from 'react'
 import { useProps, useStyles, useOutsideClick } from '@/hooks'
 import { toKebabCase } from '@/utils/helpers'
 import { Box, polymorphic } from '@/components/core/Box'
-import { Button } from '@/components/core'
-import { Icon } from '@/components/core/Icon'
-import { Navmenu } from '../Navmenu'
-import { NavRoute } from '@/utils/constants'
-import classes from '../Navbar.module.scss'
-import type { NavigationItem } from '@/utils/constants'
+import { Button, Icon } from '@/components/core'
+import { Menu } from '../Menu'
+import { NavRoute, type NavigationItem } from '@/utils/navigation'
+import classes from '../Menu.module.scss'
 
-const NAME = 'Navitem' as const,
+const NAME = 'MenuItem' as const,
 	DEFAULT_TAG = 'li' as const
 
-interface NavitemProps extends NavigationItem {
+interface MenuItemProps extends NavigationItem {
+	hasDropdowns?: boolean
 	routes?: NavRoute[]
 	// route: T
-	// items?: NavitemProps<T>[]
+	// items?: MenuItemProps<T>[]
 	// label: string
 }
 
-interface NavitemSpecs {
+interface MenuItemSpecs {
 	default: { component: typeof DEFAULT_TAG }
-	props: NavitemProps
+	props: MenuItemProps
 }
 
-export const Navitem = polymorphic<NavitemSpecs>(_props => {
+const MenuLabel = ({ label, route }: NavigationItem) => (
+	<Box
+		as={ route ? Link : 'span' }
+		{ ...route ? { href: route } : {} }
+		role="menuitem"
+		// { ...styles('label') }
+	>
+		{ label }
+	</Box>
+)
+
+export const MenuItem = polymorphic<MenuItemSpecs>(_props => {
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { classes, props })
 	// add state to set tabIndex on keyboard navigation
@@ -64,6 +74,7 @@ export const Navitem = polymorphic<NavitemSpecs>(_props => {
 
 	const {
 		as,
+		hasDropdowns,
 		label,
 		route,
 		menu,
@@ -71,8 +82,10 @@ export const Navitem = polymorphic<NavitemSpecs>(_props => {
 		...rest
 	} = props
 
-	const hasDropdown = !!menu?.length,
-		target = toKebabCase(label)
+	// console.log('item', { hasDropdowns })
+
+	const isDropdown = !!menu?.length
+
 
 	const wrappedLabel = (
 		<Box
@@ -85,12 +98,28 @@ export const Navitem = polymorphic<NavitemSpecs>(_props => {
 		</Box>
 	)
 
-	if (hasDropdown) {
-		const menuID = `${target}-menu-list`
-		const triggerID = `${target}-dropdown-trigger`
+	if (!isDropdown) {
+		return (
+			<Box
+				as={ as }
+				role="none"
+				{ ...styles('root') }
+				{ ...rest }
+			>
+				{/* { wrappedLabel } */}
+				{ MenuLabel({ label, route }) }
+			</Box>
+		)
+	}
 
+
+	const target = toKebabCase(label),
+		triggerID = `${target}-dropdown-trigger`,
+		menuID = `${target}-menu-list`
+
+	if (hasDropdowns) {
 		useOutsideClick(itemRef, evt => {
-			if (hasDropdown && isOpen) handleToggle(evt)
+			if (isOpen) handleToggle(evt)
 		})
 
 		return (
@@ -103,7 +132,8 @@ export const Navitem = polymorphic<NavitemSpecs>(_props => {
 				{ ...styles('root') }
 				{ ...rest }
 			>
-				{ wrappedLabel }
+				{/* { wrappedLabel } */}
+				{ MenuLabel({ label, route }) }
 
 				<Button
 					unstyled
@@ -123,7 +153,7 @@ export const Navitem = polymorphic<NavitemSpecs>(_props => {
 				</Button>
 
 				{ isOpen && (
-					<Navmenu
+					<Menu
 						attributes={ { aria: { labelledby: triggerID } } }
 						id={ menuID }
 						menu={ menu }
@@ -134,26 +164,67 @@ export const Navitem = polymorphic<NavitemSpecs>(_props => {
 		)
 	}
 
-	return (
+
+
+	return menu?.map(item => (
 		<Box
-			as={ as }
+			as={ DEFAULT_TAG }
+			key={ item.label }
 			role="none"
 			{ ...styles('root') }
 			{ ...rest }
+			// { ...item }
 		>
-			{ wrappedLabel }
+			{ MenuLabel(item) }
 		</Box>
-	)
+	))
+
+	// return (
+	// 	<Box
+	// 		as={ as }
+	// 		ref={ itemRef }
+	// 		role="none"
+	// 		{ ...styles('root') }
+	// 		{ ...rest }
+	// 	>
+	// 		{ wrappedLabel }
+
+	// 		<Button
+	// 			unstyled
+	// 			id={ triggerID }
+	// 			attributes={ { aria: {
+	// 				controls: menuID,
+	// 				expanded: isOpen,
+	// 				haspopup: 'true',
+	// 			} } }
+	// 			{ ...styles('trigger') }
+	// 		>
+	// 			<Icon
+	// 				attributes={ { aria: { hidden: true } } }
+	// 				type={ isOpen ? 'caret-up' : 'caret-down' }
+	// 			/>
+	// 		</Button>
+
+	// 		<Menu
+	// 			attributes={ { aria: { labelledby: triggerID } } }
+	// 			id={ menuID }
+	// 			menu={ menu }
+	// 			routes={ routes }
+	// 		/>
+	// 	</Box>
+	// )
+
+
 }, classes)
 
-Navitem.displayName = NAME
-Navitem.setDefaults({
+MenuItem.displayName = NAME
+MenuItem.setDefaults({
 	props: {
 		as: DEFAULT_TAG,
 	}
 })
 
-export declare namespace Navitem {
-	export type Props = NavitemProps
-	export type Specs = NavitemSpecs
+export declare namespace MenuItem {
+	export type Props = MenuItemProps
+	export type Specs = MenuItemSpecs
 }

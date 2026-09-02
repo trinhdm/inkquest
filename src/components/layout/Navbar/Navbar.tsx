@@ -3,9 +3,8 @@
 import { useProps, useStyles } from '@/hooks'
 import { Box, polymorphic } from '@/components/core/Box'
 import { Button } from '@/components/core'
-import { Navmenu } from './Navmenu'
-import { Navitem } from './Navitem'
-import { NAVIGATION_DATA, NavRoute, type NavigationItem } from '@/utils/constants'
+import { Menu } from '../Menu'
+import { filterNavigation, NavRoute, NAVIGATION_DATA } from '@/utils/navigation'
 import classes from './Navbar.module.scss'
 
 const NAME = 'Navbar' as const,
@@ -18,26 +17,6 @@ interface NavbarProps {
 interface NavbarSpecs {
 	default: { component: typeof DEFAULT_TAG }
 	props: NavbarProps
-	subcomponents: {
-		Menu: typeof Navmenu
-		Item: typeof Navitem
-	}
-}
-
-export const filterNavigation = (
-	items: NavigationItem[],
-	routes?: NavRoute[]
-): NavigationItem[] => {
-	if (!routes?.length) return items
-
-	return items.reduce<NavigationItem[]>((acc, item) => {
-		if (item.route && routes.includes(item.route)) {
-			const menu = item.menu && filterNavigation(item.menu, routes)
-			acc.push({ ...item, menu: menu?.length ? menu : undefined })
-		}
-
-		return acc
-	}, [])
 }
 
 export const Navbar = polymorphic<NavbarSpecs>(_props => {
@@ -46,7 +25,6 @@ export const Navbar = polymorphic<NavbarSpecs>(_props => {
 	const { as, routes, ...rest } = props
 
 	const navItems = filterNavigation(NAVIGATION_DATA, routes)
-
 
 	return (
 		<Box
@@ -64,7 +42,11 @@ export const Navbar = polymorphic<NavbarSpecs>(_props => {
 				</Box>
 
 				{ !!navItems.length && (
-					<Navmenu menu={ navItems } routes={ routes } />
+					<Menu
+						menu={ navItems }
+						routes={ routes }
+						{ ...styles('menu') }
+					/>
 				) }
 
 				<Box as="div" { ...styles('col') }>
@@ -84,14 +66,4 @@ Navbar.setDefaults({ props: { as: DEFAULT_TAG } })
 export declare namespace Navbar {
 	export type Props = NavbarProps
 	export type Specs = NavbarSpecs
-
-	export namespace Menu {
-		export type Props = typeof Navmenu.Props
-		export type Specs = typeof Navmenu.Specs
-	}
-
-	export namespace Item {
-		export type Props = typeof Navitem.Props
-		export type Specs = typeof Navitem.Specs
-	}
 }
