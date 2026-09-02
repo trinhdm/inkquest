@@ -6,7 +6,7 @@ import {
 
 import type { AsPolymorphic, Specs } from './specs.types'
 import type { PolymorphicProps, PropertiesBase } from './polymorphic'
-import type { ReactElement } from 'react'
+import type { ElementType, ReactElement } from 'react'
 
 const polymorphicFactory = <T extends Specs>(
 	target: Parameters<typeof factory<T>>[0],
@@ -17,7 +17,7 @@ const polymorphicFactory = <T extends Specs>(
 
 	type _Component = T extends { specIs: { compound: true } }
 		? (props: P<never>) => ReactElement
-		: <U = C>(props: P<U>) => ReactElement
+		: <U extends ElementType = C>(props: P<U>) => ReactElement
 
 	type _Subcomponents = SubcomponentsBase<T>
 	type _Methods = MethodsBase<T, _Component, P<C>>

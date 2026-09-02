@@ -17,15 +17,6 @@ type _BaseProps<C> =
 			? P
 			: object
 
-type _OverrideProps<P1 = object, P2 = object> =
-	P2
-	& Omit<P1, keyof P2>
-
-type _ExtendedProps<C extends ElementType, P2 = object> =
-	_OverrideProps<
-		_BaseProps<C>, P2
-	>
-
 type _Tag<C> = [C] extends [undefined] ? 'div' : NonNullable<C>
 
 export type PropertiesBase<P = object> =
@@ -41,9 +32,8 @@ export type PolymorphicProps<
 		children?: ReactNode
 		unstyled?: boolean
 	}
-	& ( _Tag<C> extends ElementType
-		? Omit<_ExtendedProps<_Tag<C>, P>, 'as'>
-		: Omit<P, 'as'> )
+	& Omit<P, 'as'>
+	& Omit<_BaseProps<_Tag<C>>, 'as' | keyof P>
 
 export const toPolymorphic = <
 	P0 extends object,
@@ -51,7 +41,6 @@ export const toPolymorphic = <
 >(
 	target: (props: PolymorphicProps<P0, C0>) => ReactElement | null
 ) => {
-
 	interface _Component {
 		<C extends ElementType | undefined = 'div'>(props: PolymorphicProps<P0, C>): ReactElement | null
 	}
@@ -59,8 +48,6 @@ export const toPolymorphic = <
 	type PolymorphicBase =
 		& _Component
 		& PropertiesBase<ComponentProps<C0>>
-
-	// const BaseComponent = memo(target) as unknown as PolymorphicBase
 
 	return target as unknown as PolymorphicBase
 }

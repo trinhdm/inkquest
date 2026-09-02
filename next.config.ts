@@ -1,8 +1,15 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-	/* config options here */
+	// reactCompiler: false,
 	reactCompiler: true,
-};
+	typedRoutes: true,
+	experimental: {
+		optimizePackageImports: ['lucide-react'],
+	},
+	// sassOptions: {
+	// 	additionalData: `@use "@/styles/tokens/_index.scss" as *;`,
+	// },
+}
 
-export default nextConfig;
+export default nextConfig

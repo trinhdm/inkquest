@@ -24,13 +24,17 @@
   },
   "include": [
     "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.mts",
     ".next/dev/types/**/*.ts",
+    ".next/types/**/*.ts",
     ".storybook/**/*.ts",
-    ".storybook/**/*.tsx",
-    "**/*.mts"
+    ".storybook/**/*.tsx"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build"
+  ]
 }
