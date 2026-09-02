@@ -1,56 +1,33 @@
 'use client'
 
-import Link from 'next/link'
-import { useProps, useStyles, useVariantStyles } from '@/hooks'
-import { Box, polymorphic, type BoxProps } from '@/components/core/Box'
+import { useProps, useStyles } from '@/hooks'
+import { Box, polymorphic } from '@/components/core/Box'
 import { Button } from '@/components/core'
-import type { Route } from 'next'
+import { Navmenu } from './Menu'
+import { Navitem } from './Item'
+import { NAVITEMS, NavRoute } from '@/utils/constants'
 import classes from './Navbar.module.scss'
 
 const NAME = 'Navbar' as const,
-	TAG = 'nav' as const
+	DEFAULT_TAG = 'nav' as const
 
-interface NavbarProps extends BoxProps {
+interface NavbarProps {
 	routes: NavRoute[]
 }
 
 interface NavbarSpecs {
-	default: { component: typeof TAG }
+	default: { component: typeof DEFAULT_TAG }
 	props: NavbarProps
-}
-
-export enum NavRoute {
-	HOME = '/',
-	DISCOVER = '/discover',
-	MARKETPLACE = '/marketplace',
-	COMMUNITY = '/community',
-	COMMUNITY_EVENTS = '/community/events',
-	COMMUNITY_EVENTS_LINEUP = '/community/events/lineup',
-	COMMUNITY_FEED = '/community/feed',
-	COMMUNITY_FEED_CIRCLE = '/community/feed/circle',
-	COMMUNITY_SPOTLIGHTS = '/community/spotlights',
-	LOGIN = '/login',
-	SIGNUP = '/signup',
+	subcomponents: {
+		Menu: typeof Navmenu
+		Item: typeof Navitem
+	}
 }
 
 interface NavItem<T extends string = NavRoute> {
 	label: string
 	href: T
 	items?: T[]
-}
-
-const NAVITEMS: Record<NavRoute, string> = {
-	[NavRoute.HOME]: 'Home',
-	[NavRoute.DISCOVER]: 'Discover',
-	[NavRoute.MARKETPLACE]: 'Marketplace',
-	[NavRoute.COMMUNITY]: 'Community',
-	[NavRoute.COMMUNITY_EVENTS]: 'Community Events',
-	[NavRoute.COMMUNITY_EVENTS_LINEUP]: 'Your Lineup',
-	[NavRoute.COMMUNITY_FEED]: 'Community Feed',
-	[NavRoute.COMMUNITY_FEED_CIRCLE]: 'Your Circle',
-	[NavRoute.COMMUNITY_SPOTLIGHTS]: 'Community Spotlights',
-	[NavRoute.LOGIN]: 'Log in',
-	[NavRoute.SIGNUP]: 'Sign up',
 }
 
 const getNavRoutes = <T extends Record<string, string | number>>(routes: T, label: string): T[keyof T][] => {
@@ -78,17 +55,19 @@ const getNavLabels = <T extends NavRoute>(navitems: Record<T, string>, routes: T
 		}, [])
 
 export const Navbar = polymorphic<NavbarSpecs>(_props => {
-	useVariantStyles(NAME)
 	const props = useProps(NAME, _props)
-	const styles = useStyles<NavbarSpecs>(NAME, { classes, props })
+	const styles = useStyles(NAME, { classes, props })
 
 	const {
 		as,
+		// children,
 		routes,
 		...rest
 	} = props
 
 	const navItems = getNavLabels(NAVITEMS, routes)
+	// console.log({ navItems })
+
 
 	return (
 		<Box
@@ -96,6 +75,7 @@ export const Navbar = polymorphic<NavbarSpecs>(_props => {
 			// attributes={ {
 			// 	data: { block: !!fullWidth || null },
 			// } }
+			role="navigation"
 			{ ...styles('root') }
 			{ ...rest }
 		>
@@ -105,7 +85,7 @@ export const Navbar = polymorphic<NavbarSpecs>(_props => {
 				</Box>
 
 				{ !!navItems.length && (
-					<Box as="div" { ...styles('col') }>
+					<Navmenu items={ navItems } trigger="click here">
 						<ul>
 							{ navItems.map(({ label, href, items }) => (
 								<li key={ `${label}-${href}` }>
@@ -126,7 +106,7 @@ export const Navbar = polymorphic<NavbarSpecs>(_props => {
 								</li>
 							)) }
 						</ul>
-					</Box>
+					</Navmenu>
 				) }
 
 				<Box as="div" { ...styles('col') }>
@@ -141,9 +121,19 @@ export const Navbar = polymorphic<NavbarSpecs>(_props => {
 }, classes)
 
 Navbar.displayName = NAME
-Navbar.setDefaults({ props: { as: TAG } })
+Navbar.setDefaults({ props: { as: DEFAULT_TAG } })
 
 export declare namespace Navbar {
 	export type Props = NavbarProps
 	export type Specs = NavbarSpecs
+
+	export namespace Menu {
+		export type Props = typeof Navmenu.Props
+		export type Specs = typeof Navmenu.Specs
+	}
+
+	export namespace Item {
+		export type Props = typeof Navitem.Props
+		export type Specs = typeof Navitem.Specs
+	}
 }
