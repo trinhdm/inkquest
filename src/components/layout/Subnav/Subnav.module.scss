@@ -1,0 +1,25 @@
+
+.inkq-subnav {
+	margin: 0 auto;
+	max-width: var(--inkq-container-app-width);
+	padding: var(--inkq-container-app-padding);
+	padding-block: 0;
+	position: relative;
+	z-index: 15;
+
+	&__inner {
+		align-items: center;
+		display: grid;
+		gap: var(--inkq-space-inset-md);
+		grid-template-columns: auto 1fr;
+		position: relative;
+	}
+
+	&__menu {
+		flex-direction: row;
+	}
+
+	.inkq-menu {
+		flex-direction: row;
+	}
+}

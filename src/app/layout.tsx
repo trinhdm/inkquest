@@ -1,8 +1,7 @@
 import { Archivo, Archivo_Black, Space_Mono } from 'next/font/google'
 import { AppProvider } from '@/providers/AppProvider'
-import { Navbar } from '@/components/layout/Navbar'
+import { Navbar, Subnav } from '@/components/layout'
 import { ScriptInjector } from '@/components/document'
-// import { ScriptInjector, StyleInliner, VariantStyleInliner } from '@/components/document'
 import type { Metadata } from 'next'
 import '@/styles/_global.scss'
 
@@ -34,12 +33,6 @@ const fontsList = `${archivo.variable} ${archivoBlack.variable} ${spaceMono.vari
 export default function RootLayout({
 	children,
 }: Readonly<{ children: React.ReactNode }>) {
-	// const InlinedStyles = (
-	// 	<>
-	// 		<StyleInliner />
-	// 		<VariantStyleInliner />
-	// 	</>
-	// )
 
 	return (
 		<html
@@ -53,6 +46,10 @@ export default function RootLayout({
 			<body>
 				<AppProvider>
 					<Navbar routes={ ['/discover', '/marketplace', '/community'] } />
+					<Subnav
+						label="Community"
+						routes={ ['/community', '/community/feed', '/community/events', '/community/spotlights'] }
+					/>
 					{ children }
 				</AppProvider>
 			</body>
