@@ -14,5 +14,5 @@ export type {
 	ColorVariable, CssRule,
 	Priority, Tone, Variant,
 	PaletteTokens, VariantTokens,
-	SemanticVariantProps,
+	SemanticVariantProps, VariantProps,
 } from './variants.types'

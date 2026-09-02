@@ -160,18 +160,10 @@ export const enumerateVariantPalettes = (): VariantPalette[] => {
 		palette: resolvePalette({ variant: variant as Variant }),
 	}))
 
-	const structured2 = structural.flatMap(variant => {
-		return priorities.map(priority => ({
-			variant: variant as Variant,
-			palette: resolvePalette({ priority, variant: variant as Variant }),
-			priority,
-		}))
-	})
-
 	const specialize = special.map(variant => ({
 		variant: variant as Variant,
 		palette: resolvePalette({ variant: variant as Variant }),
 	}))
 
-	return [...structured, ...structured2, ...specialize, ...semantic]
+	return [...structured, ...specialize, ...semantic]
 }

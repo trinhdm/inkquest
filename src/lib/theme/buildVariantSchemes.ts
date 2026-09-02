@@ -1,50 +1,45 @@
 import { enumerateVariantPalettes } from './tokens/variants'
 import { toKebabCase } from '@/utils/helpers'
 import { tokenGenerator } from './generate'
-import { markVariantStylesInjected } from '@/lib/registries/variantStyleRegistry'
-// import { PREFIX_CSS_SELECTOR } from '@/utils/constants'
 import type { CssRule } from './types'
+
+const VARIANT_ORDER = {
+	solid: 'primary',
+	outline: 'secondary',
+	ghost: 'tertiary',
+}
 
 export const buildVariantSchemes = (name?: string, prefix?: string): CssRule[] => {
 	const namespace = !!name ? toKebabCase(name) : 'variant',
 		rootClass = !!prefix ? `${prefix}-${namespace}` : namespace,
 		palettes = enumerateVariantPalettes()
 
-	markVariantStylesInjected(namespace)
+	const targets = new Set()
 
 	return palettes.map(({ palette, priority, variant }) => {
-		const dataVariant = `[data-variant="${variant}"]`,
+		const selectors = [],
 			vars = tokenGenerator(palette, namespace)
 
-		// if (!name) {
-		// 	const baseVars = Object.keys(vars)
-		// 	for (const varName of baseVars)
-		// 		addVariantVariable(varName)
-		// }
-
-		let selector = dataVariant
+		let selector = `[data-variant="${variant}"]`
 		if (name) selector = `.${rootClass}${selector}`
-		if (priority) selector += `[data-priority="${priority}"]`
 
-		return { selector, vars }
+		if (!targets.has(selector)) {
+			selectors.push(selector)
+			targets.add(selector)
+		}
+
+		if (priority) {
+			selectors.push(`${selector}:is([data-priority="${priority}"])`)
+		} else if (variant in VARIANT_ORDER) {
+			const list = Object.keys(VARIANT_ORDER).reduce<string[]>((acc, k) => {
+				if (k !== variant) acc.push(`[data-variant="${k}"]`)
+				return acc
+			}, []).join(`, `)
+
+			const order = VARIANT_ORDER[variant as keyof typeof VARIANT_ORDER]
+			selectors.push(`[data-priority="${order}"]:is(${list})`)
+		}
+
+		return { selector: selectors.join(',\n'), vars }
 	})
 }
-
-
-// export const getVariantScheme = (name?: string): CssRule[] => {
-// 	// const schemeVars = handleVariantVariables()
-// 	// console.log({ schemeVars })
-
-// 	const variants = {
-// 		// selector,
-// 		vars: {
-// 			'--button-background': 'var(--variant-background)',
-// 			'--button-background-hover': 'var(--variant-background-hover)',
-// 			'--button-border': 'var(--variant-border)',
-// 			'--button-border-hover': 'var(--variant-border-hover)',
-// 			'--button-color': 'var(--variant-color)',
-// 		},
-// 	}
-
-// 	return variants
-// }

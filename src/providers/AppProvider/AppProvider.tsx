@@ -11,10 +11,7 @@ interface AppProviderProps {
 	children: ReactNode
 	prefix?: string
 	theme?: SiteTheme
-	// themeStyles: ReactNode
 }
-
-// export const AppContext = createContext<null>(null)
 
 const DEFAULT_APP = {
 	prefix: PREFIX_CSS_SELECTOR,
@@ -23,7 +20,6 @@ const DEFAULT_APP = {
 
 export const AppProvider = ({
 	children,
-	// themeStyles,
 	...rest
 }: AppProviderProps) => {
 	const props = { ...DEFAULT_APP, ...rest }
@@ -31,8 +27,7 @@ export const AppProvider = ({
 	return (
 		<ThemeProvider { ...props }>
 			<StyleInliner { ...props } />
-			<VariantStyleInliner { ...props } />
-			{/* { themeStyles } */}
+			<VariantStyleInliner prefix={ props.prefix } />
 			{ children }
 		</ThemeProvider>
 	)

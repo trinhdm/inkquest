@@ -27,6 +27,8 @@ export const StyleInliner = ({ prefix, theme, ...props }: StyleInlinerProps) => 
 			{ ...props }
 			data-scheme-style
 			dangerouslySetInnerHTML={{ __html: styles }}
+			href="css-scheme-base"
+			precedence="high"
 		/>
 	)
 }

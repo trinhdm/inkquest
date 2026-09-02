@@ -1,5 +1,4 @@
 import { keyHasValue } from '@/utils/helpers'
-import { useVariantStyles } from '../useVariantStyles'
 import type { SharedConfig } from './useStyles'
 
 // type ResolvedVars = Partial<Record<string, CSSVars>>
@@ -34,12 +33,6 @@ export const getStyles = <P extends object, V extends object>({
 	// ])
 
 	const variables = tokens?.(theme, props, stylesCtx)
-
-	if (keyHasValue(variables, 'stylesheet')) {
-		const styles = variables.stylesheet
-		if (typeof styles === 'string')
-			useVariantStyles(name, styles)
-	}
 
 	if (keyHasValue(variables, selector)) {
 		const styles = variables[selector]

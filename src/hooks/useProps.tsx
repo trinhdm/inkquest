@@ -1,5 +1,5 @@
-import { getDefaultProps } from '@/lib/registries'
 import { filterProps, styleProps } from '@/utils/helpers'
+import { getDefaultProps } from '@/lib/registries'
 
 export const useProps = <T extends object>(
 	name: string | undefined | (string | undefined)[],

@@ -12,4 +12,5 @@ export { setThemeCSS, type ThemeCSSConfig } from './setThemeCSS'
 export type {
 	BaseVarKey, ColorScheme, ColorVariable, CssRule,
 	SiteTheme, SiteThemeConfig, ThemeName, ThemeTokens,
+	Priority, Tone, Variant,
 } from './types'

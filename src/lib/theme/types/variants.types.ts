@@ -13,7 +13,11 @@ export type Tone =
 	| 'neutral' | 'action'
 	| 'danger' | 'warning' | 'success' | 'info'
 
-export interface SemanticVariantProps {
+export interface VariantProps {
+	variant?: Variant
+}
+
+export interface SemanticVariantProps extends VariantProps {
 	priority?: Priority
 	// variant?: Variant
 }

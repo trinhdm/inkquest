@@ -21,6 +21,8 @@ export const VariantStyleInliner = ({ names, prefix, ...props }: VariantStyleInl
 			{ ...props }
 			data-variant-vars
 			dangerouslySetInnerHTML={{ __html: styles }}
+			href="css-variant-base"
+			precedence="high"
 		/>
 	)
 }
