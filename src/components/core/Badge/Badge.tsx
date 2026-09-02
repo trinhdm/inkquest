@@ -1,7 +1,7 @@
-import { Box, polymorphic, type BoxProps } from '@/components/core/Box'
-import { useProps, useStyles } from '@/hooks'
+import { Box, polymorphic } from '@/components/core/Box'
+import { useProps, useStyles, useVariantStyles } from '@/hooks'
 // import { setThemeCSS, type ColorVariable } from '@/lib/theme'
-import type { ReactNode } from 'react'
+// import type { ReactNode } from 'react'
 import classes from './Badge.module.scss'
 
 const NAME = 'Badge' as const,
@@ -19,8 +19,8 @@ type BadgeVariant =
 
 // type BadgeVars = ColorVariable<typeof NAME>
 
-interface BadgeProps extends BoxProps {
-	children: ReactNode
+interface BadgeProps {
+	// children: ReactNode
 	fullWidth?: boolean
 	shape?: 'round' | 'pill'
 	size?: 'sm' | 'lg'
@@ -40,15 +40,16 @@ interface BadgeSpecs {
 // })
 
 export const Badge = polymorphic<BadgeSpecs>(_props => {
-	// useVariantStyles(NAME)
+	useVariantStyles(NAME)
 	const props = useProps(NAME, _props)
-	const styles = useStyles<BadgeSpecs>(NAME, { classes, props })
+	const styles = useStyles(NAME, { classes, props })
 
 	const {
 		as,
 		children,
 		fullWidth,
 		shape,
+		size,
 		variant,
 		...rest
 	} = props

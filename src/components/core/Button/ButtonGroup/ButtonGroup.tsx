@@ -1,17 +1,18 @@
 import {
-	Children, cloneElement, Fragment, isValidElement,
+	Children, Fragment, isValidElement,
 	type ComponentType, type CSSProperties, type ReactNode,
 } from 'react'
-import { Box, polymorphic, type BoxProps } from '@/components/core/Box'
+import { Box, polymorphic } from '@/components/core/Box'
+import { ButtonGroupProvider } from './ButtonGroup.context'
 import { useProps, useStyles } from '@/hooks'
 import type { Button } from '../Button'
 import classes from '../Button.module.scss'
 
 const PRIORITY_ROLES: Button.Priority[] = ['primary', 'secondary', 'tertiary'] as const
 const NAME = 'ButtonGroup' as const,
-	TAG = 'div' as const
+	DEFAULT_TAG = 'div' as const
 
-export interface ButtonGroupProps extends BoxProps {
+export interface ButtonGroupProps {
 	children?: ReactNode
 	fullWidth?: boolean
 	justify?: CSSProperties['justifyContent']
@@ -23,42 +24,8 @@ export interface ButtonGroupProps extends BoxProps {
 }
 
 export type ButtonGroupSpecs = {
-	default: { component: typeof TAG }
 	props: ButtonGroupProps
 	specIs: { compound: true }
-}
-
-const childrenWithProps = (
-	parentProps:ButtonGroupProps
-): ReturnType<typeof cloneElement<Button.Props>>[] => {
-	const { children, disabled, hasPriority, loading, unstyled } = parentProps
-
-	return Children.map(children, (child, index) => {
-		if (!isValidElement<Button.Props>(child)) return null
-
-		const childType = child.type as ComponentType<Button.Props>,
-			propsCh = {}
-
-		if (childType === Fragment)
-			return childrenWithProps({ ...parentProps, children: child.props.children })
-		else if (childType.displayName !== 'Button')
-			return null
-
-		if (hasPriority && !Object.hasOwn(child.props, 'priority')) {
-			const priority = derivePriority(index)
-			Object.assign(propsCh, { priority })
-		}
-
-		const sharedProps = { disabled, loading, unstyled } as ButtonGroupProps
-
-		(Object.keys(sharedProps) as (keyof typeof sharedProps)[]).forEach(prop => {
-			const value = sharedProps[prop]
-			if (typeof value === 'boolean')
-				Object.assign(propsCh, { [prop]: value })
-		})
-
-		return cloneElement(child, { ...child.props, ...propsCh })
-	}) as ReturnType<typeof cloneElement<Button.Props>>[]
 }
 
 const derivePriority = (index: number): Button.Priority => {
@@ -67,9 +34,20 @@ const derivePriority = (index: number): Button.Priority => {
 	return PRIORITY_ROLES[i]
 }
 
+const flattenChildren = (children: ReactNode): ReactNode[] => (
+	Children.toArray(children).flatMap(child => {
+		if (isValidElement<Button.Props>(child)) {
+			if (child.type === Fragment) return flattenChildren(child.props.children)
+			if ((child.type as ComponentType<Button.Props>).displayName !== 'Button') return null
+		}
+
+		return [child]
+	})
+)
+
 export const ButtonGroup = polymorphic<ButtonGroupSpecs>(_props => {
 	const props = useProps(NAME, _props)
-	const styles = useStyles<ButtonGroupSpecs>(NAME, { classes, props })
+	const styles = useStyles(NAME, { classes, props })
 
 	const {
 		as,
@@ -79,26 +57,35 @@ export const ButtonGroup = polymorphic<ButtonGroupSpecs>(_props => {
 		hasPriority,
 		loading,
 		orientation,
+		unstyled,
 		...rest
 	} = props
 
-	const direction = (orientation === 'vertical' && 'vertical') || undefined
-
 	return (
 		<Box
-			as={ as }
+			as={ DEFAULT_TAG }
 			attributes={ {
-				aria: { orientation: direction },
+				aria: { orientation },
 				data: {
-					orientation: direction,
 					block: !!fullWidth || null,
+					orientation: (orientation === 'vertical' && 'vertical') || null,
 				},
 			} }
 			role="group"
 			{ ...styles('root') }
 			{ ...rest }
 		>
-			{ childrenWithProps(props) }
+			{ flattenChildren(children).map((child, index) => (
+				<ButtonGroupProvider
+					key={ isValidElement(child) && child.key !== null ? child.key : index }
+					value={ {
+						disabled, loading, unstyled,
+						priority: hasPriority ? derivePriority(index) : undefined,
+					} }
+				>
+					{ child }
+				</ButtonGroupProvider>
+			)) }
 		</Box>
 	)
 }, classes)
@@ -106,7 +93,6 @@ export const ButtonGroup = polymorphic<ButtonGroupSpecs>(_props => {
 ButtonGroup.displayName = NAME
 ButtonGroup.setDefaults({
 	props: {
-		as: TAG,
 		hasPriority: true,
 		orientation: 'horizontal',
 	}

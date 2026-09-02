@@ -1,5 +1,5 @@
-import { useProps, useStyles, useVariantStyles } from '@/hooks'
-import { Box, polymorphic, type BoxProps } from '@/components/core/Box'
+import { useProps, useStyles } from '@/hooks'
+import { Box, polymorphic } from '@/components/core/Box'
 import { ICON_MAP, type IconType } from './IconMap'
 import type { LucideProps } from 'lucide-react'
 import classes from './Icon.module.scss'
@@ -7,7 +7,10 @@ import classes from './Icon.module.scss'
 const NAME = 'Icon' as const,
 	TAG = 'svg' as const
 
-interface IconProps extends LucideProps, BoxProps {
+interface IconProps {
+	color?: LucideProps['color']
+	size?: LucideProps['size']
+	strokeWidth?: LucideProps['strokeWidth']
 	type: IconType
 }
 
@@ -17,9 +20,8 @@ interface IconSpecs {
 }
 
 export const Icon = polymorphic<IconSpecs>(_props => {
-	useVariantStyles(NAME)
 	const props = useProps(NAME, _props)
-	const styles = useStyles<IconSpecs>(NAME, { classes, props })
+	const styles = useStyles(NAME, { classes, props })
 
 	const {
 		as,
@@ -43,7 +45,7 @@ Icon.displayName = NAME
 Icon.setDefaults({
 	props: {
 		as: TAG,
-		size: 24,
+		size: 16,
 	}
 })
 

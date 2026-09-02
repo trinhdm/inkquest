@@ -1,7 +1,6 @@
-import { Children, cloneElement, isValidElement, type ReactNode } from 'react'
+import { useButtonCxt } from '../Button.context'
 import { useProps, useStyles} from '@/hooks'
-import { Box, polymorphic, type BoxProps } from '@/components/core/Box'
-import { Icon } from '@/components/core/Icon'
+import { Box, polymorphic } from '@/components/core/Box'
 import classes from '../Button.module.scss'
 
 const NAME = 'ButtonSection' as const,
@@ -16,33 +15,22 @@ interface RightSectionProps {
 	right: true
 }
 
-export type ButtonSectionProps = BoxProps & (
+export type ButtonSectionProps = (
 	| LeftSectionProps
 	| RightSectionProps
-) & {
-	as?: never
-	parentName?: string
-}
+)
 
 export type ButtonSectionSpecs = {
-	default: { component: typeof TAG }
 	props: ButtonSectionProps
 	specIs: { compound: true }
 }
 
-const ICON_SIZE = 18
-
-const enforceIconSize = (children: ReactNode): ReactNode =>
-	Children.map(children, child => {
-		if (isValidElement<Icon.Props>(child) && child.type === Icon)
-			return cloneElement(child, { size: ICON_SIZE })
-		return child
-	})
-
 export const ButtonSection = polymorphic<ButtonSectionSpecs>(_props => {
+	const ctx = useButtonCxt()
 	const props = useProps(NAME, _props)
-	const { as, children, left, right, parentName = NAME, ...rest } = props
-	const styles = useStyles<ButtonSectionSpecs>(parentName, { classes, props })
+	const styles = useStyles(ctx?.displayName ?? NAME, { classes, props })
+
+	const { children, left, right, ...rest } = props
 
 	return (
 		<Box
@@ -53,7 +41,7 @@ export const ButtonSection = polymorphic<ButtonSectionSpecs>(_props => {
 			{ ...styles('section') }
 			{ ...rest }
 		>
-			{ enforceIconSize(children) }
+			{ children }
 		</Box>
 	)
 }, classes)

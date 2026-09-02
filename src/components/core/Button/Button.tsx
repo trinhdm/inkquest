@@ -1,59 +1,32 @@
 import Link from 'next/link'
-import { Children, cloneElement, isValidElement, type ReactNode } from 'react'
-import { Box, polymorphic, type BoxProps } from '@/components/core/Box'
+import { Children, isValidElement, useMemo, type ReactNode } from 'react'
+import { Box, polymorphic } from '@/components/core/Box'
 import {
-	ButtonGroup,
-	type ButtonGroupProps, type ButtonGroupSpecs
+	ButtonGroup, useButtonGroupProps,
+	type ButtonGroupProps, type ButtonGroupSpecs,
 } from './ButtonGroup'
 import {
 	ButtonSection,
 	type ButtonSectionProps, type ButtonSectionSpecs,
 } from './ButtonSection'
 import { Icon } from '../Icon'
-import { setThemeCSS, type ColorVariable } from '@/lib/theme'
-import { useProps, useStyles } from '@/hooks'
+// import { setThemeCSS, type ColorVariable } from '@/lib/theme'
+import { useProps, useStyles, useVariantStyles } from '@/hooks'
+import { ButtonProvider } from './Button.context'
 import type { ComponentPropsWithoutRef, MouseEventHandler, Ref } from 'react'
 import type { Route } from 'next'
+import type { Priority as ThemePriority, Variant as ThemeVariant } from '@/lib/theme'
 import classes from './Button.module.scss'
-
-import { serializeStyles } from '@/components/document'
-// import { getVariantScheme } from '@/lib/theme/buildVariantSchemes'
 
 const NAME = 'Button' as const,
 	DEFAULT_TAG = 'button' as const
+
+// type ButtonVars = ColorVariable<typeof NAME>
 
 type ButtonSize =
 	| 'sm'
 	| 'md'
 	| 'lg'
-
-type ButtonPriority =
-	| 'primary'
-	| 'secondary'
-	| 'tertiary'
-
-type ButtonVariant =
-	| 'dark'
-	| 'ghost'
-	| 'light'
-	| 'outline'
-	| 'solid'
-	| 'success'
-	| 'warning'
-	| 'danger'
-
-type ButtonVars = ColorVariable<typeof NAME>
-
-export type ButtonProps = BoxProps
-	& (LinkButtonProps | NativeButtonProps) & {
-	children: ReactNode
-	disabled?: boolean
-	fullWidth?: boolean
-	loading?: boolean
-	priority?: ButtonPriority
-	size?: ButtonSize
-	variant?: ButtonVariant
-}
 
 interface LinkButtonProps<T extends string = string>
 	extends ComponentPropsWithoutRef<'a'> {
@@ -69,6 +42,21 @@ interface NativeButtonProps
 	ref?: Ref<HTMLButtonElement>
 }
 
+interface BaseButtonProps {
+	children: ReactNode
+	disabled?: boolean
+	fullWidth?: boolean
+	loading?: boolean
+	priority?: ThemePriority
+	size?: ButtonSize
+	variant?: ThemeVariant
+}
+
+type ButtonProps = BaseButtonProps & (
+	| LinkButtonProps
+	| NativeButtonProps
+)
+
 interface ButtonSpecs {
 	default: { component: typeof DEFAULT_TAG }
 	props: ButtonProps
@@ -76,29 +64,30 @@ interface ButtonSpecs {
 		Group: typeof ButtonGroup
 		Section: typeof ButtonSection
 	}
-	tokens: { stylesheet?: ButtonVars }
+	// tokens: { stylesheet?: ButtonVars }
 }
 
 const buildSections = (
 	props: ButtonProps,
-	styles: ReturnType<typeof useStyles<ButtonSpecs>>
+	styles: ReturnType<typeof useStyles>
 ) => {
-	const { children, unstyled } = props,
+	const { children } = props,
 		label: ReactNode[] = []
+
 	let left: ReactNode = null,
 		right: ReactNode = null
 
 	Children.toArray(children).forEach(child => {
 		if (isValidElement<ButtonSectionProps>(child) && child.type === ButtonSection) {
-			const isLeft = 'left' in child.props && child.props.left,
+			const isLeft = 'left' in child.props && !!child.props.left,
 				taken = isLeft ? left : right
 
 			if (!taken) {
-				let clone = cloneElement(child, { parentName: NAME, unstyled })
-				if (isLeft) left = clone
-				else right = clone
+				if (isLeft) left = child
+				else right = child
 			} else if (process.env.NODE_ENV !== 'production') {
-				console.warn(`${NAME}: multiple ${NAME}.Section[${isLeft ? 'left' : 'right'}] found; only the first ${NAME}.Section is rendered.`)
+				const section = `${NAME}.Section`
+				console.warn(`${NAME}: multiple ${section}[${isLeft ? 'left' : 'right'}] found; only the first ${section} is rendered.`)
 			}
 			return
 		}
@@ -106,14 +95,14 @@ const buildSections = (
 		label.push(child)
 	})
 
-	const innerEl = (
+	const content = (
 		<Box as="span" { ...styles('label') }>
 			{ label }
 		</Box>
 	)
 
-	if (!left && !right) return innerEl
-	return <>{ left }{ innerEl }{ right }</>
+	if (!left && !right) return content
+	return <>{ left }{ content }{ right }</>
 }
 
 const getTextFromChildren = (children: ReactNode): string => {
@@ -121,53 +110,18 @@ const getTextFromChildren = (children: ReactNode): string => {
 
 	Children.toArray(children).forEach(child => {
 		if (typeof child === 'string' || typeof child === 'number')
-			text += child
-		else if (isValidElement<ButtonSectionProps>(child) && child.props?.children)
-			text += getTextFromChildren(child.props?.children)
+			text += `${child}`
+		else if (isValidElement<ButtonSectionProps>(child) && 'children' in child.props)
+			text += getTextFromChildren(child.props?.children as ReactNode)
 	})
 
 	return text.trim()
 }
 
-const tokens = setThemeCSS<ButtonSpecs>((theme, _props) => {
-	// const colors = theme.getVariantColors({ theme, ..._props })
-	// console.log({ colors })
-
-	const rootTokens = {}
-
-	if (Object.hasOwn(_props, 'variant')) {
-		const { prefix, prefixSelector } = theme
-		const selector = prefixSelector(NAME)
-		const test = {
-			selector,
-			vars: {
-				'--button-background': `var(--variant-background, var(--${prefix}-background-backup))`,
-				'--button-background-hover': 'var(--variant-background-hover, var(--variant-background))',
-				'--button-border': `var(--variant-border, var(--${prefix}-border-backup))`,
-				'--button-border-hover': 'var(--variant-border-hover, var(--variant-border))',
-				'--button-color': `var(--variant-color, var(--${prefix}-color-backup))`,
-			},
-		}
-
-		const variants = serializeStyles([test]) ?? undefined
-		if (!!variants)
-			Object.assign(rootTokens, { stylesheet: variants })
-	}
-
-	return {
-		...rootTokens,
-		// root: {
-		// 	// ...variants,
-		// 	// '--button-height': 36px,		// .button__inner height: 0.5 * --button-height
-		// 	// '--button-pad': `${tokens.space.inset('sm')} ${tokens.space.inset('lg')}`,
-		// }
-	}
-})
-
 export const Button = polymorphic<ButtonSpecs>(_props => {
-	// useVariantStyles(NAME)
-	const props = useProps(NAME, _props)
-	const styles = useStyles<ButtonSpecs>(NAME, { classes, props, tokens })
+	useVariantStyles(NAME)
+	const props = useProps(NAME, useButtonGroupProps(_props))
+	const styles = useStyles(NAME, { classes, props })
 
 	const {
 		as,
@@ -177,14 +131,15 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 		loading,
 		priority,
 		size,
+		unstyled,
 		variant,
 		...rest
 	} = props
 
 	const ariaLabel = getTextFromChildren(children),
-		aria = { label: !!ariaLabel.length ? undefined : ariaLabel }
+		aria = { label: !!ariaLabel.length ? ariaLabel : undefined }
 
-	let data: Record<string, unknown> = {
+	const data = {
 		variant,
 		priority,
 		block: !!fullWidth || null,
@@ -192,11 +147,15 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 		loading: !!loading || null,
 	}
 
+	const buttonCxtValue = useMemo(() => ({ displayName: NAME, unstyled }), [unstyled])
+
 	const inner = (
-		<Box as="span" { ...styles('inner') }>
-			{ loading && <Icon { ...styles('icon') } size={ 18 } type="loading" /> }
-			{ buildSections(props, styles) }
-		</Box>
+		<ButtonProvider value={ buttonCxtValue }>
+			<Box as="span" { ...styles('inner') }>
+				{ loading && <Icon { ...styles('icon') } type="loading" /> }
+				{ buildSections(props, styles) }
+			</Box>
+		</ButtonProvider>
 	)
 
 	if ('href' in rest) {
@@ -244,9 +203,9 @@ export declare namespace Button {
 	export type Props = ButtonProps
 	export type Specs = ButtonSpecs
 
-	export type Priority = ButtonPriority
+	export type Priority = ThemePriority
 	export type Size = ButtonSize
-	export type Variant = ButtonVariant
+	export type Variant = ThemeVariant
 
 	export namespace Group {
 		export type Props = ButtonGroupProps
@@ -258,3 +217,36 @@ export declare namespace Button {
 		export type Specs = ButtonSectionSpecs
 	}
 }
+
+
+// const tokens = setThemeCSS<ButtonSpecs>((theme, _props) => {
+// 	const rootTokens = {}
+
+// 	if (Object.hasOwn(_props, 'variant')) {
+
+// 		const variants = deriveVariants({ name: NAME }, theme)
+// 		console.log({ variants })
+// 		// const styles = serializeStyles([variants]) ?? undefined
+// 		if (!!variants)
+// 			Object.assign(rootTokens, { stylesheet: variants })
+// 	}
+
+// 	// const buttonHeights = {
+// 	// 	sm: '2.25rem',
+// 	// 	md: '2.5rem',
+// 	// 	lg: '2.75rem',
+// 	// }
+
+// 	return {
+// 		...rootTokens,
+// 		// root: {
+// 		// 	'--button-height': buttonHeights[_props.size],
+// 		// },
+
+// 		// root: {
+// 		// 	// ...variants,
+// 		// 	// '--button-height': 36px,		// .button__inner height: 0.5 * --button-height
+// 		// 	// '--button-pad': `${tokens.space.inset('sm')} ${tokens.space.inset('lg')}`,
+// 		// }
+// 	}
+// })
