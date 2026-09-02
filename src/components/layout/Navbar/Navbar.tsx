@@ -5,14 +5,14 @@ import { Box, polymorphic } from '@/components/core/Box'
 import { Button } from '@/components/core'
 import { Navmenu } from './Navmenu'
 import { Navitem } from './Navitem'
-import { NAVIGATION_DATA, NavRoute } from '@/utils/constants'
+import { NAVIGATION_DATA, NavRoute, type NavigationItem } from '@/utils/constants'
 import classes from './Navbar.module.scss'
 
 const NAME = 'Navbar' as const,
 	DEFAULT_TAG = 'nav' as const
 
 interface NavbarProps {
-	routes: NavRoute[]
+	routes?: NavRoute[]
 }
 
 interface NavbarSpecs {
@@ -24,18 +24,28 @@ interface NavbarSpecs {
 	}
 }
 
+export const filterNavigation = (
+	items: NavigationItem[],
+	routes?: NavRoute[]
+): NavigationItem[] => {
+	if (!routes?.length) return items
+
+	return items.reduce<NavigationItem[]>((acc, item) => {
+		if (item.route && routes.includes(item.route)) {
+			const menu = item.menu && filterNavigation(item.menu, routes)
+			acc.push({ ...item, menu: menu?.length ? menu : undefined })
+		}
+
+		return acc
+	}, [])
+}
+
 export const Navbar = polymorphic<NavbarSpecs>(_props => {
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { classes, props })
+	const { as, routes, ...rest } = props
 
-	const {
-		as,
-		// children,
-		routes,
-		...rest
-	} = props
-
-	const navItems = NAVIGATION_DATA
+	const navItems = filterNavigation(NAVIGATION_DATA, routes)
 
 
 	return (

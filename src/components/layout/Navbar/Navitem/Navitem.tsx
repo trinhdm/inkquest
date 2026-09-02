@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
-import { useProps, useStyles } from '@/hooks'
-import { useOutsideClick } from '@/hooks/useOutsideClick'
+import { useProps, useStyles, useOutsideClick } from '@/hooks'
 import { toKebabCase } from '@/utils/helpers'
 import { Box, polymorphic } from '@/components/core/Box'
 import { Button } from '@/components/core'
@@ -10,10 +9,9 @@ import { Navmenu } from '../Navmenu'
 import { NavRoute } from '@/utils/constants'
 import classes from '../Navbar.module.scss'
 import type { NavigationItem } from '@/utils/constants'
-// import type { Route } from 'next'
 
 const NAME = 'Navitem' as const,
-	TAG = 'li' as const
+	DEFAULT_TAG = 'li' as const
 
 interface NavitemProps extends NavigationItem {
 	routes?: NavRoute[]
@@ -23,7 +21,7 @@ interface NavitemProps extends NavigationItem {
 }
 
 interface NavitemSpecs {
-	default: { component: typeof TAG }
+	default: { component: typeof DEFAULT_TAG }
 	props: NavitemProps
 }
 
@@ -76,18 +74,10 @@ export const Navitem = polymorphic<NavitemSpecs>(_props => {
 	const hasDropdown = !!menu?.length,
 		target = toKebabCase(label)
 
-	const args = !!route
-		? { as: Link, href: route }
-		: { as: 'span' }
-
-	// const args2 = route
-	// 	? { href: route }
-	// 	: {}
-
 	const wrappedLabel = (
 		<Box
-			// as={ route ? Link : 'span' }
-			{ ...args }
+			as={ route ? Link : 'span' }
+			{ ...route ? { href: route } : {} }
 			role="menuitem"
 			{ ...styles('label') }
 		>
@@ -159,7 +149,7 @@ export const Navitem = polymorphic<NavitemSpecs>(_props => {
 Navitem.displayName = NAME
 Navitem.setDefaults({
 	props: {
-		as: TAG,
+		as: DEFAULT_TAG,
 	}
 })
 
