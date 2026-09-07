@@ -1,7 +1,7 @@
 'use client'
 
 import { useProps, useStyles } from '@/hooks'
-import { filterNavigation, NavRoute, NAVIGATION_DATA } from '@/utils/navigation'
+import { filterNavigation, NavRoute } from '@/utils/navigation'
 import { Box, polymorphic } from '@/components/core/Box'
 import { Menu } from '../Menu'
 import classes from './Subnav.module.scss'
@@ -10,8 +10,6 @@ const NAME = 'Subnav' as const,
 	TAG = 'div' as const
 
 interface SubnavProps {
-	// children: ReactNode
-	label: string
 	routes: NavRoute[]
 }
 
@@ -24,15 +22,8 @@ export const Subnav = polymorphic<SubnavSpecs>(_props => {
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { classes, props })
 
-	const {
-		as,
-		// children,
-		label,
-		routes,
-		...rest
-	} = props
-
-	const navItems = filterNavigation(NAVIGATION_DATA, routes)
+	const { as, routes, ...rest } = props
+	const navItems = filterNavigation(routes)
 
 	return (
 		<Box
@@ -43,19 +34,22 @@ export const Subnav = polymorphic<SubnavSpecs>(_props => {
 			{ ...styles('root') }
 			{ ...rest }
 		>
-			<Box { ...styles('inner') }>
-				<Box { ...styles('label') }>
-					{ label }
+			<Box { ...styles('wrapper') }>
+				<Box { ...styles('inner') }>
+					{ !!navItems.length && (
+						<>
+							<Box as="span" { ...styles('label') }>
+								{ navItems[0].label }
+							</Box>
+							<Menu
+								hasDropdowns={ false }
+								items={ navItems }
+								routes={ routes }
+								{ ...styles('menu') }
+							/>
+						</>
+					) }
 				</Box>
-
-				{ !!navItems.length && (
-					<Menu
-						hasDropdowns={ false }
-						menu={ navItems }
-						routes={ routes }
-						{ ...styles('menu') }
-					/>
-				) }
 			</Box>
 		</Box>
 	)

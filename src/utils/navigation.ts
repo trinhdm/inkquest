@@ -98,15 +98,15 @@ export const NAVIGATION_DATA: NavigationItem[] = [
 
 
 export const filterNavigation = (
-	items: NavigationItem[],
-	routes?: NavRoute[]
+	routes?: NavRoute[],
+	navitems: NavigationItem[] = NAVIGATION_DATA,
 ): NavigationItem[] => {
-	if (!routes?.length) return items
+	if (!routes?.length) return navitems
 
-	return items.reduce<NavigationItem[]>((acc, item) => {
+	return navitems.reduce<NavigationItem[]>((acc, item) => {
 		if (item.route && routes.includes(item.route)) {
-			const menu = item.menu && filterNavigation(item.menu, routes)
-			acc.push({ ...item, menu: menu?.length ? menu : undefined })
+			const submenu = item.menu && filterNavigation(routes, item.menu)
+			acc.push({ ...item, menu: submenu })
 		}
 
 		return acc

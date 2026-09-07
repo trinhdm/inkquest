@@ -4,8 +4,9 @@ import { useProps, useStyles } from '@/hooks'
 import { Box, polymorphic } from '@/components/core/Box'
 import { Button } from '@/components/core'
 import { Menu } from '../Menu'
-import { filterNavigation, NavRoute, NAVIGATION_DATA } from '@/utils/navigation'
+import { filterNavigation, NavRoute } from '@/utils/navigation'
 import classes from './Navbar.module.scss'
+import Link from 'next/link'
 
 const NAME = 'Navbar' as const,
 	DEFAULT_TAG = 'nav' as const
@@ -24,36 +25,37 @@ export const Navbar = polymorphic<NavbarSpecs>(_props => {
 	const styles = useStyles(NAME, { classes, props })
 	const { as, routes, ...rest } = props
 
-	const navItems = filterNavigation(NAVIGATION_DATA, routes)
+	const navItems = filterNavigation(routes)
 
 	return (
 		<Box
 			as="nav"
-			// attributes={ {
-			// 	data: { block: !!fullWidth || null },
-			// } }
 			role="navigation"
 			{ ...styles('root') }
 			{ ...rest }
 		>
-			<Box as="div" { ...styles('inner') }>
-				<Box as="div" { ...styles('col') }>
-					logo
-				</Box>
+			<Box { ...styles('wrapper') }>
+				<Box { ...styles('inner') }>
+					<Box { ...styles('col') }>
+						<Link href="/">logo</Link>
+					</Box>
 
-				{ !!navItems.length && (
-					<Menu
-						menu={ navItems }
-						routes={ routes }
-						{ ...styles('menu') }
-					/>
-				) }
+					{ !!navItems.length && (
+						<Box { ...styles('col') }>
+							<Menu
+								items={ navItems }
+								routes={ routes }
+								{ ...styles('menu') }
+							/>
+						</Box>
+					) }
 
-				<Box as="div" { ...styles('col') }>
-					<Button.Group hasPriority={ false }>
-						<Button variant="ghost">Log in</Button>
-						<Button>Sign up</Button>
-					</Button.Group>
+					<Box { ...styles('col') }>
+						<Button.Group hasPriority={ false }>
+							<Button variant="ghost">Log in</Button>
+							<Button>Sign up</Button>
+						</Button.Group>
+					</Box>
 				</Box>
 			</Box>
 		</Box>

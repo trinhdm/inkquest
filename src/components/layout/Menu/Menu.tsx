@@ -9,7 +9,7 @@ const NAME = 'Menu' as const,
 
 interface MenuProps {
 	hasDropdowns?: boolean
-	menu: NavigationItem['menu']
+	items: NavigationItem['menu']
 	routes?: NavRoute[]
 }
 
@@ -25,10 +25,12 @@ export const Menu = polymorphic<MenuSpecs>(_props => {
 	const {
 		as,
 		hasDropdowns,
-		menu,
+		items,
 		routes,
 		...rest
 	} = props
+
+	// const isActive = pathname === route
 
 	return (
 		<Box
@@ -37,7 +39,7 @@ export const Menu = polymorphic<MenuSpecs>(_props => {
 			{ ...styles('root') }
 			{ ...rest }
 		>
-			{ menu?.map(item => (
+			{ items?.map(item => (
 				<MenuItem
 					key={ item.label }
 					hasDropdowns={ hasDropdowns }
