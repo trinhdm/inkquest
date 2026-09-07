@@ -2,9 +2,10 @@ import { useMemo, type CSSProperties } from 'react'
 import { useTheme } from '@/providers/ThemeProvider'
 import { getClassName } from './getClassName'
 import { getStyles } from './getStyle'
-import { keyHasValue } from '@/utils/helpers'
+import { keyHasValue, pluralizeKeys } from '@/utils/helpers'
 import type { SiteThemeConfig, ThemeCSSConfig } from '@/lib/theme'
 import type { SpecAttributes } from '@/types/shared'
+import type { PluralizeKeys } from '@/types/utils'
 
 interface StyleOptions<P extends object, V extends object = object> {
 	readonly classes?: Record<string, string>
@@ -31,16 +32,12 @@ export interface SharedConfig<P extends object, V extends object = object>
 type StyleFn = (
 	selector: SelectorArgs['selector'],
 	config?: SelectorArgs['config']
-) => StyleResult
+) => StyleResult | PluralizeKeys<StyleResult>
 
 interface StyleResult {
-	classNames?: string
-	styles?: CSSProperties
+	className?: string
+	style?: CSSProperties
 }
-
-
-// type StyleCacheKey<T extends StyleFn> =
-// 	`${Parameters<T>[0]}:${Parameters<T>[1] extends string ? Parameters<T>[1] : ''}`
 
 const ROOT_SELECTOR = 'root'
 
@@ -56,11 +53,11 @@ export const useStyles = <P extends object, V extends object = object>(
 		hasOptions = !!choices.length
 
 	return useMemo<StyleFn>(() => {
-		if (!hasOptions) return (() => ({ classNames: '', styles: {} }))
+		if (!hasOptions) return (() => ({ className: '', style: {} }))
 
 		const prefix = opts.prefix ?? theme.prefix,
-			args = { ...opts, name, prefix, theme },
-			cache = new Map<string, StyleResult>()
+			sharedArgs = { ...opts, name, prefix, theme },
+			cache = new Map<string, ReturnType<StyleFn>>()
 
 		return ((selector, config) => {
 			let cacheKey = `${selector}:`
@@ -74,17 +71,19 @@ export const useStyles = <P extends object, V extends object = object>(
 				isUnstyled: isUnstyled(opts.props),
 			}
 
-			// const args: SelectorArgs = { check, config, selector }
-			// Object.assign(options, args)
-			const options: SharedConfig<P, V> = { ...args, check, config, selector }
+			const args: SharedConfig<P, V> = { ...sharedArgs, check, config, selector }
 
-			const values = {
-				classNames: getClassName(options),
-				styles: getStyles(options),
+			const values: ReturnType<StyleFn> = {
+				className: getClassName(args),
+				style: getStyles(args),
 			}
 
-			cache.set(cacheKey, values)
-			return values
+			const result: ReturnType<StyleFn> = check.isRoot
+				? pluralizeKeys(values)
+				: values
+
+			cache.set(cacheKey, result)
+			return result
 		})
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [hasOptions, name, opts, theme])

@@ -5,7 +5,7 @@ import type { ReactNode } from 'react'
 
 const NAME = 'PolymorphicBox' as const
 
-export interface BoxProps {
+interface BoxProps {
 	children?: ReactNode
 	unstyled?: boolean
 }
@@ -18,7 +18,6 @@ export const Box = toPolymorphic<BoxProps, 'div'>((_props) => {
 	} = handleProps(_props)
 
 	const Element = as || 'div'
-	// console.log(as)
 	// const theme = useTheme()
 
 	return <Element { ...props } />

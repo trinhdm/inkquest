@@ -1,4 +1,4 @@
-import type { OneKeyOf } from '@/types/utils'
+import type { OneKeyOf, PluralizeKeys } from '@/types/utils'
 
 export const isObject = <T extends Record<string, unknown>>(target: unknown): target is T =>
 	!!target && target?.constructor === Object && !Array.isArray(target)
@@ -28,21 +28,18 @@ function hasKeyWithValue(
 
 export const keyHasValue = hasKeyWithValue
 
-export const keyWithValue = <
-	T extends object,
-	K extends keyof T = keyof T,
-	V = T[K],
-	Target extends T = T,
->(
-	entry: [K, V] | K,
-	obj?: T
-): obj is Target => {
-	if (!isObject(obj)) return false
-	let key = entry as K, value
-	const hasValue = Array.isArray(entry)
-	if (hasValue) ([key, value] = entry)
-	return Object.hasOwn(obj, key) && hasValue ? (obj as any)[key] === value : !!(obj as any)[key]
+
+export const pluralizeKeys = <T extends Record<string, any>>(obj: T): PluralizeKeys<T> => {
+	const result = {} as any
+
+	for (const key of Object.keys(obj)) {
+		const ks = `${key}s`
+		result[ks] = obj[key]
+	}
+
+	return result
 }
+
 
 const deepKeys = <T extends Record<string, unknown>>(obj: T, prefix = '') => {
 	let keys = [] as string[]

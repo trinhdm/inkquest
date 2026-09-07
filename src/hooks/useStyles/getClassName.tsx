@@ -17,16 +17,19 @@ const getBaseClass = <P extends object, V extends object>({
 }
 
 export const getClassName = <P extends object, V extends object>(
-	config: SharedConfig<P, V>
+	args: SharedConfig<P, V>
 ): string => {
-	const { check, classes } = config,
-		baseClass = getBaseClass(config)
+	const { check, classes, props } = args,
+		baseClass = getBaseClass(args)
 
 	const classList = [baseClass],
 		styleClass = classes?.[baseClass]
 
 	if (styleClass && !check.isUnstyled)
 		classList.push(styleClass)
+
+	if ('className' in props && typeof props.className === 'string')
+		classList.push(props.className)
 
 	return cx(...classList)
 }

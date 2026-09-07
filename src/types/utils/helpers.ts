@@ -11,7 +11,12 @@ export type RemoveSubstr<S extends string, Sub extends string> =
 		? `${Before}${After}`
 		: S
 
+
 //	objects
+
+export type PluralizeKeys<T> = {
+	[K in keyof T as K extends string ? `${K}s` : K]: T[K]
+}
 
 export type RewriteKeysWithout<Sub extends string, T> = {
 	[K in keyof T as K extends string
