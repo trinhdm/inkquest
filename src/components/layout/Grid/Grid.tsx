@@ -1,11 +1,8 @@
-import {
-	isValidElement, Children, Fragment,
-	type ComponentType, type ReactNode,
-} from 'react'
 import { useProps, useStyles } from '@/hooks'
-import { extractOtherProps } from '@/utils/helpers'
+import { extractOtherProps, flattenChildren } from '@/utils/helpers'
 import { Box, polymorphic } from '@/components/core/Box'
 import { GridItem } from './GridItem'
+import type { ReactNode } from 'react'
 import classes from './Grid.module.scss'
 
 const NAME = 'Grid' as const,
@@ -23,17 +20,6 @@ interface GridSpecs {
 	}
 }
 
-const flattenChildren = (children: ReactNode): ReactNode[] => (
-	Children.toArray(children).flatMap(child => {
-		if (isValidElement<Grid.Props>(child)) {
-			if (child.type === Fragment) return flattenChildren(child.props.children)
-			if ((child.type as ComponentType<Grid.Props>).displayName !== 'GridItem') return null
-		}
-
-		return [child]
-	})
-)
-
 export const Grid = polymorphic<GridSpecs>(_props => {
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { classes, props })
@@ -44,7 +30,7 @@ export const Grid = polymorphic<GridSpecs>(_props => {
 	return (
 		<Box as={ as } { ...styles('root') } { ...others }>
 			<div { ...styles('wrapper') }>
-				{ flattenChildren(children).map(child => child) }
+				{ flattenChildren(children, 'GridItem').map(child => child) }
 			</div>
 		</Box>
 	)

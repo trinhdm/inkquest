@@ -1,5 +1,6 @@
 import { useButtonCxt } from '../Button.context'
 import { useProps, useStyles} from '@/hooks'
+import { extractOtherProps } from '@/utils/helpers'
 import { Box, polymorphic } from '@/components/core/Box'
 import classes from '../Button.module.scss'
 
@@ -31,15 +32,16 @@ export const ButtonSection = polymorphic<ButtonSectionSpecs>(_props => {
 	const styles = useStyles(ctx?.displayName ?? NAME, { classes, props })
 
 	const { children, left, right, ...rest } = props
+	const { others } = extractOtherProps(rest)
+
+	const data = { side: left ? 'left' : 'right' }
 
 	return (
 		<Box
 			as={ TAG }
-			attributes={ {
-				data: { side: left ? 'left' : 'right' },
-			} }
+			attributes={ { data } }
 			{ ...styles('section') }
-			{ ...rest }
+			{ ...others }
 		>
 			{ children }
 		</Box>

@@ -1,10 +1,8 @@
-import {
-	Children, Fragment, isValidElement,
-	type ComponentType, type CSSProperties, type ReactNode,
-} from 'react'
+import { isValidElement, type CSSProperties, type ReactNode } from 'react'
+import { useProps, useStyles } from '@/hooks'
+import { extractOtherProps, flattenChildren } from '@/utils/helpers'
 import { Box, polymorphic } from '@/components/core/Box'
 import { ButtonGroupProvider } from './ButtonGroup.context'
-import { useProps, useStyles } from '@/hooks'
 import type { Button } from '../Button'
 import classes from '../Button.module.scss'
 
@@ -21,6 +19,7 @@ export interface ButtonGroupProps {
 	disabled?: boolean
 	hasPriority?: boolean
 	loading?: boolean
+	size?: Button.Props['size']
 }
 
 export type ButtonGroupSpecs = {
@@ -34,32 +33,23 @@ const derivePriority = (index: number): Button.Priority => {
 	return PRIORITY_ROLES[i]
 }
 
-const flattenChildren = (children: ReactNode): ReactNode[] => (
-	Children.toArray(children).flatMap(child => {
-		if (isValidElement<Button.Props>(child)) {
-			if (child.type === Fragment) return flattenChildren(child.props.children)
-			if ((child.type as ComponentType<Button.Props>).displayName !== 'Button') return null
-		}
-
-		return [child]
-	})
-)
-
 export const ButtonGroup = polymorphic<ButtonGroupSpecs>(_props => {
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { classes, props })
 
 	const {
-		as,
 		children,
 		disabled,
 		fullWidth,
 		hasPriority,
 		loading,
 		orientation,
+		size,
 		unstyled,
 		...rest
 	} = props
+
+	const { others } = extractOtherProps(rest)
 
 	return (
 		<Box
@@ -73,13 +63,13 @@ export const ButtonGroup = polymorphic<ButtonGroupSpecs>(_props => {
 			} }
 			role="group"
 			{ ...styles('root') }
-			{ ...rest }
+			{ ...others }
 		>
-			{ flattenChildren(children).map((child, index) => (
+			{ flattenChildren(children, 'Button').map((child, index) => (
 				<ButtonGroupProvider
 					key={ isValidElement(child) && child.key !== null ? child.key : index }
 					value={ {
-						disabled, loading, unstyled,
+						disabled, loading, size, unstyled,
 						priority: hasPriority ? derivePriority(index) : undefined,
 					} }
 				>

@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Children, isValidElement, useMemo, type ReactNode } from 'react'
+import { isValidElement, useMemo, Children } from 'react'
 import { Box, polymorphic } from '@/components/core/Box'
 import {
 	ButtonGroup, useButtonGroupProps,
@@ -78,7 +78,7 @@ const buildSections = (
 		right: ReactNode = null
 
 	Children.toArray(children).forEach(child => {
-		if (isValidElement<ButtonSectionProps>(child) && child.type === ButtonSection) {
+		if (isValidElement<ButtonSection.Props>(child) && child.type === ButtonSection) {
 			const isLeft = 'left' in child.props && !!child.props.left,
 				taken = isLeft ? left : right
 
@@ -95,27 +95,10 @@ const buildSections = (
 		label.push(child)
 	})
 
-	const content = (
-		<Box as="span" { ...styles('label') }>
-			{ label }
-		</Box>
-	)
+	const content = <span { ...styles('label') }>{ label }</span>
 
 	if (!left && !right) return content
 	return <>{ left }{ content }{ right }</>
-}
-
-const getTextFromChildren = (children: ReactNode): string => {
-	let text = ''
-
-	Children.toArray(children).forEach(child => {
-		if (typeof child === 'string' || typeof child === 'number')
-			text += `${child}`
-		else if (isValidElement<ButtonSectionProps>(child) && 'children' in child.props)
-			text += getTextFromChildren(child.props?.children as ReactNode)
-	})
-
-	return text.trim()
 }
 
 export const Button = polymorphic<ButtonSpecs>(_props => {
@@ -124,7 +107,6 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 	const styles = useStyles(NAME, { classes, props })
 
 	const {
-		as,
 		children,
 		disabled,
 		fullWidth,
@@ -136,7 +118,10 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 		...rest
 	} = props
 
-	const ariaLabel = getTextFromChildren(children),
+	const { as, others } = extractOtherProps(rest)
+	const buttonCxtValue = useMemo(() => ({ displayName: NAME, unstyled }), [unstyled])
+
+	const ariaLabel = extractChildrenText(children),
 		aria = { label: !!ariaLabel.length ? ariaLabel : undefined }
 
 	const data = {
@@ -158,7 +143,7 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 		</ButtonProvider>
 	)
 
-	if ('href' in rest) {
+	if ('href' in others) {
 		// narrows `rest` typing (`LinkButtonProps | NativeButtonProps`)
 		// by excluding `NativeButtonProps` from `rest`
 		// this allows `rest` to be properly typed
@@ -168,7 +153,7 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 				as={ Link }
 				attributes={ { aria, data } }
 				{ ...styles('root') }
-				{ ...rest as Extract<typeof rest, LinkButtonProps> }
+				{ ...others as Extract<typeof others, LinkButtonProps> }
 			>
 				{ inner }
 			</Box>
@@ -180,7 +165,7 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 			as={ as }
 			attributes={ { aria, data } }
 			{ ...styles('root') }
-			{ ...rest }
+			{ ...others }
 		>
 			{ inner }
 		</Box>
