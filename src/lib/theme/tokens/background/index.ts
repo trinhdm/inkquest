@@ -7,6 +7,7 @@ export interface BackgroundTokens {
 	surface: string
 	card: { base: string; hover: string }
 	control: string
+	gradient: string
 }
 
 export const getBackgroundTokens = (config: ThemeConfig): BackgroundTokens => {
@@ -28,8 +29,9 @@ export const getBackgroundTokens = (config: ThemeConfig): BackgroundTokens => {
 		surface: colors.theme('200'),
 		card: {
 			base: colors.get.card,
-			hover: colors.theme('400')
+			hover: colors.theme('400'),
 		},
 		control: alias.background.card(),
+		gradient: `linear-gradient(135deg, ${colors.theme('500')}, ${colors.theme('200')})`,
 	}
 }
