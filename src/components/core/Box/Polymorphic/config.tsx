@@ -4,7 +4,7 @@ import {
 	type SubcomponentsBase,
 } from './factory'
 
-import type { AsPolymorphic, Specs } from './specs.types'
+import type { InferComponentSpec, IsPolymorphic, Specs } from './specs.types'
 import type { PolymorphicProps, PropertiesBase } from './polymorphic'
 import type { ElementType, ReactElement } from 'react'
 
@@ -12,12 +12,12 @@ const polymorphicFactory = <T extends Specs>(
 	target: Parameters<typeof factory<T>>[0],
 	classes?: Record<string, string>
 ) => {
-	type C = NonNullable<AsPolymorphic<T>['as']>
+	type C = InferComponentSpec<T, ElementType>
 	type P<U> = PolymorphicProps<T['props'], U>
 
-	type _Component = T extends { specIs: { compound: true } }
-		? (props: P<never>) => ReactElement
-		: <U extends ElementType = C>(props: P<U>) => ReactElement
+	type _Component = IsPolymorphic<T> extends true
+		? <U extends ElementType = C>(props: P<U>) => ReactElement
+		: (props: P<never>) => ReactElement
 
 	type _Subcomponents = SubcomponentsBase<T>
 	type _Methods = MethodsBase<T, _Component, P<C>>

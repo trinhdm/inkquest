@@ -22,10 +22,7 @@ type _Tag<C> = [C] extends [undefined] ? 'div' : NonNullable<C>
 export type PropertiesBase<P = object> =
 	Pick<FunctionComponent<P>, 'displayName'>
 
-export type PolymorphicProps<
-	P,
-	C,
-> =
+export type PolymorphicProps<P, C> =
 	& Omit<SpecsContract, 'props'>
 	& {
 		as?: 'as' extends keyof P ? P['as'] : C

@@ -11,7 +11,7 @@ const buildThemeTokens = <K extends ColorScheme>(
 	prefix?: string
 ): SchemeTokenList<K>[K] => {
 	const tokens = {
-		theme: config.name,
+		theme: `${config.name}`,
 		accent: Tokens.accent(config),
 		color: Tokens.color(config),
 		background: Tokens.background(config),
@@ -35,6 +35,8 @@ const buildStaticTokens = <K extends keyof ThemeTokens>(
 			radius: Tokens.border.radius(),
 		},
 		motion: Tokens.motion(),
+
+		...Tokens.layout(),
 	}
 
 	return tokenGenerator(tokens, prefix)

@@ -3,6 +3,7 @@ import { useTheme } from '@/providers/ThemeProvider'
 import { getClassName } from './getClassName'
 import { getStyles } from './getStyle'
 import { keyHasValue, pluralizeKeys } from '@/utils/helpers'
+import type { ClassValue } from 'clsx'
 import type { SiteThemeConfig, ThemeCSSConfig } from '@/lib/theme'
 import type { SpecAttributes } from '@/types/shared'
 import type { PluralizeKeys } from '@/types/utils'
@@ -19,7 +20,9 @@ interface SelectorArgs {
 		isRoot: boolean
 		isUnstyled: boolean
 	}
-	config?: SpecAttributes
+	config?: SpecAttributes & {
+		global: ClassValue
+	}
 	selector: string
 }
 

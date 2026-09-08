@@ -1,50 +1,42 @@
 import {
 	memo,
 	type ComponentType,
+	type CSSProperties,
 	type NamedExoticComponent,
 	type ReactNode,
 } from 'react'
 
 import { setDefaultProps } from '@/lib/registries'
-import type { AsPolymorphic, InferComponentSpec, Specs } from './specs.types'
+import type { AsPolymorphic, IsPolymorphic, Specs } from './specs.types'
 
-type FactoryProps<S extends Specs> =
+type _FactoryProps<S extends Specs> =
 	S['props']
 	& AsPolymorphic<S>
 	& {
 		children?: ReactNode
+		className?: string
+		style?: CSSProperties
 		unstyled?: boolean
 	}
 
-// only pull `ref` from Specs when the component's own props don't already
-// declare one — letting a component override, instead of intersecting with,
-// the auto-derived `Ref<TagElement<T>>` (see Box/Spec audit, Button.tsx)
-type _SpecsPickKeys<S extends Specs> =
-	| 'attributes'
-	| 'id'
-	| ('ref' extends keyof S['props'] ? never : 'ref')
+type _OmitAs<P> =
+	P extends unknown ? Omit<P, 'as'> : never
 
-type _OldFactoryProps<S extends Specs> =
-	& Pick<S, _SpecsPickKeys<S>>
-	& FactoryProps<S>
-
-type _DefaultComponent<S extends Specs> = {
-	props?: Partial<S['props']>
-		& (S extends { specIs: { compound: true } }
-			? { as?: never }
-			: unknown extends InferComponentSpec<S>
-					? Required<AsPolymorphic<S>>
-					: AsPolymorphic<S>)
+type _MethodSetDefault<S extends Specs> = {
+	props?: Partial<_OmitAs<S['props']>>
+		& (IsPolymorphic<S> extends true
+			? Required<AsPolymorphic<S>>
+			: { as?: never })
 }
 
 type _Component<S extends Specs> =
-	NamedExoticComponent<_OldFactoryProps<S>>
+	NamedExoticComponent<_FactoryProps<S>>
 
 export interface MethodsBase<
 	S extends Specs,
 	C = _Component<S>,
-	P = FactoryProps<S>,
-	D = _DefaultComponent<S>
+	P = _FactoryProps<S>,
+	D = _MethodSetDefault<S>
 > {
 	classes?: Record<string, string>
 	setDefaults: (args: D) => D
@@ -67,7 +59,7 @@ export const factory = <
 	T extends Specs,
 	C extends object = _FactoryComponent<T>
 >(
-	target: (props: FactoryProps<T>) => ReactNode,
+	target: (props: _FactoryProps<T>) => ReactNode,
 	classes?: Record<string, string>
 ) => {
 	type FC = _FactoryComponent<T>
@@ -93,10 +85,9 @@ export const factory = <
 		const TempComponent = BaseComponent as ComponentType<P>,
 			ExtendWith = (extended: P) => <TempComponent { ...props } { ...extended } />
 
-		ExtendWith.displayName = `WithProps(${BaseComponent.displayName})`
-		ExtendWith.setDefaults = BaseComponent.setDefaults
-
-		return ExtendWith as unknown as FC
+		return Object.assign(ExtendWith, BaseComponent, {
+			displayName: `WithProps(${BaseComponent.displayName})`,
+		}) as unknown as FC
 	}
 
 	return BaseComponent as unknown as C

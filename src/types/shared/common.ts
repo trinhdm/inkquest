@@ -32,3 +32,9 @@ export type CSSUnit<U extends Unit = Unit> =
 
 export type EvenNumber =
 	number & { readonly __brand: unique symbol }
+
+
+export interface StyleContext {
+	classes?: Record<string, string>
+}
+

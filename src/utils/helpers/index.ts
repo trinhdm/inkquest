@@ -1,4 +1,4 @@
 export * from './objects'
 export * from './strings'
 export * from './checks'
-export { filterProps, styleProps } from './props'
+export * from './props'

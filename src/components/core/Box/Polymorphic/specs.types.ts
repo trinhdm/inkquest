@@ -1,6 +1,8 @@
 import type { CSSProperties, ElementType, Ref } from 'react'
 import type { CSSVars, SpecAttributes } from '@/types/shared'
 
+// specs
+
 export interface SpecsContract {
 	attributes?: SpecAttributes
 	classNames?: string
@@ -49,20 +51,21 @@ export type Specs<T = unknown, P extends object = object> =
 	| _CompoundSpecs<P>
 
 
+// polymorphism
 
-export type InferComponentSpec<S> =
-	S extends { default: { component: infer C } }
+export type IsPolymorphic<S> =
+	S extends { default: { component: ElementType } } ? true : false
+
+export type InferComponentSpec<S, Fallback = never> =
+	S extends { default: { component: infer C extends ElementType } }
 		? C
-		: unknown
+		: Fallback
 
 export type AsPolymorphic<S> =
-	S extends { specIs: { compound: true } }
-		? { as?: never }
-		: {
-			as?: unknown extends InferComponentSpec<S>
-				? ElementType
-				: InferComponentSpec<S>
-		}
+	IsPolymorphic<S> extends true
+		? { as?: InferComponentSpec<S> }
+		: { as?: never }
+
 
 type _CommonTag =
 	| 'a' | 'button' | 'div' | 'nav' | 'span' | 'svg'
