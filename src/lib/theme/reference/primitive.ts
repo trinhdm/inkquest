@@ -42,7 +42,7 @@ const baseFontTokens = {
  * so adding/removing a scale step never requires touching a type by hand.
  */
 export const primitiveTokens = {
-	size: token.path<`${number}`>(baseVar, 'size'),
+	space: token.path<`${number}`>(baseVar, 'space'),
 
 	...baseColorTokens,
 	...baseFontTokens,

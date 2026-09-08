@@ -8,9 +8,7 @@ import {
 } from '@/lib/theme'
 
 export const DEFAULT_THEME: SiteTheme = {
-	scale: {
-		size: BASE_SCALE,
-	},
+	scale: { space: BASE_SCALE },
 
 	colors: COLOR_TOKENS,
 

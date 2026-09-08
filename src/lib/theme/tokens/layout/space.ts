@@ -1,33 +1,24 @@
 import { base } from '../../reference'
+import type { TokenVariableShape } from '../../types'
 
 export interface SpaceTokens {
-	inset: {
-		min: string
-		xxs: string
-		xs: string
-		sm: string
-		md: string
-		lg: string
-		xl: string
-		xxl: string
-		max: string
+	chip: TokenVariableShape
+	icon: string
+
+	group: {
+		base: TokenVariableShape
+		lg: TokenVariableShape
 	}
+	menu: TokenVariableShape
 }
 
 export const getSpaceTokens = (): SpaceTokens => ({
-	inset: {
-		min: base.size('4'),
-		xxs: base.size('8'),
-		xs: base.size('12'),
-		sm: base.size('16'),
-		md: base.size('24'),
-		lg: base.size('32'),
-		xl: base.size('36'),
-		xxl: base.size('40'),
-		max: base.size('44'),
-	},
-	// stack: {},
-	// inline: {},
+	chip: `${base.space('1')} ${base.space('2')}`,
+	icon: base.space('1'),
 
-	// gutter: {}
+	menu: `${base.space('2')} ${base.space('6')}`,
+	group: {
+		base: `${base.space('3')} ${base.space('4')}`,
+		lg: `${base.space('4')} ${base.space('5')}`,
+	},
 })

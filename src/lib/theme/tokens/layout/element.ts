@@ -20,19 +20,22 @@ export interface ElementTokens {
 
 export const getElementTokens = (): ElementTokens => ({
 	icon: {
-		sm: base.size('12'),
-		md: base.size('16'),
-		lg: base.size('20'),
+		sm: base.space('3'),
+		md: base.space('4'),
+		lg: base.space('5'),
 	},
 	dot: {
-		sm: base.size('6'),
-		md: base.size('8'),
-		lg: base.size('10'),
+		sm: base.space('1'),
+		md: base.space('2'),
+		lg: base.space('3'),
 	},
 	tile: {
-		sm: base.size('24'),
-		md: base.size('32'),
-		lg: base.size('40'),
-		// xl: base.size('56'),
+		sm: base.space('6'),
+		md: base.space('7'),
+		lg: base.space('8'),
+		// xl: base.space('56'),
 	},
+
+	// navbar: base.space('11'),
+	// subnav: base.space('8'),
 })

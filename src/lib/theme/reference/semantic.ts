@@ -55,9 +55,6 @@ export const semanticTokens = {
 	opacity: {
 		disabled: token.endPath(aliasVar, 'opacity', 'disabled'),
 	},
-	space: {
-		inset: token.path<SpaceTokens['inset']>(aliasVar, 'space', 'inset'),
-	},
 	motion: {
 		interactive: token.endPath(aliasVar, 'motion', 'interactive'),
 	},

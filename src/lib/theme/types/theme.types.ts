@@ -34,7 +34,7 @@ export interface SiteTheme {
 
 	// tokens: SemanticTokens
 
-	scale: { size: number }
+	scale: { space: number }
 	colors:
 		& { [K in FlatColorKey]: HexCode }
 		& { [K in ColorScaleKey]: readonly HexCode[] }

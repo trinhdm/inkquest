@@ -1,5 +1,5 @@
-import { alias, base } from '../../reference'
-import type { TokenVariableShape } from '../../types'
+import { base } from '../../reference'
+// import type { TokenVariableShape } from '../../types'
 
 export interface BreakpointTokens {
 	min: string
@@ -22,58 +22,56 @@ export const getBreakpointTokens = (): BreakpointTokens => ({
 })
 
 export interface ContainerTokens {
-	app: {
-		width: string
-		padding: string
-		// gap: string
-		// background: string
-		// radius: string
-	},
-	// card: {
-	// 	width: string
-	// 	padding: string
-	// 	gap: string
-	// 	background: string
-	// 	radius: string
-	// }
+	block: string
+	page: string
 }
 
-// screen width -> content width
 export const getContainerTokens = (): ContainerTokens => ({
-	app: {
-		width: alias.breakpoint('lg'),
-		padding: `${base.size('48')} ${base.size('40')}`,
-	},
+	block: base.screen('600'),
+	page: base.screen('1280'),
 })
 
-export const getComponentTokens = () => ({
-	control: {
-		// width: alias.breakpoint('lg'),
-		// padding: `${base.size('48')} ${base.size('40')}`,
-		border: alias.border('strong'),
-		background: alias.background.card(),
-		color: alias.color.text('primary'),	//active
-	},
-	tile: {
-		// width: alias.breakpoint('lg'),
-		// padding: `${base.size('48')} ${base.size('40')}`,
-		border: alias.border(),
-		background: `linear-gradient(135deg, var(--ink-4), var(--ink-1))`,
-	},
-})
-
+interface LayoutItemTokens {
+	gap: {
+		kicker: string
+		lede: string
+		cta: string
+	}
+	padding: string
+}
 
 export interface GridTokens {
-	container: {
-		app: string
-		// page: string
-		// compact: string
-	}
+	gutter: string
+	hero: LayoutItemTokens
+	section: LayoutItemTokens
+
+	navbar: { size: string }
+	subnav: { size: string }
 }
 
-// screen width -> content width
 export const getGridTokens = (): GridTokens => ({
-	container: {
-		app: alias.breakpoint('lg'),
-	}
+	gutter: base.space('10'),
+
+	hero: {
+		padding: base.space('16'),
+
+		gap: {
+			kicker: base.space('6'),
+			lede: base.space('7'),
+			cta: base.space('8'),
+		},
+	},
+
+	section: {
+		padding: base.space('15'),
+
+		gap: {
+			kicker: base.space('6'),
+			lede: base.space('7'),
+			cta: base.space('8'),
+		},
+	},
+
+	navbar: { size: base.space('13') },
+	subnav: { size: base.space('10') },
 })

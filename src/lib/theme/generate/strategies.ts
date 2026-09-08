@@ -69,13 +69,20 @@ const arrayStrategy: GeneratorStrategy<unknown[]> = {
 const scaleStrategy: GeneratorStrategy<number> = {
 	matches: ({ path, value }) => path[0] === 'scale' && typeof value === 'number',
 	run: ({ path, prefix, value }) => {
-		const steps = Array.from({ length: 12 }, (_, i) => i + 1)
 		const pathname = path.slice(1)
+		const steps = Array.from({ length: 16 }, (_, i) => {
+			const j = i + 1
 
-		return steps.flatMap(v => {
+			if (j <= 10) return j
+			else if (j <= 15) return 10 + (j - 10) * 2
+			return 20 + (j - 15) * 4
+		})
+
+		return steps.flatMap((v, i) => {
 			const step = v * value,
-				output = rem(step)
-			const name = formatToken({ path: [...pathname, `${step}`], prefix, value: output })
+				output = rem(step),
+				name = formatToken({ path: [...pathname, `${i + 1}`], prefix, value: output })
+
 			return toEntry({ name, value: output })
 		})
 	}
