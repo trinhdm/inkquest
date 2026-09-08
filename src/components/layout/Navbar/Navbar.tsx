@@ -34,30 +34,30 @@ export const Navbar = polymorphic<NavbarSpecs>(_props => {
 			{ ...styles('root') }
 			{ ...rest }
 		>
-			<Box { ...styles('wrapper') }>
-				<Box { ...styles('inner') }>
-					<Box { ...styles('col') }>
+			<div { ...styles('wrapper') }>
+				<div { ...styles('inner') }>
+					<div { ...styles('col') }>
 						<Link href="/">logo</Link>
-					</Box>
+					</div>
 
 					{ !!navItems.length && (
-						<Box { ...styles('col') }>
+						<div { ...styles('col') }>
 							<Menu
 								items={ navItems }
 								routes={ routes }
 								{ ...styles('menu') }
 							/>
-						</Box>
+						</div>
 					) }
 
-					<Box { ...styles('col') }>
+					<div { ...styles('col') }>
 						<Button.Group hasPriority={ false }>
 							<Button variant="ghost">Log in</Button>
 							<Button>Sign up</Button>
 						</Button.Group>
-					</Box>
-				</Box>
-			</Box>
+					</div>
+				</div>
+			</div>
 		</Box>
 	)
 }, classes)

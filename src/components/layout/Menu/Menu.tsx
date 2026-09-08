@@ -1,4 +1,5 @@
 import { useProps, useStyles } from '@/hooks'
+import { extractOtherProps } from '@/utils/helpers'
 import { Box, polymorphic } from '@/components/core/Box'
 import { MenuItem } from './MenuItem'
 import { NavRoute, type NavigationItem } from '@/utils/navigation'
@@ -23,13 +24,14 @@ export const Menu = polymorphic<MenuSpecs>(_props => {
 	const styles = useStyles(NAME, { classes, props })
 
 	const {
-		as,
+		className,
 		hasDropdowns,
 		items,
 		routes,
 		...rest
 	} = props
 
+	const { others } = extractOtherProps(rest)
 	// const isActive = pathname === route
 
 	return (
@@ -37,11 +39,12 @@ export const Menu = polymorphic<MenuSpecs>(_props => {
 			as={ DEFAULT_TAG }
 			role="menubar"
 			{ ...styles('root') }
-			{ ...rest }
+			{ ...others }
 		>
 			{ items?.map(item => (
 				<MenuItem
 					key={ item.label }
+					className={ className }
 					hasDropdowns={ hasDropdowns }
 					{ ...item }
 				/>

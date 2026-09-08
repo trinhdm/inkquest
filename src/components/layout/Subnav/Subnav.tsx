@@ -28,19 +28,16 @@ export const Subnav = polymorphic<SubnavSpecs>(_props => {
 	return (
 		<Box
 			as={ as }
-			// attributes={ {
-			// 	data: { block: !!fullWidth || null },
-			// } }
 			{ ...styles('root') }
 			{ ...rest }
 		>
-			<Box { ...styles('wrapper') }>
-				<Box { ...styles('inner') }>
+			<div { ...styles('wrapper') }>
+				<div { ...styles('inner') }>
 					{ !!navItems.length && (
 						<>
-							<Box as="span" { ...styles('label') }>
+							<span { ...styles('label') }>
 								{ navItems[0].label }
-							</Box>
+							</span>
 							<Menu
 								hasDropdowns={ false }
 								items={ navItems }
@@ -49,8 +46,8 @@ export const Subnav = polymorphic<SubnavSpecs>(_props => {
 							/>
 						</>
 					) }
-				</Box>
-			</Box>
+				</div>
+			</div>
 		</Box>
 	)
 }, classes)

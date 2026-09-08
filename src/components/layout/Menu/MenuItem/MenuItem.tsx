@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 // import { usePathname } from 'next/navigation'
 import { useProps, useStyles, useOutsideClick } from '@/hooks'
-import { toKebabCase } from '@/utils/helpers'
+import { extractOtherProps, toKebabCase } from '@/utils/helpers'
 import { Box, polymorphic } from '@/components/core/Box'
 import { Button, Icon } from '@/components/core'
 import { Menu } from '../Menu'
@@ -61,7 +61,7 @@ export const MenuItem = polymorphic<MenuItemSpecs>(_props => {
 	}, [])
 
 	const {
-		as,
+		// as,
 		hasDropdowns,
 		label,
 		menu,
@@ -69,6 +69,8 @@ export const MenuItem = polymorphic<MenuItemSpecs>(_props => {
 		routes,
 		...rest
 	} = props
+
+	const { as, others } = extractOtherProps(rest)
 
 	const isDropdown = !!menu?.length
 
@@ -131,15 +133,15 @@ export const MenuItem = polymorphic<MenuItemSpecs>(_props => {
 	}
 
 	const wrappedLabel = MenuLabel({ label, route }, styles)
+	const sharedProps = {
+		role: 'none',
+		...styles('root'),
+		...others,
+	}
 
 	if (!isDropdown) {
 		return (
-			<Box
-				as={ as }
-				role="none"
-				{ ...styles('root') }
-				{ ...rest }
-			>
+			<Box as={ as } { ...sharedProps }>
 				{ wrappedLabel }
 			</Box>
 		)
@@ -150,9 +152,7 @@ export const MenuItem = polymorphic<MenuItemSpecs>(_props => {
 			<Box
 				as={ DEFAULT_TAG }
 				key={ item.label }
-				role="none"
-				{ ...styles('root') }
-				{ ...rest }
+				{ ...sharedProps }
 			>
 				{ MenuLabel(item, styles) }
 			</Box>
@@ -167,12 +167,10 @@ export const MenuItem = polymorphic<MenuItemSpecs>(_props => {
 		<Box
 			as={ as }
 			ref={ itemRef }
-			role="none"
 			onKeyDown={ handleKeyDown }
 			onMouseEnter={ handleMouseEnter }
 			onMouseLeave={ handleMouseLeave }
-			{ ...styles('root') }
-			{ ...rest }
+			{ ...sharedProps }
 		>
 			{ wrappedLabel }
 

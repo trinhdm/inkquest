@@ -1,32 +1,48 @@
 
 .inkq-navbar {
-	// background-color: var(--inkq-background-page);
-	margin: 0 auto;
-	max-width: var(--inkq-container-app-width);
-	padding: var(--inkq-container-app-padding);
-	padding-block: 0;
+	$name: &;
+
+    align-items: center;
+	border-bottom: 1px solid var(--inkq-border);
+	display: flex;
+	min-height: var(--inkq-navbar-size);
+	padding-block: var(--inkq-pad-menu);
 	position: relative;
 	z-index: 20;
+
+	&__wrapper {
+		margin: 0 auto -1px;
+		max-width: var(--inkq-container-page);
+		padding-inline: var(--inkq-gutter);
+		width: 100%;
+	}
 
 	&__inner {
 		align-items: center;
 		display: grid;
-		grid-template-columns: 1fr auto 1fr;
-		position: relative;
+		grid-template-columns: repeat(auto-fit, minmax(var(--screen-size-320), 1fr));
+		justify-content: center;
+
+		&:has(#{$name}__col:nth-child(3):last-child) {
+			grid-template-columns: 1fr auto 1fr;
+		}
 	}
 
 	&__col {
-		&:first-of-type {
-			justify-self: start;
-		}
+		justify-self: center;
 
-		&:last-of-type {
-			justify-self: end;
-		}
-	}
+		&:not(:only-child) {
+			&:first-of-type {
+				justify-self: start;
+			}
 
-	&:where([data-block]) {
-		display: block;
-		width: 100%;
+			&:nth-child(2):nth-last-child(2) {
+				justify-self: center;
+			}
+
+			&:last-of-type {
+				justify-self: end;
+			}
+		}
 	}
 }
