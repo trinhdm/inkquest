@@ -19,13 +19,13 @@ const baseColorTokens = {
    smoke: token.path<ThemeColor<'smoke'>>(baseVar, 'smoke'),
 
    // static colors
-   red: token.endPath(baseVar, 'red'),
-   green: token.endPath(baseVar, 'green'),
-   yellow: token.endPath(baseVar, 'yellow'),
-   blue: token.endPath(baseVar, 'blue'),
-   white: token.endPath(baseVar, 'white'),
-   gray: token.endPath(baseVar, 'gray'),
-   black: token.endPath(baseVar, 'black'),
+   red: token.endPath(baseVar, 'red', '100'),
+   green: token.endPath(baseVar, 'green', '100'),
+   yellow: token.endPath(baseVar, 'yellow', '100'),
+   blue: token.endPath(baseVar, 'blue', '100'),
+   white: token.endPath(baseVar, 'white', '100'),
+   gray: token.endPath(baseVar, 'gray', '100'),
+   black: token.endPath(baseVar, 'black', '100'),
 }
 
 const baseFontTokens = {

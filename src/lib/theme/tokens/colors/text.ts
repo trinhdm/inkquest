@@ -4,7 +4,7 @@ import { byScheme } from '../utils'
 export interface TextColorTokens {
 	text: {
 		base: string
-		primary: string
+		// primary: string
 		secondary: string
 		tertiary: string
 		inverse: string
@@ -25,18 +25,18 @@ export const getTextColorTokens = (
 
 	return {
 		text: {
-			base: colors.alt('100'),
+			base: alias.secondary(),
 			inverse: colors.theme('100'),
-			primary: alias.accent.secondary(),
-			secondary: alias.accent.secondary('active'),
-			tertiary: alias.accent.secondary('shade'),
+			// primary: alias.secondary(),
+			secondary: alias.secondary('shade'),
+			tertiary: alias.secondary('dim'),
 			on: {
 				accent: alias.color.text('inverse'),
 			},
 		},
 		link: {
-			base: alias.accent.secondary('shade'),
-			hover: alias.accent.secondary('tint'),
+			base: alias.secondary('shade'),
+			hover: alias.secondary('tint'),
 		},
 	}
 }

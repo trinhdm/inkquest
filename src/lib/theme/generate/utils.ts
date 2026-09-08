@@ -9,7 +9,9 @@ export const isSkippable = (value: unknown): boolean =>
 type Position = `${number}00` | `0${number}`
 
 const isHexColorValue = (value: unknown): value is string =>
-	typeof value === 'string' && value.startsWith('#')
+	typeof value === 'string'
+	&& value.startsWith('#')
+	&& (value.length === 4 || value.length === 7)
 
 export const labelStep = (index: number, value?: unknown): Position | `${number}` => {
 	const position = index + 1,
@@ -38,9 +40,13 @@ export const toEntry = ({ name, value }: Pick<TokenEntry, 'name'> & { value: unk
 
 export const validate = () => {
 	type N = number
+
 	return {
+		hex: (value: unknown) => isHexColorValue(value),
+		numeric: {
 		integer: (num: N) => num % 1 === 0,
 		percent: (num: N) => num > 0 && num <= 1,
 		weight: (num: N) => num > 0 && num % 100 === 0,
+		},
 	}
 }

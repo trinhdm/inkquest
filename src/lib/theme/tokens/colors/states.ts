@@ -22,15 +22,15 @@ export const getStateHueTokens = (
 
 	return {
 		action: {
-			base: alias.accent.primary(),
-			hover: alias.accent.primary('hover'),
-			active: alias.accent.primary('active'),
-			select: alias.accent.primary('tint'),
-			disable: alias.accent.primary('muted'),
+			base: alias.accent(),
+			hover: alias.accent('hover'),
+			active: alias.accent('active'),
+			select: alias.accent('tint'),
+			disable: alias.accent('muted'),
 		},
 		control: {
 			base: alias.color.text('tertiary'),
-			hover: alias.color.text('primary'),
+			hover: alias.color.text(),
 		},
 		danger: modColor('red'),
 		success: modColor('green'),

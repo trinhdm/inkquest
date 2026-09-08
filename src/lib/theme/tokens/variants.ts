@@ -35,7 +35,7 @@ const TONE_ACCESSORS: Record<Tone, ToneAccessor> = {
 		subtle: () => alias.background.card(),
 		dim: () => alias.border(),
 	},
-	action: fromMixture(alias.accent.primary),
+	action: fromMixture(alias.accent),
 	danger: fromMixture(alias.color.danger),
 	warning: fromMixture(alias.color.warning),
 	success: fromMixture(alias.color.success),
@@ -80,7 +80,7 @@ const SPECIAL_VARIANTS: Record<'light' | 'dark', (tone: ToneAccessor) => Partial
 		border:		'currentColor',
 		color: {
 			base:	tone.base(),
-			hover:	alias.color.text('primary'),
+			hover:	alias.color.text(),
 		},
 	}),
 	dark: tone => ({
@@ -88,7 +88,7 @@ const SPECIAL_VARIANTS: Record<'light' | 'dark', (tone: ToneAccessor) => Partial
 		border:		tone.subtle(),
 		color: {
 			base:	tone.emphasis(),
-			hover:	alias.color.text('primary'),
+			hover:	alias.color.text(),
 		},
 	}),
 }

@@ -29,11 +29,20 @@ export const COLOR_TOKENS = {
 	ink: ['#0E0E10', '#17171A', '#1B1B1F', '#232327', '#2A2A2E', '#3A3A3F'],
 	paper: ['#FFFAFA', '#F8F6F2', '#F2F0EC', '#EAE7E0', '#DEDBD4', '#C9C6BF'],
 
-	oxblood: ['#E8483F', '#D63A31', '#C22F27', '#3A211F', '#FBE3E1'],
-	crimson: ['#B02B27', '#9C231F', '#8A1B18', '#3A211F', '#FBE3E1'],
+	oxblood: ['#E8483F'],
+	crimson: ['#B02B27'],
 
-	ghost: ['#F2F0EC', '#B9B7B2', '#8B8B90'],
-	smoke: ['#777570', '#55555C', '#18181A'],
+	ghost: ['#F2F0EC'],
+	smoke: ['#777570'],
+
+	// ink: ['#0E0E10'],
+	// paper: ['#FFFAFA'],
+
+	// oxblood: ['#E8483F', '#D63A31', '#C22F27', '#3A211F', '#FBE3E1'],
+	// crimson: ['#B02B27', '#9C231F', '#8A1B18', '#3A211F', '#FBE3E1'],
+
+	// ghost: ['#F2F0EC', '#B9B7B2', '#8B8B90'],
+	// smoke: ['#777570', '#55555C', '#18181A'],
 
 	red: '#C5120D',
 	green: '#3FB68A',
@@ -44,7 +53,10 @@ export const COLOR_TOKENS = {
 	black: '#000',
 } as const
 
-export const THEME_SCHEMES = ['ink', 'paper'] as const satisfies readonly (keyof typeof COLOR_TOKENS)[]
+export const THEME_SCHEMES = [
+	'ink',
+	'paper',
+] as const satisfies readonly (keyof typeof COLOR_TOKENS)[]
 
 export const BASE_SCALE = 4 as const
 

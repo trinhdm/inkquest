@@ -4,6 +4,14 @@ import { colorMix, fromOklch, scaleLCH } from '../css'
 import { isObject } from '@/utils/helpers'
 import type { ColorScheme, StaticColorNames, TokenStateHues } from '../types'
 
+const MIXMOD_DEFAULT_PERCENTS: ColorModArgs['percents'] = {
+	tint: 20,
+	shade: 30,
+	bright: 50,
+	dim: 80,
+	muted: 85,
+}
+
 const getThemeMixer = () => ({
 	dark: base.white(),
 	light: base.black(),
@@ -15,15 +23,17 @@ const isStaticColor = (color: string): color is StaticColorNames =>
 interface ColorModArgs {
 	alt: ColorScheme
 	color: string
+	percents?: Record<Extract<keyof TokenStateHues, 'bright' | 'dim' | 'muted' | 'shade' | 'tint'>, number>
 	scheme: ColorScheme
 }
 
-const colorMod = ({ alt, color, scheme }: ColorModArgs): TokenStateHues => {
+const colorMod = ({ alt, color, percents, scheme }: ColorModArgs): TokenStateHues => {
 	const target = isStaticColor(color) ? base[color]() : color,
 		themeMixer = getThemeMixer()
 
-	const lch = { l: -0.045, c: 0.005, h: -0.35 }
+	const lch = { l: -0.0325, c: 0.00575, h: -0.25 }
 
+	const amount = percents ?? MIXMOD_DEFAULT_PERCENTS
 	const mixer = {
 		blend: alias.background.page(),
 		shade: themeMixer[alt],
@@ -35,11 +45,11 @@ const colorMod = ({ alt, color, scheme }: ColorModArgs): TokenStateHues => {
 		base: target,
 		hover: fromOklch(target, lch),
 		active: fromOklch(target, scaleLCH(lch, 2)),
-		tint: colorMix(mixer.tint, 20, target),
-		shade: colorMix(mixer.shade, 30, target),
-		bright: colorMix(mixer.tint, 50, target),
-		dim: colorMix(mixer.shade, 80, target),
-		muted: colorMix(mixer.blend, 85, target),
+		tint: colorMix(mixer.tint, amount.tint, target),
+		shade: colorMix(mixer.shade, amount.shade, target),
+		bright: colorMix(mixer.tint, amount.bright, target),
+		dim: colorMix(mixer.shade, amount.dim, target),
+		muted: colorMix(mixer.blend, amount.muted, target),
 	}
 }
 
@@ -52,7 +62,11 @@ const resolveScheme = <T>(config: ThemeConfig, values?: Record<ColorScheme, T>) 
 		? values[scheme]
 		: undefined
 
-	const boundModColor = (color: string) => colorMod({ alt, color, scheme })
+	const boundModColor = (
+		color: ColorModArgs['color'],
+		percents?: ColorModArgs['percents']
+	) => colorMod({ alt, color, percents, scheme })
+
 	const baseTheme = base[name],
 		baseAlt = base[ALT_THEME[name]]
 

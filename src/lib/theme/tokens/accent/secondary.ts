@@ -12,8 +12,16 @@ export const getSecondaryTokens = (config: ThemeConfig): SecondaryTokens => {
 		light: base.smoke,
 	}
 
+	const modPercents = {
+		tint: 2.5,
+		shade: 18,
+		bright: 5,
+		dim: 22,
+		muted: 12.5,
+	}
+
 	const { colors, modColor } = byScheme(config, secondaryColors),
-		hues = modColor(colors.get('100'))
+		hues = modColor(colors.get('100'), modPercents)
 
 	return hues
 }

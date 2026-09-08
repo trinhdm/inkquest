@@ -9,6 +9,14 @@ const primitiveStrategy: GeneratorStrategy<string> = {
 	run: (args) => toEntry({ name: formatToken(args), value: args.value }),
 }
 
+const hexCodeStrategy: GeneratorStrategy<string> = {
+	matches: ({ value }) => validate().hex(value),
+	run: ({ path, value }) => toEntry({
+		name: formatToken({ path: [...path, labelStep(0, value)] }),
+		value,
+	})
+}
+
 const nestedObjectStrategy: GeneratorStrategy<Record<string, unknown>> = {
 	matches: ({ value }) => isObject(value),
 	run: ({ path, prefix, value }, generate) =>
@@ -30,7 +38,7 @@ const shorthandStrategy: GeneratorStrategy<Record<string, unknown>> = {
 const arrayStrategy: GeneratorStrategy<unknown[]> = {
 	matches: ({ value }) => Array.isArray(value),
 	run: ({ path, prefix, value }) => {
-		const is = validate()
+		const is = validate().numeric
 
 		return value.flatMap((v, i) => {
 			let output = v,
@@ -78,5 +86,6 @@ export const GENERATOR_STRATEGIES: GeneratorStrategy[] = [
 	arrayStrategy,
 	shorthandStrategy,
 	nestedObjectStrategy,
+	hexCodeStrategy,
 	primitiveStrategy,
 ]

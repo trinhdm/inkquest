@@ -2,8 +2,8 @@ import { getPrimaryTokens, type PrimaryTokens } from './primary'
 import { getSecondaryTokens, type SecondaryTokens } from './secondary'
 import type { ThemeConfig } from '../../themeConfig'
 
-export interface AccentTokens {
-	primary: PrimaryTokens
+export interface AccentTokens
+	extends PrimaryTokens {
 	secondary: SecondaryTokens
 }
 
@@ -12,7 +12,7 @@ export const getAccentTokens = (config: ThemeConfig): AccentTokens => {
 		secondaryColors = getSecondaryTokens(config)
 
 	return {
-		primary: primaryColors,
+		...primaryColors,
 		secondary: secondaryColors,
 	}
 }

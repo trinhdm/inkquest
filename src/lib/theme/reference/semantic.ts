@@ -7,10 +7,8 @@ import type {
 
 const themeTokens = {
 	theme: token.endPath(aliasVar, 'theme'),
-	accent: {
-		primary: token.optPath<AccentTokens['primary']>(aliasVar, 'accent', 'primary'),
+	accent: token.optPath<Omit<AccentTokens, 'secondary'>>(aliasVar, 'accent'),
 	secondary: token.optPath<AccentTokens['secondary']>(aliasVar, 'accent', 'secondary'),
-	}
 }
 
 const propertyTokens = {
