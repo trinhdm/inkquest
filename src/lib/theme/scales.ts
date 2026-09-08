@@ -66,14 +66,14 @@ export const LINE_HEIGHT_SCALE = {
 	loose:	1.7,
 } as const
 
-export const TRACKING_SCALE = {
-	xs:		'-0.03em',
-	sm:		'-0.01em',
-	md:		'0.02em',
-	lg:		'0.04em',
-	xl:		'0.06em',
-	xxl:	'0.1em',
-} as const
+export const LETTER_SPACING_SCALE = [
+	'-0.03em',
+	'-0.01em',
+	'0.02em',
+	'0.04em',
+	'0.06em',
+	'0.1em',
+] as const
 
 export const RADIUS_SCALE = [ 0, 6, 8, 12, 999 ] as const
 

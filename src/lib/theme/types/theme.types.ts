@@ -42,11 +42,12 @@ export interface SiteTheme {
 	fontFamily: Record<'black' | 'sans' | 'mono', string>
 	fontSize: number[]
 	fontWeight: number[]
-	lineHeight: Style<'lineHeight', ThemeLineHeight, 'normal'>
-	tracking: Style<'letterSpacing', ThemeSizeScale, 'md'>
+	lineHeight: StyleList<'lineHeight', ThemeLineHeight, 'normal'>
+	letterSpacing: `${number}${Unit}`[]
+	// tracking: StyleList<'letterSpacing', ThemeSizeScale, 'md'>
 
-	duration: Style<'transitionDuration', ThemeDuration, 'default'>
-	easing: Style<'transitionTimingFunction', ThemeEasing, BaseVarKey>
+	duration: StyleList<'transitionDuration', ThemeDuration, 'default'>
+	easing: StyleList<'transitionTimingFunction', ThemeEasing, BaseVarKey>
 
 	opacity: number[]
 	radius: number[]
@@ -100,7 +101,7 @@ type ThemeEasing =
 	| 'out'
 	| 'inOut'
 
-type StyleList<
+type StyleValues<
     Keys extends PropertyKey,
     V,
     Name extends PropertyKey = PropertyKey,
@@ -111,7 +112,7 @@ type StyleList<
 			? ConsistentValues<Keys, true, number extends V ? V : undefined>
 			: AtLeastOneKeyOf<Keys, V>
 
-type BaseStyle<
+type BaseStyleValues<
     V,
     Keys extends PropertyKey,
     RK extends Keys | undefined = undefined,
@@ -119,16 +120,16 @@ type BaseStyle<
 > =
 	| V
 	| (RK extends Keys
-		? Extract<StyleList<Keys, V, Name>, Record<RK, unknown>>
-		: StyleList<Keys, V, Name>)
+		? Extract<StyleValues<Keys, V, Name>, Record<RK, unknown>>
+		: StyleValues<Keys, V, Name>)
 
-type Style<
+type StyleList<
     P extends keyof CSSProperties,
 	Keys extends PropertyKey,
     RK extends Keys | undefined = undefined,
 	Name extends PropertyKey = PropertyKey,
 > =
-	BaseStyle<CSSProperties[P], Keys, RK, Name>
+	BaseStyleValues<CSSProperties[P], Keys, RK, Name>
 
 // consistent value helpers
 

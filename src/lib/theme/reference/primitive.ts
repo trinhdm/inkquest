@@ -2,7 +2,7 @@ import { baseVar, token } from './utils'
 import type { PaddedIndexLabels, ThemeColor } from '../types'
 import type {
 	FONT_FAMILY_SCALE, FONT_SIZE_SCALE, FONT_WEIGHT_SCALE,
-	LINE_HEIGHT_SCALE, TRACKING_SCALE,
+	LETTER_SPACING_SCALE, LINE_HEIGHT_SCALE,
 	DURATION_SCALE, EASE_SCALE,
 	OPACITY_SCALE, RADIUS_SCALE,
 	SCREEN_SCALE,
@@ -33,7 +33,7 @@ const baseFontTokens = {
 	fontSize: token.path<`${typeof FONT_SIZE_SCALE[number]}`>(baseVar, 'font', 'size'),
 	fontWeight: token.path<`${typeof FONT_WEIGHT_SCALE[number]}`>(baseVar, 'font', 'weight'),
 	lineHeight: token.path<keyof typeof LINE_HEIGHT_SCALE>(baseVar, 'line', 'height'),
-	tracking: token.path<keyof typeof TRACKING_SCALE>(baseVar, 'tracking'),
+	letterSpacing: token.path<PaddedIndexLabels<typeof LETTER_SPACING_SCALE>>(baseVar, 'letter', 'spacing'),
 }
 
 /**
