@@ -64,3 +64,24 @@ export const styleProps = <T extends object>(
 	const aliasedProps = { ...rest, ...aliases }
 	return filterProps(aliasedProps)
 }
+
+type OtherPropsSource<A extends ElementType = ElementType> =
+	StyleAliasInput & { as?: A }
+
+export const extractOtherProps = <
+	T extends object,
+	A extends ElementType = ElementType
+>(rest: T & OtherPropsSource<A>) => {
+	const {
+		as,
+		className,
+		classNames,
+		style,
+		styles,
+		...props
+	} = rest
+
+	const others = filterProps(props)
+
+	return { as, others }
+}
