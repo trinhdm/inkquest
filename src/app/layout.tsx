@@ -1,6 +1,6 @@
 import { Archivo, Archivo_Black, Space_Mono } from 'next/font/google'
 import { AppProvider } from '@/providers/AppProvider'
-import { Navbar, Subnav } from '@/components/layout'
+import { Navbar, Subnav } from '@/components/navigation'
 import { ScriptInjector } from '@/components/document'
 import type { Metadata } from 'next'
 import '@/styles/_global.scss'
@@ -33,7 +33,6 @@ const fontsList = `${archivo.variable} ${archivoBlack.variable} ${spaceMono.vari
 export default function RootLayout({
 	children,
 }: Readonly<{ children: React.ReactNode }>) {
-
 	return (
 		<html
 			suppressHydrationWarning
@@ -46,10 +45,7 @@ export default function RootLayout({
 			<body>
 				<AppProvider>
 					<Navbar routes={ ['/discover', '/marketplace', '/community'] } />
-					<Subnav
-						label="Community"
-						routes={ ['/community', '/community/feed', '/community/events', '/community/spotlights'] }
-					/>
+					<Subnav routes={ ['/community', '/community/feed', '/community/events', '/community/spotlights'] } />
 					{ children }
 				</AppProvider>
 			</body>
