@@ -6,7 +6,15 @@ body {
 }
 
 h1 {
-	font: var(--inkq-font-hero);
+	font: var(--inkq-font-h1-fluid);
+}
+
+h2 {
+	font: var(--inkq-font-h2-fluid);
+}
+
+h3 {
+	font: var(--inkq-font-h3-fluid);
 }
 
 a:where(:not([class])) {
@@ -55,6 +63,13 @@ ul {
 	user-select: none;
 	-webkit-touch-callout: none;
 	-webkit-user-drag: none;
+}
+
+.inkq-eyebrow {
+	color: var(--inkq-color-action);
+	font: var(--inkq-font-section-eyebrow);
+	letter-spacing: var(--inkq-font-tracking-wide);
+	text-transform: uppercase;
 }
 
 

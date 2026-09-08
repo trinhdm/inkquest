@@ -1,0 +1,65 @@
+import {
+	isValidElement, Children, Fragment,
+	type ComponentType, type ReactNode,
+} from 'react'
+import { useProps, useStyles } from '@/hooks'
+import { extractOtherProps } from '@/utils/helpers'
+import { Box, polymorphic } from '@/components/core/Box'
+import { GridItem } from './GridItem'
+import classes from './Grid.module.scss'
+
+const NAME = 'Grid' as const,
+	DEFAULT_TAG = 'div' as const
+
+interface GridProps {
+	children: ReactNode
+}
+
+interface GridSpecs {
+	default: { component: typeof DEFAULT_TAG }
+	props: GridProps
+	subcomponents: {
+		Item: typeof GridItem
+	}
+}
+
+const flattenChildren = (children: ReactNode): ReactNode[] => (
+	Children.toArray(children).flatMap(child => {
+		if (isValidElement<Grid.Props>(child)) {
+			if (child.type === Fragment) return flattenChildren(child.props.children)
+			if ((child.type as ComponentType<Grid.Props>).displayName !== 'GridItem') return null
+		}
+
+		return [child]
+	})
+)
+
+export const Grid = polymorphic<GridSpecs>(_props => {
+	const props = useProps(NAME, _props)
+	const styles = useStyles(NAME, { classes, props })
+
+	const { children, ...rest } = props
+	const { as, others } = extractOtherProps(rest)
+
+	return (
+		<Box as={ as } { ...styles('root') } { ...others }>
+			<div { ...styles('wrapper') }>
+				{ flattenChildren(children).map(child => child) }
+			</div>
+		</Box>
+	)
+}, classes)
+
+Grid.displayName = NAME
+Grid.Item = GridItem
+Grid.setDefaults({ props: { as: DEFAULT_TAG } })
+
+export declare namespace Grid {
+	export type Props = GridProps
+	export type Specs = GridSpecs
+
+	export namespace Item {
+		export type Props = GridItem.Props
+		export type Specs = GridItem.Specs
+	}
+}

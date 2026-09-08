@@ -1,0 +1,20 @@
+
+.inkq-grid {
+	$name: &;
+
+	position: relative;
+
+	&__wrapper {
+		align-items: start;
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(var(--inkq-breakpoint-min), 1fr));
+	}
+}
+
+.inkq-grid-item {
+	$name: &;
+
+	& > :first-child {
+		margin-top: 0;
+	}
+}
