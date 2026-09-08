@@ -1,2 +1,2 @@
 export { Box } from './Box'
-export { polymorphic } from './Polymorphic'
+export { polymorphic, type SpecsContract } from './Polymorphic'

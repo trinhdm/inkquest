@@ -1,6 +1,7 @@
 import cx from 'clsx'
 import type { CSSProperties, ElementType } from 'react'
-import type { SpecsContract } from '@/components/core/Box/Polymorphic/specs.types'
+import type { DistributiveOmit } from '@/types/utils'
+import type { SpecsContract } from '@/components/core/Box'
 
 interface DOMStyleProps {
 	className?: string
@@ -10,15 +11,15 @@ interface DOMStyleProps {
 type SpecStyleProps =
 	Pick<SpecsContract, 'classNames' | 'styles'>
 
-export interface StyleAliasInput
+interface StyleAliasInput
 	extends SpecStyleProps, DOMStyleProps {}
 
-export type StyleAliasResult = DOMStyleProps
+type StyleAliasResult = DOMStyleProps
 
 type RenamedProps<T> =
 	Omit<T, keyof StyleAliasInput> & StyleAliasResult
 
-interface FilterProps {
+interface FilterPropsFn {
 	<T extends object>(props: T): T
 	<T extends object>(props: T, omitEmpty: boolean): Partial<T>
 }
@@ -34,7 +35,7 @@ export const filterProps = (<T extends object>(
 		if (isValid) acc[key] = value
 		return acc
 	}, {})
-)) as FilterProps
+)) as FilterPropsFn
 
 const mergeStyleAliases = <T extends StyleAliasInput>(
 	_props: T
@@ -65,13 +66,22 @@ export const styleProps = <T extends object>(
 	return filterProps(aliasedProps)
 }
 
-type OtherPropsSource<A extends ElementType = ElementType> =
+type OtherProps<A extends ElementType = ElementType> =
 	StyleAliasInput & { as?: A }
 
-export const extractOtherProps = <
+interface ExtractOtherPropsFn {
+	<T extends object, A extends ElementType = ElementType>(
+		rest: T & OtherProps<A>
+	): {
+		as: A | undefined
+		others: DistributiveOmit<T, keyof StyleAliasInput | 'as'>
+	}
+}
+
+export const extractOtherProps = (<
 	T extends object,
-	A extends ElementType = ElementType
->(rest: T & OtherPropsSource<A>) => {
+	A extends ElementType
+>(rest: T & OtherProps<A>) => {
 	const {
 		as,
 		className,
@@ -84,4 +94,4 @@ export const extractOtherProps = <
 	const others = filterProps(props)
 
 	return { as, others }
-}
+}) as ExtractOtherPropsFn

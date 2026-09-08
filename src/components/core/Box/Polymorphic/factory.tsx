@@ -8,6 +8,7 @@ import {
 
 import { setDefaultProps } from '@/lib/registries'
 import type { AsPolymorphic, IsPolymorphic, Specs } from './specs.types'
+import type { DistributiveOmit } from '@/types/utils'
 
 type _FactoryProps<S extends Specs> =
 	S['props']
@@ -19,11 +20,8 @@ type _FactoryProps<S extends Specs> =
 		unstyled?: boolean
 	}
 
-type _OmitAs<P> =
-	P extends unknown ? Omit<P, 'as'> : never
-
 type _MethodSetDefault<S extends Specs> = {
-	props?: Partial<_OmitAs<S['props']>>
+	props?: Partial<DistributiveOmit<S['props'], 'as'>>
 		& (IsPolymorphic<S> extends true
 			? Required<AsPolymorphic<S>>
 			: { as?: never })

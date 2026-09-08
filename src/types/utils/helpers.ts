@@ -51,3 +51,9 @@ export type OneKeyOf<E> =
 		: IsUnion<keyof E> extends true
 			? never
 			: E
+
+
+// Omit that keeps a union a union. `Omit<A | B, K>` flattens both branches into one
+// object (keyof a union is the intersection of its keys), which kills `Extract`/`in` narrowing.
+export type DistributiveOmit<T, K extends PropertyKey> =
+	T extends unknown ? Omit<T, K> : never
