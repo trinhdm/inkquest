@@ -9,6 +9,11 @@ export interface SpaceTokens {
 		base: TokenVariableShape
 		lg: TokenVariableShape
 	}
+	grid: {
+		base: TokenVariableShape
+		sm: TokenVariableShape
+	}
+
 	menu: TokenVariableShape
 }
 
@@ -17,6 +22,10 @@ export const getSpaceTokens = (): SpaceTokens => ({
 	icon: base.space('1'),
 
 	menu: `${base.space('2')} ${base.space('6')}`,
+	grid: {
+		base: base.space('6'),
+		sm: base.space('4'),
+	},
 	group: {
 		base: `${base.space('3')} ${base.space('4')}`,
 		lg: `${base.space('4')} ${base.space('5')}`,

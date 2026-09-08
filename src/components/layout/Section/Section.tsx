@@ -1,4 +1,4 @@
-import { isValidElement, Children, type ReactNode, type ElementType } from 'react'
+import { isValidElement, Children, type ReactNode } from 'react'
 import { useProps, useStyles } from '@/hooks'
 import { extractOtherProps } from '@/utils/helpers'
 import { Box, polymorphic } from '@/components/core/Box'
@@ -14,7 +14,8 @@ interface SectionProps {
 	eyebrow?: string
 	title: string
 	layout?:
-		| 'content'
+		| 'default'
+		| 'cta'
 		| 'hero'
 		| 'split'
 }
@@ -44,7 +45,7 @@ const orderSection = (
 
 		if (isValidElement<SectionProps>(child)) {
 			if (child.type !== Button) content.push(child)
-			if (buttons.length < 2) buttons.push(child)
+			else if (buttons.length < 2) buttons.push(child)
 		}
 	})
 
@@ -56,11 +57,51 @@ const orderSection = (
 	}
 
 	if (!!buttons.length) {
-		const cta = <Button.Group key="section-cta" size="lg" { ...styles('cta') }>{ buttons }</Button.Group>
+		const cta = (
+			<Button.Group
+				key="section-cta"
+				hasPriority={ buttons.length > 1 }
+				size="lg"
+				{ ...styles('cta') }
+			>
+				{ buttons }
+			</Button.Group>
+		)
+
 		items.push(cta)
 	}
 
 	return <>{ items }</>
+}
+
+const buildSection = (
+	props: SectionProps,
+	styles: ReturnType<typeof useStyles>
+) => {
+	const { children, eyebrow, layout, title } = props,
+		HTag = layout === 'hero' ? 'h1' : 'h2'
+
+	const header = <>
+		<span { ...styles('eyebrow', { cn: 'eyebrow' }) }>{ eyebrow }</span>
+		<Box as={ HTag } { ...styles('title') }>{ title }</Box>
+	</>,
+		content = orderSection(children, styles),
+		inner = <>{ header }{ content }</>
+
+	switch (layout) {
+		case 'hero':
+		case 'cta':
+			return <div { ...styles('inner') }>{ inner }</div>
+		case 'split':
+			return (
+				<Grid { ...styles('inner') }>
+					<Grid.Item>{ header }</Grid.Item>
+					<Grid.Item>{ content }</Grid.Item>
+				</Grid>
+			)
+		default:
+			return inner
+	}
 }
 
 export const Section = polymorphic<SectionSpecs>(_props => {
@@ -76,50 +117,22 @@ export const Section = polymorphic<SectionSpecs>(_props => {
 	} = props
 
 	const { others } = extractOtherProps(rest)
+	const layoutClass = !!(layout && layout !== 'default') && `${NAME}--${layout}`
 
-	const sharedProps = {
-		as: 'section' as ElementType,
-		...styles('root'),
-		...others,
-	}
-
-	const heading = <>
-		<span { ...styles('eyebrow', { global: 'eyebrow' }) }>
-			{ eyebrow }
-		</span>
-		<Box as={ layout === 'hero' ? 'h1' : 'h2' } { ...styles('title') }>
-			{ title }
+	return (
+		<Box
+			as={ Container }
+			{ ...styles('root', { cn: layoutClass }) }
+			{ ...others }
+		>
+			{ buildSection(props, styles) }
 		</Box>
-	</>
-
-	switch (layout) {
-		case 'split':
-			return (
-				<Grid { ...sharedProps }>
-					<Grid.Item>{ heading }</Grid.Item>
-					<Grid.Item>{ orderSection(children, styles) }</Grid.Item>
-				</Grid>
-			)
-		default:
-			return (
-				<Container { ...sharedProps }>
-					{ heading }
-					{ orderSection(children, styles) }
-				</Container>
-			)
-	}
-
-	// return (
-	// 	<Container { ...sharedProps }>
-	// 		{ heading }
-	// 		{ orderSection(children, styles) }
-	// 	</Container>
-	// )
+	)
 }, classes)
 
 Section.displayName = NAME
 Section.Button = Button
-Section.setDefaults({ props: { layout: 'content' } })
+Section.setDefaults({ props: { layout: 'default' } })
 
 export declare namespace Section {
 	export type Props = SectionProps

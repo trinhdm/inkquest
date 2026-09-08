@@ -1,5 +1,5 @@
 import { base } from '../../reference'
-// import type { TokenVariableShape } from '../../types'
+import type { TokenVariableShape } from '../../types'
 
 export interface BreakpointTokens {
 	min: string
@@ -32,11 +32,11 @@ export const getContainerTokens = (): ContainerTokens => ({
 })
 
 interface LayoutItemTokens {
-	gap: {
-		kicker: string
-		lede: string
-		cta: string
-	}
+	// gap: {
+	// 	kicker: string
+	// 	lede: string
+	// 	cta: string
+	// }
 	padding: string
 }
 
@@ -44,6 +44,20 @@ export interface GridTokens {
 	gutter: string
 	hero: LayoutItemTokens
 	section: LayoutItemTokens
+
+	stack: {
+		gap: {
+			kicker: string
+			head: string
+			lede: string
+			cta: string
+		}
+		padding: string
+	}
+
+	footer: {
+		padding: TokenVariableShape
+	}
 
 	navbar: { size: string }
 	subnav: { size: string }
@@ -54,22 +68,25 @@ export const getGridTokens = (): GridTokens => ({
 
 	hero: {
 		padding: base.space('16'),
-
-		gap: {
-			kicker: base.space('6'),
-			lede: base.space('7'),
-			cta: base.space('8'),
-		},
 	},
 
 	section: {
 		padding: base.space('15'),
+	},
+
+	stack: {
+		padding: base.space('15'),
 
 		gap: {
 			kicker: base.space('6'),
+			head: base.space('11'),
 			lede: base.space('7'),
-			cta: base.space('8'),
+			cta: base.space('9'),
 		},
+	},
+
+	footer: {
+		padding: `${base.space('12')} ${base.space('10')}`,
 	},
 
 	navbar: { size: base.space('13') },

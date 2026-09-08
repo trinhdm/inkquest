@@ -10,6 +10,7 @@ const NAME = 'Grid' as const,
 
 interface GridProps {
 	children: ReactNode
+	columns?: number
 }
 
 interface GridSpecs {
@@ -24,14 +25,17 @@ export const Grid = polymorphic<GridSpecs>(_props => {
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { classes, props })
 
-	const { children, ...rest } = props
+	const { children, columns, ...rest } = props
 	const { as, others } = extractOtherProps(rest)
+	const colClass = !!(columns && columns > 0) && `${NAME}--${columns}-col`
 
 	return (
-		<Box as={ as } { ...styles('root') } { ...others }>
-			<div { ...styles('wrapper') }>
-				{ flattenChildren(children, 'GridItem').map(child => child) }
-			</div>
+		<Box
+			as={ as }
+			{ ...styles('root', { cn: colClass }) }
+			{ ...others }
+		>
+			{ flattenChildren(children, 'GridItem').map(child => child) }
 		</Box>
 	)
 }, classes)

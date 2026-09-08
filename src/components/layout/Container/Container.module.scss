@@ -5,20 +5,20 @@
 	position: relative;
 
 	&__inner {
-		& > :first-of-type {
+		& > :first-child {
 			margin-top: 0;
 		}
 	}
 
-	// &:first-of-type #{$name} {
+	// &:first-child #{$name} {
 	// 	&__description {
 	// 		margin-top: var(--inkq-hero-gap-lede);
 	// 	}
 	// }
 
-	// &:not(:first-of-type) #{$name} {
+	// &:not(:first-child) #{$name} {
 	// 	&__description {
-	// 		margin-top: var(--inkq-section-gap-lede);
+	// 		margin-top: var(--inkq-stack-gap-lede);
 	// 	}
 	// }
 }

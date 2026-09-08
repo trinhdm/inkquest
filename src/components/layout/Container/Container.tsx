@@ -34,9 +34,7 @@ export const Container = polymorphic<ContainerSpecs>(_props => {
 			{ ...others }
 		>
 			<div { ...styles('wrapper') }>
-				<div { ...styles('inner') }>
-					{ children }
-				</div>
+				{ children }
 			</div>
 		</Box>
 	)

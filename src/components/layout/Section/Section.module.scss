@@ -2,6 +2,7 @@
 .inkq-section {
 	$name: &;
 
+	padding-block: var(--inkq-section-padding);
 	position: relative;
 
 	&__wrapper {
@@ -11,54 +12,24 @@
 		width: 100%;
 	}
 
-	&__inner {
-		max-width: var(--inkq-container-block);
-		text-wrap: pretty;
-	}
-
 	&__title {
 		letter-spacing: var(--inkq-font-tracking-display);
-		margin-top: var(--inkq-section-gap-kicker);
+		margin-top: var(--inkq-stack-gap-kicker);
 		text-transform: uppercase;
 		text-wrap: balance;
+
+		&:has(+ div) {
+			margin-bottom: var(--inkq-stack-gap-head);
+		}
 	}
 
 	&__description {
-		margin-top: var(--inkq-section-gap-lede);
+		margin-top: var(--inkq-stack-gap-lede);
+		text-wrap: pretty;
 	}
 
 	&__cta {
-		margin-top: var(--inkq-section-gap-cta);
-	}
-
-	&:first-child {
-		padding-block: var(--inkq-hero-padding);
-
-		#{$name} {
-			&__title {
-				margin-top: var(--inkq-hero-gap-kicker);
-			}
-
-			&__description {
-				color: var(--inkq-color-text-secondary);
-				font: var(--inkq-font-section-body);
-				margin-top: var(--inkq-hero-gap-lede);
-			}
-
-			&__cta {
-				margin-top: var(--inkq-hero-gap-cta);
-			}
-		}
-	}
-
-	&:not(:first-child) {
-		padding-block: var(--inkq-section-padding);
-
-		#{$name} {
-			&__eyebrow {
-				color: var(--inkq-color-text-tertiary);
-			}
-		}
+		margin-top: var(--inkq-stack-gap-cta);
 	}
 
 	&:not(:last-child) {
@@ -68,5 +39,53 @@
 	&:where([data-block]) {
 		display: block;
 		width: 100%;
+	}
+
+	&--hero,
+	&--cta {
+		#{$name} {
+			&__inner {
+				max-width: var(--inkq-container-block);
+			}
+
+			&__eyebrow {
+				color: var(--inkq-color-action);
+			}
+
+			&__title:has(+ div) {
+				margin-bottom: 0;
+			}
+
+			&__description {
+				color: var(--inkq-color-text-secondary);
+				font: var(--inkq-text-section-body);
+			}
+		}
+	}
+
+	&--hero {
+		padding-block: var(--inkq-hero-padding);
+	}
+
+	&--cta #{$name} {
+		&__inner {
+			margin: 0 auto;
+			text-align: center;
+		}
+
+		&__title {
+			font-size: var(--inkq-font-size-display-cta);
+		}
+
+		&__cta {
+			justify-self: center;
+		}
+	}
+
+	&--split #{$name} {
+		&__inner {
+			gap: 0;
+			grid-template-columns: calc(50% - var(--space-8)) 1fr;
+		}
 	}
 }
