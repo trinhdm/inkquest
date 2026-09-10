@@ -25,7 +25,8 @@ const buildStaticTokens = <K extends keyof ThemeTokens>(
 	prefix?: string
 ): ThemeTokens[K] => {
 	const tokens = {
-		font: Tokens.typography(),
+		...Tokens.typography(),
+
 		space: Tokens.space(),
 		breakpoint: Tokens.breakpoint(),
 		container: Tokens.container(),
@@ -37,6 +38,7 @@ const buildStaticTokens = <K extends keyof ThemeTokens>(
 		motion: Tokens.motion(),
 
 		...Tokens.layout(),
+		...Tokens.element(),
 	}
 
 	return tokenGenerator(tokens, prefix)

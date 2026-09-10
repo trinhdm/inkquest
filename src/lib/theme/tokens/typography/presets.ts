@@ -21,17 +21,24 @@ export interface FontPresetTokens {
 	h1: FluidFontGroup
 	h2: FluidFontGroup
 	h3: FontProperties
+	h4: FontProperties
 	body: FontProperties
 	section: LayoutFontGroup
 	label: FontProperties
 	control: FontProperties
 	navigation: FontProperties
+	prose: FontProperties
+
+	caption: {
+		base: FontProperties
+		image: FontProperties
+		item: FontProperties
+	}
 
 	title?: FontProperties
 	subtitle?: FontProperties
 	eyebrow?: FontProperties
 	overline?: FontProperties
-	caption?: FontProperties
 	alert?: FontProperties
 	data?: FontProperties
 	meta?: FontProperties
@@ -54,6 +61,12 @@ export const getFontPresetTokens = (): FontPresetTokens => {
 		fontFamily: alias.fontFamily('body'),
 		fontWeight: base.fontWeight('400'),
 		lineHeight: alias.lineHeight('body'),
+	}
+
+	const captionSharedProps = {
+		fontFamily: alias.fontFamily('mono'),
+		fontWeight: base.fontWeight('400'),
+		lineHeight: alias.lineHeight('label'),
 	}
 
 	return {
@@ -81,6 +94,11 @@ export const getFontPresetTokens = (): FontPresetTokens => {
 			...headingSharedProps,
 			fontSize: 	alias.fontSize('heading', 'h3'),
 		},
+		h4: {
+			...headingSharedProps,
+			fontSize: 	alias.fontSize('heading', 'h4'),
+			lineHeight: alias.lineHeight('label'),
+		},
 		body: {
 			...contentSharedProps,
 			fontSize: 	alias.fontSize('body'),
@@ -95,6 +113,22 @@ export const getFontPresetTokens = (): FontPresetTokens => {
 				fontSize: 	alias.fontSize('caption'),
 				fontWeight: base.fontWeight('400'),
 				lineHeight: alias.lineHeight('label'),
+			},
+		},
+		caption: {
+			base: {
+				...captionSharedProps,
+				fontSize: 	alias.fontSize('caption'),
+			},
+			image: {
+				fontFamily: alias.fontFamily('body'),
+				fontSize: 	base.fontSize('10'),
+				fontWeight: base.fontWeight('600'),
+				lineHeight: alias.lineHeight('label'),
+			},
+			item: {
+				...captionSharedProps,
+				fontSize: 	alias.fontSize('control'),
 			},
 		},
 		label: {
@@ -114,6 +148,12 @@ export const getFontPresetTokens = (): FontPresetTokens => {
 			fontSize: 	alias.fontSize('control'),
 			fontWeight: base.fontWeight('700'),
 			lineHeight: alias.lineHeight('label'),
+		},
+		prose: {
+			fontFamily: alias.fontFamily('mono'),
+			fontSize: 	alias.fontSize('body'),
+			fontWeight: base.fontWeight('400'),
+			lineHeight: alias.lineHeight('body'),
 		},
 	}
 }

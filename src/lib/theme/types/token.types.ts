@@ -18,7 +18,7 @@ export interface TokenStatesList<T extends keyof CSSProperties = 'color'> {
 	active?: TokenItem<T>
 	disable?: TokenItem<T>
 	focus?: TokenItem<T>
-	press?: TokenItem<T>
+	pressed?: TokenItem<T>
 	select?: TokenItem<T>
 }
 

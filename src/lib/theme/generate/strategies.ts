@@ -1,5 +1,5 @@
 import { formatToken, getShorthand } from '../format'
-import { isFontShorthandMatch, labelStep, toEntry, validate } from './utils'
+import { hasShorthandMatch, labelStep, toEntry, validate } from './utils'
 import { isObject } from '@/utils/helpers'
 import { rem } from '@/lib/general'
 import type { GeneratorStrategy } from './types'
@@ -25,37 +25,38 @@ const nestedObjectStrategy: GeneratorStrategy<Record<string, unknown>> = {
 }
 
 const shorthandStrategy: GeneratorStrategy<Record<string, unknown>> = {
-	matches: ({ value }) => isFontShorthandMatch(value),
+	matches: ({ value }) => hasShorthandMatch(value),
 	run: (args) => {
-		const { value } = args
+		const { value } = args,
+			is = validate().shorthand,
+			[property] = (Object.keys(is) as (keyof typeof is)[]).filter(ck => is[ck](value))
+
 		const name = formatToken(args),
-			shorthand = getShorthand({ property: 'font', values: [value] })
+			shorthand = getShorthand({ property, values: [value] })
 
 		return toEntry({ name, value: shorthand })
 	}
 }
 
-const arrayStrategy: GeneratorStrategy<unknown[]> = {
-	matches: ({ value }) => Array.isArray(value),
+const numericArrayStrategy: GeneratorStrategy<number[]> = {
+	matches: ({ value }) => Array.isArray(value) && value.every(v => typeof v === 'number'),
 	run: ({ path, prefix, value }) => {
 		const is = validate().numeric
 
 		return value.flatMap((v, i) => {
-			let output = v,
+			let output: `${number}rem` | number = v,
 				step = labelStep(i, v)
 
-			if (typeof v === 'number') {
-				if (path[0].toLowerCase().includes('size')) {
-					step = `${v}`
-					output = rem(v)
-				} else if (is.percent(v)) {
-					const label = is.integer(v) ? v : 100 * v
-					step = `${label}`
-				} else if (is.weight(v)) {
-					step = `${v}`
-				} else {
-					output = rem(v)
-				}
+			if (path[0].toLowerCase().includes('size')) {
+				step = `${v}`
+				output = rem(v)
+			} else if (is.percent(v)) {
+				const label = is.integer(v) ? v : 100 * v
+				step = `${label}`
+			} else if (is.weight(v)) {
+				step = `${v}`
+			} else {
+				output = rem(v)
 			}
 
 			const pathname = [...path, step],
@@ -64,6 +65,18 @@ const arrayStrategy: GeneratorStrategy<unknown[]> = {
 			return toEntry({ name, value: output })
 		})
 	}
+}
+
+const textArrayStrategy: GeneratorStrategy<string[]> = {
+	matches: ({ value }) => Array.isArray(value) && value.every(v => typeof v === 'string'),
+	run: ({ path, prefix, value }) => (
+		value.flatMap((v, i) => {
+			const pathname = [...path, labelStep(i, v)],
+				name = formatToken({ path: pathname, prefix, value: v })
+
+			return toEntry({ name, value: v })
+		})
+	)
 }
 
 const scaleStrategy: GeneratorStrategy<number> = {
@@ -90,7 +103,8 @@ const scaleStrategy: GeneratorStrategy<number> = {
 
 export const GENERATOR_STRATEGIES: GeneratorStrategy[] = [
 	scaleStrategy,
-	arrayStrategy,
+	numericArrayStrategy,
+	textArrayStrategy,
 	shorthandStrategy,
 	nestedObjectStrategy,
 	hexCodeStrategy,

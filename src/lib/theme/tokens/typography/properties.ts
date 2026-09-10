@@ -8,11 +8,15 @@ interface FontFamilyTokens {
 }
 
 interface FontSizeTokens {
-	display: string
+	display: {
+		base: string
+		cta: string
+	}
 	heading: {
 		h1: string
 		h2: string
 		h3: string
+		h4: string
 	}
 	body: {
 		base: string
@@ -36,6 +40,7 @@ interface LineHeightTokens {
 	heading: string
 	body: string
 	label: string
+	prose: string
 }
 
 interface LetterSpacingTokens {
@@ -63,11 +68,15 @@ export const getFontPropertyTokens = (): FontPropertyTokens => ({
 		mono:		base.fontFamily('mono'),
 	},
 	fontSize: {
-		display:	base.fontSize('96'),
+		display:	{
+			base:	base.fontSize('96'),
+			cta:	base.fontSize('60'),
+		},
 		heading: {
 			h1:		base.fontSize('48'),
 			h2:		base.fontSize('40'),
 			h3:		base.fontSize('32'),
+			h4:		base.fontSize('20'),
 		},
 		body:		{
 			base:	base.fontSize('16'),
@@ -90,6 +99,7 @@ export const getFontPropertyTokens = (): FontPropertyTokens => ({
 		heading:	base.lineHeight('tight'),
 		body:		base.lineHeight('normal'),
 		label:		base.lineHeight('snug'),
+		prose:		base.lineHeight('loose'),
 	},
 	tracking: {
 		display:	base.letterSpacing('02'),

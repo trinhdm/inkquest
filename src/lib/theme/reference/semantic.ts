@@ -5,6 +5,8 @@ import type {
 	LayoutTokens, SpaceTokens, TypographyTokens,
 } from '../tokens'
 
+type FontTokens = TypographyTokens['font']
+
 const themeTokens = {
 	theme: token.endPath(aliasVar, 'theme'),
 	accent: token.optPath<Omit<AccentTokens, 'secondary'>>(aliasVar, 'accent'),
@@ -15,11 +17,11 @@ const propertyTokens = {
 	border: token.optPath<BorderColorTokens>(aliasVar, 'border'),
 	borderRadius: token.path<BorderRadiusTokens>(aliasVar, 'border', 'radius'),
 
-	fontFamily: token.path<TypographyTokens['fontFamily']>(aliasVar, 'font', 'family'),
-	fontSize: token.path<TypographyTokens['fontSize']>(aliasVar, 'font', 'size'),
-	fontWeight: token.path<TypographyTokens['fontWeight']>(aliasVar, 'font', 'weight'),
-	lineHeight: token.path<TypographyTokens['leading']>(aliasVar, 'font', 'leading'),
-	letterSpacing: token.path<TypographyTokens['tracking']>(aliasVar, 'font', 'tracking'),
+	fontFamily: token.path<FontTokens['fontFamily']>(aliasVar, 'font', 'family'),
+	fontSize: token.path<FontTokens['fontSize']>(aliasVar, 'font', 'size'),
+	fontWeight: token.path<FontTokens['fontWeight']>(aliasVar, 'font', 'weight'),
+	lineHeight: token.path<FontTokens['leading']>(aliasVar, 'font', 'leading'),
+	letterSpacing: token.path<FontTokens['tracking']>(aliasVar, 'font', 'tracking'),
 
 	transition: {
 		background: token.endPath(aliasVar, 'motion', 'background'),
