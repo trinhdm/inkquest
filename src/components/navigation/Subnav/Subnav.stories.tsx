@@ -13,7 +13,7 @@ const Row = ({ children }: { children: ReactNode }) => (
 
 const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 	<div style={ { display: 'flex', flexDirection: 'column', gap: 8 } }>
-		<span style={ { font: 'var(--inkq-font-control)', letterSpacing: '.15em', textTransform: 'uppercase', opacity: 0.6 } }>
+		<span style={ { font: 'var(--inkq-text-control)', letterSpacing: '.15em', textTransform: 'uppercase', opacity: 0.6 } }>
 			{ label }
 		</span>
 		<div>{ children }</div>
@@ -26,8 +26,8 @@ const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 // the polymorphic root element.
 const ROOT_SELECTOR = '.inkq-subnav',
 	// Needed because `getByText` matches on `textContent`: when the menu is
-	// omitted, the root, the inner wrapper AND the label all have identical
-	// text, so an unscoped query would match three elements.
+	// omitted, the root and the inner wrapper can share identical text with the
+	// label, so an unscoped query would be ambiguous.
 	LABEL_SELECTOR = '.inkq-subnav__label'
 
 // The `routes` allow-list the app shell (`src/app/layout.tsx`) passes.
@@ -49,19 +49,15 @@ type Story = StoryObj<SubnavStoryProps>
 
 const meta: Meta<SubnavStoryProps> = {
 	component: Subnav,
-	title: 'Layout/Subnav',
+	title: 'Navigation/Subnav',
 	// Full-bleed bar: centering it in the canvas misrepresents the layout, so
 	// every story overrides the global `layout: 'centered'` default.
 	parameters: { layout: 'padded' },
 	argTypes: {
-		label: {
-			control: 'text',
-			description: 'Required. Rendered as plain text in `inkq-subnav__label`; it is NOT a link and carries no ARIA role.',
-		},
 		routes: {
 			control: 'multi-select',
 			options: Object.values(NAV_ROUTES),
-			description: 'Required here (unlike `Navbar`, where it is optional). Handed to `filterNavigation(NAVIGATION_DATA, routes)`; an empty array means "no filtering" and renders the entire nav tree, while a non-matching list yields `[]` and the `<Menu>` is skipped entirely.',
+			description: 'Required (unlike `Navbar`, where it is optional). Handed to `filterNavigation(NAVIGATION_DATA, routes)`. There is no separate `label` prop — the visible label (`inkq-subnav__label`) is derived straight from the FIRST filtered item\'s own `label` (`navItems[0].label`), so it is entirely data-driven. When `routes` matches nothing, `filterNavigation` returns `[]` and `Subnav` guards its whole inner block (label AND `<Menu>`) with `!!navItems.length` — neither renders.',
 		},
 		unstyled: {
 			control: 'boolean',
@@ -70,7 +66,6 @@ const meta: Meta<SubnavStoryProps> = {
 	},
 	args: {
 		...getDefaultProps<Subnav.Props>('Subnav'),
-		label: 'Community',
 		routes: COMMUNITY_ROUTES,
 	},
 }
@@ -79,11 +74,13 @@ export default meta
 
 /**
  * The app shell's real configuration. `filterNavigation` keeps only the
- * `Community` item (its three in-list children survive as its `menu`), and
- * `Subnav` hardcodes `hasDropdowns={ false }` on its `<Menu>` — so `MenuItem`
- * takes its flattening branch: the `Community` parent label never becomes a
- * menu item, its children are hoisted into the menubar directly, and no
- * dropdown trigger is rendered.
+ * `Community` item (its three in-list children survive as its `menu`), so
+ * `navItems[0]` IS that `Community` item — its own `label` ("Community") is
+ * what `Subnav` renders as the visible label. `Subnav` hardcodes
+ * `hasDropdowns={ false }` on its `<Menu>`, so `MenuItem` takes its
+ * flattening branch: the `Community` parent is never itself a menu item, its
+ * children are hoisted into the menubar directly, and no dropdown trigger is
+ * rendered.
  *
  * Note the menu `<ul>` is NOT `.inkq-menu` here: `Subnav` passes
  * `{ ...styles('menu') }` to `<Menu>`, and `Menu` spreads `{ ...rest }` AFTER
@@ -102,7 +99,8 @@ export const Default: Story = {
 		])
 		await expect(within(menubar).queryAllByRole('button')).toHaveLength(0)
 
-		// The label is rendered as text, not as a menu item.
+		// The label is derived from `navItems[0].label`, rendered as text, not
+		// as a menu item.
 		await expect(canvas.getByText('Community', { selector: LABEL_SELECTOR }))
 			.toBeInTheDocument()
 		await expect(canvas.queryByRole('menuitem', { name: 'Community' })).not.toBeInTheDocument()
@@ -113,32 +111,29 @@ export const Default: Story = {
 	},
 }
 
-export const LongLabel: Story = {
-	args: {
-		label: 'An unusually long subnav label that has to share one grid row with the whole menu',
-	},
-}
-
 /**
  * Edge case: `routes` that match nothing. `filterNavigation` returns `[]`, and
- * `Subnav` guards the menu with `!!navItems.length`, so only the label renders.
+ * `Subnav` guards its entire inner block — the label span AND the `<Menu>` —
+ * with a single `!!navItems.length` (`Subnav.tsx`, lines 36–48). Since there
+ * is no separate `label` prop anymore (it's derived from `navItems[0].label`),
+ * an empty `navItems` means NEITHER renders: the root mounts with an empty
+ * inner wrapper.
  *
  * `/settings` is a deliberate choice: it exists in `NAV_ROUTES`, but only as a
  * child of the route-less `User` item, which `filterNavigation` drops outright
  * (it keys off `item.route` before ever recursing into `item.menu`).
  */
 export const NoMatchingRoutes: Story = {
-	args: {
-		label: 'Settings',
-		routes: [NAV_ROUTES.SETTINGS],
-	},
+	args: { routes: [NAV_ROUTES.SETTINGS] },
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement)
 
-		await expect(canvas.getByText('Settings', { selector: LABEL_SELECTOR }))
-			.toBeInTheDocument()
 		await expect(canvas.queryByRole('menubar')).not.toBeInTheDocument()
 		await expect(canvas.queryAllByRole('menuitem')).toHaveLength(0)
+		await expect(canvasElement.querySelector(LABEL_SELECTOR)).not.toBeInTheDocument()
+
+		const root = canvasElement.querySelector(ROOT_SELECTOR)
+		await expect(root).toBeInTheDocument()
 	},
 }
 

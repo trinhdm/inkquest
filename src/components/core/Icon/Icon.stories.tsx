@@ -75,7 +75,7 @@ const Row = ({ children }: { children: ReactNode }) => (
 
 const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 	<div style={ { display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'center' } }>
-		<span style={ { font: 'var(--inkq-font-control)', letterSpacing: '.15em', textTransform: 'uppercase', opacity: 0.6 } }>
+		<span style={ { font: 'var(--inkq-text-control)', letterSpacing: '.15em', textTransform: 'uppercase', opacity: 0.6 } }>
 			{ label }
 		</span>
 		<div style={ { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } }>
@@ -86,7 +86,7 @@ const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 
 const Section = ({ label, children }: { label: string, children: ReactNode }) => (
 	<div style={ { display: 'flex', flexDirection: 'column', gap: 12 } }>
-		<h3 style={ { font: 'var(--inkq-font-control)', letterSpacing: '.15em', textTransform: 'uppercase', opacity: 0.8, margin: 0 } }>
+		<h3 style={ { font: 'var(--inkq-text-control)', letterSpacing: '.15em', textTransform: 'uppercase', opacity: 0.8, margin: 0 } }>
 			{ label }
 		</h3>
 		<Row>

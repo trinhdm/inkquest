@@ -7,7 +7,7 @@ import type { Button } from './Button'
 // Not a `.stories.*` file on purpose, so Storybook's story indexer ignores it.
 
 export const VARIANT_OPTIONS: readonly Button.Variant[] = [
-	'solid', 'outline', 'ghost', 'light', 'dark', 'success', 'warning', 'danger',
+	'solid', 'outline', 'ghost', 'light', 'dark', 'success', 'warning', 'danger', 'info',
 ]
 
 export const PRIORITY_OPTIONS: readonly Button.Priority[] = [

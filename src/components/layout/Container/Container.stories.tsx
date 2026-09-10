@@ -17,7 +17,7 @@ const Row = ({ children }: { children: ReactNode }) => (
 
 const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 	<div style={ { display: 'flex', flexDirection: 'column', gap: 8 } }>
-		<span style={ { font: 'var(--inkq-font-control)', letterSpacing: '.15em', textTransform: 'uppercase', opacity: 0.6 } }>
+		<span style={ { font: 'var(--inkq-text-control)', letterSpacing: '.15em', textTransform: 'uppercase', opacity: 0.6 } }>
 			{ label }
 		</span>
 		<div style={ { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } }>
@@ -41,8 +41,12 @@ const ROOT_SELECTOR = '.inkq-container'
 // `attributes`/etc., which only exist on the actual accepted prop type,
 // `PolymorphicProps<ContainerProps, C>`. `Parameters<typeof Container>[0]`
 // reads that real, wrapped type straight off the component itself — the
-// generic call signature's default `C` resolves to `'div'` here, since
-// `ContainerSpecs`'s `default.component` is `'div'`.
+// generic call signature's default `C` resolves to `'section'` here, since
+// `ContainerSpecs`'s `default.component` is `'section'` (`Container.tsx`'s
+// `DEFAULT_TAG`), and `Container.setDefaults({ props: { as: DEFAULT_TAG } })`
+// registers that same `'section'` as the actual runtime default — so
+// `meta.args` (via `getDefaultProps`) already carries `as: 'section'` before
+// any story overrides it. See the `AsElement` story.
 type ContainerStoryProps = Parameters<typeof Container>[0]
 type Story = StoryObj<ContainerStoryProps>
 
@@ -57,7 +61,7 @@ const meta: Meta<ContainerStoryProps> = {
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Container`\'s own `ContainerProps`. The semantic base class (`inkq-container`, `inkq-container__inner`) is ALWAYS emitted regardless of this prop — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it, for every `styles(selector)` call `Container` makes (`root` and `inner`) — see the `Unstyled` story.',
+			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Container`\'s own `ContainerProps`. The semantic base class (`inkq-container` on the root, `inkq-container__wrapper` on the inner `<div>`) is ALWAYS emitted regardless of this prop. `Container.module.scss` has a matching rule for BOTH (`.inkq-container` and its nested `&__wrapper`, matching `Container.tsx`\'s `styles(\'root\')`/`styles(\'wrapper\')` calls exactly), so `unstyled` suppresses the CSS-module-hashed class normally appended alongside the base class on BOTH the root and the inner `<div>` identically. See the `Unstyled` story.',
 		},
 	},
 	args: {
@@ -107,11 +111,11 @@ export const AsElement: Story = {
 	parameters: { layout: 'padded' },
 	render: (args) => (
 		<Row>
-			<Group label='as="div" (default)'>
+			<Group label='as="section" (default)'>
 				<Container { ...args as ContainerStoryProps } />
 			</Group>
-			<Group label='as="section"'>
-				<Container { ...args as ContainerStoryProps } as="section" />
+			<Group label='as="div"'>
+				<Container { ...args as ContainerStoryProps } as="div" />
 			</Group>
 		</Row>
 	),
@@ -121,20 +125,16 @@ export const AsElement: Story = {
 
 		await expect(items).toHaveLength(2)
 
-		const [asDiv, asSection] = items.map(
+		const [asSection, asDiv] = items.map(
 			item => item.closest(ROOT_SELECTOR) as HTMLElement
 		)
 
-		await expect(asDiv.tagName).toBe('DIV')
+		// `meta.args` already carries the REGISTERED default (`as: 'section'`,
+		// via `getDefaultProps`/`Container.setDefaults`) — leaving `as`
+		// unset here renders `section`, not `div`.
 		await expect(asSection.tagName).toBe('SECTION')
+		await expect(asDiv.tagName).toBe('DIV')
 	},
-}
-
-export const LongText: Story = {
-	args: {
-		children: 'This is a container with an unusually long text child, used to verify that the max-width constraint and centered layout hold up against overflow-prone content rather than letting it stretch the page or clip unexpectedly.',
-	},
-	parameters: { layout: 'padded' },
 }
 
 export const NestedContent: Story = {
@@ -153,13 +153,19 @@ export const NestedContent: Story = {
 	parameters: { layout: 'padded' },
 }
 
-// `unstyled` does NOT remove the base `inkq-container`/`inkq-container__inner`
+// `unstyled` does NOT remove the base `inkq-container`/`inkq-container__wrapper`
 // classes `useStyles`/`getClassName.tsx` applies to the root and inner
 // wrapper elements — per `getClassName.tsx`, the base class is now ALWAYS
-// emitted (`classList = [baseClass]` unconditionally). It only suppresses
-// the CSS-module-hashed class normally appended alongside it — verified
-// against `Container.tsx`'s own render, which calls `styles('root')` on the
-// root `Box` and `styles('inner')` on the nested `<Box>` wrapping `children`.
+// emitted (`classList = [baseClass]` unconditionally). It only suppresses the
+// CSS-module-hashed class normally appended alongside it.
+//
+// **Re-verified against the LIVE `Container.tsx`/`Container.module.scss`**:
+// the SCSS's nested selector is `&__wrapper` (matching `Container.tsx`'s
+// `styles('wrapper')` call on the inner `<div>` exactly), so BOTH the root
+// AND the inner wrapper get a real CSS-module hash appended when styled, and
+// neither does when `unstyled` — the two behave identically, unlike an
+// earlier revision of this file where the SCSS selector and the `styles()`
+// call didn't match (a mismatch that has since been fixed in source).
 export const Unstyled: Story = {
 	parameters: {
 		layout: 'padded',
@@ -200,9 +206,13 @@ export const Unstyled: Story = {
 		expect(hasModuleClass(styledRoot, 'inkq-container')).toBe(true)
 		expect(hasModuleClass(unstyledRoot, 'inkq-container')).toBe(false)
 
-		await expect(styledInner).toHaveClass('inkq-container__inner')
-		await expect(unstyledInner).toHaveClass('inkq-container__inner')
-		expect(hasModuleClass(styledInner, 'inkq-container__inner')).toBe(true)
-		expect(hasModuleClass(unstyledInner, 'inkq-container__inner')).toBe(false)
+		// The wrapper behaves identically to the root: `Container.module.scss`'s
+		// `&__wrapper` rule matches `styles('wrapper')`'s computed base class
+		// exactly, so a CSS-module hash is appended when styled and suppressed
+		// when `unstyled`.
+		await expect(styledInner).toHaveClass('inkq-container__wrapper')
+		await expect(unstyledInner).toHaveClass('inkq-container__wrapper')
+		expect(hasModuleClass(styledInner, 'inkq-container__wrapper')).toBe(true)
+		expect(hasModuleClass(unstyledInner, 'inkq-container__wrapper')).toBe(false)
 	},
 }

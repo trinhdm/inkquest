@@ -17,7 +17,7 @@ const Row = ({ children }: { children: ReactNode }) => (
 
 const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 	<div style={ { display: 'flex', flexDirection: 'column', gap: 8 } }>
-		<span style={ { font: 'var(--inkq-font-control)', letterSpacing: '.15em', textTransform: 'uppercase', opacity: 0.6 } }>
+		<span style={ { font: 'var(--inkq-text-control)', letterSpacing: '.15em', textTransform: 'uppercase', opacity: 0.6 } }>
 			{ label }
 		</span>
 		<div style={ { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } }>
@@ -56,7 +56,7 @@ const meta: Meta<ButtonStoryProps> = {
 		priority: {
 			control: 'select',
 			options: PRIORITY_OPTIONS,
-			description: 'Also inheritable from an enclosing `Button.Group`: when the group has `hasPriority` set, it publishes a derived `priority` through `ButtonGroupProvider`, and this Button fills its own `priority` from it ONLY when `priority` is entirely absent from this Button\'s own raw props (`useButtonGroupProps`\' `Object.hasOwn` guard on the raw props, skipping `undefined` context values) — an explicit `priority` on the Button itself always wins. See the `GroupInheritance` story.',
+			description: 'Also inheritable from an enclosing `Button.Group`: when the group has `hasPriority` set, it publishes a derived `priority` through `ButtonGroupProvider`, and this Button fills its own `priority` from it ONLY when `priority` is entirely absent from this Button\'s own raw props (`useButtonGroupProps`\' `Object.hasOwn` guard on the raw props, skipping `undefined` context values) — an explicit `priority` on the Button itself always wins. See `Button.Group`\'s `HasPriority` story.',
 		},
 		size: {
 			control: 'select',
@@ -64,11 +64,11 @@ const meta: Meta<ButtonStoryProps> = {
 		},
 		disabled: {
 			control: 'boolean',
-			description: 'Also inheritable from an enclosing `Button.Group`, via `ButtonGroupProvider` / `useButtonGroupProps`: the group\'s own `disabled` fills this Button\'s `disabled` ONLY when the key is absent from this Button\'s own raw props — an own prop, including an explicit `disabled={false}` inside a disabled group, always wins. See the `DisabledState` and `GroupInheritance` stories.',
+			description: 'Also inheritable from an enclosing `Button.Group`, via `ButtonGroupProvider` / `useButtonGroupProps`: the group\'s own `disabled` fills this Button\'s `disabled` ONLY when the key is absent from this Button\'s own raw props — an own prop, including an explicit `disabled={false}` inside a disabled group, always wins. See the `DisabledState` story, and `Button.Group`\'s `Disabled`/`ChildOverrides` stories.',
 		},
 		loading: {
 			control: 'boolean',
-			description: 'Also inheritable from an enclosing `Button.Group`, via the same `ButtonGroupProvider` / `useButtonGroupProps` own-prop-wins precedence as `disabled`. See the `LoadingState` and `GroupInheritance` stories.',
+			description: 'Also inheritable from an enclosing `Button.Group`, via the same `ButtonGroupProvider` / `useButtonGroupProps` own-prop-wins precedence as `disabled`. See the `LoadingState` story, and `Button.Group`\'s `Loading`/`ChildOverrides` stories.',
 		},
 		unstyled: {
 			control: 'boolean',
@@ -175,11 +175,6 @@ export const AsLink: Story = {
 	),
 }
 
-export const LongText: Story = {
-	args: { children: 'This is a button with an unusually long label to test text wrapping and truncation behavior' },
-	parameters: { layout: 'padded' },
-}
-
 // `getTextFromChildren` (`Button.tsx`) walks `Button`'s own `children` and
 // recurses into ANY child element that has a `children` prop — including a
 // `Button.Section` — accumulating string/number leaves into the derived
@@ -217,85 +212,6 @@ export const AriaLabel: Story = {
 		await expect(plain).toHaveAttribute('aria-label', 'Save changes')
 		await expect(withSection).toHaveAttribute('aria-label', 'Confirm and continue')
 		await expect(iconOnly).not.toHaveAttribute('aria-label')
-	},
-}
-
-// `buildSections` (`Button.tsx`) only ever assigns the FIRST
-// `Button.Section[left]` (or `[right]`) it encounters to `left`/`right` —
-// every subsequent same-side section is dropped (and dev-warns) rather than
-// rendered.
-export const MultipleSections: Story = {
-	render: (args) => (
-		<Button { ...args as NativeButtonArgs }>
-			<Button.Section left><Icon type="download" /></Button.Section>
-			<Button.Section left><Icon type="attach" /></Button.Section>
-			Save
-		</Button>
-	),
-	play: async ({ canvasElement }) => {
-		const canvas = within(canvasElement),
-			button = canvas.getByRole('button'),
-			leftSections = button.querySelectorAll('[data-side="left"]')
-
-		await expect(leftSections).toHaveLength(1)
-	},
-}
-
-// Buttons rendered inside a `Button.Group` inherit `disabled`/`loading`/
-// `priority` through `ButtonGroupProvider` / `useButtonGroupProps` — but only
-// for keys entirely absent from a child Button's own raw props. An own prop,
-// including an explicit `disabled={false}` inside a `disabled` group, always
-// wins over the group's context value.
-export const GroupInheritance: Story = {
-	parameters: { layout: 'padded' },
-	render: (args) => (
-		<div style={ { display: 'flex', flexDirection: 'column', gap: 24 } }>
-			<Group label="disabled group (own disabled=false still wins)">
-				<Row>
-					<Button.Group hasPriority={ false }>
-						<Button { ...args as NativeButtonArgs } disabled>Group only</Button>
-						<Button { ...args as NativeButtonArgs } disabled={ false }>Own disabled=false wins</Button>
-					</Button.Group>
-				</Row>
-			</Group>
-			<Group label="loading group">
-				<Row>
-					<Button.Group loading hasPriority={ false }>
-						<Button { ...args as NativeButtonArgs }>Inherits loading</Button>
-					</Button.Group>
-				</Row>
-			</Group>
-			<Group label="priority group (hasPriority derives primary/secondary/tertiary by index)">
-				<Row>
-					<Button.Group hasPriority>
-						<Button { ...args as NativeButtonArgs }>First</Button>
-						<Button { ...args as NativeButtonArgs }>Second</Button>
-						<Button { ...args as NativeButtonArgs }>Third</Button>
-					</Button.Group>
-				</Row>
-			</Group>
-		</div>
-	),
-	play: async ({ canvasElement }) => {
-		const canvas = within(canvasElement),
-			buttons = canvas.getAllByRole('button')
-
-		expect(buttons).toHaveLength(6)
-
-		const [
-			inheritsDisabled, ownDisabledFalse,
-			inheritsLoading,
-			primary, secondary, tertiary,
-		] = buttons
-
-		await expect(inheritsDisabled).toHaveAttribute('disabled')
-		await expect(ownDisabledFalse).not.toHaveAttribute('disabled')
-
-		await expect(inheritsLoading).toHaveAttribute('data-loading', 'true')
-
-		await expect(primary).toHaveAttribute('data-priority', 'primary')
-		await expect(secondary).toHaveAttribute('data-priority', 'secondary')
-		await expect(tertiary).toHaveAttribute('data-priority', 'tertiary')
 	},
 }
 

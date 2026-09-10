@@ -15,7 +15,7 @@ type Story = StoryObj<NavbarStoryProps>
 
 const meta: Meta<NavbarStoryProps> = {
 	component: Navbar,
-	title: 'Layout/Navbar',
+	title: 'Navigation/Navbar',
 	// Full-bleed bar: centering it in the canvas misrepresents the layout, so
 	// every story overrides the global `layout: 'centered'` default.
 	parameters: { layout: 'padded' },

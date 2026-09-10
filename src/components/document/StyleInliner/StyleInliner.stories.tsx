@@ -51,7 +51,7 @@ const EXPECTED_STYLES = serializeStyles(
 // `theme` arg could reach the DOM at all (it can't; see above).
 const CUSTOM_THEME: SiteTheme = {
 	...DEFAULT_THEME,
-	scale: { size: DEFAULT_THEME.scale.size * 2 },
+	scale: { space: DEFAULT_THEME.scale.space * 2 },
 }
 
 const meta: Meta<typeof StyleInliner> = {
@@ -60,7 +60,7 @@ const meta: Meta<typeof StyleInliner> = {
 	argTypes: {
 		theme: {
 			control: false,
-			description: 'Site theme tokens resolved into CSS custom properties via `resolveStyles`. Required — `StyleInliner`\'s `theme ?? DEFAULT_THEME` fallback is currently commented out in source. NOTE: due to React 19 stylesheet hoisting with a hardcoded, non-overridable `href`, this prop currently has NO observable effect in this Storybook environment — every instance is deduped against `AppProvider`\'s own default-theme instance, which always wins. See the file-level comment above.',
+			description: 'Site theme tokens resolved into CSS custom properties via `resolveStyles`. Required — `StyleInliner` destructures `theme` with no default/fallback value at all (there is no `theme ?? DEFAULT_THEME` in source); callers must always pass one. NOTE: due to React 19 stylesheet hoisting with a hardcoded, non-overridable `href`, this prop currently has NO observable effect in this Storybook environment — every instance is deduped against `AppProvider`\'s own default-theme instance, which always wins. See the file-level comment above.',
 		},
 		prefix: {
 			control: 'text',

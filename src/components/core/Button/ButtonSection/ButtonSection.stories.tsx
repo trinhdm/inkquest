@@ -12,7 +12,7 @@ const Row = ({ children }: { children: ReactNode }) => (
 
 const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 	<div style={ { display: 'flex', flexDirection: 'column', gap: 8 } }>
-		<span style={ { font: 'var(--inkq-font-control)', letterSpacing: '.15em', textTransform: 'uppercase', opacity: 0.6 } }>
+		<span style={ { font: 'var(--inkq-text-control)', letterSpacing: '.15em', textTransform: 'uppercase', opacity: 0.6 } }>
 			{ label }
 		</span>
 		<div style={ { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } }>
@@ -47,7 +47,6 @@ const buttonDefaults = getDefaultProps<Button.Props>('Button')
 const meta: Meta<ButtonSectionStoryArgs> = {
 	component: Button.Section,
 	title: 'Core/Button/Button.Section',
-	tags: ['autodocs'],
 	argTypes: {
 		variant: {
 			control: 'select',
@@ -122,6 +121,31 @@ export const Sides: Story = {
 				</Group>
 			</Row>
 		)
+	},
+}
+
+// `buildSections` (`Button.tsx`) only ever assigns the FIRST
+// `Button.Section[left]` (or `[right]`) it encounters to `left`/`right` —
+// every subsequent same-side section is dropped (and dev-warns) rather than
+// rendered.
+export const MultipleSections: Story = {
+	render: ({ variant, size, disabled, loading }: ButtonSectionStoryArgs) => {
+		const buttonProps = { variant, size, disabled, loading }
+
+		return (
+			<Button { ...buttonProps }>
+				<Button.Section left><Icon type="download" /></Button.Section>
+				<Button.Section left><Icon type="attach" /></Button.Section>
+				Save
+			</Button>
+		)
+	},
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			button = canvas.getByRole('button'),
+			leftSections = button.querySelectorAll('[data-side="left"]')
+
+		await expect(leftSections).toHaveLength(1)
 	},
 }
 

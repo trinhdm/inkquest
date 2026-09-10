@@ -11,7 +11,7 @@ const Row = ({ children }: { children: ReactNode }) => (
 
 const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 	<div style={ { display: 'flex', flexDirection: 'column', gap: 8 } }>
-		<span style={ { font: 'var(--inkq-font-control)', letterSpacing: '.15em', textTransform: 'uppercase', opacity: 0.6 } }>
+		<span style={ { font: 'var(--inkq-text-control)', letterSpacing: '.15em', textTransform: 'uppercase', opacity: 0.6 } }>
 			{ label }
 		</span>
 		<div style={ { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } }>
@@ -62,7 +62,7 @@ const meta: Meta<BoxDivProps> = {
 		},
 		classNames: {
 			control: 'text',
-			description: 'Plain `string`, merged with the native `className` prop via `clsx(classNames, className)` onto the rendered element (`clsx` accepts a bare string fine — it isn\'t doing any conditional/array composition here). See the `ClassNames` story.',
+			description: 'Plain `string`, merged with the native `className` prop via `clsx(className, classNames)` onto the rendered element (`clsx` accepts a bare string fine — it isn\'t doing any conditional/array composition here). See the `ClassNames` story.',
 		},
 		styles: {
 			control: 'object',
@@ -146,14 +146,6 @@ export const As: Story = {
 			</Group>
 		</Row>
 	),
-}
-
-export const LongText: Story = {
-	parameters: { layout: 'padded' },
-	args: {
-		children: 'This is an unusually long piece of content rendered inside a Box, used to verify that text wraps naturally within the element instead of overflowing or being clipped by any default styling.',
-		style: { ...demoStyle, maxWidth: 320 },
-	},
 }
 
 export const NoChildren: Story = {

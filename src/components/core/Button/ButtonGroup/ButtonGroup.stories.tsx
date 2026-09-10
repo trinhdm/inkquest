@@ -14,7 +14,7 @@ const Row = ({ children }: { children: ReactNode }) => (
 
 const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 	<div style={ { display: 'flex', flexDirection: 'column', gap: 8 } }>
-		<span style={ { font: 'var(--inkq-font-control)', letterSpacing: '.15em', textTransform: 'uppercase', opacity: 0.6 } }>
+		<span style={ { font: 'var(--inkq-text-control)', letterSpacing: '.15em', textTransform: 'uppercase', opacity: 0.6 } }>
 			{ label }
 		</span>
 		{ children }
@@ -128,6 +128,42 @@ export const Orientations: Story = {
 	},
 }
 
+// `size` is a real `ButtonGroup` prop (`ButtonGroupProps['size']`), published
+// through `ButtonGroupProvider` to every surviving child `Button`, which
+// fills its own `size` from context via `useButtonGroupProps` ONLY when
+// `size` is entirely absent from that child's own raw props — same
+// own-prop-wins precedence as `disabled`/`loading`/`priority`/`unstyled`.
+// Children here are rendered WITHOUT their own `size` (only `variant`, for
+// visual consistency), so what's asserted is purely the group's own cascade
+// — not an own-prop short-circuiting it, as `renderGroup`'s children would.
+export const Sizes: Story = {
+	render: ({ variant, ...args }) => (
+		<Row>
+			{ SIZE_OPTIONS.map(size => (
+				<Group key={ size } label={ size }>
+					<Button.Group { ...args } size={ size }>
+						<Button variant={ variant }>Save</Button>
+						<Button variant={ variant }>Edit</Button>
+						<Button variant={ variant }>Delete</Button>
+					</Button.Group>
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			groups = canvas.getAllByRole('group')
+
+		expect(groups).toHaveLength(SIZE_OPTIONS.length)
+
+		for (const [index, group] of groups.entries()) {
+			const buttons = within(group).getAllByRole('button')
+			for (const button of buttons)
+				await expect(button).toHaveAttribute('data-size', SIZE_OPTIONS[index])
+		}
+	},
+}
+
 export const HasPriority: Story = {
 	parameters: { controls: { exclude: ['hasPriority'] } },
 	render: ({ size, variant, ...args }) => (
@@ -178,6 +214,11 @@ export const HasPriority: Story = {
 	},
 }
 
+// Children here (via `renderGroup`) carry no own `loading` prop, so each
+// button's `data-loading` comes purely from `ButtonGroup`'s own `loading`
+// cascading through `ButtonGroupProvider` / `useButtonGroupProps` — the same
+// own-prop-wins precedence exercised (from the opposite direction) by
+// `ChildOverrides`.
 export const Loading: Story = {
 	parameters: { controls: { exclude: ['loading'] } },
 	render: ({ size, variant, ...args }) => (
@@ -191,6 +232,22 @@ export const Loading: Story = {
 			)) }
 		</Row>
 	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			groups = canvas.getAllByRole('group')
+
+		expect(groups).toHaveLength(2)
+
+		const [loadingGroup, notLoadingGroup] = groups,
+			loadingButtons = within(loadingGroup).getAllByRole('button'),
+			notLoadingButtons = within(notLoadingGroup).getAllByRole('button')
+
+		for (const button of loadingButtons)
+			await expect(button).toHaveAttribute('data-loading', 'true')
+
+		for (const button of notLoadingButtons)
+			await expect(button).not.toHaveAttribute('data-loading')
+	},
 }
 
 export const Disabled: Story = {

@@ -9,8 +9,8 @@ import {
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
-// `Menu`'s only enumerable prop is the boolean `hasDropdowns` (`menu`/`routes`
-// are data, not enums), so — same as `Badge`/`Container` — this stays local
+// `Menu`'s only enumerable prop is the boolean `hasDropdowns` (`items` is
+// data, not an enum), so — same as `Badge`/`Container` — this stays local
 // instead of living in a shared `options.story.ts`.
 const BOOLEAN_OPTIONS = [true, false] as const
 
@@ -22,7 +22,7 @@ const Row = ({ children }: { children: ReactNode }) => (
 
 const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 	<div style={ { display: 'flex', flexDirection: 'column', gap: 8 } }>
-		<span style={ { font: 'var(--inkq-font-control)', letterSpacing: '.15em', textTransform: 'uppercase', opacity: 0.6 } }>
+		<span style={ { font: 'var(--inkq-text-control)', letterSpacing: '.15em', textTransform: 'uppercase', opacity: 0.6 } }>
 			{ label }
 		</span>
 		<div style={ { display: 'flex', gap: 8, alignItems: 'flex-start', flexWrap: 'wrap' } }>
@@ -46,6 +46,18 @@ const USER_ITEM = itemsFor('User')
 const USER_TRIGGER_ID = 'user-dropdown-trigger',
 	USER_MENU_ID = 'user-menu-list'
 
+// Derived from the live fixture rather than hardcoded, so these don't rot if
+// `NAVIGATION_DATA` gains/loses entries. `MenuLabel` (`MenuItem.tsx`) sets
+// `role="menuitem"` UNCONDITIONALLY on its `sharedProps` — both the `route`
+// branch (`<a>`) and the no-`route` branch (`<span>`) get it — so every
+// top-level entry, including the route-less `User`, is reachable via
+// `getByRole('menuitem')`.
+const TOP_LEVEL_COUNT = NAVIGATION_DATA.length
+const DROPDOWN_TRIGGER_COUNT = NAVIGATION_DATA.filter(item => item.menu?.length).length
+const FLATTENED_LEAF_COUNT = NAVIGATION_DATA.reduce(
+	(sum, item) => sum + (item.menu?.length || 1), 0
+)
+
 // `Menu.Props` (the `declare namespace` export) is just the raw `MenuProps`
 // interface — it doesn't include `as`/`unstyled`/`attributes`/etc., which only
 // exist on the actual accepted prop type, `PolymorphicProps<MenuProps, C>`.
@@ -57,20 +69,15 @@ type Story = StoryObj<MenuStoryProps>
 
 const meta: Meta<MenuStoryProps> = {
 	component: Menu,
-	title: 'Layout/Menu',
+	title: 'Navigation/Menu',
 	argTypes: {
 		hasDropdowns: {
 			control: 'boolean',
 			description: 'Forwarded to every `MenuItem`. When `true`, an item that has its own `menu` renders a trigger `<button>` plus a nested `Menu` (opened on hover/click). When `false`, such an item renders NO trigger and NO label of its own — `MenuItem` returns a flat ARRAY of its children\'s `<li>`s instead (see the `FlattenedItems` story).',
 		},
-		menu: {
+		items: {
 			control: 'object',
-			description: 'The `NavigationItem[]` to render. Optional at the type level (`NavigationItem[\'menu\']`), so `undefined`/`[]` are both valid and produce an empty `role="menubar"`.',
-		},
-		routes: {
-			control: 'multi-select',
-			options: Object.values(NAV_ROUTES),
-			description: 'Accepted and destructured, but `Menu` does NOT forward it to `MenuItem` — so it never reaches the recursive nested `Menu` either, and no filtering happens at this level. Filtering is done by the callers (`Navbar`/`Subnav`) via `filterNavigation` before `menu` is handed over.',
+			description: 'The `NavigationItem[]` to render (typed as `NavigationItem[\'menu\']`). Optional at the type level, so `undefined`/`[]` are both valid and produce an empty `role="menubar"`.',
 		},
 		unstyled: {
 			control: 'boolean',
@@ -79,15 +86,20 @@ const meta: Meta<MenuStoryProps> = {
 	},
 	args: {
 		...getDefaultProps<Menu.Props>('Menu'),
-		menu: NAVIGATION_DATA,
+		items: NAVIGATION_DATA,
 	},
 }
 
 export default meta
 
-// The full app nav tree. `NAVIGATION_DATA` has 7 top-level entries, 3 of which
-// (`Discover`, `Community`, `User`) carry their own `menu` and therefore render
-// a dropdown trigger.
+// The full app nav tree. `NAVIGATION_DATA` has `TOP_LEVEL_COUNT` top-level
+// entries, `DROPDOWN_TRIGGER_COUNT` of which (`Discover`, `Community`, `User`)
+// carry their own `menu` and therefore render a dropdown trigger.
+//
+// `MenuLabel` sets `role="menuitem"` unconditionally on both its `route`
+// branch (`<a>`) and its no-`route` branch (`<span>`) — so all top-level
+// entries, including the route-less `User`, are reachable via
+// `getByRole('menuitem')`.
 export const Default: Story = {
 	parameters: { layout: 'padded' },
 	play: async ({ canvasElement }) => {
@@ -97,16 +109,17 @@ export const Default: Story = {
 		await expect(menubar.tagName).toBe('UL')
 
 		// Only top-level labels are in the DOM while every dropdown is closed.
-		await expect(within(menubar).getAllByRole('menuitem')).toHaveLength(7)
-		await expect(within(menubar).getAllByRole('button')).toHaveLength(3)
+		await expect(within(menubar).getAllByRole('menuitem')).toHaveLength(TOP_LEVEL_COUNT)
+		await expect(within(menubar).getByRole('menuitem', { name: 'User' })).toBeInTheDocument()
+		await expect(within(menubar).getAllByRole('button')).toHaveLength(DROPDOWN_TRIGGER_COUNT)
 	},
 }
 
 // Both values rendered side by side. With `hasDropdowns: false`, `MenuItem`
 // replaces each parent item with its children (`Discover` → `Your Style`,
 // `Community` → `Events`/`Feed`/`Spotlights`, `User` → `Profile`/`Settings`),
-// so the 7 top-level entries flatten into 10 leaf entries and no trigger
-// buttons at all.
+// so the `TOP_LEVEL_COUNT` top-level entries flatten into `FLATTENED_LEAF_COUNT`
+// leaf entries and no trigger buttons at all.
 export const HasDropdowns: Story = {
 	parameters: {
 		layout: 'padded',
@@ -125,24 +138,32 @@ export const HasDropdowns: Story = {
 		const canvas = within(canvasElement),
 			[withDropdowns, flattened] = canvas.getAllByRole('menubar')
 
-		await expect(within(withDropdowns).getAllByRole('menuitem')).toHaveLength(7)
-		await expect(within(withDropdowns).getAllByRole('button')).toHaveLength(3)
+		// `MenuLabel` sets `role="menuitem"` unconditionally on both its `route`
+		// and no-`route` branches, so all `TOP_LEVEL_COUNT` entries — including
+		// the route-less `User` — are reachable via `getByRole`.
+		await expect(within(withDropdowns).getAllByRole('menuitem')).toHaveLength(TOP_LEVEL_COUNT)
+		await expect(within(withDropdowns).getByRole('menuitem', { name: 'User' })).toBeInTheDocument()
+		await expect(within(withDropdowns).getAllByRole('button')).toHaveLength(DROPDOWN_TRIGGER_COUNT)
 
-		await expect(within(flattened).getAllByRole('menuitem')).toHaveLength(10)
+		await expect(within(flattened).getAllByRole('menuitem')).toHaveLength(FLATTENED_LEAF_COUNT)
 		await expect(within(flattened).queryAllByRole('button')).toHaveLength(0)
 
 		// The flattened branch drops the parent's own label entirely.
-		await expect(within(flattened).queryByText('User')).not.toBeInTheDocument()
+		await expect(within(flattened).queryByRole('menuitem', { name: 'User' })).not.toBeInTheDocument()
 		await expect(within(flattened).getByRole('menuitem', { name: 'Profile' })).toBeInTheDocument()
 	},
 }
 
 /**
- * `MenuItem.tsx` branch 1 (`if (!isDropdown)`, lines 94–106): an item with no
+ * `MenuItem.tsx` branch 1 (`if (!isDropdown)`, lines 145–150): an item with no
  * `menu` renders a single `<li role="none">` wrapping `MenuLabel`, which is
- * `as={ route ? Link : 'span' }` (lines 27–36) — so an item WITH a `route` is
- * an `<a role="menuitem" href>` and an item WITHOUT one is a non-focusable
- * `<span role="menuitem">`.
+ * `as={ route ? Link : 'span' }` (lines 34–46) — so an item WITH a `route` is
+ * an `<a role="menuitem" href>`.
+ *
+ * `MenuLabel`'s `sharedProps` sets `role: 'menuitem'` UNCONDITIONALLY, before
+ * branching on `route` — so the no-`route` branch's `<span>` also carries
+ * `role="menuitem"`, and all 3 of these items (2 real fixture entries + 1
+ * synthetic route-less one) are reachable via `getAllByRole('menuitem')`.
  *
  * Note `MenuLabel` is invoked as a plain function (`MenuLabel({ label, route })`)
  * with its `styles('label')` call commented out, so the `inkq-menu-item__label`
@@ -151,7 +172,7 @@ export const HasDropdowns: Story = {
 export const LeafItems: Story = {
 	parameters: { layout: 'padded' },
 	args: {
-		menu: [
+		items: [
 			...itemsFor('Home', 'Marketplace'),
 			{ label: 'No route (span)' },
 		],
@@ -164,12 +185,15 @@ export const LeafItems: Story = {
 		await expect(items).toHaveLength(3)
 		await expect(within(menubar).queryAllByRole('button')).toHaveLength(0)
 
-		// Every leaf is wrapped in its own `<li role="none">`.
+		// Every leaf is wrapped in its own `<li role="none">` — 3 total, matching
+		// the 3 reachable via `role="menuitem"`.
 		const listItems = menubar.querySelectorAll(':scope > li')
 		await expect(listItems).toHaveLength(3)
 		listItems.forEach(li => expect(li).toHaveAttribute('role', 'none'))
 
-		const [home, marketplace, noRoute] = items
+		const home = within(menubar).getByRole('menuitem', { name: 'Home' }),
+			marketplace = within(menubar).getByRole('menuitem', { name: 'Marketplace' }),
+			noRoute = within(menubar).getByRole('menuitem', { name: 'No route (span)' })
 
 		await expect(home.tagName).toBe('A')
 		await expect(home).toHaveAttribute('href', NAV_ROUTES.HOME)
@@ -194,18 +218,24 @@ export const LeafItems: Story = {
  * spreads its own (`{ ...rest }` wins in `Button.tsx`), so the trigger keeps
  * these aria attributes but loses `Button`'s own derived `aria-label` — the
  * trigger has no accessible name, hence the unfiltered `getByRole('button')`.
+ *
+ * `User`'s own label has no `route`, so its `<span>` renders via `MenuLabel`'s
+ * no-`route` branch — but `sharedProps` sets `role: 'menuitem'`
+ * unconditionally before that branch, so the `<span>` still carries
+ * `role="menuitem"` and is reachable via `getByRole('menuitem', { name: 'User' })`.
  */
 export const DropdownItems: Story = {
 	parameters: { layout: 'padded' },
 	args: {
 		hasDropdowns: true,
-		menu: USER_ITEM,
+		items: USER_ITEM,
 	},
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement),
 			trigger = canvas.getByRole('button')
 
-		await expect(canvas.getByRole('menuitem', { name: 'User' }).tagName).toBe('SPAN')
+		const userLabel = canvas.getByRole('menuitem', { name: 'User' })
+		await expect(userLabel.tagName).toBe('SPAN')
 
 		await expect(trigger).toHaveAttribute('id', USER_TRIGGER_ID)
 		await expect(trigger).toHaveAttribute('type', 'button')
@@ -234,7 +264,7 @@ export const FlattenedItems: Story = {
 	parameters: { layout: 'padded' },
 	args: {
 		hasDropdowns: false,
-		menu: itemsFor('Community'),
+		items: itemsFor('Community'),
 	},
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement),
@@ -257,16 +287,17 @@ export const FlattenedItems: Story = {
  * own `Events`/`Feed` items are themselves dropdowns (the nested `Menu` gets no
  * `hasDropdowns` prop, so it falls back to the registered default, `true`).
  *
- * Quirk: `Menu` never forwards `routes` to `MenuItem`, so `MenuItem` always
- * passes `routes: undefined` down to the nested `Menu` — nothing is filtered at
- * any depth. Quirk 2: every nested list is `role="menubar"` (hardcoded in
- * `Menu.tsx`), not `role="menu"`.
+ * `Menu`/`MenuItem` have no `routes` prop of their own — they only ever render
+ * whatever `items` they're handed, at every depth. Filtering (via the
+ * recursive `filterNavigation`) happens upstream, in `Navbar`/`Subnav`, before
+ * `items` ever reaches `Menu`. Quirk: every nested list is `role="menubar"`
+ * (hardcoded in `Menu.tsx`), not `role="menu"`.
  */
 export const NestedDropdowns: Story = {
 	parameters: { layout: 'padded' },
 	args: {
 		hasDropdowns: true,
-		menu: itemsFor('Community'),
+		items: itemsFor('Community'),
 	},
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement),
@@ -294,10 +325,11 @@ export const NestedDropdowns: Story = {
 	},
 }
 
-// `menu` is optional at the type level, so an empty array still renders the
-// root `<ul role="menubar">` — just with no children.
+// `items` is optional at the type level (typed as `NavigationItem['menu']`),
+// so an empty array still renders the root `<ul role="menubar">` — just with
+// no children.
 export const EmptyMenu: Story = {
-	args: { menu: [] },
+	args: { items: [] },
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement),
 			menubar = canvas.getByRole('menubar')
@@ -307,34 +339,17 @@ export const EmptyMenu: Story = {
 	},
 }
 
-// Same as `EmptyMenu`, but via `undefined` — `Menu` guards with `menu?.map`.
+// Same as `EmptyMenu`, but via `undefined` — `Menu` guards with `items?.map`.
 // Passed through `render` rather than `args` so the value is unambiguously
 // `undefined` at render time rather than merged away by the args system.
 export const UndefinedMenu: Story = {
-	render: (args) => <Menu { ...args } menu={ undefined } />,
+	render: (args) => <Menu { ...args } items={ undefined } />,
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement),
 			menubar = canvas.getByRole('menubar')
 
 		await expect(menubar).toBeInTheDocument()
 		await expect(within(menubar).queryAllByRole('menuitem')).toHaveLength(0)
-	},
-}
-
-export const LongLabels: Story = {
-	parameters: { layout: 'padded' },
-	args: {
-		menu: [
-			{ label: 'A navigation label that is unreasonably long for a horizontal menu bar', route: NAV_ROUTES.DISCOVER },
-			{
-				label: 'Another extremely long label, this one with a dropdown attached to it',
-				route: NAV_ROUTES.COMMUNITY,
-				menu: [
-					{ label: 'A nested item whose label also refuses to wrap politely', route: NAV_ROUTES.COMMUNITY_FEED },
-				],
-			},
-			{ label: 'Short', route: NAV_ROUTES.MARKETPLACE },
-		],
 	},
 }
 
@@ -350,7 +365,7 @@ export const Unstyled: Story = {
 		layout: 'padded',
 		controls: { exclude: ['unstyled'] },
 	},
-	args: { menu: itemsFor('Home', 'Marketplace') },
+	args: { items: itemsFor('Home', 'Marketplace') },
 	render: (args) => (
 		<Row>
 			{ BOOLEAN_OPTIONS.map(unstyled => (
@@ -392,7 +407,7 @@ export const ClickToOpen: Story = {
 	parameters: { layout: 'padded' },
 	args: {
 		hasDropdowns: true,
-		menu: USER_ITEM,
+		items: USER_ITEM,
 	},
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement),
@@ -433,7 +448,7 @@ export const HoverToOpen: Story = {
 	parameters: { layout: 'padded' },
 	args: {
 		hasDropdowns: true,
-		menu: USER_ITEM,
+		items: USER_ITEM,
 	},
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement),
@@ -469,7 +484,7 @@ export const OutsideClick: Story = {
 	parameters: { layout: 'padded' },
 	args: {
 		hasDropdowns: true,
-		menu: USER_ITEM,
+		items: USER_ITEM,
 	},
 	render: (args) => (
 		<div style={ { display: 'flex', gap: 48, alignItems: 'flex-start' } }>
@@ -489,7 +504,7 @@ export const OutsideClick: Story = {
 		await expect(trigger).toHaveFocus()
 
 		await userEvent.keyboard('{Enter}')
-		await expect(trigger).toHaveAttribute('aria-expanded', 'true')
+		await waitFor(() => expect(trigger).toHaveAttribute('aria-expanded', 'true'))
 		await expect(await canvas.findByRole('menuitem', { name: 'Profile' })).toBeInTheDocument()
 
 		await userEvent.click(outside)
@@ -500,15 +515,32 @@ export const OutsideClick: Story = {
 }
 
 /**
- * The trigger is a real `<button>` (`Button` with `unstyled`), so both Enter and
- * Space activate it. The `User` fixture has no `route`, so its label is a
- * non-focusable `<span>` and the trigger is the first tab stop in the canvas.
+ * The trigger is a real `<button>` (`Button` with `unstyled`), so both Enter
+ * and Space activate it via the browser's own native button-activation
+ * behavior. The `User` fixture has no `route`, so its label is a plain
+ * `<span role="menuitem" tabIndex={-1}>` (see the `DropdownItems` story's
+ * note) — excluded from the natural Tab order, so the trigger is the first
+ * Tab stop in the canvas.
+ *
+ * IMPORTANT, verified against the live `MenuItem.tsx` `handleKeyDown`: Enter
+ * is ALSO one of the keys the wrapping `<li>`'s own `onKeyDown` treats as an
+ * "open" key while closed (alongside `ArrowDown`/Space), and opening via THAT
+ * path moves focus to the first nested `[role="menuitem"]` a tick later
+ * (`requestAnimationFrame`). So after pressing Enter, focus is no longer on
+ * the trigger — it must be refocused explicitly before the follow-up Space.
+ *
+ * HARDENING NOTE: every `aria-expanded` check immediately following a
+ * keyboard action below is wrapped in `waitFor` rather than asserted bare —
+ * this story was observed to fail intermittently (pass on one run, fail the
+ * next) when asserted synchronously, almost certainly racing the same
+ * `requestAnimationFrame` focus shift (and/or React's commit timing) rather
+ * than a real behavioral difference between runs.
  */
 export const KeyboardActivation: Story = {
 	parameters: { layout: 'padded' },
 	args: {
 		hasDropdowns: true,
-		menu: USER_ITEM,
+		items: USER_ITEM,
 	},
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement),
@@ -520,15 +552,20 @@ export const KeyboardActivation: Story = {
 		await expect(trigger).toHaveFocus()
 
 		await userEvent.keyboard('{Enter}')
-		await expect(trigger).toHaveAttribute('aria-expanded', 'true')
+		await waitFor(() => expect(trigger).toHaveAttribute('aria-expanded', 'true'))
 		await expect(await canvas.findByRole('menuitem', { name: 'Profile' })).toBeInTheDocument()
 
+		// Enter's `<li>`-level "open" handling shifted focus to `Profile` —
+		// refocus the trigger explicitly rather than assuming it kept focus.
+		trigger.focus()
+		await expect(trigger).toHaveFocus()
+
 		await userEvent.keyboard(' ')
-		await expect(trigger).toHaveAttribute('aria-expanded', 'false')
+		await waitFor(() => expect(trigger).toHaveAttribute('aria-expanded', 'false'))
 		await expect(canvas.queryByRole('menuitem', { name: 'Profile' })).not.toBeInTheDocument()
 
 		await userEvent.keyboard('{Enter}')
-		await expect(trigger).toHaveAttribute('aria-expanded', 'true')
+		await waitFor(() => expect(trigger).toHaveAttribute('aria-expanded', 'true'))
 
 		// Explicit blur rather than tabbing away: where a further `tab()` lands
 		// is browser/environment-dependent and not worth asserting on.

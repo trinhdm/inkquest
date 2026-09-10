@@ -39,7 +39,7 @@ const Row = ({ children }: { children: ReactNode }) => (
 
 const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 	<div style={ { display: 'flex', flexDirection: 'column', gap: 8 } }>
-		<span style={ { font: 'var(--inkq-font-control)', letterSpacing: '.15em', textTransform: 'uppercase', opacity: 0.6 } }>
+		<span style={ { font: 'var(--inkq-text-control)', letterSpacing: '.15em', textTransform: 'uppercase', opacity: 0.6 } }>
 			{ label }
 		</span>
 		<div style={ { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } }>
@@ -156,13 +156,6 @@ export const FullWidth: Story = {
 		await expect(isFullWidth).toHaveAttribute('data-block')
 		await expect(isNotFullWidth).not.toHaveAttribute('data-block')
 	},
-}
-
-export const LongText: Story = {
-	args: {
-		children: 'This is a badge with an unusually long label to test overflow behavior',
-	},
-	parameters: { layout: 'padded' },
 }
 
 export const AsElement: Story = {
