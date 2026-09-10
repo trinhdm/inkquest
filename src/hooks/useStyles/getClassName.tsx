@@ -20,10 +20,7 @@ const getBaseClass = <P extends object, V extends object>({
 	prefix,
 	selector,
 }: SharedConfig<P, V>): string => {
-	let baseName = toKebabCase(name)
-
-	if (prefix && !baseName.startsWith(prefix))
-		baseName = `${prefix}-${baseName}`
+	let baseName = formatClass(name, prefix)
 
 	if (!check.isRoot)
 		baseName += `__${selector}`
@@ -44,12 +41,43 @@ const getStyleClass = <P extends object, V extends object>(
 		return classes[baseClass]
 }
 
-const getGlobalClass = <P extends object, V extends object>({
+// const hasAdditional = <P extends object, V extends object>(
+// 	args: SharedConfig<P, V>
+// ): args is InheritConfig<P, V> =>
+// 	args.config && 'cn' in args.config && typeof args.config.clsx === 'string'
+
+const outputExtraClasses = <P extends object, V extends object>({
+	classes,
 	config,
 	prefix,
 }: SharedConfig<P, V>): string | undefined => {
-	if (!config || typeof config.global !== 'string') return
-	return formatClass(config.global, prefix)
+	if (!config || !config.clsx) return
+
+	const { clsx } = config
+
+	if (Array.isArray(clsx)) {
+		return cx(...clsx)
+	} else if (typeof clsx === 'object') {
+		const classList = [],
+			validClasses = Object.entries(clsx).filter(([_, v]) => v === true).map(([k]) => k)
+
+		for (const className of validClasses) {
+			const baseName = formatClass(className, prefix),
+				target = classes && Object.hasOwn(classes, baseName)
+					? classes[baseName]
+					: baseName
+
+			classList.push(target)
+		}
+
+		return cx(...classList)
+	}
+
+	const target = formatClass(`${clsx}`, prefix)
+
+	return classes && Object.hasOwn(classes, target)
+		? classes[target]
+		: target
 }
 
 type Inheritable = Record<'className', string>
@@ -107,9 +135,9 @@ export const getClassName = <P extends object, V extends object>(
 	const inherited = canInherit(args) ? inheritClasses(args) : [],
 		[namespace, ...modules] = inherited,
 		classList = [
-			getGlobalClass(args),
 			namespace ?? getBaseClass(args),
 			getStyleClass(args),
+			outputExtraClasses(args),
 		]
 
 	return cx(...classList, ...modules)

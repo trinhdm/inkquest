@@ -21,7 +21,7 @@ interface SelectorArgs {
 		isUnstyled: boolean
 	}
 	config?: SpecAttributes & {
-		global: ClassValue
+		clsx?: ClassValue
 	}
 	selector: string
 }
@@ -32,15 +32,20 @@ export interface SharedConfig<P extends object, V extends object = object>
 	theme: SiteThemeConfig
 }
 
-type StyleFn = (
-	selector: SelectorArgs['selector'],
-	config?: SelectorArgs['config']
-) => StyleResult | PluralizeKeys<StyleResult>
-
 interface StyleResult {
 	className?: string
 	style?: CSSProperties
 }
+
+type StyleResults<S extends SelectorArgs['selector']> =
+	S extends typeof ROOT_SELECTOR
+		? PluralizeKeys<StyleResult>
+		: StyleResult
+
+type StyleFn = <S extends SelectorArgs['selector']>(
+	selector: S,
+	config?: SelectorArgs['config']
+) => StyleResults<S>
 
 const ROOT_SELECTOR = 'root'
 
