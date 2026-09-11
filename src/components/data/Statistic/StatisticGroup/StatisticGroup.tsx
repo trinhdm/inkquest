@@ -42,6 +42,7 @@ StatisticGroup.setDefaults({
 		columns: 4,
 		divider: true,
 		duration: 3000,
+		stagger: 200,
 	}
 })
 

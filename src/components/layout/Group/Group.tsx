@@ -1,8 +1,13 @@
-import { isValidElement, useMemo, Fragment, type CSSProperties, type ReactNode } from 'react'
+import {
+	isValidElement, useMemo, useRef, Fragment,
+	type CSSProperties, type ReactNode,
+} from 'react'
+import { useInView } from 'framer-motion'
 import { useProps, useStyles } from '@/hooks'
 import { extractOtherProps, flattenChildren } from '@/utils/helpers'
 import { setThemeCSS } from '@/lib/theme'
 import { Box, polymorphic } from '@/components/core/Box'
+import { INVIEW_DEFAULTS } from '@/utils/constants'
 import type { RootCxtProviderFn } from '@/lib/component'
 import classes from './Group.module.scss'
 
@@ -24,11 +29,13 @@ interface BaseGroupProps {
 interface AnimatedGroupProps {
 	animated: true
 	duration: number
+	stagger?: number
 }
 
 interface StaticGroupProps {
 	animated?: never
 	duration?: never
+	stagger?: never
 }
 
 type GroupProps = BaseGroupProps & (
@@ -44,8 +51,11 @@ type GroupSpecs = {
 interface GroupContext {
 	animated?: boolean
 	duration?: number
+	index?: number
 	revealed?: boolean
+	stagger?: number
 	unstyled?: boolean
+	withinView?: boolean
 }
 
 const tokens = setThemeCSS<GroupSpecs>((theme, _props) => {
@@ -70,6 +80,8 @@ export const Group = polymorphic<GroupSpecs>(_props => {
 		fullWidth,
 		orientation,
 		provider: Provider,
+		revealed,
+		stagger,
 		unstyled,
 		...rest
 	} = props
@@ -81,9 +93,21 @@ export const Group = polymorphic<GroupSpecs>(_props => {
 		grid: !orientation,
 	}
 
-	const cxtValue = useMemo(
-		() => ({ animated, duration, unstyled }),
-		[animated, duration, unstyled]
+	const items = flattenChildren(children, childName),
+		total = items.length
+
+	// one observer for the whole group, so children stagger off a single t=0
+	// rather than each racing its own IntersectionObserver
+	const root = useRef<HTMLDivElement>(null)
+	const withinView = useInView(root, { ...INVIEW_DEFAULTS, once: true })
+
+	// one context value per child — memoised on `total` so identities stay
+	// stable across renders even though each child gets its own object
+	const cxtValues = useMemo(
+		() => Array.from({ length: total }, (_, index) => ({
+			animated, duration, index, revealed, stagger, unstyled, withinView,
+		})),
+		[animated, duration, revealed, stagger, total, unstyled, withinView]
 	)
 
 	return (
@@ -99,14 +123,13 @@ export const Group = polymorphic<GroupSpecs>(_props => {
 				},
 			} }
 			role="group"
+			ref={ root }
 		>
-			{ flattenChildren(children, childName).map((child, index) => {
-				const key = isValidElement(child) && child.key !== null
-					? child.key
-					: index
+			{ items.map((child, i) => {
+				const key = isValidElement(child) && child.key !== null ? child.key : i
 
 				if (Provider)
-					return <Provider key={ key } value={ cxtValue }>{ child }</Provider>
+					return <Provider key={ key } value={ cxtValues[i] }>{ child }</Provider>
 
 				return <Fragment key={ key }>{ child }</Fragment>
 			}) }

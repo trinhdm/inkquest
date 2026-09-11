@@ -9,13 +9,16 @@ import {
 	useInView, type UseInViewOptions,
 	useIsomorphicLayoutEffect, useReducedMotion,
 } from 'framer-motion'
+import { INVIEW_DEFAULTS } from '@/utils/constants'
 
 interface UseCountUpOptions
 	extends UseInViewOptions {
+	delay?: number
 	duration?: number
 	enabled?: boolean
 	start?: number
 	value: number | string
+	withinView?: boolean
 }
 
 interface ParsedValue {
@@ -66,12 +69,14 @@ const parseCountValue = (count: string): ParsedValue | null => {
 }
 
 export const useCountUp = <T extends HTMLElement = HTMLElement>({
-	amount = 0.4,
-	duration = 2000,
+	amount,
+	delay,
+	duration = 3000,
 	enabled = true,
 	once = true,
 	start = 0,
 	value,
+	withinView,
 	...rest
 }: UseCountUpOptions): CountUpValue<T> => {
 	const count = String(value)
@@ -81,7 +86,15 @@ export const useCountUp = <T extends HTMLElement = HTMLElement>({
 	const node = useRef<T | null>(null)
 	const ref = useCallback<RefCallback<T>>(el => { node.current = el }, [])
 
-	const inView = useInView(node, { amount, once, ...rest })
+	// when a group supplies the trigger, keep our own observer idle by handing
+	// `useInView` a ref that is never attached to anything
+	const idle = useRef<T | null>(null),
+		observer = typeof withinView === 'boolean' ? idle : node,
+		viewOptions = { ...INVIEW_DEFAULTS, amount, once, ...rest }
+
+	const inView = useInView(observer, viewOptions),
+		viewable = withinView ?? inView
+
 	const reducedMotion = useReducedMotion()
 
 	useIsomorphicLayoutEffect(() => {
@@ -93,9 +106,10 @@ export const useCountUp = <T extends HTMLElement = HTMLElement>({
 	}, [count, enabled, parsed, reducedMotion, start])
 
 	useEffect(() => {
-		if (reducedMotion || !enabled || !parsed || !inView) return
+		if (reducedMotion || !enabled || !parsed || !viewable) return
 
 		const options: ValueAnimationTransition<number> = {
+			...!!delay ? { delay: delay / 1000 } : {},
 			duration: duration / 1000,
 			ease: [0.16, 1, 0.3, 1],
 			onUpdate: n => setDisplay(parsed.format(n)),
@@ -103,7 +117,7 @@ export const useCountUp = <T extends HTMLElement = HTMLElement>({
 		const controls = animate(start, parsed.end, options)
 
 		return () => controls.stop()
-	}, [duration, enabled, inView, parsed, reducedMotion, start])
+	}, [delay, duration, enabled, parsed, reducedMotion, start, viewable])
 
 	return { display, ref }
 }

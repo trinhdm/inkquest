@@ -15,8 +15,11 @@ interface StatisticProps {
 	duration?: number
 	highlight?: boolean
 	icon?: ReactNode
+	index?: number
 	revealed?: boolean
+	stagger?: number
 	value: number | string
+	withinView?: boolean
 }
 
 interface StatisticSpecs {
@@ -37,11 +40,22 @@ export const Statistic = polymorphic<StatisticSpecs>(_props => {
 		duration,
 		highlight,
 		icon,
+		index = 0,
+		revealed,
+		stagger = 0,
 		value,
+		withinView,
 		...rest
 	} = props
 
-	const { display, ref } = useCountUp({ duration, enabled: animated, value })
+	const { display, ref } = useCountUp({
+		delay: index * stagger,
+		duration,
+		enabled: animated,
+		value,
+		withinView,
+	})
+
 	const { as, others } = extractOtherProps(rest)
 	const global = { highlight }
 

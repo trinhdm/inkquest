@@ -1,8 +1,17 @@
 import { createRootCxt } from '@/lib/component'
 import type { Group } from '@/components/layout'
 
+type SharedGroupCxt =
+	| 'animated'
+	| 'duration'
+	| 'index'
+	| 'revealed'
+	| 'stagger'
+	| 'unstyled'
+	| 'withinView'
+
 interface StatisticGroupContext
-	extends Pick<Group.Context, 'animated' | 'duration' | 'revealed' | 'unstyled'> {}
+	extends Pick<Group.Context, SharedGroupCxt> {}
 
 export const {
 	RootCxtProvider: StatisticGroupProvider,

@@ -66,8 +66,15 @@ export const styleProps = <T extends object>(
 	return filterProps(aliasedProps)
 }
 
-type OtherProps<A extends ElementType = ElementType> =
-	StyleAliasInput & { as?: A }
+type OtherPropsList<E extends ElementType = ElementType> = {
+	animated?: boolean
+	as?: E
+	loading?: boolean
+	revealed?: boolean
+}
+
+type OtherProps<E extends ElementType = ElementType> =
+	StyleAliasInput & OtherPropsList<E>
 
 interface ExtractOtherPropsFn {
 	<T extends object, A extends ElementType = ElementType>(
@@ -80,12 +87,15 @@ interface ExtractOtherPropsFn {
 
 export const extractOtherProps = (<
 	T extends object,
-	A extends ElementType
->(rest: T & OtherProps<A>) => {
+	E extends ElementType
+>(rest: T & OtherProps<E>) => {
 	const {
+		animated,
 		as,
 		className,
 		classNames,
+		loading,
+		revealed,
 		style,
 		styles,
 		...props
