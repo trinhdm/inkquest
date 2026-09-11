@@ -1,4 +1,1 @@
-export {
-	ButtonSection,
-	type ButtonSectionProps, type ButtonSectionSpecs,
-} from './ButtonSection'
+export { ButtonSection } from './ButtonSection'

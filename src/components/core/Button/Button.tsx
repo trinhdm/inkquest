@@ -1,19 +1,14 @@
 import Link from 'next/link'
 import { isValidElement, useMemo, Children } from 'react'
+import { useProps, useStyles, useVariantStyles } from '@/hooks'
+import { extractChildrenText, extractOtherProps } from '@/utils/helpers'
 import { Box, polymorphic } from '@/components/core/Box'
-import {
-	ButtonGroup, useButtonGroupProps,
-	type ButtonGroupProps, type ButtonGroupSpecs,
-} from './ButtonGroup'
-import {
-	ButtonSection,
-	type ButtonSectionProps, type ButtonSectionSpecs,
-} from './ButtonSection'
+import { ButtonGroup, useButtonGroupProps } from './ButtonGroup'
+import { ButtonProvider } from './Button.context'
+import { ButtonSection } from './ButtonSection'
 import { Icon } from '../Icon'
 // import { setThemeCSS, type ColorVariable } from '@/lib/theme'
-import { useProps, useStyles, useVariantStyles } from '@/hooks'
-import { ButtonProvider } from './Button.context'
-import type { ComponentPropsWithoutRef, MouseEventHandler, Ref } from 'react'
+import type { ComponentPropsWithoutRef, MouseEventHandler, ReactNode, Ref } from 'react'
 import type { Route } from 'next'
 import type { Priority as ThemePriority, Variant as ThemeVariant } from '@/lib/theme'
 import classes from './Button.module.scss'
@@ -196,13 +191,13 @@ export declare namespace Button {
 	export type Variant = ThemeVariant
 
 	export namespace Group {
-		export type Props = ButtonGroupProps
-		export type Specs = ButtonGroupSpecs
+		export type Props = ButtonGroup.Props
+		export type Specs = ButtonGroup.Specs
 	}
 
 	export namespace Section {
-		export type Props = ButtonSectionProps
-		export type Specs = ButtonSectionSpecs
+		export type Props = ButtonSection.Props
+		export type Specs = ButtonSection.Specs
 	}
 }
 

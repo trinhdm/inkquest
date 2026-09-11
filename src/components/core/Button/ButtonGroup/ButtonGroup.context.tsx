@@ -1,7 +1,7 @@
 import { createRootCxt } from '@/lib/component'
 import type { Button } from '../Button'
 
-export interface ButtonGroupCxtValue {
+interface ButtonGroupCxtValue {
 	disabled?: boolean
 	loading?: boolean
 	priority?: Button.Priority

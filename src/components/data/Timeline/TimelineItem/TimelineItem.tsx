@@ -7,8 +7,8 @@ import classes from '../Timeline.module.scss'
 const NAME = 'TimelineItem' as const
 
 interface TimelineItemProps {
-	children: string
 	bullet?: ReactNode
+	content: string
 	title?: string
 }
 
@@ -23,7 +23,7 @@ export const TimelineItem = polymorphic<TimelineItemSpecs>(_props => {
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { classes, props })
 
-	const { bullet, children, title, ...rest } = props
+	const { bullet, children, content, title, ...rest } = props
 	const { others } = extractOtherProps(rest)
 
 	return (
@@ -39,7 +39,7 @@ export const TimelineItem = polymorphic<TimelineItemSpecs>(_props => {
 					</span>
 				) }
 				<p { ...styles('content') }>
-					{ children }
+					{ content ?? children }
 				</p>
 			</div>
 		</Box>

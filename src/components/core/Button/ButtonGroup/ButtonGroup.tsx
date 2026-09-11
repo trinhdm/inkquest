@@ -10,7 +10,7 @@ const PRIORITY_ROLES: Button.Priority[] = ['primary', 'secondary', 'tertiary'] a
 const NAME = 'ButtonGroup' as const,
 	DEFAULT_TAG = 'div' as const
 
-export interface ButtonGroupProps {
+interface ButtonGroupProps {
 	children?: ReactNode
 	fullWidth?: boolean
 	justify?: CSSProperties['justifyContent']
@@ -22,7 +22,7 @@ export interface ButtonGroupProps {
 	size?: Button.Props['size']
 }
 
-export type ButtonGroupSpecs = {
+type ButtonGroupSpecs = {
 	props: ButtonGroupProps
 	specIs: { compound: true }
 }

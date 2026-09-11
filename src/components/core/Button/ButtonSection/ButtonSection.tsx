@@ -16,12 +16,12 @@ interface RightSectionProps {
 	right: true
 }
 
-export type ButtonSectionProps = (
+type ButtonSectionProps = (
 	| LeftSectionProps
 	| RightSectionProps
 )
 
-export type ButtonSectionSpecs = {
+type ButtonSectionSpecs = {
 	props: ButtonSectionProps
 	specIs: { compound: true }
 }
