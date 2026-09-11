@@ -62,11 +62,6 @@
 		cursor: pointer;
 	}
 
-	&:where([data-block]) {
-		display: block;
-		width: 100%;
-	}
-
 	&:where([data-disabled]) {
 		background-color: rgb(from var(--button-background) r g b / var(--inkq-opacity-disabled));
 		// opacity: var(--inkq-opacity-disabled);

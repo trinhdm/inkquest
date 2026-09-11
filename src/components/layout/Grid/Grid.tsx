@@ -27,15 +27,19 @@ export const Grid = polymorphic<GridSpecs>(_props => {
 
 	const { children, columns, ...rest } = props
 	const { as, others } = extractOtherProps(rest)
-	const colClass = !!(columns && columns > 0) && `${NAME}--${columns}-col`
+
+	const clsx = {
+		[`${NAME}--${columns}-col`]: !!(columns && columns > 0)
+	}
 
 	return (
 		<Box
 			as={ as }
-			{ ...styles('root', { cn: colClass }) }
+			{ ...styles('root', { clsx }) }
 			{ ...others }
 		>
-			{ flattenChildren(children, 'GridItem').map(child => child) }
+			{ children }
+			{/* { flattenChildren(children, 'GridItem').map(child => child) } */}
 		</Box>
 	)
 }, classes)

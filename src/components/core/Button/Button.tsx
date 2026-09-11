@@ -119,7 +119,7 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 	} = props
 
 	const { as, others } = extractOtherProps(rest)
-	const buttonCxtValue = useMemo(() => ({ displayName: NAME, unstyled }), [unstyled])
+	const clsx = { block: fullWidth }
 
 	const ariaLabel = extractChildrenText(children),
 		aria = { label: !!ariaLabel.length ? ariaLabel : undefined }
@@ -130,6 +130,11 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 		block: !!fullWidth || null,
 		disabled: !!disabled || null,
 		loading: !!loading || null,
+	}
+
+	const sharedProps = {
+		attributes: { aria, data },
+		...styles('root', { clsx }),
 	}
 
 	const buttonCxtValue = useMemo(() => ({ displayName: NAME, unstyled }), [unstyled])
@@ -150,10 +155,9 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 
 		return (
 			<Box
-				as={ Link }
-				attributes={ { aria, data } }
-				{ ...styles('root') }
+				{ ...sharedProps }
 				{ ...others as Extract<typeof others, LinkButtonProps> }
+				as={ Link }
 			>
 				{ inner }
 			</Box>
@@ -162,10 +166,9 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 
 	return (
 		<Box
-			as={ as }
-			attributes={ { aria, data } }
-			{ ...styles('root') }
+			{ ...sharedProps }
 			{ ...others }
+			as={ as }
 		>
 			{ inner }
 		</Box>

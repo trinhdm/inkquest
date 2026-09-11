@@ -1,24 +1,9 @@
-
 .inkq-container {
 	$name: &;
 
-	position: relative;
-
-	&__inner {
+	&__wrapper {
 		& > :first-child {
 			margin-top: 0;
 		}
 	}
-
-	// &:first-child #{$name} {
-	// 	&__description {
-	// 		margin-top: var(--inkq-hero-gap-lede);
-	// 	}
-	// }
-
-	// &:not(:first-child) #{$name} {
-	// 	&__description {
-	// 		margin-top: var(--inkq-stack-gap-lede);
-	// 	}
-	// }
 }

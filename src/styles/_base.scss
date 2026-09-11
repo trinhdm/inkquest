@@ -65,11 +65,39 @@ ul {
 	-webkit-user-drag: none;
 }
 
+.inkq-wrapper {
+	margin: 0 auto;
+	max-width: var(--inkq-container-page);
+	padding-inline: var(--inkq-gutter);
+	width: 100%;
+}
+
+.inkq-block {
+	&,
+	&:where([data-block]) {
+		display: block;
+		width: 100%;
+	}
+}
+
+.inkq-caption,
 .inkq-eyebrow {
-	color: var(--inkq-color-action);
-	font: var(--inkq-font-section-eyebrow);
+	color: var(--inkq-color-text-tertiary);
 	letter-spacing: var(--inkq-font-tracking-wide);
 	text-transform: uppercase;
+}
+
+.inkq-eyebrow {
+	font: var(--inkq-text-section-eyebrow);
+}
+
+.inkq-caption {
+	font: var(--inkq-text-caption-item);
+	text-wrap: balance;
+}
+
+.inkq-highlight {
+	color: var(--inkq-color-action);
 }
 
 

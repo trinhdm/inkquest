@@ -1,5 +1,6 @@
-import { Box, polymorphic } from '@/components/core/Box'
 import { useProps, useStyles, useVariantStyles } from '@/hooks'
+import { extractOtherProps } from '@/utils/helpers'
+import { Box, polymorphic } from '@/components/core/Box'
 // import { setThemeCSS, type ColorVariable } from '@/lib/theme'
 // import type { ReactNode } from 'react'
 import classes from './Badge.module.scss'
@@ -45,7 +46,6 @@ export const Badge = polymorphic<BadgeSpecs>(_props => {
 	const styles = useStyles(NAME, { classes, props })
 
 	const {
-		as,
 		children,
 		fullWidth,
 		shape,
@@ -54,17 +54,16 @@ export const Badge = polymorphic<BadgeSpecs>(_props => {
 		...rest
 	} = props
 
+	const { as, others } = extractOtherProps(rest)
+	const clsx = { block: fullWidth },
+		data = { variant, block: !!fullWidth || null }
+
 	return (
 		<Box
 			as={ as }
-			attributes={ {
-				data: {
-					variant,
-					block: !!fullWidth || null,
-				}
-			} }
-			{ ...styles('root') }
-			{ ...rest }
+			attributes={ { data } }
+			{ ...styles('root', { clsx }) }
+			{ ...others }
 		>
 			<Box as="span" { ...styles('inner') }>
 				{ children }

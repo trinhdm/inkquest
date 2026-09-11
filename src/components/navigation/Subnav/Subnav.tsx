@@ -31,7 +31,7 @@ export const Subnav = polymorphic<SubnavSpecs>(_props => {
 			{ ...styles('root') }
 			{ ...rest }
 		>
-			<div { ...styles('wrapper') }>
+			<div { ...styles('wrapper', true) }>
 				<div { ...styles('inner') }>
 					{ !!navItems.length && (
 						<>

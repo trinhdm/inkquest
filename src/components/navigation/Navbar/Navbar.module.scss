@@ -10,21 +10,14 @@
 	position: relative;
 	z-index: 20;
 
-	&__wrapper {
-		margin: 0 auto -1px;
-		max-width: var(--inkq-container-page);
-		padding-inline: var(--inkq-gutter);
-		width: 100%;
-	}
-
 	&__inner {
 		align-items: center;
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(var(--screen-size-320), 1fr));
-		justify-content: center;
+		justify-content: space-between;
 
 		&:has(#{$name}__col:nth-child(3):last-child) {
-			grid-template-columns: 1fr auto 1fr;
+			grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
 		}
 	}
 

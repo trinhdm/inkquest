@@ -5,13 +5,6 @@
 	padding-block: var(--inkq-section-padding);
 	position: relative;
 
-	&__wrapper {
-		margin: 0 auto;
-		max-width: var(--inkq-container-page);
-		padding-inline: var(--inkq-gutter);
-		width: 100%;
-	}
-
 	&__title {
 		letter-spacing: var(--inkq-font-tracking-display);
 		margin-top: var(--inkq-stack-gap-kicker);
@@ -29,16 +22,12 @@
 	}
 
 	&__cta {
+		justify-self: center;
 		margin-top: var(--inkq-stack-gap-cta);
 	}
 
 	&:not(:last-child) {
 		border-bottom: 1px solid var(--inkq-border);
-	}
-
-	&:where([data-block]) {
-		display: block;
-		width: 100%;
 	}
 
 	&--hero,

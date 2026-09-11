@@ -19,9 +19,4 @@
 		justify-content: center;
 		position: relative;
 	}
-
-	&:where([data-block]) {
-		display: block;
-		width: 100%;
-	}
 }

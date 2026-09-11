@@ -34,7 +34,7 @@ export const Navbar = polymorphic<NavbarSpecs>(_props => {
 			{ ...styles('root') }
 			{ ...rest }
 		>
-			<div { ...styles('wrapper') }>
+			<div { ...styles('wrapper', true) }>
 				<div { ...styles('inner') }>
 					<div { ...styles('col') }>
 						<Link href="/">logo</Link>

@@ -15,14 +15,17 @@ interface StyleOptions<P extends object, V extends object = object> {
 	tokens?: ThemeCSSConfig<P, V>
 }
 
+interface SelectorConfigOptions
+	extends SpecAttributes {
+	clsx?: ClassValue
+}
+
 interface SelectorArgs {
 	check: {
 		isRoot: boolean
 		isUnstyled: boolean
 	}
-	config?: SpecAttributes & {
-		clsx?: ClassValue
-	}
+	config?: true | SelectorConfigOptions
 	selector: string
 }
 

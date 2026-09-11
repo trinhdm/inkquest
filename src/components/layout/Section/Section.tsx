@@ -117,12 +117,15 @@ export const Section = polymorphic<SectionSpecs>(_props => {
 	} = props
 
 	const { others } = extractOtherProps(rest)
-	const layoutClass = !!(layout && layout !== 'default') && `${NAME}--${layout}`
+
+	const clsx = {
+		[`${NAME}--${layout}`]: !!(layout && layout !== 'default')
+	}
 
 	return (
 		<Box
 			as={ Container }
-			{ ...styles('root', { cn: layoutClass }) }
+			{ ...styles('root', { clsx }) }
 			{ ...others }
 		>
 			{ buildSection(props, styles) }

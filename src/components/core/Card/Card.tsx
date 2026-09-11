@@ -48,7 +48,9 @@ export const Card = polymorphic<CardSpecs>(_props => {
 				</div>
 				<div { ...styles('info') }>
 					<h3 { ...styles('title') }>{ title }</h3>
-					{ caption && <span { ...styles('caption') }>{ caption }</span> }
+					{ caption && (
+						<span { ...styles('caption', true) }>{ caption }</span>
+					) }
 				</div>
 			</div>
 		</Box>

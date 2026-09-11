@@ -29,7 +29,7 @@ export const Quote = polymorphic<QuoteSpecs>(_props => {
 			<p { ...styles('content') }>
 				"{ quote ?? children }"
 			</p>
-			<span { ...styles('author', { clsx: 'caption' }) }>
+			<span { ...styles('caption', true) }>
 				{ author }
 			</span>
 		</Box>

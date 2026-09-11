@@ -23,6 +23,7 @@ export const Container = polymorphic<ContainerSpecs>(_props => {
 
 	const { children, fullWidth, ...rest } = props
 	const { as, others } = extractOtherProps(rest)
+	const clsx = { block: fullWidth }
 
 	return (
 		<Box
@@ -30,10 +31,10 @@ export const Container = polymorphic<ContainerSpecs>(_props => {
 			attributes={ {
 				data: { block: !!fullWidth || null },
 			} }
-			{ ...styles('root') }
+			{ ...styles('root', { clsx }) }
 			{ ...others }
 		>
-			<div { ...styles('wrapper') }>
+			<div { ...styles('wrapper', true) }>
 				{ children }
 			</div>
 		</Box>

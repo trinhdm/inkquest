@@ -10,13 +10,6 @@
 	position: relative;
 	z-index: 15;
 
-	&__wrapper {
-		margin: 0 auto -1px;
-		max-width: var(--inkq-container-page);
-		padding-inline: var(--inkq-gutter);
-		width: 100%;
-	}
-
 	&__inner {
 		align-items: center;
 		display: flex;

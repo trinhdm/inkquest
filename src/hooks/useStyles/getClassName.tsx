@@ -6,12 +6,12 @@ const formatClass = <P extends object, V extends object>(
 	name: SharedConfig<P, V>['name'],
 	prefix: SharedConfig<P, V>['prefix'],
 ): string => {
-	let baseName = toKebabCase(name)
+	let className = toKebabCase(name)
 
-	if (prefix && !baseName.startsWith(prefix))
-		baseName = `${prefix}-${baseName}`
+	if (prefix && !className.startsWith(prefix))
+		className = `${prefix}-${className}`
 
-	return baseName
+	return className
 }
 
 const getBaseClass = <P extends object, V extends object>({
@@ -29,29 +29,23 @@ const getBaseClass = <P extends object, V extends object>({
 }
 
 const getStyleClass = <P extends object, V extends object>(
+	baseName: string,
 	args: SharedConfig<P, V>
 ): string | undefined => {
 	const { check, classes } = args
-
-	if (check.isUnstyled) return
-
-	const baseClass = getBaseClass(args)
-
-	if (classes && Object.hasOwn(classes, baseClass))
-		return classes[baseClass]
+	if (check.isUnstyled || !classes || !Object.hasOwn(classes, baseName)) return
+	return classes[baseName]
 }
 
-// const hasAdditional = <P extends object, V extends object>(
-// 	args: SharedConfig<P, V>
-// ): args is InheritConfig<P, V> =>
-// 	args.config && 'cn' in args.config && typeof args.config.clsx === 'string'
+const getConfigClasses = <P extends object, V extends object>(
+	args: SharedConfig<P, V>
+): string | undefined => {
+	const { config, prefix, selector } = args
 
-const outputExtraClasses = <P extends object, V extends object>({
-	classes,
-	config,
-	prefix,
-}: SharedConfig<P, V>): string | undefined => {
-	if (!config || !config.clsx) return
+	if (typeof config === 'boolean')
+		return formatClass(`${selector}`, prefix)
+
+	else if (!config || !Object.hasOwn(config, 'clsx') || !config.clsx) return
 
 	const { clsx } = config
 
@@ -63,27 +57,22 @@ const outputExtraClasses = <P extends object, V extends object>({
 
 		for (const className of validClasses) {
 			const baseName = formatClass(className, prefix),
-				target = classes && Object.hasOwn(classes, baseName)
-					? classes[baseName]
-					: baseName
+				target = getStyleClass(baseName, args)
 
-			classList.push(target)
+			classList.push(target ?? baseName)
 		}
 
 		return cx(...classList)
 	}
 
-	const target = formatClass(`${clsx}`, prefix)
+	const baseName = formatClass(`${clsx}`, prefix),
+		target = getStyleClass(baseName, args)
 
-	return classes && Object.hasOwn(classes, target)
-		? classes[target]
-		: target
+	return target ?? baseName
 }
 
-type Inheritable = Record<'className', string>
-
 type InheritConfig<P extends object, V extends object> =
-	Omit<SharedConfig<P, V>, 'props'> & { props: P & Inheritable }
+	Omit<SharedConfig<P, V>, 'props'> & { props: P & Record<'className', string> }
 
 const canInherit = <P extends object, V extends object>(
 	args: SharedConfig<P, V>
@@ -117,9 +106,14 @@ const inheritClasses = <P extends object, V extends object>({
 		element = `__${self}`
 	}
 
+	const isExtendable = (cn: string) =>
+		!!prefix && cn.startsWith(prefix) && !cn.includes('--')
+
 	return classList
-		.filter(cn => !check.isUnstyled || (!!prefix && cn.startsWith(prefix)))
-		// .filter(cn => !!prefix && cn.startsWith(prefix))
+		.filter(cn => check.isRoot
+			? (!check.isUnstyled || (!!prefix && cn.startsWith(prefix)))
+			: isExtendable(cn)
+		)
 		.map(cn => {
 			const root = suffix && cn.endsWith(suffix)
 				? `${cn.slice(0, -suffix.length)}${element}`
@@ -132,12 +126,15 @@ const inheritClasses = <P extends object, V extends object>({
 export const getClassName = <P extends object, V extends object>(
 	args: SharedConfig<P, V>
 ): string => {
-	const inherited = canInherit(args) ? inheritClasses(args) : [],
-		[namespace, ...modules] = inherited,
+	const baseName = getBaseClass(args),
+		styleClass = getStyleClass(baseName, args),
+		inherited = canInherit(args) ? inheritClasses(args) : []
+
+	const [namespace, ...modules] = inherited,
 		classList = [
-			namespace ?? getBaseClass(args),
-			getStyleClass(args),
-			outputExtraClasses(args),
+			namespace ?? baseName,
+			styleClass,
+			getConfigClasses(args),
 		]
 
 	return cx(...classList, ...modules)
