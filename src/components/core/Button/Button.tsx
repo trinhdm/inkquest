@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { LoaderCircle } from 'lucide-react'
 import { isValidElement, useMemo, Children } from 'react'
 import { useProps, useStyles, useVariantStyles } from '@/hooks'
 import { extractChildrenText, extractOtherProps } from '@/utils/helpers'
@@ -122,6 +123,7 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 	const data = {
 		variant,
 		priority,
+		size,
 		block: !!fullWidth || null,
 		disabled: !!disabled || null,
 		loading: !!loading || null,
@@ -137,7 +139,7 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 	const inner = (
 		<ButtonProvider value={ buttonCxtValue }>
 			<Box as="span" { ...styles('inner') }>
-				{ loading && <Icon { ...styles('icon') } type="loading" /> }
+				{ loading && <Box as={ LoaderCircle } { ...styles('icon') } /> }
 				{ buildSections(props, styles) }
 			</Box>
 		</ButtonProvider>

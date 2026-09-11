@@ -9,6 +9,7 @@ const NAME = 'Icon' as const,
 
 interface IconProps {
 	color?: LucideProps['color']
+	filled?: boolean
 	size?: LucideProps['size']
 	strokeWidth?: LucideProps['strokeWidth']
 	type: IconType
@@ -23,11 +24,7 @@ export const Icon = polymorphic<IconSpecs>(_props => {
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { classes, props })
 
-	const {
-		as,
-		type,
-		...rest
-	} = props
+	const { as, filled, type, ...rest } = props
 
 	const component = ICON_MAP[type]
 	if (!component) return null
@@ -35,6 +32,7 @@ export const Icon = polymorphic<IconSpecs>(_props => {
 	return (
 		<Box
 			as={ component }
+			fill={ filled ? 'currentColor' : undefined }
 			{ ...styles('root') }
 			{ ...rest }
 		/>

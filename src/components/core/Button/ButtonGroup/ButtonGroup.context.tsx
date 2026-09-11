@@ -5,6 +5,7 @@ interface ButtonGroupCxtValue {
 	disabled?: boolean
 	loading?: boolean
 	priority?: Button.Priority
+	size?: Button.Size
 	unstyled?: boolean
 }
 
