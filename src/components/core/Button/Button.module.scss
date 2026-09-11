@@ -1,15 +1,23 @@
 .inkq-button {
 	$name: &;
 
+	--button-background: var(--variant-background);
+	--button-border: var(--variant-border);
+	--button-color: var(--variant-color);
+	--button-height: 2.25rem;
+	--button-icon-size: calc((var(--button-height) * .5) - .125rem);
+	--button-padding: var(--inkq-pad-chip);
+
 	background-color: var(--button-background);
     border-radius: var(--inkq-border-radius-chip);
-    border: 1px solid var(--button-border);
-	color: var(--button-color);
+    border: 1px solid var(--button-border, transparent);
+	color: var(--button-color, inherit);
 	display: inline-block;
-	font: var(--inkq-font-label);
+	font: var(--inkq-text-label);
     letter-spacing: var(--inkq-font-tracking-stat);
+	max-height: var(--button-height, 'none');
 	overflow: hidden;
-    padding: var(--inkq-pad-chip);
+    padding: var(--button-padding);
 	position: relative;
     text-decoration: none;
 	touch-action: manipulation;
@@ -34,7 +42,7 @@
 	&__inner {
 		align-items: center;
 		display: flex;
-		gap: var(--inkq-space-inset-sm) var(--inkq-space-inset-min);
+		gap: var(--inkq-space-chip);
 		justify-content: center;
 		position: relative;
 	}
@@ -74,12 +82,13 @@
 			opacity: 1;
 		}
 
-		#{$name}__label,
-		#{$name}__section {
+		#{$name} {
+			&__label,
+			&__section {
 			opacity: 0;
 		}
 
-		#{$name}__icon {
+			&__icon {
 			animation:
 				fadeIn var(--duration-default) ease-out var(--duration-instant) forwards,
 				spin 2s linear calc(var(--duration-gradual) - var(--duration-default)) infinite;
@@ -89,9 +98,8 @@
 
 .inkq-button-group {
 	display: flex;
-	gap: var(--inkq-space-inset-sm);
+	gap: var(--inkq-space-group);
 	max-width: fit-content;
-	padding-block: var(--inkq-space-inset-sm);
 
 	&:where([data-block]) {
 		flex: 1 1 100%;
@@ -100,26 +108,18 @@
 		width: 100%;
 	}
 
-	&:where([data-direction="vertical"]) {
+	&:where([data-orientation="vertical"]) {
 		flex-direction: column;
 	}
 }
 
 @keyframes fadeIn {
-	from {
-		opacity: 0;
-	}
-	to {
-		opacity: 1;
-	}
+	from { opacity: 0; }
+	to { opacity: 1; }
 }
 
 
 @keyframes spin {
-	0% {
-		transform: rotate(0deg);
-	}
-	100% {
-		transform: rotate(360deg);
-	}
+	0% { transform: rotate(0deg); }
+	100% { transform: rotate(360deg); }
 }

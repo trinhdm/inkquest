@@ -17,8 +17,8 @@
 	}
 
 	&__label {
-		color: var(--inkq-accent);
-		font: var(--inkq-font-control);
+		color: var(--inkq-color-action);
+		font: var(--inkq-text-control);
 		letter-spacing: var(--inkq-font-tracking-wide);
 		text-transform: uppercase;
 	}
@@ -33,7 +33,7 @@
 		padding-inline: var(--inkq-space-icon);
 
 		&::after {
-			background-color: var(--inkq-accent);
+			background-color: var(--inkq-color-action);
 			bottom: -1px;
 			content: '';
 			display: block;

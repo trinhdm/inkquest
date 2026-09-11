@@ -1,11 +1,15 @@
 .inkq-badge {
+	--badge-background: var(--variant-background);
+	--badge-border: var(--variant-border);
+	--badge-color: var(--variant-color);
+
 	align-items: center;
 	background-color: var(--badge-background);
     border: 1px solid var(--badge-border);
 	border-radius: var(--inkq-border-radius-control);
 	color: var(--badge-color);
 	display: inline-flex;
-	font: var(--inkq-font-control);
+	font: var(--inkq-text-control);
 	justify-content: center;
 	letter-spacing: .075em;
 	padding: var(--inkq-pad-chip);
@@ -15,7 +19,7 @@
 	&__inner {
 		align-items: center;
 		display: flex;
-		gap: var(--inkq-space-inset-sm);
+		gap: var(--inkq-space-icon);
 		justify-content: center;
 		position: relative;
 	}

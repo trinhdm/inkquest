@@ -1,20 +1,20 @@
 body {
 	background: var(--inkq-background-page);
 	color: var(--inkq-color-text);
-	font: var(--inkq-font-body);
-	-webkit-font-smoothing: antialiased;
+	font: var(--inkq-text-body);
+	font-smooth: antialiased;
 }
 
 h1 {
-	font: var(--inkq-font-h1-fluid);
+	font: var(--inkq-text-h1-fluid);
 }
 
 h2 {
-	font: var(--inkq-font-h2-fluid);
+	font: var(--inkq-text-h2-fluid);
 }
 
 h3 {
-	font: var(--inkq-font-h3-fluid);
+	font: var(--inkq-text-h3-fluid);
 }
 
 a:where(:not([class])) {
