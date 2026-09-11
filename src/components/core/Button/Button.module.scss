@@ -24,20 +24,6 @@
     transition: var(--inkq-motion-colors);
 	vertical-align: middle;
 
-	&::after {
-		background-color: inherit;
-		content: '';
-		display: block;
-		height: 100%;
-		inset: 0;
-		opacity: 0;
-		pointer-events: none;
-		position: absolute;
-		transition: var(--inkq-motion-colors), var(--inkq-motion-opacity);
-		width: 100%;
-		z-index: 1;
-	}
-
 	&__inner {
 		--icon-size: var(--button-icon-size);
 
@@ -62,6 +48,20 @@
 		position: absolute;
 		width: 1em;
 		z-index: 5;
+	}
+
+	&::after {
+		background-color: inherit;
+		content: '';
+		display: block;
+		height: 100%;
+		inset: 0;
+		opacity: 0;
+		pointer-events: none;
+		position: absolute;
+		transition: var(--inkq-motion-colors), var(--inkq-motion-opacity);
+		width: 100%;
+		z-index: 1;
 	}
 
 	&:not(
@@ -102,7 +102,14 @@
 		}
 	}
 
-	&:where([data-size="lg"]) {
+	&--md {
+		--button-height: 3rem;
+		--button-padding: var(--inkq-pad-chip);
+
+		font-size: var(--inkq-text-size-body);
+	}
+
+	&--lg {
 		--button-height: 3.375rem;
 		--button-padding: var(--inkq-pad-block);
 
@@ -111,8 +118,10 @@
 }
 
 .inkq-button-group {
+	--button-gap: var(--inkq-space-group);
+
 	display: flex;
-	gap: var(--inkq-space-group);
+	gap: var(--button-gap);
 	max-width: fit-content;
 
 	&:where([data-block]) {
@@ -122,12 +131,16 @@
 		width: 100%;
 	}
 
-	&:where([data-orientation="vertical"]) {
-		flex-direction: column;
+	&--md {
+		--button-gap: var(--inkq-space-group);
 	}
 
-	&:has(> [data-size="lg"]) {
-		gap: var(--inkq-space-group-lg);
+	&--lg {
+		--button-gap: var(--inkq-space-group-lg);
+	}
+
+	&--vertical {
+		flex-direction: column;
 	}
 }
 

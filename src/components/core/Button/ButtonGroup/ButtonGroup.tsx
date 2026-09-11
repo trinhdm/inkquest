@@ -1,4 +1,4 @@
-import { isValidElement, type CSSProperties, type ReactNode } from 'react'
+import { isValidElement, useMemo, type CSSProperties, type ReactNode } from 'react'
 import { useProps, useStyles } from '@/hooks'
 import { extractOtherProps, flattenChildren } from '@/utils/helpers'
 import { Box, polymorphic } from '@/components/core/Box'
@@ -51,27 +51,37 @@ export const ButtonGroup = polymorphic<ButtonGroupSpecs>(_props => {
 
 	const { others } = extractOtherProps(rest)
 
+	const module = {
+		[`${orientation}`]: orientation,
+		[`${size}`]: size,
+	}
+
+	const items = flattenChildren(children, 'Button'),
+		total = items.length
+
+	const cxtValues = useMemo(
+		() => Array.from({ length: total }, (_, index) => ({
+			disabled, loading, size, unstyled,
+			priority: hasPriority ? derivePriority(index) : undefined,
+		})),
+		[disabled, hasPriority, loading, size, total, unstyled]
+	)
+
 	return (
 		<Box
+			{ ...styles('root', { module }) }
+			{ ...others }
 			as={ DEFAULT_TAG }
 			attributes={ {
 				aria: { orientation },
-				data: {
-					block: !!fullWidth || null,
-					orientation: (orientation === 'vertical' && 'vertical') || null,
-				},
+				data: { block: !!fullWidth || null },
 			} }
 			role="group"
-			{ ...styles('root') }
-			{ ...others }
 		>
-			{ flattenChildren(children, 'Button').map((child, index) => (
+			{ items.map((child, index) => (
 				<ButtonGroupProvider
 					key={ isValidElement(child) && child.key !== null ? child.key : index }
-					value={ {
-						disabled, loading, size, unstyled,
-						priority: hasPriority ? derivePriority(index) : undefined,
-					} }
+					value={ cxtValues[index] }
 				>
 					{ child }
 				</ButtonGroupProvider>

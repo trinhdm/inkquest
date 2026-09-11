@@ -7,7 +7,7 @@ import { Box, polymorphic } from '@/components/core/Box'
 import { ButtonGroup, useButtonGroupProps } from './ButtonGroup'
 import { ButtonProvider } from './Button.context'
 import { ButtonSection } from './ButtonSection'
-import { Icon } from '../Icon'
+// import { Icon } from '../Icon'
 // import { setThemeCSS, type ColorVariable } from '@/lib/theme'
 import type { ComponentPropsWithoutRef, MouseEventHandler, ReactNode, Ref } from 'react'
 import type { Route } from 'next'
@@ -45,6 +45,7 @@ interface BaseButtonProps {
 	loading?: boolean
 	priority?: ThemePriority
 	size?: ButtonSize
+	showLabel?: boolean
 	variant?: ThemeVariant
 }
 
@@ -64,12 +65,10 @@ interface ButtonSpecs {
 }
 
 const buildSections = (
-	props: ButtonProps,
+	children: ButtonProps['children'],
 	styles: ReturnType<typeof useStyles>
 ) => {
-	const { children } = props,
-		label: ReactNode[] = []
-
+	const label: ReactNode[] = []
 	let left: ReactNode = null,
 		right: ReactNode = null
 
@@ -109,21 +108,25 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 		loading,
 		priority,
 		size,
+		showLabel,
 		unstyled,
 		variant,
 		...rest
 	} = props
 
 	const { as, others } = extractOtherProps(rest)
-	const global = { block: fullWidth }
+
+	const clsx = {
+		global: { block: fullWidth },
+		module: { [`${size}`]: size },
+	}
 
 	const ariaLabel = extractChildrenText(children),
-		aria = { label: !!ariaLabel.length ? ariaLabel : undefined }
+		aria = { label: !!(showLabel && ariaLabel.length) ? ariaLabel : undefined }
 
 	const data = {
 		variant,
 		priority,
-		size,
 		block: !!fullWidth || null,
 		disabled: !!disabled || null,
 		loading: !!loading || null,
@@ -131,16 +134,16 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 
 	const sharedProps = {
 		attributes: { aria, data },
-		...styles('root', { global }),
+		...styles('root', clsx),
 	}
 
-	const buttonCxtValue = useMemo(() => ({ displayName: NAME, unstyled }), [unstyled])
+	const cxtValue = useMemo(() => ({ displayName: NAME, unstyled }), [unstyled])
 
 	const inner = (
-		<ButtonProvider value={ buttonCxtValue }>
+		<ButtonProvider value={ cxtValue }>
 			<Box as="span" { ...styles('inner') }>
 				{ loading && <Box as={ LoaderCircle } { ...styles('icon') } /> }
-				{ buildSections(props, styles) }
+				{ buildSections(children, styles) }
 			</Box>
 		</ButtonProvider>
 	)
