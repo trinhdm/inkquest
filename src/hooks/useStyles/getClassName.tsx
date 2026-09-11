@@ -1,31 +1,31 @@
-import cx from 'clsx'
-import { toKebabCase } from '@/utils/helpers'
+import cx, { type ClassValue } from 'clsx'
+import { isObject, toKebabCase } from '@/utils/helpers'
 import type { SharedConfig } from './useStyles'
 
-const formatClass = <P extends object, V extends object>(
+const getBaseClass = <P extends object, V extends object>(
 	name: SharedConfig<P, V>['name'],
 	prefix: SharedConfig<P, V>['prefix'],
 ): string => {
-	let className = toKebabCase(name)
+	let baseName = toKebabCase(name)
 
-	if (prefix && !className.startsWith(prefix))
-		className = `${prefix}-${className}`
+	if (prefix && !baseName.startsWith(prefix))
+		baseName = `${prefix}-${baseName}`
 
-	return className
+	return baseName
 }
 
-const getBaseClass = <P extends object, V extends object>({
+const nameClassBase = <P extends object, V extends object>({
 	check,
 	name,
 	prefix,
 	selector,
 }: SharedConfig<P, V>): string => {
-	let baseName = formatClass(name, prefix)
+	let classBase = getBaseClass(name, prefix)
 
 	if (!check.isRoot)
-		baseName += `__${selector}`
+		classBase += `__${selector}`
 
-	return baseName
+	return classBase
 }
 
 const getStyleClass = <P extends object, V extends object>(
@@ -37,38 +37,84 @@ const getStyleClass = <P extends object, V extends object>(
 	return classes[baseName]
 }
 
-const getConfigClasses = <P extends object, V extends object>(
-	args: SharedConfig<P, V>
+type SelectorConfig<P extends object, V extends object> =
+	Omit<SharedConfig<P, V>, 'config'> & {
+		config: Extract<SharedConfig<P, V>['config'], object>
+	}
+
+const formatConfigClass = <P extends object, V extends object>(
+	modifier: NonNullable<Exclude<ClassValue, object>>,
+	key: keyof SelectorConfig<P, V>['config'],
+	args: SelectorConfig<P, V>
+): string => {
+	const { name, prefix } = args,
+		mod = `${modifier}`,
+		target = key === 'module' ? `${name}--${mod}` : mod
+
+	const baseName = getBaseClass(target, prefix),
+		styleName = getStyleClass(baseName, args)
+
+	return styleName ?? baseName
+}
+
+const getConfigClassList = <P extends object, V extends object>(
+	key: keyof SelectorConfig<P, V>['config'],
+	args: SelectorConfig<P, V>
 ): string | undefined => {
-	const { config, prefix, selector } = args
+	const { config } = args
 
-	if (typeof config === 'boolean')
-		return formatClass(`${selector}`, prefix)
+	if (!Object.hasOwn(config, key) || !config[key]) return
 
-	else if (!config || !Object.hasOwn(config, 'clsx') || !config.clsx) return
+	const classList = [],
+		values = config[key]
 
-	const { clsx } = config
+	if (Array.isArray(values)) {
+		for (const value of values) {
+			const className = formatConfigClass(value, key, args)
+			classList.push(className)
+		}
 
-	if (Array.isArray(clsx)) {
-		return cx(...clsx)
-	} else if (typeof clsx === 'object') {
-		const classList = [],
-			validClasses = Object.entries(clsx).filter(([_, v]) => v === true).map(([k]) => k)
+		return cx(...classList)
+	} else if (typeof values === 'object') {
+		const validClasses = Object.entries(values).filter(([_, v]) => !!v).map(([k]) => k)
 
-		for (const className of validClasses) {
-			const baseName = formatClass(className, prefix),
-				target = getStyleClass(baseName, args)
-
-			classList.push(target ?? baseName)
+		for (const validName of validClasses) {
+			const className = formatConfigClass(validName, key, args)
+			classList.push(className)
 		}
 
 		return cx(...classList)
 	}
 
-	const baseName = formatClass(`${clsx}`, prefix),
-		target = getStyleClass(baseName, args)
+	const className = formatConfigClass(values, key, args)
+	return className
+}
 
-	return target ?? baseName
+const hasConfig = <P extends object, V extends object>(
+	args: SharedConfig<P, V>
+): args is SelectorConfig<P, V> =>
+	!!args.config && isObject(args.config)
+
+const getConfigClasses = <P extends object, V extends object>(
+	args: SharedConfig<P, V>
+): string | undefined => {
+
+	const { config, prefix, selector } = args
+
+	if (typeof config === 'boolean')
+		return getBaseClass(selector, prefix)
+
+	else if (!hasConfig(args)) return
+
+	const classList = [],
+		keys = Object.keys(args.config) as (keyof typeof config)[]
+
+	for (const key of keys) {
+		const configClasses =  getConfigClassList(key, args)
+		classList.push(configClasses)
+	}
+
+	return cx(...classList)
 }
 
 type InheritConfig<P extends object, V extends object> =
@@ -126,16 +172,18 @@ const inheritClasses = <P extends object, V extends object>({
 export const getClassName = <P extends object, V extends object>(
 	args: SharedConfig<P, V>
 ): string => {
-	const baseName = getBaseClass(args),
-		styleClass = getStyleClass(baseName, args),
-		inherited = canInherit(args) ? inheritClasses(args) : []
+	const baseName = nameClassBase(args),
+		styleName = getStyleClass(baseName, args),
+		configNames = getConfigClasses(args)
 
-	const [namespace, ...modules] = inherited,
-		classList = [
-			namespace ?? baseName,
-			styleClass,
-			getConfigClasses(args),
-		]
+	const inherited = canInherit(args) ? inheritClasses(args) : [],
+		[namespace, ...modules] = inherited
+
+	const classList = [
+		namespace ?? baseName,
+		styleName,
+		configNames,
+	]
 
 	return cx(...classList, ...modules)
 }

@@ -1,15 +1,14 @@
 import { useProps, useStyles } from '@/hooks'
 import { extractOtherProps } from '@/utils/helpers'
 import { Box, polymorphic } from '@/components/core/Box'
-import type { ReactNode } from 'react'
 import classes from './Container.module.scss'
 
 const NAME = 'Container' as const,
 	DEFAULT_TAG = 'section' as const
 
 interface ContainerProps {
-	children: ReactNode
 	fullWidth?: boolean
+	revealed?: boolean
 }
 
 interface ContainerSpecs {
@@ -23,7 +22,7 @@ export const Container = polymorphic<ContainerSpecs>(_props => {
 
 	const { children, fullWidth, ...rest } = props
 	const { as, others } = extractOtherProps(rest)
-	const clsx = { block: fullWidth }
+	const global = { block: fullWidth }
 
 	return (
 		<Box
@@ -31,7 +30,7 @@ export const Container = polymorphic<ContainerSpecs>(_props => {
 			attributes={ {
 				data: { block: !!fullWidth || null },
 			} }
-			{ ...styles('root', { clsx }) }
+			{ ...styles('root', { global }) }
 			{ ...others }
 		>
 			<div { ...styles('wrapper', true) }>

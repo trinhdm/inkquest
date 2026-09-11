@@ -43,11 +43,11 @@ export const Statistic = polymorphic<StatisticSpecs>(_props => {
 
 	const { display, ref } = useCountUp({ duration, enabled: animated, value })
 	const { as, others } = extractOtherProps(rest)
-	const clsx = { highlight }
+	const global = { highlight }
 
 	return (
 		<Box
-			{ ...styles('root', { clsx }) }
+			{ ...styles('root', { global }) }
 			{ ...others }
 			as={ as }
 			ref={ ref }

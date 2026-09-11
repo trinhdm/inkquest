@@ -1,6 +1,6 @@
 import type { OneKeyOf, PluralizeKeys } from '@/types/utils'
 
-export const isObject = <T extends Record<string, unknown>>(target: unknown): target is T =>
+export const isObject = <T extends Record<string, any>>(target: unknown): target is T =>
 	!!target && target?.constructor === Object && !Array.isArray(target)
 
 function hasKeyWithValue<

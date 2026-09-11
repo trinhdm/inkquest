@@ -76,9 +76,9 @@ export const Group = polymorphic<GroupSpecs>(_props => {
 
 	const { others } = extractOtherProps(rest)
 
-	const clsx = {
-		[`${NAME}--divider`]: divider,
-		[`${NAME}--grid`]: !orientation,
+	const module = {
+		divider,
+		grid: !orientation,
 	}
 
 	const cxtValue = useMemo(
@@ -88,7 +88,8 @@ export const Group = polymorphic<GroupSpecs>(_props => {
 
 	return (
 		<Box
-			{ ...styles('root', { clsx }) }
+			{ ...styles('root', { module }) }
+			{ ...others }
 			as={ DEFAULT_TAG }
 			attributes={ {
 				aria: { orientation },
@@ -98,7 +99,6 @@ export const Group = polymorphic<GroupSpecs>(_props => {
 				},
 			} }
 			role="group"
-			{ ...others }
 		>
 			{ flattenChildren(children, childName).map((child, index) => {
 				const key = isValidElement(child) && child.key !== null

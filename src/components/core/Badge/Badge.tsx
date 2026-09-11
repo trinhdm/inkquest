@@ -55,14 +55,14 @@ export const Badge = polymorphic<BadgeSpecs>(_props => {
 	} = props
 
 	const { as, others } = extractOtherProps(rest)
-	const clsx = { block: fullWidth },
-		data = { variant, block: !!fullWidth || null }
+	const data = { variant, block: !!fullWidth || null },
+		global = { block: fullWidth }
 
 	return (
 		<Box
 			as={ as }
 			attributes={ { data } }
-			{ ...styles('root', { clsx }) }
+			{ ...styles('root', { global }) }
 			{ ...others }
 		>
 			<Box as="span" { ...styles('inner') }>

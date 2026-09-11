@@ -119,7 +119,7 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 	} = props
 
 	const { as, others } = extractOtherProps(rest)
-	const clsx = { block: fullWidth }
+	const global = { block: fullWidth }
 
 	const ariaLabel = extractChildrenText(children),
 		aria = { label: !!ariaLabel.length ? ariaLabel : undefined }
@@ -134,7 +134,7 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 
 	const sharedProps = {
 		attributes: { aria, data },
-		...styles('root', { clsx }),
+		...styles('root', { global }),
 	}
 
 	const buttonCxtValue = useMemo(() => ({ displayName: NAME, unstyled }), [unstyled])

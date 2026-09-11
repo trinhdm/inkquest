@@ -4,9 +4,8 @@ import { getClassName } from './getClassName'
 import { getStyles } from './getStyle'
 import { keyHasValue, pluralizeKeys } from '@/utils/helpers'
 import type { ClassValue } from 'clsx'
-import type { SiteThemeConfig, ThemeCSSConfig } from '@/lib/theme'
-import type { SpecAttributes } from '@/types/shared'
 import type { PluralizeKeys } from '@/types/utils'
+import type { SiteThemeConfig, ThemeCSSConfig } from '@/lib/theme'
 
 interface StyleOptions<P extends object, V extends object = object> {
 	readonly classes?: Record<string, string>
@@ -15,9 +14,9 @@ interface StyleOptions<P extends object, V extends object = object> {
 	tokens?: ThemeCSSConfig<P, V>
 }
 
-interface SelectorConfigOptions
-	extends SpecAttributes {
-	clsx?: ClassValue
+interface SelectorConfigOptions {
+	global?: ClassValue
+	module?: ClassValue
 }
 
 interface SelectorArgs {
