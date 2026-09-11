@@ -1,9 +1,12 @@
-import { createContext, use, type ReactNode } from 'react'
+import { createContext, use, type ReactElement, type ReactNode } from 'react'
 
-interface RootCxtProviderProps<T> {
+export interface RootCxtProviderProps<T> {
 	children: ReactNode
 	value: T
 }
+
+export type RootCxtProviderFn<T> =
+	(props: RootCxtProviderProps<T>) => ReactElement
 
 export const createRootCxt = <T,>(name: string) => {
 	const RootCxt = createContext<T | null>(null)

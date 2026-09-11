@@ -1,0 +1,18 @@
+.inkq-group {
+	$name: &;
+
+	&--divider {
+		overflow: clip;
+
+		& > * {
+			box-shadow: 1px 0 0 var(--inkq-border);
+		}
+	}
+
+	&--grid {
+		--group-cols: auto-fit;
+
+		display: grid;
+		grid-template-columns: repeat(var(--group-cols), minmax(0, 1fr));
+	}
+}
