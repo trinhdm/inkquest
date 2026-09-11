@@ -41,7 +41,6 @@ export const Subnav = polymorphic<SubnavSpecs>(_props => {
 							<Menu
 								hasDropdowns={ false }
 								items={ navItems }
-								routes={ routes }
 								{ ...styles('menu') }
 							/>
 						</>

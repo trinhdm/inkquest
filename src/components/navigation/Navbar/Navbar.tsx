@@ -1,12 +1,12 @@
 'use client'
 
 import { useProps, useStyles } from '@/hooks'
+import { filterNavigation, NavRoute } from '@/utils/navigation'
 import { Box, polymorphic } from '@/components/core/Box'
 import { Button } from '@/components/core'
 import { Menu } from '../Menu'
-import { filterNavigation, NavRoute } from '@/utils/navigation'
-import classes from './Navbar.module.scss'
 import Link from 'next/link'
+import classes from './Navbar.module.scss'
 
 const NAME = 'Navbar' as const,
 	DEFAULT_TAG = 'nav' as const
@@ -44,7 +44,6 @@ export const Navbar = polymorphic<NavbarSpecs>(_props => {
 						<div { ...styles('col') }>
 							<Menu
 								items={ navItems }
-								routes={ routes }
 								{ ...styles('menu') }
 							/>
 						</div>

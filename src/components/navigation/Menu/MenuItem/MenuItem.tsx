@@ -6,7 +6,7 @@ import { extractOtherProps, toKebabCase } from '@/utils/helpers'
 import { Box, polymorphic } from '@/components/core/Box'
 import { Button, Icon } from '@/components/core'
 import { Menu } from '../Menu'
-import { NavRoute, type NavigationItem } from '@/utils/navigation'
+import type { NavigationItem } from '@/utils/navigation'
 import classes from '../Menu.module.scss'
 
 const NAME = 'MenuItem' as const,
@@ -14,7 +14,6 @@ const NAME = 'MenuItem' as const,
 
 interface MenuItemProps extends NavigationItem {
 	hasDropdowns?: boolean
-	routes?: NavRoute[]
 }
 
 interface MenuItemSpecs {
@@ -196,7 +195,6 @@ export const MenuItem = polymorphic<MenuItemSpecs>(_props => {
 					attributes={ { aria: { labelledby: triggerID } } }
 					id={ menuID }
 					items={ menu }
-					routes={ routes }
 				/>
 			) }
 		</Box>

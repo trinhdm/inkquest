@@ -2,7 +2,7 @@ import { useProps, useStyles } from '@/hooks'
 import { extractOtherProps } from '@/utils/helpers'
 import { Box, polymorphic } from '@/components/core/Box'
 import { MenuItem } from './MenuItem'
-import { NavRoute, type NavigationItem } from '@/utils/navigation'
+import type { NavigationItem } from '@/utils/navigation'
 import classes from './Menu.module.scss'
 
 const NAME = 'Menu' as const,
@@ -11,7 +11,6 @@ const NAME = 'Menu' as const,
 interface MenuProps {
 	hasDropdowns?: boolean
 	items: NavigationItem['menu']
-	routes?: NavRoute[]
 }
 
 interface MenuSpecs {
@@ -27,7 +26,6 @@ export const Menu = polymorphic<MenuSpecs>(_props => {
 		className,
 		hasDropdowns,
 		items,
-		routes,
 		...rest
 	} = props
 
