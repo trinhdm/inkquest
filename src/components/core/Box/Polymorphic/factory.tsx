@@ -53,6 +53,8 @@ type _FactoryComponent<S extends Specs> =
 	& SubcomponentsBase<S>
 	& MethodsBase<S>
 
+export const POLYMORPHIC = Symbol.for('inkq.polymorphic')
+
 export const factory = <
 	T extends Specs,
 	C extends object = _FactoryComponent<T>
@@ -61,7 +63,9 @@ export const factory = <
 	classes?: Record<string, string>
 ) => {
 	type FC = _FactoryComponent<T>
+
 	const BaseComponent = memo(target) as unknown as FC
+	Object.defineProperty(BaseComponent, POLYMORPHIC, { value: true })
 
 	if (classes) BaseComponent.classes = classes
 

@@ -90,3 +90,9 @@ type TagElement<T> =
 		: T extends keyof _ElementTagMap
 			? _ElementTagMap[T]
 			: unknown
+
+
+export type NonSemanticAttrs =
+	| 'about' | 'content' | 'datatype' | 'inlist' | 'prefix' | 'property'
+	| 'resource' | 'rev' | 'typeof' | 'vocab'
+	| 'color' | 'results' | 'security' | 'unselectable'
