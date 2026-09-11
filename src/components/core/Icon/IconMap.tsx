@@ -15,14 +15,14 @@ import {
 } from 'lucide-react'
 
 const ARROW_ICON_MAP = {
-	'down-arrow': MoveDown,
-	'down-caret': ChevronDown,
-	'left-arrow': MoveLeft,
-	'left-caret': ChevronLeft,
-	'right-arrow': MoveRight,
-	'right-caret': ChevronRight,
-	'up-arrow': MoveUp,
-	'up-caret': ChevronUp,
+	'arrow-down': MoveDown,
+	'caret-down': ChevronDown,
+	'arrow-left': MoveLeft,
+	'caret-left': ChevronLeft,
+	'arrow-right': MoveRight,
+	'caret-right': ChevronRight,
+	'arrow-up': MoveUp,
+	'caret-up': ChevronUp,
 }
 
 const NAVIGATION_ICON_MAP = {
