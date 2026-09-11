@@ -1,8 +1,4 @@
-import { resolveStyles } from './resolver'
-import { serializeStyles } from './serializer'
-// import { useTheme } from '@/providers/ThemeProvider'
-// import { DEFAULT_THEME } from '@/providers/ThemeProvider/constants'
-// import { PREFIX_CSS_SELECTOR } from '@/utils/constants'
+import { getSchemeCSS } from './cache'
 import type { ComponentProps } from 'react'
 import type { SiteTheme } from '@/lib/theme'
 
@@ -12,13 +8,12 @@ interface StyleInlinerProps
 	theme: SiteTheme
 }
 
-export const StyleInliner = ({ prefix, theme, ...props }: StyleInlinerProps) => {
-	const tokens = resolveStyles({ current: theme, prefix }),
-		styles = serializeStyles(tokens)
-
-	// const current = theme ?? DEFAULT_THEME,
-	// 	tokens = resolveStyles({ current, prefix }),
-	// 	styles = serializeStyles(tokens)
+export const StyleInliner = ({
+	prefix,
+	theme,
+	...props
+}: StyleInlinerProps) => {
+	const styles = getSchemeCSS(theme, prefix)
 
 	if (!styles) return null
 

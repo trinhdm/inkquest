@@ -1,10 +1,10 @@
 'use client'
 
-import { PREFIX_CSS_SELECTOR } from '@/utils/constants'
+import { useMemo, type ReactNode } from 'react'
+import { StyleInliner, VariantStyleInliner } from '@/components/document'
 import { ThemeProvider } from '../ThemeProvider'
 import { DEFAULT_THEME } from '@/providers/ThemeProvider/constants'
-import { StyleInliner, VariantStyleInliner } from '@/components/document'
-import type { ReactNode } from 'react'
+import { PREFIX_CSS_SELECTOR } from '@/utils/constants'
 import type { SiteTheme } from '@/lib/theme'
 
 interface AppProviderProps {
@@ -22,7 +22,10 @@ export const AppProvider = ({
 	children,
 	...rest
 }: AppProviderProps) => {
-	const props = { ...DEFAULT_APP, ...rest }
+	const props = useMemo(
+		() => ({ ...DEFAULT_APP, ...rest }),
+		[rest.prefix, rest.theme]
+	)
 
 	return (
 		<ThemeProvider { ...props }>
