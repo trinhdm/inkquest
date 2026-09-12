@@ -23,7 +23,10 @@ interface StatisticProps {
 }
 
 interface StatisticSpecs {
-	default: { component: typeof DEFAULT_TAG }
+	defaults: {
+		component: typeof DEFAULT_TAG
+		props: 'animated' | 'duration'
+	}
 	props: StatisticProps
 	subcomponents: {
 		Group: typeof StatisticGroup

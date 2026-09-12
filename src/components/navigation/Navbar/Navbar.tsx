@@ -16,7 +16,7 @@ interface NavbarProps {
 }
 
 interface NavbarSpecs {
-	default: { component: typeof DEFAULT_TAG }
+	defaults: { component: typeof DEFAULT_TAG }
 	props: NavbarProps
 }
 

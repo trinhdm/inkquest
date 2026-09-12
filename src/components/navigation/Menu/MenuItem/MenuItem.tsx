@@ -17,7 +17,7 @@ interface MenuItemProps extends NavigationItem {
 }
 
 interface MenuItemSpecs {
-	default: { component: typeof DEFAULT_TAG }
+	defaults: { component: typeof DEFAULT_TAG }
 	props: MenuItemProps
 }
 

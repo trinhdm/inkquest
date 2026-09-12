@@ -55,7 +55,10 @@ type ButtonProps = BaseButtonProps & (
 )
 
 interface ButtonSpecs {
-	default: { component: typeof DEFAULT_TAG }
+	defaults: {
+		component: typeof DEFAULT_TAG
+		props: 'size' | 'variant'
+	}
 	props: ButtonProps
 	subcomponents: {
 		Group: typeof ButtonGroup

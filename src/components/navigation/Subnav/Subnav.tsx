@@ -14,7 +14,7 @@ interface SubnavProps {
 }
 
 interface SubnavSpecs {
-	default: { component: typeof TAG }
+	defaults: { component: typeof TAG }
 	props: SubnavProps
 }
 
