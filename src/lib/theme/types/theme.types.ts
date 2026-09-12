@@ -102,21 +102,21 @@ type ThemeEasing =
 	| 'inOut'
 
 type StyleValues<
-    Keys extends PropertyKey,
-    V,
-    Name extends PropertyKey = PropertyKey,
+	Keys extends PropertyKey,
+	V,
+	Name extends PropertyKey = PropertyKey,
 > =
-    V extends `${number}${Unit}`
+	V extends `${number}${Unit}`
 		? ConsistentValues<Keys, true>
 		: Name extends ConsistentProperty
 			? ConsistentValues<Keys, true, number extends V ? V : undefined>
 			: AtLeastOneKeyOf<Keys, V>
 
 type BaseStyleValues<
-    V,
-    Keys extends PropertyKey,
-    RK extends Keys | undefined = undefined,
-    Name extends PropertyKey = PropertyKey,
+	V,
+	Keys extends PropertyKey,
+	RK extends Keys | undefined = undefined,
+	Name extends PropertyKey = PropertyKey,
 > =
 	| V
 	| (RK extends Keys
@@ -124,9 +124,9 @@ type BaseStyleValues<
 		: StyleValues<Keys, V, Name>)
 
 type StyleList<
-    P extends keyof CSSProperties,
+	P extends keyof CSSProperties,
 	Keys extends PropertyKey,
-    RK extends Keys | undefined = undefined,
+	RK extends Keys | undefined = undefined,
 	Name extends PropertyKey = PropertyKey,
 > =
 	BaseStyleValues<CSSProperties[P], Keys, RK, Name>
@@ -149,9 +149,9 @@ type ConsistentType<
 			: Record<K, T>
 
 type ConsistentUnit<
-    K extends PropertyKey,
-    Optional extends boolean = false,
-    U extends string = Unit,
+	K extends PropertyKey,
+	Optional extends boolean = false,
+	U extends string = Unit,
 > =
 	// `${number}${U}` already distributes over U on its own — the mapped
 	// type + [U] indexed-access unwrap above was a redundant second pass.

@@ -2,9 +2,9 @@
 .inkq-timeline {
 	$name: &;
 
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-9);
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-9);
 }
 
 .inkq-timeline-item {
@@ -13,7 +13,6 @@
 	display: grid;
 	gap: var(--inkq-stack-gap-kicker);
 	grid-template-columns: var(--space-8) minmax(0, 1fr);
-	// grid-template-columns: 1fr auto 1fr;
 
 	&__body {
 		display: grid;
@@ -51,7 +50,6 @@
 		display: block;
 		height: var(--inkq-icon-sm);
 		position: relative;
-		// transform: translateY(calc(1lh - (var(--timeline-space) / 2) - var(--inkq-icon-sm)));
 		transition: border-color 260ms var(--ease-out), background 260ms var(--ease-out);
 		width: var(--inkq-icon-sm);
 		z-index: 2;
@@ -60,9 +58,7 @@
 	&__rail {
 		background-color: var(--inkq-border);
 		display: block;
-		height: calc(100% + var(--inkq-icon-sm) + var(--timeline-space));
-		left: 50%;
-		margin-left: calc(-1 * (var(--timeline-bullet-border) / 2));
+		height: calc(100% + var(--inkq-icon-sm) + (var(--timeline-space) / 2));
 		position: absolute;
 		top: calc((2 * var(--timeline-space)) + (var(--inkq-icon-sm) / 2));
 		width: var(--timeline-bullet-border);

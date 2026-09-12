@@ -251,9 +251,9 @@ export const UnrecognizedType: Story = {
 	render: () => (
 		<Group label="type=&quot;not-a-real-icon&quot; (absent from ICON_MAP)">
 			{ /* `type` is a strict `IconType` union with no escape hatch for
-			   invalid values, so force one through with a local cast — same
-			   fallback the agent guidelines describe for unions that don't fit
-			   a spread cleanly. */ }
+				invalid values, so force one through with a local cast — same
+				fallback the agent guidelines describe for unions that don't fit
+				a spread cleanly. */ }
 			<Icon type={ 'not-a-real-icon' as unknown as IconType } />
 		</Group>
 	),

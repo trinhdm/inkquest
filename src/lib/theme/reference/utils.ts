@@ -27,7 +27,7 @@ type StatePathOf<K> = K extends object ? LeafPath<K> : [K] | []
 type Builder = (...path: string[]) => TokenVar
 
 const buildAccessor = (build: Builder, category: string[]) =>
-    (...path: string[]): TokenVar => build(...category, ...path)
+	(...path: string[]): TokenVar => build(...category, ...path)
 
 /** A required-path accessor, e.g. primitive.lineHeight('lg') or, given a nested shape, alias.font.size('heading', 'h1'). */
 export const createAccessor = <K>(build: Builder, ...category: string[]) =>

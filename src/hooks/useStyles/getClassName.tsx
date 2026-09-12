@@ -115,7 +115,7 @@ const getConfigClasses = <P extends object, V extends object>(
 		keys = Object.keys(args.config) as (keyof typeof config)[]
 
 	for (const key of keys) {
-		const configClasses =  getConfigClassList(key, args)
+		const configClasses = getConfigClassList(key, args)
 		classList.push(configClasses)
 	}
 

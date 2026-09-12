@@ -9,23 +9,23 @@ import type {
 } from '../scales'
 
 const baseColorTokens = {
-   // hex color scales — step label = position, in hundreds
-   ink: token.path<ThemeColor<'ink'>>(baseVar, 'ink'),
-   oxblood: token.path<ThemeColor<'oxblood'>>(baseVar, 'oxblood'),
-   ghost: token.path<ThemeColor<'ghost'>>(baseVar, 'ghost'),
+	// hex color scales — step label = position, in hundreds
+	ink: token.path<ThemeColor<'ink'>>(baseVar, 'ink'),
+	oxblood: token.path<ThemeColor<'oxblood'>>(baseVar, 'oxblood'),
+	ghost: token.path<ThemeColor<'ghost'>>(baseVar, 'ghost'),
 
-   paper: token.path<ThemeColor<'paper'>>(baseVar, 'paper'),
-   crimson: token.path<ThemeColor<'crimson'>>(baseVar, 'crimson'),
-   smoke: token.path<ThemeColor<'smoke'>>(baseVar, 'smoke'),
+	paper: token.path<ThemeColor<'paper'>>(baseVar, 'paper'),
+	crimson: token.path<ThemeColor<'crimson'>>(baseVar, 'crimson'),
+	smoke: token.path<ThemeColor<'smoke'>>(baseVar, 'smoke'),
 
-   // static colors
-   red: token.endPath(baseVar, 'red', '100'),
-   green: token.endPath(baseVar, 'green', '100'),
-   yellow: token.endPath(baseVar, 'yellow', '100'),
-   blue: token.endPath(baseVar, 'blue', '100'),
-   white: token.endPath(baseVar, 'white', '100'),
-   gray: token.endPath(baseVar, 'gray', '100'),
-   black: token.endPath(baseVar, 'black', '100'),
+	// static colors
+	red: token.endPath(baseVar, 'red', '100'),
+	green: token.endPath(baseVar, 'green', '100'),
+	yellow: token.endPath(baseVar, 'yellow', '100'),
+	blue: token.endPath(baseVar, 'blue', '100'),
+	white: token.endPath(baseVar, 'white', '100'),
+	gray: token.endPath(baseVar, 'gray', '100'),
+	black: token.endPath(baseVar, 'black', '100'),
 }
 
 const baseFontTokens = {

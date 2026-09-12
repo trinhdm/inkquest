@@ -27,7 +27,7 @@ export const createRootCxt = <T extends object>(name: string) => {
 		)
 
 		return <RootCxt value={ cxtValue }>{ children }</RootCxt>
-	  }
+	}
 
 	const useRootCxt = (componentName: string): RootCxtValue => {
 		const ctx = use(RootCxt)

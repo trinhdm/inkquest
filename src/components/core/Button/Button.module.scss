@@ -9,19 +9,19 @@
 	--button-padding: var(--inkq-pad-chip);
 
 	background-color: var(--button-background);
-    border-radius: var(--inkq-border-radius-chip);
-    border: 1px solid var(--button-border, transparent);
+	border-radius: var(--inkq-border-radius-chip);
+	border: 1px solid var(--button-border, transparent);
 	color: var(--button-color, inherit);
 	display: inline-block;
 	font: var(--inkq-text-label);
-    letter-spacing: var(--inkq-font-tracking-stat);
+	letter-spacing: var(--inkq-font-tracking-stat);
 	max-height: var(--button-height, 'none');
 	overflow: hidden;
-    padding: var(--button-padding);
+	padding: var(--button-padding);
 	position: relative;
-    text-decoration: none;
+	text-decoration: none;
 	touch-action: manipulation;
-    transition: var(--inkq-motion-colors);
+	transition: var(--inkq-motion-colors);
 	vertical-align: middle;
 
 	&__inner {

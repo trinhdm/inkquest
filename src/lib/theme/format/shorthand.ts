@@ -47,7 +47,7 @@ export const getShorthand = <T extends Record<string, unknown>>({
 	// if (!isObject(tagName) || !Object.hasOwn(tagName, tag)) return
 	// const tagProps = tagName[tag] as T
 
-	// if (isObject(tagProps) && !Object.keys(tagProps).some(k => k.includes(property)))  return
+	// if (isObject(tagProps) && !Object.keys(tagProps).some(k => k.includes(property))) return
 
 	return (_SHORTHANDLERS[property])(values)
 }

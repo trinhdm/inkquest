@@ -1,7 +1,7 @@
 import { toKebabCase } from '@/utils/helpers'
 import type { CssRule, SiteThemeConfig, VariantTokens } from './types'
 
-type BridgeSlot = keyof VariantTokens            // 'background' | 'border' | 'color'
+type BridgeSlot = keyof VariantTokens		// 'background' | 'border' | 'color'
 type BridgeState = 'hover' | 'active' | 'disable' | 'focus' | 'press' | 'select'
 
 export interface VariantBridge {
