@@ -1,7 +1,4 @@
-import {
-	isValidElement, useMemo, useRef, Fragment,
-	type CSSProperties, type ReactNode,
-} from 'react'
+import { useMemo, useRef, type CSSProperties, type ReactNode } from 'react'
 import { useInView } from 'framer-motion'
 import { useProps, useStyles } from '@/hooks'
 import { extractOtherProps, flattenChildren } from '@/utils/helpers'
@@ -91,6 +88,7 @@ export const Group = polymorphic<GroupSpecs>(_props => {
 	const module = {
 		divider,
 		grid: !orientation,
+		[`${orientation}`]: !!orientation,
 	}
 
 	const items = flattenChildren(children, childName),
@@ -99,7 +97,7 @@ export const Group = polymorphic<GroupSpecs>(_props => {
 	// one observer for the whole group, so children stagger off a single t=0
 	// rather than each racing its own IntersectionObserver
 	const root = useRef<HTMLDivElement>(null)
-	const withinView = useInView(root, { ...INVIEW_DEFAULTS, once: true })
+	const withinView = useInView(root, { amount: INVIEW_DEFAULTS, once: true })
 
 	// one context value per child — memoised on `total` so identities stay
 	// stable across renders even though each child gets its own object
@@ -117,10 +115,7 @@ export const Group = polymorphic<GroupSpecs>(_props => {
 			as={ DEFAULT_TAG }
 			attributes={ {
 				aria: { orientation },
-				data: {
-					block: !!fullWidth || null,
-					orientation: orientation === 'vertical' ? 'vertical' : null,
-				},
+				data: { block: !!fullWidth || null },
 			} }
 			role="group"
 			ref={ root }

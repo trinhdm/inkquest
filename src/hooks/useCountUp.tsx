@@ -69,7 +69,7 @@ const parseCountValue = (count: string): ParsedValue | null => {
 }
 
 export const useCountUp = <T extends HTMLElement = HTMLElement>({
-	amount,
+	amount = INVIEW_DEFAULTS,
 	delay,
 	duration = 3000,
 	enabled = true,
@@ -90,7 +90,7 @@ export const useCountUp = <T extends HTMLElement = HTMLElement>({
 	// `useInView` a ref that is never attached to anything
 	const idle = useRef<T | null>(null),
 		observer = typeof withinView === 'boolean' ? idle : node,
-		viewOptions = { ...INVIEW_DEFAULTS, amount, once, ...rest }
+		viewOptions = { amount, once, ...rest }
 
 	const inView = useInView(observer, viewOptions),
 		viewable = withinView ?? inView
