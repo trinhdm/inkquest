@@ -2,16 +2,13 @@
 
 import Image from "next/image"
 import { useColorScheme } from '@/hooks/useColorScheme'
-import { Button, type Button as ButtonType } from '@/components/core/Button'
-// import { useTheme } from '@/providers/ThemeProvider'
-import { Icon } from '@/components/core/Icon/Icon'
-import { Badge } from '@/components/core/Badge'
-import { Container } from '@/components/layout/Container'
+import { Badge, Button, Icon } from '@/components/core'
+import { Container } from '@/components/layout'
 
 export default function Home() {
 	const { setColorScheme } = useColorScheme()
-	const variants = ['danger', 'warning', 'success', 'info'] as ButtonType.Props['variant'][]
-	const priorities = ['primary', 'secondary', 'tertiary'] as ButtonType.Props['priority'][]
+	const variants = ['danger', 'warning', 'success', 'info'] as Button.Props['variant'][]
+	const priorities = ['primary', 'secondary', 'tertiary'] as Button.Props['priority'][]
 
 	return (
 		<main>
@@ -24,19 +21,17 @@ export default function Home() {
 					priority
 				/>
 				<div>
-					<h1>To get started, edit the page.tsx file.</h1>
-
 					<Button.Group id="theme-selection" orientation="vertical">
 						<Button key="test123" onClick={ () => setColorScheme('dark') }>
 							<Button.Section left>
-								<Icon size={ 16 } type="dark-theme" />
+								<Icon type="dark-theme" />
 							</Button.Section>
 							dark
 						</Button>
 						<Button variant="ghost" onClick={ () => setColorScheme('light') }>
 							light
 							<Button.Section right>
-								<Icon size={ 16 } type="light-theme" />
+								<Icon type="light-theme" />
 							</Button.Section>
 						</Button>
 					</Button.Group>
@@ -62,20 +57,20 @@ export default function Home() {
 						</Button.Group>
 					)) }
 
-					<Button loading>
-						<Button.Section left>
-							<Icon size={ 16 } type="left-caret" />
+					<Button loading className="with-load" id="btn-loading">
+						<Button.Section left className="section-loading">
+							<Icon type="caret-left" />
 						</Button.Section>
 						with sections
 						<Button.Section right>
-							<Icon size={ 16 } type="right-caret" />
+							<Icon type="caret-right" />
 						</Button.Section>
 					</Button>
 
-					<Icon type="right-caret" />
+					<Icon className="single-icon" type="caret-right" />
 
 					<Badge>default badge</Badge>
-					<Badge shape="round">1</Badge>
+					<Badge className="test" id="badge-round" shape="round">1</Badge>
 
 					<br /><br />
 					<p>

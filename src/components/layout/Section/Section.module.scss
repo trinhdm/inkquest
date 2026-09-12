@@ -54,6 +54,12 @@
 
 	&--hero {
 		padding-block: var(--inkq-hero-padding);
+
+		#{$name} {
+			&__cta {
+				justify-self: left;
+			}
+		}
 	}
 
 	&--cta #{$name} {
@@ -71,10 +77,14 @@
 		}
 	}
 
+	&--blocks {
+		padding-block: 0;
+	}
+
 	&--split #{$name} {
 		&__inner {
 			gap: 0;
-			grid-template-columns: calc(50% - var(--space-8)) 1fr;
+			grid-template-columns: calc(50% - (var(--space-8) / 2)) 1fr;
 		}
 	}
 }

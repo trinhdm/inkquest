@@ -12,8 +12,9 @@ const NAME = 'Section' as const
 interface SectionProps {
 	children: ReactNode
 	eyebrow?: string
-	title: string
+	title?: string
 	layout?:
+		| 'blocks'
 		| 'default'
 		| 'cta'
 		| 'hero'
@@ -82,8 +83,8 @@ const buildSection = (
 		HTag = layout === 'hero' ? 'h1' : 'h2'
 
 	const header = <>
-		<span { ...styles('eyebrow', { cn: 'eyebrow' }) }>{ eyebrow }</span>
-		<Box as={ HTag } { ...styles('title') }>{ title }</Box>
+		{ eyebrow && <span { ...styles('eyebrow', true) }>{ eyebrow }</span> }
+		{ title && <Box as={ HTag } { ...styles('title') }>{ title }</Box> }
 	</>,
 		content = orderSection(children, styles),
 		inner = <>{ header }{ content }</>
