@@ -10,7 +10,8 @@ import type { NavigationItem } from '@/utils/navigation'
 import classes from '../Menu.module.scss'
 
 const NAME = 'MenuItem' as const,
-	DEFAULT_TAG = 'li' as const
+	DEFAULT_TAG = 'li' as const,
+	MENUITEM_SELECTOR = ':scope > [role="none"] > [role="menuitem"]'
 
 interface MenuItemProps extends NavigationItem {
 	hasDropdowns?: boolean
@@ -21,22 +22,31 @@ interface MenuItemSpecs {
 	props: MenuItemProps
 }
 
-const MenuLabel = (item: NavigationItem, styles: ReturnType<typeof useStyles>) => {
+const getSubmenuItems = (root: HTMLLIElement | null) =>
+	Array.from(
+		root?.querySelector('[role="menubar"]')
+			?.querySelectorAll<HTMLElement>(MENUITEM_SELECTOR) ?? []
+	)
+
+const MenuLabel = (
+	item: NavigationItem,
+	styles: ReturnType<typeof useStyles>
+) => {
+	const sharedProps = {
+		role: 'menuitem',
+		...styles('label'),
+	}
+
 	if (item.route) {
 		return (
-			<Box
-				as={ Link }
-				href={ item.route }
-				role="menuitem"
-				{ ...styles('label') }
-			>
+			<Box as={ Link } href={ item.route } { ...sharedProps }>
 				{ item.label }
 			</Box>
 		)
 	}
 
 	return (
-		<Box as="span" { ...styles('label') }>
+		<Box as="span" tabIndex={ -1 } { ...sharedProps }>
 			{ item.label }
 		</Box>
 	)
@@ -65,7 +75,6 @@ export const MenuItem = polymorphic<MenuItemSpecs>(_props => {
 		label,
 		menu,
 		route,
-		routes,
 		...rest
 	} = props
 
@@ -96,34 +105,36 @@ export const MenuItem = polymorphic<MenuItemSpecs>(_props => {
 		if (!isOpen) {
 			if (evt.key === 'ArrowDown' || evt.key === 'Enter' || evt.key === ' ') {
 				evt.preventDefault()
+				evt.stopPropagation()
 				setIsOpen(true)
-				requestAnimationFrame(() => {
-					const firstItem = itemRef.current?.querySelector('[role="menubar"]')?.querySelector('[role="menuitem"]')
-					if (firstItem instanceof HTMLElement) firstItem.focus()
-				  })
+				requestAnimationFrame(() => getSubmenuItems(itemRef.current)[0]?.focus())
 			}
 			return
 		}
 
-		if (!document.activeElement) return
-
-		const items = Array.from(itemRef.current?.querySelectorAll('[role="menuitem"]') || []),
-			currentIndex = items.indexOf(document.activeElement),
-			nextItem = items[(currentIndex + 1) % items.length],
-			prevItem = items[(currentIndex - 1 + items.length) % items.length]
+		const items = getSubmenuItems(itemRef.current),
+			currentIndex = items.findIndex(item => item === document.activeElement)
 
 		switch (evt.key) {
 			case 'ArrowDown':
+			case 'ArrowUp': {
 				evt.preventDefault()
-				if (nextItem instanceof HTMLElement) nextItem.focus()
+				evt.stopPropagation()
+
+				if (!items.length) return
+
+				const step = evt.key === 'ArrowDown' ? 1 : -1
+				const nextIndex = currentIndex === -1
+					? (step === 1 ? 0 : items.length - 1)
+					: (currentIndex + step + items.length) % items.length
+
+				items[nextIndex]?.focus()
 				break
-			case 'ArrowUp':
-				evt.preventDefault()
-				if (prevItem instanceof HTMLElement) prevItem.focus()
-				break
+			}
 			case 'Escape':
+				evt.stopPropagation()
 				setIsOpen(false)
-				itemRef.current?.querySelector('button')?.focus()
+				itemRef.current?.querySelector<HTMLElement>(':scope > button')?.focus()
 				break
 			case 'Tab':
 				setIsOpen(false)
