@@ -4,8 +4,7 @@ import { extractOtherProps } from '@/utils/helpers'
 import { Box, polymorphic } from '@/components/core/Box'
 import classes from '../Button.module.scss'
 
-const NAME = 'ButtonSection' as const,
-	TAG = 'span' as const
+const NAME = 'ButtonSection' as const
 
 interface LeftSectionProps {
 	left: true
@@ -27,9 +26,9 @@ type ButtonSectionSpecs = {
 }
 
 export const ButtonSection = polymorphic<ButtonSectionSpecs>(_props => {
-	const ctx = useButtonCxt()
+	const { rootName } = useButtonCxt(NAME)
 	const props = useProps(NAME, _props)
-	const styles = useStyles(ctx?.displayName ?? NAME, { classes, props })
+	const styles = useStyles(rootName, { classes, props })
 
 	const { children, left, right, ...rest } = props
 	const { others } = extractOtherProps(rest)
@@ -38,10 +37,10 @@ export const ButtonSection = polymorphic<ButtonSectionSpecs>(_props => {
 
 	return (
 		<Box
-			as={ TAG }
-			attributes={ { data } }
 			{ ...styles('section') }
 			{ ...others }
+			as="span"
+			attributes={ { data } }
 		>
 			{ children }
 		</Box>

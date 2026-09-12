@@ -1,12 +1,11 @@
 import { createRootCxt } from '@/lib/component'
 
-export interface ButtonCxtValue {
-	displayName: string
+export interface ButtonContext {
 	unstyled?: boolean
 }
 
 export const {
 	RootCxtProvider: ButtonProvider,
-	useSafeRootCxt: useButtonCxt,
+	useRootCxt: useButtonCxt,
 	useRootProps: useButtonProps,
-} = createRootCxt<ButtonCxtValue>('Button')
+} = createRootCxt<ButtonContext>('Button')
