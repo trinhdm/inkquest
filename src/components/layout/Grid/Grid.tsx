@@ -14,7 +14,7 @@ interface GridProps {
 }
 
 interface GridSpecs {
-	defaults: { component: typeof DEFAULT_TAG }
+	defaults: { as: typeof DEFAULT_TAG }
 	props: GridProps
 	subcomponents: {
 		Item: typeof GridItem

@@ -6,7 +6,7 @@ type _Equal<A, B> =
 type _Expect<T extends false> = T
 
 type ButtonSpec = {
-	defaults?: { component: 'button' }
+	defaults?: { as: 'button' }
 	props: { onClick?: () => void }
 }
 

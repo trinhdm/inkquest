@@ -29,7 +29,7 @@ interface AccordionProps {
 
 interface AccordionSpecs {
 	defaults: {
-		component: typeof DEFAULT_TAG
+		as: typeof DEFAULT_TAG
 		props: 'defaultOpen' | 'index' | 'indicator'
 	}
 	props: AccordionProps

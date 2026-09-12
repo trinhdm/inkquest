@@ -17,7 +17,7 @@ interface IconProps {
 
 interface IconSpecs {
 	defaults: {
-		component: typeof TAG
+		as: typeof TAG
 		props: 'size'
 	}
 	props: IconProps

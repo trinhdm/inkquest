@@ -18,7 +18,7 @@ interface CardProps {
 
 interface CardSpecs {
 	defaults: {
-		component: typeof DEFAULT_TAG
+		as: typeof DEFAULT_TAG
 		props: 'hasTitleAlt'
 	}
 	props: CardProps

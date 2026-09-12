@@ -24,7 +24,7 @@ interface StatisticProps {
 
 interface StatisticSpecs {
 	defaults: {
-		component: typeof DEFAULT_TAG
+		as: typeof DEFAULT_TAG
 		props: 'animated' | 'duration'
 	}
 	props: StatisticProps

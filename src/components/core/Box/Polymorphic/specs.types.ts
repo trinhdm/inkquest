@@ -2,7 +2,6 @@ import type { CSSProperties, ElementType, Ref } from 'react'
 import type { CSSVars, SpecAttributes } from '@/types/shared'
 
 // specs
-
 export interface SpecsContract {
 	attributes?: SpecAttributes
 	classNames?: string
@@ -25,7 +24,7 @@ interface _CompoundSpecs<P extends object = object>
 	extends SpecsBase<unknown, P> {
 	classNames?: never
 	defaults?: {
-		component?: never
+		as?: never
 		props?: PropertyKey
 	}
 	specIs: { compound: true }
@@ -38,7 +37,7 @@ interface _RootSpecs<T = unknown, P extends object = object>
 	extends SpecsBase<T, P> {
 	classNames?: SpecsContract['classNames']
 	defaults?: {
-		component?: any
+		as?: any
 		props?: PropertyKey
 	}
 	specIs?: { compound: false }
@@ -55,7 +54,7 @@ export type Specs<T = unknown, P extends object = object> =
 // polymorphism
 
 export type IsPolymorphic<S> =
-	S extends { defaults: { component: ElementType } }
+	S extends { defaults: { as: ElementType } }
 		? true
 		: false
 
@@ -65,7 +64,7 @@ export type AsPolymorphic<S> =
 		: { as?: never }
 
 export type SpecDefaultAs<S, Fallback = never> =
-	S extends { defaults: { component: infer C extends ElementType } }
+	S extends { defaults: { as: infer C extends ElementType } }
 		? C
 		: Fallback
 

@@ -31,7 +31,7 @@ interface BadgeProps {
 interface BadgeSpecs {
 	// cssVars: { root: BadgeVars }
 	defaults: {
-		component: typeof TAG
+		as: typeof TAG
 		props: 'shape' | 'variant'
 	}
 	props: BadgeProps

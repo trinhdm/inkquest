@@ -13,7 +13,7 @@ interface TimelineProps {
 }
 
 interface TimelineSpecs {
-	defaults: { component: typeof DEFAULT_TAG }
+	defaults: { as: typeof DEFAULT_TAG }
 	props: TimelineProps
 	subcomponents: {
 		Item: typeof TimelineItem

@@ -56,7 +56,7 @@ type ButtonProps = BaseButtonProps & (
 
 interface ButtonSpecs {
 	defaults: {
-		component: typeof DEFAULT_TAG
+		as: typeof DEFAULT_TAG
 		props: 'size' | 'variant'
 	}
 	props: ButtonProps

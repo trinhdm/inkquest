@@ -12,7 +12,7 @@ interface ContainerProps {
 }
 
 interface ContainerSpecs {
-	defaults: { component: typeof DEFAULT_TAG }
+	defaults: { as: typeof DEFAULT_TAG }
 	props: ContainerProps
 }
 

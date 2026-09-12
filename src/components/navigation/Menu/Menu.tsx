@@ -15,7 +15,7 @@ interface MenuProps {
 
 interface MenuSpecs {
 	defaults: {
-		component: typeof DEFAULT_TAG
+		as: typeof DEFAULT_TAG
 		props: 'hasDropdowns'
 	}
 	props: MenuProps
