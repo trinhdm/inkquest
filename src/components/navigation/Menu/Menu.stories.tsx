@@ -63,7 +63,7 @@ const FLATTENED_LEAF_COUNT = NAVIGATION_DATA.reduce(
 // exist on the actual accepted prop type, `PolymorphicProps<MenuProps, C>`.
 // `Parameters<typeof Menu>[0]` reads that real, wrapped type straight off the
 // component itself — the generic call signature's default `C` resolves to
-// `'ul'` here, since `MenuSpecs`'s `default.component` is `'ul'`.
+// `'ul'` here, since `MenuSpecs`'s `defaults.as` is `'ul'`.
 type MenuStoryProps = Parameters<typeof Menu>[0]
 type Story = StoryObj<MenuStoryProps>
 
@@ -155,9 +155,9 @@ export const HasDropdowns: Story = {
 }
 
 /**
- * `MenuItem.tsx` branch 1 (`if (!isDropdown)`, lines 145–150): an item with no
+ * `MenuItem.tsx` branch 1 (`if (!isDropdown)`): an item with no
  * `menu` renders a single `<li role="none">` wrapping `MenuLabel`, which is
- * `as={ route ? Link : 'span' }` (lines 34–46) — so an item WITH a `route` is
+ * `as={ route ? Link : 'span' }` — so an item WITH a `route` is
  * an `<a role="menuitem" href>`.
  *
  * `MenuLabel`'s `sharedProps` sets `role: 'menuitem'` UNCONDITIONALLY, before
@@ -205,7 +205,8 @@ export const LeafItems: Story = {
 }
 
 /**
- * `MenuItem.tsx` branch 2 (`if (hasDropdowns)`, lines 113–154): an item that has
+ * `MenuItem.tsx`'s final branch (reached when `isDropdown && hasDropdowns`,
+ * after the `!isDropdown` and `!hasDropdowns` early returns): an item that has
  * a `menu` renders its own label PLUS an `unstyled` `Button` trigger carrying
  * `aria-controls` / `aria-expanded` / `aria-haspopup` and an `aria-hidden` caret
  * `Icon` (`caret-down` closed, `caret-up` open). The nested `Menu` is mounted
@@ -252,7 +253,7 @@ export const DropdownItems: Story = {
 }
 
 /**
- * `MenuItem.tsx` branch 3 (the final `return menu?.map(...)`, lines 158–169):
+ * `MenuItem.tsx` branch 3 (the final `return menu?.map(...)`):
  * with `hasDropdowns: false`, an item that has a `menu` returns an ARRAY of
  * `<li role="none">`s — one per child — and its OWN label is never rendered.
  *
@@ -396,8 +397,8 @@ export const Unstyled: Story = {
 /**
  * Pointer-driven toggling.
  *
- * IMPORTANT: the dropdown `<li>` also opens on `mouseenter` (`MenuItem.tsx`
- * lines 58–61), and any real pointer click is preceded by a pointer move onto
+ * IMPORTANT: the dropdown `<li>` also opens on `mouseenter` (`MenuItem.tsx`'s
+ * `handleMouseEnter`), and any real pointer click is preceded by a pointer move onto
  * the element — so a click can never be observed from a closed state via the
  * mouse. `userEvent.setup()` is used here (rather than the per-call direct API)
  * precisely so pointer position PERSISTS between steps: the hover fires once,
@@ -439,7 +440,7 @@ export const ClickToOpen: Story = {
 
 /**
  * Hover opens immediately; leaving closes only after a 300ms
- * `setTimeout` (`MenuItem.tsx` lines 63–65), which is why the post-`unhover`
+ * `setTimeout` (`MenuItem.tsx`'s `handleMouseLeave`), which is why the post-`unhover`
  * assertion is wrapped in `waitFor` rather than asserted synchronously.
  * A single `userEvent.setup()` instance keeps pointer position coherent
  * between the hover and the unhover.

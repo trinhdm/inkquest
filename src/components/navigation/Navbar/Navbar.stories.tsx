@@ -9,7 +9,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 // exist on the actual accepted prop type, `PolymorphicProps<NavbarProps, C>`.
 // `Parameters<typeof Navbar>[0]` reads that real, wrapped type straight off the
 // component itself — the generic call signature's default `C` resolves to
-// `'nav'` here, since `NavbarSpecs`'s `default.component` is `'nav'`.
+// `'nav'` here, since `NavbarSpecs`'s `defaults.as` is `'nav'`.
 type NavbarStoryProps = Parameters<typeof Navbar>[0]
 type Story = StoryObj<NavbarStoryProps>
 
@@ -46,11 +46,15 @@ export default meta
  * `NAVIGATION_DATA` tree renders: 7 top-level entries, 3 of which
  * (`Discover`, `Community`, `User`) get a dropdown trigger `<button>`.
  *
- * Note the nav `<ul>` here is NOT `.inkq-menu`: `Navbar` passes
- * `{ ...styles('menu') }` to `<Menu>`, and `Menu` spreads `{ ...rest }` AFTER
- * its own `{ ...styles('root') }`, so the parent's `classNames` replaces
- * `Menu`'s own base class rather than merging with it. Assertions below stick
- * to roles/ARIA for that reason.
+ * Note: `Navbar` passes `{ ...styles('menu') }` (a `className`/`style` pair)
+ * to `<Menu>`. `Menu.tsx` destructures `className` out of its own props
+ * BEFORE spreading `...rest` onto its root `<ul>` — so that className never
+ * lands on the `<ul>` itself at all. Instead it's forwarded as the `className`
+ * prop of every top-level `MenuItem`, which `getClassName.tsx`'s
+ * `inheritClasses` logic then uses to rename each item's own root class from
+ * `inkq-menu-item` to `inkq-navbar__menu-item` (since `'menu-item'.startsWith('menu')`).
+ * Assertions below stick to roles/ARIA rather than literal class names for
+ * that reason.
  */
 export const Default: Story = {
 	play: async ({ canvasElement }) => {

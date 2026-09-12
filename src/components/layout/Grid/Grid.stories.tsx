@@ -2,6 +2,7 @@ import { Fragment } from 'react'
 import { expect, within } from 'storybook/test'
 import { getDefaultProps } from '@/lib/registries'
 import { Grid } from './Grid'
+import moduleClasses from './Grid.module.scss'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
@@ -53,7 +54,7 @@ const ROOT_SELECTOR = '.inkq-grid'
 // only exist on the actual accepted prop type, `PolymorphicProps<GridProps, C>`.
 // `Parameters<typeof Grid>[0]` reads that real, wrapped type straight off the
 // component itself — the generic call signature's default `C` resolves to
-// `'div'` here, since `GridSpecs`'s `default.component` is `'div'`.
+// `'div'` here, since `GridSpecs`'s `defaults.as` is `'div'`.
 type GridStoryProps = Parameters<typeof Grid>[0]
 type Story = StoryObj<GridStoryProps>
 
@@ -67,7 +68,7 @@ const meta: Meta<GridStoryProps> = {
 		},
 		columns: {
 			control: 'number',
-			description: 'Adds an `inkq-grid--{n}-col` modifier class when set to a positive number — `Grid.tsx` builds a `clsx = { [\`${NAME}--${columns}-col\`]: !!(columns && columns > 0) }` object and passes it as `styles(\'root\', { clsx })`; falsy or non-positive values compute to `false` and add no modifier at all. Only `columns={3}` has a matching rule in `Grid.module.scss` (`&--3-col`, hardcoding `repeat(3, 1fr)`) — any other value still lands its own literal `inkq-grid--{n}-col` class on the root (verified against `getClassName.tsx`\'s `outputExtraClasses`, which falls back to the raw, unhashed class name whenever no matching CSS-module rule exists for it), it just has no accompanying `grid-template-columns` rule behind it. See the `Columns` story.',
+			description: 'Adds an `inkq-grid--{n}-col` modifier class when set to a positive number — `Grid.tsx` builds a `module = { [\`${columns}-col\`]: !!(columns && columns > 0) }` object and passes it as `styles(\'root\', { module })`; falsy or non-positive values compute to `false` and add no modifier at all. Only `columns={3}` has a matching rule in `Grid.module.scss` (`&--3-col`, hardcoding `repeat(3, 1fr)`) — any other value still lands its own literal `inkq-grid--{n}-col` class on the root (verified against `getClassName.tsx`\'s `formatConfigClass`/`getStyleClass`, which fall back to the raw, unhashed class name whenever no matching CSS-module rule exists for it), it just has no accompanying `grid-template-columns` rule behind it. See the `Columns` story.',
 		},
 		unstyled: {
 			control: 'boolean',
@@ -116,7 +117,7 @@ export const Default: Story = {
  * — it never touches `filterChildren`'s own behavior. `columns={3}` is the
  * only value with a matching rule in `Grid.module.scss` (`&--3-col`), so it
  * resolves to a CSS-MODULE HASH rather than the literal class (per
- * `getClassName.tsx`'s `outputExtraClasses`), while `columns={2}`/`{4}` have
+ * `getClassName.tsx`'s `formatConfigClass`/`getStyleClass`), while `columns={2}`/`{4}` have
  * no matching rule and fall back to the raw, unhashed class name. Only class
  * presence is asserted below — see the `NOTE` above `Default` for why
  * computed `grid-template-columns` is out of scope.
@@ -155,8 +156,9 @@ export const Columns: Story = {
 		await expect(root3.className).toMatch('inkq-grid--3-col')
 
 		// `columns={2}`/`columns={4}` have no matching rule in the stylesheet,
-		// so `outputExtraClasses` falls back to emitting the literal, unhashed
-		// class name verbatim — a genuine, exact class token.
+		// so `getStyleClass` finds no compiled hash and `getClassName` falls
+		// back to emitting the literal, unhashed class name verbatim — a
+		// genuine, exact class token.
 		await expect(root2).toHaveClass('inkq-grid--2-col')
 		await expect(root4).toHaveClass('inkq-grid--4-col')
 
@@ -271,8 +273,14 @@ export const Unstyled: Story = {
 			unstyledRoot = canvas.getByText('unstyled=true').closest(ROOT_SELECTOR) as HTMLElement,
 			styledRoot = canvas.getByText('unstyled=false').closest(ROOT_SELECTOR) as HTMLElement
 
-		const hasModuleClass = (el: Element, base: string) =>
-			Array.from(el.classList).some(c => c !== base)
+		// Detect the REAL compiled CSS-module hash, keyed off the actual
+		// `Grid.module.scss` export map — not a naive "any extra class"
+		// heuristic, which can't distinguish a module hash from an unrelated
+		// config/global modifier class.
+		const hasModuleClass = (el: Element, base: string) => {
+			const moduleClass = (moduleClasses as Record<string, string>)[base]
+			return !!moduleClass && el.classList.contains(moduleClass)
+		}
 
 		await expect(styledRoot).toHaveClass('inkq-grid')
 		await expect(unstyledRoot).toHaveClass('inkq-grid')

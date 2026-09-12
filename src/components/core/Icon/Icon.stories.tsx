@@ -100,7 +100,7 @@ const Section = ({ label, children }: { label: string, children: ReactNode }) =>
 // only exist on the actual accepted prop type, `PolymorphicProps<IconProps,
 // C>`. `Parameters<typeof Icon>[0]` reads that real, wrapped type straight
 // off the component itself — the generic call signature's default `C`
-// resolves to `'svg'` here, since `IconSpecs`'s `default.component` is `'svg'`.
+// resolves to `'svg'` here, since `IconSpecs`'s `defaults.as` is `'svg'`.
 type IconStoryProps = Parameters<typeof Icon>[0]
 type Story = StoryObj<IconStoryProps>
 
@@ -127,7 +127,11 @@ const meta: Meta<IconStoryProps> = {
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Icon`\'s own `IconProps` (which was narrowed from `extends LucideProps, BoxProps` down to just `color`/`size`/`strokeWidth`/`type`). When true, the `styles(\'root\')` call `Icon` makes returns an empty class name instead of its `inkq-icon` base class on the rendered `<svg>` — see the `Unstyled` story.',
+			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Icon`\'s own `IconProps` (which was narrowed from `extends LucideProps, BoxProps` down to just `color`/`filled`/`size`/`strokeWidth`/`type`). The semantic base class (`inkq-icon`) on the rendered `<svg>` is ALWAYS emitted regardless of this prop — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it, via the single `styles(\'root\')` call `Icon` makes — see the `Unstyled` story.',
+		},
+		filled: {
+			control: 'boolean',
+			description: 'Sets `fill="currentColor"` on the rendered `<svg>` when true (`Icon.tsx`: `fill={ filled ? \'currentColor\' : undefined }`). When false/unset (not a registered default — `Icon.setDefaults` only registers `as`/`size`), the explicit `fill: undefined` prop overrides Lucide\'s own `fill: "none"` default attribute, so NO `fill` attribute is rendered at all — not a literal `"none"`. See the `Filled` story.',
 		},
 	},
 	args: {
@@ -243,6 +247,36 @@ export const StrokeWidth: Story = {
 		svgs.forEach((svg, index) => {
 			expect(svg).toHaveAttribute('stroke-width', String(STROKE_WIDTH_OPTIONS[index]))
 		})
+	},
+}
+
+// `filled` sets `fill="currentColor"` on the rendered `<svg>` when true. When
+// false/unset, `Icon.tsx` still explicitly passes `fill: undefined` (rather
+// than omitting the prop entirely), which overrides Lucide's own
+// `fill: "none"` default attribute (`defaultAttributes.mjs`, spread first,
+// with `...rest` — including this explicit `undefined` — spread last) down
+// to `undefined`, and React omits `undefined`-valued attributes from the DOM
+// entirely. So the "off" state has NO `fill` attribute at all, not `"none"`.
+export const Filled: Story = {
+	parameters: { controls: { exclude: ['filled'] } },
+	render: (args) => (
+		<Row>
+			{ BOOLEAN_OPTIONS.map(filled => (
+				<Group key={ String(filled) } label={ String(filled) }>
+					<Icon { ...args as IconStoryProps } filled={ filled } />
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const svgs = canvasElement.querySelectorAll('svg')
+
+		await expect(svgs).toHaveLength(BOOLEAN_OPTIONS.length)
+
+		const [filledSvg, unfilledSvg] = svgs
+
+		await expect(filledSvg).toHaveAttribute('fill', 'currentColor')
+		await expect(unfilledSvg).not.toHaveAttribute('fill')
 	},
 }
 

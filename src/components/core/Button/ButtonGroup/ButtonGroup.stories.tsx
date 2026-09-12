@@ -77,7 +77,7 @@ const meta: Meta<ButtonGroupStoryArgs> = {
 		loading: { control: 'boolean' },
 		fullWidth: {
 			control: 'boolean',
-			description: 'Stretches the group to fill its container\'s width (adds `data-block`/`aria-orientation` alongside it via `attributes`). See the `FullWidth` story.',
+			description: 'Stretches the group to fill its container\'s width (adds a `data-block` attribute to the root element via `attributes.data`, present only when truthy — `ButtonGroup.tsx`\'s `data: { block: !!fullWidth || null }`). Unlike `Button`\'s own `fullWidth`, this does NOT also add a global `inkq-block` class — `ButtonGroup` only ever passes a `module` config (`orientation`/`size`) to `styles(\'root\', ...)`, no `global` config. `aria-orientation` is unrelated: it always reflects the group\'s own `orientation` prop, independent of `fullWidth`. See the `FullWidth` story.',
 		},
 		justify: {
 			control: 'text',
@@ -123,8 +123,17 @@ export const Orientations: Story = {
 			groups = canvas.getAllByRole('group'),
 			[rowGroup, columnGroup] = groups
 
-		await expect(rowGroup).toHaveAttribute('aria-orientation')
-		await expect(columnGroup).toHaveAttribute('data-orientation', 'vertical')
+		// `ButtonGroup.tsx` only ever sets `attributes.aria.orientation` —
+		// there is no `data-orientation` attribute at all (a `module` config
+		// keyed on `orientation` only feeds a `--horizontal`/`--vertical`
+		// CSS-module class, not a DOM attribute). `aria-orientation` reflects
+		// the group's own `orientation` value on BOTH groups, not just the
+		// vertical one.
+		await expect(rowGroup).toHaveAttribute('aria-orientation', 'horizontal')
+		await expect(rowGroup).not.toHaveAttribute('data-orientation')
+
+		await expect(columnGroup).toHaveAttribute('aria-orientation', 'vertical')
+		await expect(columnGroup).not.toHaveAttribute('data-orientation')
 	},
 }
 
@@ -156,10 +165,28 @@ export const Sizes: Story = {
 
 		expect(groups).toHaveLength(SIZE_OPTIONS.length)
 
+		// `Button.tsx` has no `data-size` attribute at all — its own `data` bag
+		// is only `{ variant, priority, block, disabled, loading }`. `size`
+		// (cascaded here from `ButtonGroup` context, since these children carry
+		// no own `size`) is expressed purely as a `module` modifier class via
+		// `clsx.module` (`${base}--${size}`). `Button.module.scss` only defines
+		// `&--md`/`&--lg` rules under `.inkq-button` (no `&--sm`), so `sm` has
+		// no matching compiled class and stays a literal `inkq-button--sm`,
+		// while `md`/`lg` DO match a rule and get replaced with a hashed
+		// CSS-module class instead — assert the literal form only for `sm`,
+		// and for `md`/`lg` just confirm the literal, un-hashed form is absent
+		// (proving it resolved to a hash rather than doing nothing).
 		for (const [index, group] of groups.entries()) {
-			const buttons = within(group).getAllByRole('button')
-			for (const button of buttons)
-				await expect(button).toHaveAttribute('data-size', SIZE_OPTIONS[index])
+			const size = SIZE_OPTIONS[index],
+				literalModifier = `inkq-button--${size}`,
+				buttons = within(group).getAllByRole('button')
+
+			for (const button of buttons) {
+				await expect(button).not.toHaveAttribute('data-size')
+
+				if (size === 'sm') await expect(button).toHaveClass(literalModifier)
+				else await expect(button).not.toHaveClass(literalModifier)
+			}
 		}
 	},
 }
@@ -304,6 +331,20 @@ export const FullWidth: Story = {
 			)) }
 		</div>
 	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			groups = canvas.getAllByRole('group')
+
+		expect(groups).toHaveLength(2)
+
+		const [isFullWidth, isNotFullWidth] = groups
+
+		// `data-block` only — `ButtonGroup`, unlike `Button`, never passes a
+		// `global` config to `styles('root', ...)`, so there's no accompanying
+		// literal utility class to assert here.
+		await expect(isFullWidth).toHaveAttribute('data-block')
+		await expect(isNotFullWidth).not.toHaveAttribute('data-block')
+	},
 }
 
 // `unstyled` does NOT remove the base `inkq-button-group` class
@@ -343,10 +384,17 @@ export const Unstyled: Story = {
 		const [isUnstyled, isStyled] = groups
 
 		// The hashed CSS-module class is build-generated, so assert on its
-		// presence/shape rather than a literal hash: any class beyond the
-		// semantic base class means the module class survived.
+		// presence/shape rather than a literal hash. Can't just check "any
+		// class beyond the base" though: `getConfigClasses` (`getClassName.tsx`)
+		// runs regardless of `unstyled` (only `getStyleClass` — the base/
+		// selector hash — checks `check.isUnstyled`), so the `module` modifier
+		// classes this story's args always carry (`inkq-button-group--horizontal`,
+		// `inkq-button-group--sm`, from `clsx.module` keyed on `orientation`/
+		// `size`) survive on BOTH the styled and unstyled instance — exclude the
+		// base itself AND any `${base}--*` modifier class before treating a
+		// leftover class as evidence the CSS-module hash survived.
 		const hasModuleClass = (el: Element, base: string) =>
-			Array.from(el.classList).some(c => c !== base)
+			Array.from(el.classList).some(c => c !== base && !c.startsWith(`${base}--`))
 
 		await expect(isStyled).toHaveClass('inkq-button-group')
 		await expect(isUnstyled).toHaveClass('inkq-button-group')

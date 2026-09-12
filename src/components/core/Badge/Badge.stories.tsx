@@ -11,7 +11,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 // `PolymorphicProps<BadgeProps, C>`. `Parameters<typeof Badge>[0]` reads that
 // real, wrapped type straight off the component itself — the generic call
 // signature's default `C` resolves to `'div'` here, since `BadgeSpecs`'s
-// `default.component` is `'div'`.
+// `defaults.as` is `'div'`.
 type BadgeStoryProps = Parameters<typeof Badge>[0]
 
 // Single source of truth for this file's option lists. `Badge` has no

@@ -32,7 +32,7 @@ const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 // `PolymorphicProps<ButtonProps, C>`. `Parameters<typeof Button>[0]` reads
 // that real, wrapped type straight off the component itself (no
 // hand-typing/drift risk) — the generic call signature's default `C`
-// resolves to `'button'` here, since `ButtonSpecs`'s `default.component` is
+// resolves to `'button'` here, since `ButtonSpecs`'s `defaults.as` is
 // `'button'`.
 type ButtonStoryProps = Parameters<typeof Button>[0]
 
@@ -73,6 +73,10 @@ const meta: Meta<ButtonStoryProps> = {
 		unstyled: {
 			control: 'boolean',
 			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Button`\'s own `ButtonProps`. The semantic base class (`inkq-button`, `inkq-button__inner`, `inkq-button__label`) is ALWAYS emitted regardless of this prop — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it, for every selector this component styles (`root`, `inner`, `label`) — see the `Unstyled` story. Also inheritable from an enclosing `Button.Group`, via the same `ButtonGroupProvider` / `useButtonGroupProps` own-prop-wins precedence as `disabled`/`loading`/`priority`.',
+		},
+		showLabel: {
+			control: 'boolean',
+			description: 'Gates whether an `aria-label` is emitted at all: `Button.tsx` derives `ariaLabel` from `extractChildrenText(children)`, then only sets `aria-label` when `!!(showLabel && ariaLabel.length)` — an undefined/falsy `showLabel` (the default; not registered via `setDefaults`) means NO `aria-label` is ever emitted, regardless of children content. See the `ShowLabel` story, and `AriaLabel` (which sets `showLabel` explicitly to exercise the text-extraction logic itself).',
 		},
 		onClick: { action: 'clicked' },
 	},
@@ -123,6 +127,14 @@ export const Sizes: Story = {
 	),
 }
 
+// `fullWidth` maps to two independent things on the root `<button>`: a
+// `data-block` attribute (`data = { block: !!fullWidth || null, ... }`,
+// `hasValue` drops the `null` case entirely when `false`) AND a literal,
+// unhashed `inkq-block` class (`clsx = { global: { block: fullWidth }, ... }`
+// fed into `styles('root', clsx)` — `getClassName.tsx`'s `global` config key
+// formats the modifier as a plain prefixed class, `${prefix}-${mod}`, with no
+// matching rule in `Button.module.scss` to hash against, so it always stays
+// literal).
 export const FullWidth: Story = {
 	parameters: {
 		layout: 'padded',
@@ -137,6 +149,20 @@ export const FullWidth: Story = {
 			)) }
 		</div>
 	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			buttons = canvas.getAllByRole('button')
+
+		expect(buttons).toHaveLength(2)
+
+		const [isFullWidth, isNotFullWidth] = buttons
+
+		await expect(isFullWidth).toHaveAttribute('data-block')
+		await expect(isFullWidth).toHaveClass('inkq-block')
+
+		await expect(isNotFullWidth).not.toHaveAttribute('data-block')
+		await expect(isNotFullWidth).not.toHaveClass('inkq-block')
+	},
 }
 
 export const AsLink: Story = {
@@ -175,27 +201,30 @@ export const AsLink: Story = {
 	),
 }
 
-// `getTextFromChildren` (`Button.tsx`) walks `Button`'s own `children` and
+// `extractChildrenText` (`Button.tsx`) walks `Button`'s own `children` and
 // recurses into ANY child element that has a `children` prop — including a
 // `Button.Section` — accumulating string/number leaves into the derived
-// `aria-label`. An icon-only `Button.Section` contributes nothing (`Icon`
-// has no `children` prop to recurse into), so the label stays empty and no
-// `aria-label` attribute is emitted at all (`!!ariaLabel.length ? ariaLabel
-// : undefined`, then filtered out by `hasValue`).
+// `ariaLabel`. An icon-only `Button.Section` contributes nothing (`Icon`
+// has no `children` prop to recurse into), so the label stays empty. Either
+// way, none of this even reaches the DOM unless `showLabel` is also truthy
+// (`aria = { label: !!(showLabel && ariaLabel.length) ? ariaLabel :
+// undefined }`) — see the `ShowLabel` story for that gate in isolation; this
+// story fixes `showLabel: true` on every group to exercise the text
+// extraction itself.
 export const AriaLabel: Story = {
 	render: (args) => (
 		<Row>
 			<Group label="plain text">
-				<Button { ...args as NativeButtonArgs }>Save changes</Button>
+				<Button { ...args as NativeButtonArgs } showLabel>Save changes</Button>
 			</Group>
 			<Group label="text split across a Button.Section child">
-				<Button { ...args as NativeButtonArgs }>
+				<Button { ...args as NativeButtonArgs } showLabel>
 					<Button.Section left>Confirm</Button.Section>
 					{ ' and continue' }
 				</Button>
 			</Group>
 			<Group label="icon-only (no aria-label)">
-				<Button { ...args as NativeButtonArgs }>
+				<Button { ...args as NativeButtonArgs } showLabel>
 					<Button.Section left><Icon type="download" /></Button.Section>
 				</Button>
 			</Group>
@@ -212,6 +241,34 @@ export const AriaLabel: Story = {
 		await expect(plain).toHaveAttribute('aria-label', 'Save changes')
 		await expect(withSection).toHaveAttribute('aria-label', 'Confirm and continue')
 		await expect(iconOnly).not.toHaveAttribute('aria-label')
+	},
+}
+
+// `showLabel` itself gates whether `aria-label` is emitted at all, entirely
+// independent of whether `children` actually has extractable text — with
+// identical `children` in both groups, only the `showLabel` group gets an
+// `aria-label`.
+export const ShowLabel: Story = {
+	parameters: { controls: { exclude: ['showLabel'] } },
+	render: (args) => (
+		<Row>
+			{ BOOLEAN_OPTIONS.map(showLabel => (
+				<Group key={ String(showLabel) } label={ String(showLabel) }>
+					<Button { ...args as NativeButtonArgs } showLabel={ showLabel }>Save changes</Button>
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			buttons = canvas.getAllByRole('button')
+
+		expect(buttons).toHaveLength(2)
+
+		const [withLabel, withoutLabel] = buttons
+
+		await expect(withLabel).toHaveAttribute('aria-label', 'Save changes')
+		await expect(withoutLabel).not.toHaveAttribute('aria-label')
 	},
 }
 
@@ -296,10 +353,16 @@ export const Unstyled: Story = {
 
 		// The hashed CSS-module class is build-generated (e.g.
 		// `_inkq-button_q68tq_12`), so assert on its presence/shape rather than a
-		// literal hash: any class beyond the semantic base class means the
-		// module class survived.
+		// literal hash. Can't just check "any class beyond the base" though:
+		// `getConfigClasses` (`getClassName.tsx`) runs regardless of `unstyled`
+		// (only `getStyleClass` — the base/selector hash — checks
+		// `check.isUnstyled`), so a `module`/`global` modifier class (here,
+		// `inkq-button--sm` from `clsx.module`, present via this story's default
+		// `size: 'sm'` arg) survives on BOTH the styled and unstyled instance —
+		// exclude the base itself AND any `${base}--*` modifier class before
+		// treating a leftover class as evidence the CSS-module hash survived.
 		const hasModuleClass = (el: Element, base: string) =>
-			Array.from(el.classList).some(c => c !== base)
+			Array.from(el.classList).some(c => c !== base && !c.startsWith(`${base}--`))
 
 		await expect(isStyled).toHaveClass('inkq-button')
 		await expect(isUnstyled).toHaveClass('inkq-button')

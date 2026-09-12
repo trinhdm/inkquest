@@ -2,6 +2,7 @@ import { expect, within } from 'storybook/test'
 import { getDefaultProps } from '@/lib/registries'
 import { Grid } from '../Grid'
 import { GridItem } from './GridItem'
+import moduleClasses from '../Grid.module.scss'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
@@ -38,7 +39,7 @@ const ROOT_SELECTOR = '.inkq-grid-item'
 // etc., which only exist on the actual accepted prop type,
 // `PolymorphicProps<GridItemProps, C>`. `Parameters<typeof GridItem>[0]` reads
 // that real, wrapped type straight off the component itself. `GridItemSpecs`
-// declares no `default.component`, so the generic call signature's default
+// declares no `defaults.as`, so the generic call signature's default
 // `C` resolves to `'div'` (`polymorphic`'s own fallback), and
 // `GridItem.setDefaults({})` registers no defaults at all — `as` is left
 // entirely up to the caller.
@@ -101,7 +102,7 @@ export const Default: Story = {
  * always a `div`, regardless of what `as` is set to. Flagged as a real
  * source-side gap, not "fixed" here.
  *
- * NOTE: `GridItemSpecs` declares no `default.component`, so `polymorphic()`'s
+ * NOTE: `GridItemSpecs` declares no `defaults.as`, so `polymorphic()`'s
  * non-polymorphic call-signature branch types `as` as `never` (only
  * `undefined` is assignable) — consistent with the fact that it's genuinely
  * inert at runtime too. The `as={ 'article' as never }` cast below is the
@@ -151,8 +152,15 @@ export const Unstyled: Story = {
 			unstyledRoot = canvas.getByText('unstyled=true').closest(ROOT_SELECTOR) as HTMLElement,
 			styledRoot = canvas.getByText('unstyled=false').closest(ROOT_SELECTOR) as HTMLElement
 
-		const hasModuleClass = (el: Element, base: string) =>
-			Array.from(el.classList).some(c => c !== base)
+		// Detect the REAL compiled CSS-module hash, keyed off the actual
+		// `Grid.module.scss` export map (`GridItem` shares that stylesheet with
+		// `Grid`) — not a naive "any extra class" heuristic, which can't
+		// distinguish a module hash from an unrelated config/global modifier
+		// class.
+		const hasModuleClass = (el: Element, base: string) => {
+			const moduleClass = (moduleClasses as Record<string, string>)[base]
+			return !!moduleClass && el.classList.contains(moduleClass)
+		}
 
 		await expect(styledRoot).toHaveClass('inkq-grid-item')
 		await expect(unstyledRoot).toHaveClass('inkq-grid-item')

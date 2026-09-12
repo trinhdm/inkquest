@@ -1,6 +1,7 @@
 import { Container } from './Container'
 import { expect, within } from 'storybook/test'
 import { getDefaultProps } from '@/lib/registries'
+import moduleClasses from './Container.module.scss'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
@@ -42,7 +43,7 @@ const ROOT_SELECTOR = '.inkq-container'
 // `PolymorphicProps<ContainerProps, C>`. `Parameters<typeof Container>[0]`
 // reads that real, wrapped type straight off the component itself — the
 // generic call signature's default `C` resolves to `'section'` here, since
-// `ContainerSpecs`'s `default.component` is `'section'` (`Container.tsx`'s
+// `ContainerSpecs`'s `defaults.as` is `'section'` (`Container.tsx`'s
 // `DEFAULT_TAG`), and `Container.setDefaults({ props: { as: DEFAULT_TAG } })`
 // registers that same `'section'` as the actual runtime default — so
 // `meta.args` (via `getDefaultProps`) already carries `as: 'section'` before
@@ -59,9 +60,13 @@ const meta: Meta<ContainerStoryProps> = {
 			control: 'boolean',
 			description: 'Stretches the container to fill its parent\'s width (adds `data-block`/`display: block; width: 100%`).',
 		},
+		revealed: {
+			control: 'boolean',
+			description: '**Probable source bug, verified against the live `Container.tsx`**: declared on `ContainerProps` but never destructured or read anywhere in the component body — it falls straight through `extractOtherProps(rest)`\'s `others` and lands as a raw, unrecognized DOM attribute on the rendered root element. It has no visual or behavioral effect of any kind (no class, no style, no `data-*` attribute), so no story exercises it beyond this doc note — asserting "meaningful" `revealed` behavior here would document something the component doesn\'t actually do.',
+		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Container`\'s own `ContainerProps`. The semantic base class (`inkq-container` on the root, `inkq-container__wrapper` on the inner `<div>`) is ALWAYS emitted regardless of this prop. `Container.module.scss` has a matching rule for BOTH (`.inkq-container` and its nested `&__wrapper`, matching `Container.tsx`\'s `styles(\'root\')`/`styles(\'wrapper\')` calls exactly), so `unstyled` suppresses the CSS-module-hashed class normally appended alongside the base class on BOTH the root and the inner `<div>` identically. See the `Unstyled` story.',
+			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Container`\'s own `ContainerProps`. The semantic base class (`inkq-container` on the root, `inkq-container__wrapper` on the inner `<div>`) is ALWAYS emitted regardless of this prop. **Source quirk, verified against `Container.module.scss`**: `.inkq-container` (the root selector) has NO declarations of its own — only a nested `&__wrapper` rule — so CSS Modules exports no hashed class for the root at all; `getStyleClass()` (`getClassName.tsx`) finds no matching key in the compiled `classes` map and returns `undefined` regardless of `unstyled`. The root therefore NEVER carries a module hash, styled or unstyled — only the semantic base class. The inner `<div>` (`&__wrapper`) DOES have its own declaration, so it behaves as originally documented: a real CSS-module hash is appended when styled and suppressed when `unstyled`. See the `Unstyled` story.',
 		},
 	},
 	args: {
@@ -157,15 +162,23 @@ export const NestedContent: Story = {
 // classes `useStyles`/`getClassName.tsx` applies to the root and inner
 // wrapper elements — per `getClassName.tsx`, the base class is now ALWAYS
 // emitted (`classList = [baseClass]` unconditionally). It only suppresses the
-// CSS-module-hashed class normally appended alongside it.
+// CSS-module-hashed class normally appended alongside it — and only where a
+// hashed class exists to suppress in the first place.
 //
 // **Re-verified against the LIVE `Container.tsx`/`Container.module.scss`**:
-// the SCSS's nested selector is `&__wrapper` (matching `Container.tsx`'s
-// `styles('wrapper')` call on the inner `<div>` exactly), so BOTH the root
-// AND the inner wrapper get a real CSS-module hash appended when styled, and
-// neither does when `unstyled` — the two behave identically, unlike an
-// earlier revision of this file where the SCSS selector and the `styles()`
-// call didn't match (a mismatch that has since been fixed in source).
+// the root selector, `.inkq-container`, has NO declarations of its own in the
+// SCSS — only a nested `&__wrapper` rule — so CSS Modules never compiles a
+// hash for the `inkq-container` key at all. `getStyleClass()` looks up that
+// exact key in the compiled `classes` map and finds nothing, so it returns
+// `undefined` regardless of `unstyled`: the ROOT never carries a module hash,
+// styled or unstyled alike. The inner wrapper (`&__wrapper`, matching
+// `Container.tsx`'s `styles('wrapper')` call) DOES have its own declaration,
+// so it behaves as originally expected: a real CSS-module hash is appended
+// when styled and suppressed when `unstyled`. The two elements are NOT
+// symmetric — assert on the real, compiled `classes` map below rather than a
+// naive "any class beyond the base" heuristic, which would incorrectly
+// pass/fail depending on unrelated config/global classes and can't tell a
+// genuine module hash apart from anything else.
 export const Unstyled: Story = {
 	parameters: {
 		layout: 'padded',
@@ -195,20 +208,27 @@ export const Unstyled: Story = {
 		)
 		const [unstyledInner, styledInner] = items
 
-		// The hashed CSS-module class is build-generated, so assert on its
-		// presence/shape rather than a literal hash: any class beyond the
-		// semantic base class means the module class survived.
-		const hasModuleClass = (el: Element, base: string) =>
-			Array.from(el.classList).some(c => c !== base)
+		// Detect the REAL compiled CSS-module hash, keyed off the actual
+		// `Container.module.scss` export map — not a naive "any extra class"
+		// heuristic, which can't distinguish a module hash from an unrelated
+		// config/global modifier class (and which would also be wrong here,
+		// since the root has no compiled hash to find at all).
+		const hasModuleClass = (el: Element, base: string) => {
+			const moduleClass = (moduleClasses as Record<string, string>)[base]
+			return !!moduleClass && el.classList.contains(moduleClass)
+		}
 
 		await expect(styledRoot).toHaveClass('inkq-container')
 		await expect(unstyledRoot).toHaveClass('inkq-container')
-		expect(hasModuleClass(styledRoot, 'inkq-container')).toBe(true)
+		// `.inkq-container` has no own SCSS declaration — only the nested
+		// `&__wrapper` rule — so CSS Modules compiles no hash for it at all.
+		// The root NEVER carries a module-hashed class, styled or unstyled.
+		expect(hasModuleClass(styledRoot, 'inkq-container')).toBe(false)
 		expect(hasModuleClass(unstyledRoot, 'inkq-container')).toBe(false)
 
-		// The wrapper behaves identically to the root: `Container.module.scss`'s
-		// `&__wrapper` rule matches `styles('wrapper')`'s computed base class
-		// exactly, so a CSS-module hash is appended when styled and suppressed
+		// The wrapper DOES have its own SCSS declaration (`&__wrapper`,
+		// matching `styles('wrapper')`'s computed base class exactly), so a
+		// CSS-module hash is genuinely appended when styled and suppressed
 		// when `unstyled`.
 		await expect(styledInner).toHaveClass('inkq-container__wrapper')
 		await expect(unstyledInner).toHaveClass('inkq-container__wrapper')

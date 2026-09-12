@@ -43,7 +43,7 @@ const COMMUNITY_ROUTES = [
 // exist on the actual accepted prop type, `PolymorphicProps<SubnavProps, C>`.
 // `Parameters<typeof Subnav>[0]` reads that real, wrapped type straight off the
 // component itself — the generic call signature's default `C` resolves to
-// `'div'` here, since `SubnavSpecs`'s `default.component` is `'div'`.
+// `'div'` here, since `SubnavSpecs`'s `defaults.as` is `'div'`.
 type SubnavStoryProps = Parameters<typeof Subnav>[0]
 type Story = StoryObj<SubnavStoryProps>
 
@@ -82,10 +82,13 @@ export default meta
  * children are hoisted into the menubar directly, and no dropdown trigger is
  * rendered.
  *
- * Note the menu `<ul>` is NOT `.inkq-menu` here: `Subnav` passes
- * `{ ...styles('menu') }` to `<Menu>`, and `Menu` spreads `{ ...rest }` AFTER
- * its own `{ ...styles('root') }`, so the parent's `classNames` replaces
- * `Menu`'s own base class instead of merging with it.
+ * Note: `Subnav` passes `{ ...styles('menu') }` (a `className`/`style` pair)
+ * to `<Menu>`. `Menu.tsx` destructures `className` out of its own props
+ * BEFORE spreading `...rest` onto its root `<ul>` — so that className never
+ * lands on the `<ul>` itself. It's forwarded instead as the `className` prop
+ * of every top-level `MenuItem`, which `getClassName.tsx`'s `inheritClasses`
+ * logic uses to rename each item's own root class from `inkq-menu-item` to
+ * `inkq-subnav__menu-item` (since `'menu-item'.startsWith('menu')`).
  */
 export const Default: Story = {
 	play: async ({ canvasElement }) => {
@@ -114,7 +117,7 @@ export const Default: Story = {
 /**
  * Edge case: `routes` that match nothing. `filterNavigation` returns `[]`, and
  * `Subnav` guards its entire inner block — the label span AND the `<Menu>` —
- * with a single `!!navItems.length` (`Subnav.tsx`, lines 36–48). Since there
+ * with a single `!!navItems.length`. Since there
  * is no separate `label` prop anymore (it's derived from `navItems[0].label`),
  * an empty `navItems` means NEITHER renders: the root mounts with an empty
  * inner wrapper.

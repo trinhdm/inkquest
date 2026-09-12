@@ -1,5 +1,6 @@
 import { BOOLEAN_OPTIONS, SIZE_OPTIONS, VARIANT_OPTIONS } from '../options.story'
 import { Button } from '../Button'
+import { Component } from 'react'
 import { expect, within } from 'storybook/test'
 import { Icon } from '@/components/core/Icon'
 import { getDefaultProps } from '@/lib/registries'
@@ -20,6 +21,29 @@ const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 		</div>
 	</div>
 )
+
+// Local-only class error boundary (not a source-file change — this never
+// leaves the stories file) used purely to demonstrate `ButtonSection`'s
+// required-context guard without crashing the whole story canvas: a raw,
+// uncaught render throw would take down every other group rendered in the
+// same story, not just the misuse case.
+interface ErrorBoundaryState {
+	message?: string
+}
+
+class RenderErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryState> {
+	state: ErrorBoundaryState = {}
+
+	static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+		return { message: error.message }
+	}
+
+	render() {
+		if (this.state.message)
+			return <span data-testid="button-section-error">{ this.state.message }</span>
+		return this.props.children
+	}
+}
 
 // `Button.Section.Props` (the `declare namespace` export) is just the raw
 // `ButtonSectionProps` interface — it doesn't include `unstyled`/
@@ -60,7 +84,7 @@ const meta: Meta<ButtonSectionStoryArgs> = {
 		loading: { control: 'boolean' },
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `ButtonSection`\'s own `ButtonSectionProps`. The semantic base class (`inkq-button__section`) on this section\'s `<span data-side="...">` wrapper is ALWAYS emitted regardless of this prop — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it, via the `styles(\'section\')` call `ButtonSection` makes (styled under whatever name the wrapping `Button` provides through `Button.context`\'s `displayName`, or `"ButtonSection"` when rendered outside a `Button`). Set directly on `Button.Section` itself here, independent of the wrapping `Button`\'s own `unstyled` state — see the `Unstyled` story.',
+			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `ButtonSection`\'s own `ButtonSectionProps`. The semantic base class (`inkq-button__section`) on this section\'s `<span data-side="...">` wrapper is ALWAYS emitted regardless of this prop — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it, via the `styles(\'section\')` call `ButtonSection` makes, styled under `rootName` read from the REQUIRED `Button.context` (`useButtonCxt` = `useRootCxt`, fixed to `\'Button\'` — `ButtonSection` now throws entirely when rendered outside a `Button`, see the `RequiresButtonParent` story). Set directly on `Button.Section` itself here, independent of the wrapping `Button`\'s own `unstyled` state — see the `Unstyled` story.',
 		},
 	},
 	args: {
@@ -159,10 +183,9 @@ export const MultipleSections: Story = {
 // independent effect — `ButtonSection.tsx` reads `unstyled` off its OWN props
 // (via `useProps(NAME, _props)`/`useStyles`), not off the `Button.context`
 // value the wrapping `Button` publishes through `ButtonProvider` (that value
-// only carries `displayName`/`unstyled` — there's no `iconProps` — and while
-// `ButtonSection.tsx` DOES read `ctx.displayName`, to decide which name it
-// styles under (`ctx?.displayName ?? NAME` — see the `Standalone` story), it
-// never reads `ctx.unstyled`).
+// only carries `unstyled` — and `ButtonSection.tsx` only ever destructures
+// `rootName` off the required context, via `useButtonCxt`, never `unstyled` —
+// see the `RequiresButtonParent` story for that required-context contract).
 export const Unstyled: Story = {
 	parameters: { controls: { exclude: ['unstyled'] } },
 	render: ({ variant, size, disabled, loading }: ButtonSectionStoryArgs) => {
@@ -213,48 +236,49 @@ export const Unstyled: Story = {
 	},
 }
 
-// `ButtonSection` reads `Button.context` via the SAFE reader (`useButtonCxt`
-// = `useSafeRootCxt`), so rendering it with no wrapping `Button` doesn't
-// throw — it silently changes which name it styles under
-// (`ctx?.displayName ?? NAME`, `NAME` being `'ButtonSection'` here).
-// `getBaseClass` (`getClassName.tsx`) then derives a DIFFERENT base class:
-// `toKebabCase('Button')` + `'__section'` => `inkq-button__section` when
-// wrapped (matches `Button.module.scss`'s `.inkq-button { &__section {...} }`
-// nesting, so a hashed module class is appended), vs.
-// `toKebabCase('ButtonSection')` + `'__section'` => `inkq-button-section__section`
-// when standalone — a selector `Button.module.scss` has no rule for at all,
-// so `classes['inkq-button-section__section']` is `undefined` and NO hashed
-// module class is appended alongside it.
-export const Standalone: Story = {
+// `ButtonSection` now reads `Button.context` via the REQUIRED reader
+// (`useButtonCxt` = `useRootCxt`, not the optional `useSafeRootCxt`) —
+// `const { rootName } = useButtonCxt(NAME)` in `ButtonSection.tsx` throws
+// (`createRootCxt.tsx`'s `useRootCxt`: `<ButtonSection /> must be rendered
+// inside <Button>`) the instant it's rendered with no wrapping `Button` at
+// all, rather than silently falling back to styling under its own name.
+// There's also no more dynamic per-parent naming to demonstrate even if it
+// didn't throw: `Button.tsx`'s `ButtonProvider` never passes an explicit
+// `rootName`, so `createRootCxt`'s own default (`rootName ?? name`, `name`
+// being the fixed `'Button'` passed to `createRootCxt<ButtonContext>('Button')`)
+// always resolves to `'Button'` — `rootName` is no longer derived from a
+// `ctx.displayName` that could vary.
+//
+// A raw, uncaught render throw would crash every other group in this story,
+// so the misuse case is wrapped in a local (stories-file-only, not a source
+// change) `RenderErrorBoundary` purely to demonstrate/assert the guard's
+// error message without taking down the whole canvas.
+export const RequiresButtonParent: Story = {
 	parameters: { layout: 'padded' },
 	render: () => (
 		<Row>
-			<Group label="inside a Button">
+			<Group label="inside a Button (valid)">
 				<Button>
 					<Button.Section left><Icon type="download" /></Button.Section>
 					Download
 				</Button>
 			</Group>
-			<Group label="standalone (no wrapping Button)">
-				<Button.Section left><Icon type="download" /></Button.Section>
+			<Group label="standalone — throws (guarded by useButtonCxt)">
+				<RenderErrorBoundary>
+					<Button.Section left><Icon type="download" /></Button.Section>
+				</RenderErrorBoundary>
 			</Group>
 		</Row>
 	),
 	play: async ({ canvasElement }) => {
-		const sections = canvasElement.querySelectorAll('[data-side="left"]')
+		const canvas = within(canvasElement)
 
-		expect(sections).toHaveLength(2)
+		const validSection = canvasElement.querySelector('[data-side="left"]')
+		await expect(validSection).toBeInTheDocument()
+		await expect(validSection).toHaveClass('inkq-button__section')
 
-		const [insideButton, standalone] = Array.from(sections)
-
-		const hasModuleClass = (el: Element, base: string) =>
-			Array.from(el.classList).some(c => c !== base)
-
-		await expect(insideButton).toHaveClass('inkq-button__section')
-		expect(hasModuleClass(insideButton, 'inkq-button__section')).toBe(true)
-
-		await expect(standalone).toHaveClass('inkq-button-section__section')
-		expect(hasModuleClass(standalone, 'inkq-button-section__section')).toBe(false)
+		const errorFallback = await canvas.findByTestId('button-section-error')
+		await expect(errorFallback).toHaveTextContent('<ButtonSection /> must be rendered inside <Button>')
 	},
 }
 

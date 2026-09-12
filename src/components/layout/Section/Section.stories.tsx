@@ -29,8 +29,8 @@ const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 // `Section`'s own semantic base class (`inkq-section`, always emitted by
 // `getClassName` regardless of `unstyled`) is the stable selector used to walk
 // from rendered content back up to the actual root element. NOTE: because
-// `Section` renders `<Box as={Container} {...styles('root', { clsx })}>` (where
-// `clsx = { [\`${NAME}--${layout}\`]: !!(layout && layout !== 'default') }`),
+// `Section` renders `<Box as={Container} {...styles('root', { module })}>`
+// (where `module = { [\`${layout}\`]: !!(layout && layout !== 'default') }`),
 // the className it computes is passed straight into `Container` as a plain
 // `className` prop; `getClassName`'s `inheritClasses` logic then treats that
 // string's FIRST class (`inkq-section`) as the new "namespace" and it
@@ -59,7 +59,7 @@ const meta: Meta<SectionStoryProps> = {
 		},
 		eyebrow: {
 			control: 'text',
-			description: '**Re-verified against the live `Section.tsx`**: rendered CONDITIONALLY — `{ eyebrow && <span {...styles(\'eyebrow\', { clsx: \'eyebrow\' })}>{eyebrow}</span> }`. When `eyebrow` is falsy (`undefined`/`\'\'`), the `<span>` isn\'t rendered at all — there is no longer an empty placeholder span in the DOM. See the `Eyebrow` story.',
+			description: '**Re-verified against the live `Section.tsx`**: rendered CONDITIONALLY — `{ eyebrow && <span {...styles(\'eyebrow\', true)}>{eyebrow}</span> }`. The `true` shorthand (`SelectorConfigScope`\'s boolean branch, per `getConfigClasses` in `getClassName.tsx`) just emits the selector\'s own base class (`inkq-section__eyebrow`) with no extra module/global/selector modifier classes layered on. When `eyebrow` is falsy (`undefined`/`\'\'`), the `<span>` isn\'t rendered at all — there is no longer an empty placeholder span in the DOM. See the `Eyebrow` story.',
 		},
 		layout: {
 			control: 'select',
@@ -165,9 +165,9 @@ export const Layout: Story = {
 			heroRoot = heroHeading.closest(ROOT_SELECTOR) as HTMLElement,
 			splitRoot = splitHeading.closest(ROOT_SELECTOR) as HTMLElement
 
-		// `outputExtraClasses` (`getClassName.tsx`) substitutes the CSS-module
-		// HASH for a `clsx` modifier when a matching rule exists in the
-		// stylesheet (unlike the always-present-alongside-its-hash root/selector
+		// `formatConfigClass`/`getStyleClass` (`getClassName.tsx`) substitute the
+		// CSS-module HASH for a `module` modifier when a matching rule exists in
+		// the stylesheet (unlike the always-present-alongside-its-hash root/selector
 		// base classes) — since `Section.module.scss` defines real `--blocks`/
 		// `--cta`/`--hero`/`--split` rules, the literal `inkq-section--<layout>`
 		// token never appears verbatim in the DOM; only its hash (e.g.
@@ -208,8 +208,8 @@ export const Layout: Story = {
 
 /**
  * **Re-verified against the LIVE `Section.tsx`**: `eyebrow` is now genuinely
- * conditional — `{ eyebrow && <span {...styles('eyebrow', { clsx: 'eyebrow' })}>
- * {eyebrow}</span> }`. When `eyebrow` is falsy, there is NO `<span>` in the DOM
+ * conditional — `{ eyebrow && <span {...styles('eyebrow', true)}>{eyebrow}
+ * </span> }`. When `eyebrow` is falsy, there is NO `<span>` in the DOM
  * at all (previously it rendered an always-present, empty span — that's no
  * longer the case).
  */
@@ -361,7 +361,7 @@ export const MinimalContent: Story = {
 // rendered via the hardcoded `<Box as={Container}>`. Passing `as="div"` has no
 // effect on the rendered tag.
 //
-// NOTE: `SectionSpecs` declares no `default.component`, so `polymorphic()`'s
+// NOTE: `SectionSpecs` declares no `defaults.as`, so `polymorphic()`'s
 // non-polymorphic call-signature branch types `as` as `never` (only
 // `undefined` is assignable) — matching the fact that it's genuinely inert at
 // runtime too. The `as={ 'div' as never }` cast below is the narrowest

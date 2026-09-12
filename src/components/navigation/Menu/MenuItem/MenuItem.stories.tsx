@@ -60,7 +60,7 @@ const USER_TRIGGER_ID = 'user-dropdown-trigger',
 // `PolymorphicProps<MenuItemProps, C>`. `Parameters<typeof MenuItem>[0]` reads
 // that real, wrapped type straight off the component itself — the generic
 // call signature's default `C` resolves to `'li'` here, since
-// `MenuItemSpecs`'s `default.component` is `'li'`.
+// `MenuItemSpecs`'s `defaults.as` is `'li'`.
 type MenuItemStoryProps = Parameters<typeof MenuItem>[0]
 type Story = StoryObj<MenuItemStoryProps>
 
@@ -112,7 +112,7 @@ export const Default: Story = {
 }
 
 /**
- * `MenuItem.tsx`'s non-dropdown branch (`!isDropdown`, lines 145–150): a
+ * `MenuItem.tsx`'s non-dropdown branch (`!isDropdown`): a
  * single `<li role="none">` wrapping `MenuLabel`, which is `as={ route ? Link
  * : 'span' }` — so an item WITH a `route` is a focusable `<a role="menuitem"
  * href>`.
@@ -154,7 +154,7 @@ export const Leaf: Story = {
 }
 
 /**
- * `MenuItem.tsx`'s `isDropdown && !hasDropdowns` branch (lines 150–159):
+ * `MenuItem.tsx`'s `isDropdown && !hasDropdowns` branch:
  * returns an ARRAY of the children's own `<li>`s — the parent item's own
  * label (`User`) is never rendered at all, and there's no trigger `<button>`.
  */
@@ -176,7 +176,7 @@ export const FlattenedDropdown: Story = {
 }
 
 /**
- * `MenuItem.tsx`'s `isDropdown && hasDropdowns` branch (lines 162–203),
+ * `MenuItem.tsx`'s `isDropdown && hasDropdowns` branch,
  * closed by default: the item's own label PLUS an `unstyled` `Button` trigger
  * carrying `aria-controls`/`aria-expanded`/`aria-haspopup`, and an
  * `aria-hidden` caret `Icon`. The nested `Menu` is only mounted while open
@@ -261,8 +261,10 @@ export const HasDropdowns: Story = {
 /**
  * `data-current` (`&:where([data-current])` in `Menu.module.scss`, bolding
  * the label) is never SET by `MenuItem` itself — the active-page detection is
- * commented out (`Menu.tsx` line 3, `MenuItem.tsx` lines 50–51). It's only
- * reachable by passing it through the escape-hatch `attributes` prop.
+ * commented out (`Menu.tsx`'s `// const isActive = pathname === route`, and
+ * `MenuItem.tsx`'s dead `usePathname` import and its own "add behavior for
+ * aria-current" TODO comments). It's only reachable by passing it through the
+ * escape-hatch `attributes` prop.
  */
 export const DataCurrentHook: Story = {
 	args: {
@@ -571,7 +573,7 @@ export const KeyboardFocusRouteless: Story = {
 }
 
 // `as` isn't destructured out by `MenuItem` — it lands in `others` and is
-// forwarded straight to `Box`. `MenuItemSpecs`'s `default.component` is `'li'`.
+// forwarded straight to `Box`. `MenuItemSpecs`'s `defaults.as` is `'li'`.
 export const AsElement: Story = {
 	render: (args) => (
 		<Row>
