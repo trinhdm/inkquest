@@ -1,6 +1,6 @@
 import { useProps, useStyles } from '@/hooks'
 import { useReducedMotion } from 'framer-motion'
-import { useAccordionProps, type AccordionContext } from '../Accordion.context'
+import { useAccordionCxt } from '../Accordion.context'
 import { extractOtherProps } from '@/utils/helpers'
 import { Box, polymorphic } from '@/components/core/Box'
 import type { ReactNode } from 'react'
@@ -8,8 +8,7 @@ import classes from '../Accordion.module.scss'
 
 const NAME = 'AccordionContent' as const
 
-interface AccordionContentProps
-	extends Omit<AccordionContext, 'displayName'> {
+interface AccordionContentProps {
 	children: ReactNode
 }
 
@@ -19,19 +18,13 @@ interface AccordionContentSpecs {
 }
 
 export const AccordionContent = polymorphic<AccordionContentSpecs>(_props => {
-	const props = useProps(NAME, useAccordionProps(_props))
+	const { idx, isOpen } = useAccordionCxt(NAME)
+	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { classes, props })
 
-	const {
-		children,
-		handleToggle,
-		idx,
-		indicator,
-		isOpen,
-		...rest
-	} = props
-
+	const { children, ...rest } = props
 	const { others } = extractOtherProps(rest)
+
 	const reduced = useReducedMotion()
 
 	return (
@@ -43,8 +36,8 @@ export const AccordionContent = polymorphic<AccordionContentSpecs>(_props => {
 			id={ idx.content }
 			role="region"
 		>
-			<div { ...styles('inner') }>
-				<div { ...styles('body') }>
+			<div { ...styles('inner') } inert={ !isOpen || undefined }>
+				<div { ...styles('wrapper') }>
 					{ children }
 				</div>
 			</div>

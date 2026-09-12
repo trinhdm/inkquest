@@ -7,23 +7,20 @@ export type AccordionIndicator =
 
 export interface AccordionIds {
 	content: string
+	root: string
 	title: string
 }
 
 export interface AccordionContext {
-	// collapsible?: boolean
-	// displayName: string
 	handleToggle: () => void
 	idx: AccordionIds
 	indicator?: AccordionIndicator
 	isOpen: boolean
-	step?: number
-	unstyled?: boolean
+	step?: `${number}`
 }
 
 export const {
 	RootCxtProvider: AccordionProvider,
-	useSafeRootCxt: useAccordionCxt,
-	useRootName: useAccordionName,
+	useRootCxt: useAccordionCxt,
 	useRootProps: useAccordionProps,
 } = createRootCxt<AccordionContext>('Accordion')

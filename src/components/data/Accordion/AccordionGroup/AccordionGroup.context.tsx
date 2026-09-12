@@ -13,11 +13,6 @@ export interface AccordionGroupContext {
 	open?: boolean
 	unstyled?: boolean
 	withinView?: boolean
-	// collapsible?: boolean
-	// type?: AccordionGroupType
-	// animated?: boolean
-	// revealed?: boolean
-	// stagger?: number
 }
 
 export const {

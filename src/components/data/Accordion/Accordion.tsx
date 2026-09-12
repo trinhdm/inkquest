@@ -1,14 +1,12 @@
-import {
-	isValidElement, Children, type ReactNode,
-	useCallback, useId, useMemo, useState,
-} from 'react'
+import { useCallback, useId, useMemo, useState, Children, type ReactNode } from 'react'
 import { useProps, useStyles } from '@/hooks'
-import { useAccordionGroupProps, AccordionGroup, type AccordionGroupType } from './AccordionGroup'
-import { extractOtherProps } from '@/utils/helpers'
+import { useAccordionGroupProps, AccordionGroup } from './AccordionGroup'
+import { extractOtherProps, flattenChildren } from '@/utils/helpers'
 import { AccordionContent } from './AccordionContent'
-import { AccordionProvider, type AccordionIds, type AccordionIndicator } from './Accordion.context'
+import { AccordionProvider } from './Accordion.context'
 import { AccordionTitle } from './AccordionTitle'
 import { Box, polymorphic } from '@/components/core/Box'
+import type { AccordionContext, AccordionIds, AccordionIndicator } from './Accordion.context'
 import classes from './Accordion.module.scss'
 
 const NAME = 'Accordion' as const,
@@ -22,9 +20,11 @@ interface AccordionProps {
 	id?: string
 	index?: number
 	indicator?: AccordionIndicator
+	layout?: AccordionGroup.Context['layout']
+	onItemToggle?: (index: number, open: boolean) => void
 	onToggle?: (open: boolean) => void
 	open?: boolean
-	type?: AccordionGroupType
+	type?: AccordionGroup.Props['type']
 }
 
 interface AccordionSpecs {
@@ -37,30 +37,30 @@ interface AccordionSpecs {
 	}
 }
 
-const buildAccordion = (
-	children: AccordionProps['children'],
-	// styles: ReturnType<typeof useStyles>
-) => {
-	let content: ReactNode = null,
-		title: ReactNode = null
+const buildAccordion = (children: AccordionProps['children']) => {
+	const [title, ...extraTitles] = flattenChildren(children, AccordionTitle.displayName),
+		[content, ...extraContent] = flattenChildren(children, AccordionContent.displayName)
 
-	Children.toArray(children).forEach(child => {
-		if (!isValidElement(child)) return
+	if (process.env.NODE_ENV !== 'production') {
+		const matched = extraTitles.length + extraContent.length
+			+ (title ? 1 : 0) + (content ? 1 : 0)
 
-		if (child.type === AccordionTitle) {
-			if (!title) title = child
-			else if (process.env.NODE_ENV !== 'production')
-				console.warn(`${NAME}: multiple ${NAME}.Title found; only the first ${NAME}.Title is rendered.`)
-			return
+		const ns = {
+			title: `${NAME}.Title`,
+			content: `${NAME}.Content`,
 		}
 
-		if (child.type === AccordionContent) {
-			if (!content) content = child
-			else if (process.env.NODE_ENV !== 'production')
-				console.warn(`${NAME}: multiple ${NAME}.Content found; only the first ${NAME}.Content is rendered.`)
-			return
-		}
-	})
+		if (!title)
+			console.warn(`${NAME}: no ${ns.title} found; an ${NAME} needs exactly one.`)
+		if (!content)
+			console.warn(`${NAME}: no ${ns.content} found; an ${NAME} needs exactly one.`)
+		if (extraTitles.length)
+			console.warn(`${NAME}: multiple ${ns.title} found; only the first is rendered.`)
+		if (extraContent.length)
+			console.warn(`${NAME}: multiple ${ns.content} found; only the first is rendered.`)
+		if (Children.count(children) > matched)
+			console.warn(`${NAME}: valid children include ${ns.title}, ${ns.content} only.`)
+	}
 
 	if (!title || !content) return null
 	return <>{ title }{ content }</>
@@ -78,6 +78,8 @@ export const Accordion = polymorphic<AccordionSpecs>(_props => {
 		id,
 		index,
 		indicator,
+		layout,
+		onItemToggle,
 		onToggle,
 		open,
 		type,
@@ -88,37 +90,55 @@ export const Accordion = polymorphic<AccordionSpecs>(_props => {
 	const { as, others } = extractOtherProps(rest)
 
 	const [uncontrolled, setUncontrolled] = useState(() => !!defaultOpen)
-	const isControlled = open !== undefined,
-		isOpen = isControlled ? open : uncontrolled
+	const isControlled = typeof open === 'boolean',
+		isOpen = isControlled ? !!open : uncontrolled
 
-	const uid = useId(),
-		rootID = id ?? uid,
-		idx = {
-			content: `${rootID}-content`,
-			title: `${rootID}-title`,
-		}
+	const uid = useId()
+	const idx = useMemo(() => {
+		const root = `acc-${id ?? uid}`,
+			content = `${root}-content`,
+			title = `${root}-title`
+		return { content, root, title }
+	}, [id, uid])
+
+	const step = useMemo(() => {
+		if (layout !== 'steps' || typeof index !== 'number') return
+		const i = index + 1
+		return (i > 9 ? `${i}` : `0${i}`) as `${number}`
+	}, [index, layout])
 
 	const handleToggle = useCallback(() => {
-		if (typeof disabled === 'boolean' && !disabled) return
+		if (disabled) return
 		const next = !isOpen
 		if (!isControlled) setUncontrolled(next)
+		// if (typeof index === 'number')
+		onItemToggle?.(index, next)
 		onToggle?.(next)
-	}, [disabled, index, isControlled, isOpen, onToggle])
+	}, [
+		disabled, index,
+		isControlled, isOpen,
+		onItemToggle, onToggle,
+	])
 
 	const cxtValue = useMemo(() => ({
-		name: NAME, handleToggle, idx, indicator, isOpen, unstyled,
-	}), [unstyled])
+		name: NAME, handleToggle, idx, indicator, isOpen, step, unstyled,
+	}), [handleToggle, idx, indicator, isOpen, step, unstyled])
 
 	return (
 		<Box
 			{ ...styles('root') }
 			{ ...others }
 			as={ as }
-			attributes={ { data: { open: isOpen || null } } }
-			id={ rootID }
+			attributes={ {
+				data: { open: isOpen || null, step }
+			} }
+			id={ idx.root }
 		>
 			<AccordionProvider value={ cxtValue }>
-				{ buildAccordion(children) }
+				<div { ...styles('wrapper') }>
+					<span { ...styles('divider') } />
+					{ buildAccordion(children) }
+				</div>
 			</AccordionProvider>
 		</Box>
 	)
@@ -139,13 +159,15 @@ Accordion.setDefaults({
 })
 
 export declare namespace Accordion {
+	export type Context = AccordionContext
 	export type Props = AccordionProps
 	export type Specs = AccordionSpecs
 
-	export type Idx = AccordionIds
-	export type Indicator = AccordionIndicator
+	// export type Idx = AccordionIds
+	// export type Indicator = AccordionIndicator
 
 	export namespace Group {
+		export type Context = AccordionGroup.Context
 		export type Props = AccordionGroup.Props
 		export type Specs = AccordionGroup.Specs
 	}

@@ -1,5 +1,5 @@
 import { useProps, useStyles } from '@/hooks'
-import { useAccordionProps, type AccordionContext } from '../Accordion.context'
+import { useAccordionCxt } from '../Accordion.context'
 import { extractOtherProps } from '@/utils/helpers'
 import { Box, polymorphic } from '@/components/core/Box'
 import { Icon } from '@/components/core'
@@ -8,8 +8,7 @@ import classes from '../Accordion.module.scss'
 
 const NAME = 'AccordionTitle' as const
 
-interface AccordionTitleProps
-	extends Omit<AccordionContext, 'displayName'> {
+interface AccordionTitleProps {
 	children: ReactNode
 }
 
@@ -19,19 +18,23 @@ interface AccordionTitleSpecs {
 }
 
 export const AccordionTitle = polymorphic<AccordionTitleSpecs>(_props => {
-	const props = useProps(NAME, useAccordionProps(_props))
-	const styles = useStyles(NAME, { classes, props })
-
 	const {
-		children,
 		handleToggle,
 		idx,
 		indicator,
 		isOpen,
-		...rest
-	} = props
+		step,
+	} = useAccordionCxt(NAME)
 
+	const props = useProps(NAME, _props)
+	const styles = useStyles(NAME, { classes, props })
+
+	const { children, ...rest } = props
 	const { others } = extractOtherProps(rest)
+
+	const indicatorClasses = {
+		[`${indicator}`]: indicator !== 'none',
+	}
 
 	return (
 		<Box
@@ -48,12 +51,18 @@ export const AccordionTitle = polymorphic<AccordionTitleSpecs>(_props => {
 			onClick={ handleToggle }
 			type="button"
 		>
+			{ !!step && (
+				<span { ...styles('step') }>
+					{ step }
+				</span>
+			) }
+
 			<span { ...styles('text') }>
 				{ children }
 			</span>
 
 			{ indicator !== 'none' && (
-				<span { ...styles('indicator') }>
+				<span { ...styles('indicator', { selector: indicatorClasses }) }>
 					<Icon type={ indicator === 'plus' ? 'add' : 'caret-down' } />
 				</span>
 			) }
