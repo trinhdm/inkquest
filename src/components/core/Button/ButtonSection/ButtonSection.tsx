@@ -21,8 +21,8 @@ type ButtonSectionProps = (
 )
 
 type ButtonSectionSpecs = {
+	isCompound: true
 	props: ButtonSectionProps
-	specIs: { compound: true }
 }
 
 export const ButtonSection = polymorphic<ButtonSectionSpecs>(_props => {

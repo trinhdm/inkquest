@@ -27,7 +27,7 @@ interface _CompoundSpecs<P extends object = object>
 		as?: never
 		props?: PropertyKey
 	}
-	specIs: { compound: true }
+	isCompound: true
 	styles?: never
 	subcomponents?: never
 	tokens?: never
@@ -40,7 +40,7 @@ interface _RootSpecs<T = unknown, P extends object = object>
 		as?: any
 		props?: PropertyKey
 	}
-	specIs?: { compound: false }
+	isCompound?: false
 	styles?: SpecsContract['styles']
 	subcomponents?: Record<string, unknown>
 	tokens?: CSSVars

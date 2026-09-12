@@ -41,8 +41,8 @@ type GroupProps = BaseGroupProps & (
 )
 
 type GroupSpecs = {
+	isCompound: true
 	props: GroupProps
-	specIs: { compound: true }
 }
 
 interface GroupContext {

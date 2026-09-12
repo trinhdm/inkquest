@@ -11,8 +11,8 @@ interface GridItemProps {
 }
 
 interface GridItemSpecs {
+	isCompound: true
 	props: GridItemProps
-	specIs: { compound: true }
 }
 
 export const GridItem = polymorphic<GridItemSpecs>(_props => {

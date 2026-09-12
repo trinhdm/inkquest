@@ -29,8 +29,8 @@ interface AccordionGroupProps {
 }
 
 type AccordionGroupSpecs = {
+	isCompound: true
 	props: AccordionGroupProps
-	specIs: { compound: true }
 }
 
 const handleOpenItems = (value?: AccordionGroupProps['defaultOpen']): number[] =>

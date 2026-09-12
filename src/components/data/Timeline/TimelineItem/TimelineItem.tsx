@@ -13,8 +13,8 @@ interface TimelineItemProps {
 }
 
 interface TimelineItemSpecs {
+	isCompound: true
 	props: TimelineItemProps
-	specIs: { compound: true }
 }
 
 export const TimelineItem = polymorphic<TimelineItemSpecs>(_props => {

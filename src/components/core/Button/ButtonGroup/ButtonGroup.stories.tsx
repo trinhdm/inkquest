@@ -26,7 +26,7 @@ const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 // etc., which only exist on the actual accepted prop type,
 // `PolymorphicProps<ButtonGroupProps, C>`. `Parameters<typeof
 // Button.Group>[0]` reads that real, wrapped type straight off the component
-// itself — `ButtonGroupSpecs`'s `specIs: { compound: true }` makes `as`
+// itself — `ButtonGroupSpecs`'s `isCompound: true` makes `as`
 // resolve to `never` (compound components don't take a tag override), so
 // this also correctly excludes `as` from the story's own controls.
 //

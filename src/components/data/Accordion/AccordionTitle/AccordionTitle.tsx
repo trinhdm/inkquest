@@ -13,8 +13,8 @@ interface AccordionTitleProps {
 }
 
 interface AccordionTitleSpecs {
+	isCompound: true
 	props: AccordionTitleProps
-	specIs: { compound: true }
 }
 
 export const AccordionTitle = polymorphic<AccordionTitleSpecs>(_props => {

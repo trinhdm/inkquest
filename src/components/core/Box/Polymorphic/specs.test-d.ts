@@ -14,7 +14,7 @@ type ButtonSpec = {
 type _T1 = _Expect<_Equal<SpecDefaultAs<ButtonSpec>, 'button'>>
 
 // // compound components must not accept className/style
-// type CompoundSpec = SpecStructure<{ is: { compound: true } }>
+// type CompoundSpec = SpecStructure<{ isCompound: true }>
 
 // @ts-expect-error compound specs disallow className
 const _t2: CompoundSpec['className'] = 'not-allowed'

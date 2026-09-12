@@ -13,8 +13,8 @@ interface AccordionContentProps {
 }
 
 interface AccordionContentSpecs {
+	isCompound: true
 	props: AccordionContentProps
-	specIs: { compound: true }
 }
 
 export const AccordionContent = polymorphic<AccordionContentSpecs>(_props => {

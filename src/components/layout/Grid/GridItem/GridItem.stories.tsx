@@ -45,7 +45,7 @@ const ROOT_SELECTOR = '.inkq-grid-item'
 type GridItemStoryProps = Parameters<typeof GridItem>[0]
 type Story = StoryObj<GridItemStoryProps>
 
-// `GridItem` is a compound part (`specIs: { compound: true }`), so every story
+// `GridItem` is a compound part (`isCompound: true`), so every story
 // mounts it as a literal, DIRECT JSX child of a real `<Grid>` — NOT via a
 // meta-level `decorators` wrapper. `Grid.tsx` calls
 // `filterChildren(children, 'GridItem')`, which checks `child.type.displayName`

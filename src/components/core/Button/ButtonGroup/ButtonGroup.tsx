@@ -23,8 +23,8 @@ interface ButtonGroupProps {
 }
 
 type ButtonGroupSpecs = {
+	isCompound: true
 	props: ButtonGroupProps
-	specIs: { compound: true }
 }
 
 const derivePriority = (index: number): Button.Priority => {

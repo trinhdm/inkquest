@@ -11,8 +11,8 @@ interface StatisticGroupProps
 	extends Omit<Group.Props, 'childName' | 'provider'> {}
 
 type StatisticGroupSpecs = {
+	isCompound: true
 	props: StatisticGroupProps
-	specIs: { compound: true }
 }
 
 export const StatisticGroup = polymorphic<StatisticGroupSpecs>(_props => {
