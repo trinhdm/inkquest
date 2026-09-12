@@ -18,7 +18,6 @@ export const ScriptInjector = ({
 			{ ...props }
 			data-scheme-script
 			dangerouslySetInnerHTML={{ __html: script }}
-			// suppressHydrationWarning
 		/>
 	)
 }

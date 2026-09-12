@@ -33,9 +33,5 @@ export const getElementTokens = (): ElementTokens => ({
 		sm: base.space('6'),
 		md: base.space('7'),
 		lg: base.space('8'),
-		// xl: base.space('56'),
 	},
-
-	// navbar: base.space('11'),
-	// subnav: base.space('8'),
 })

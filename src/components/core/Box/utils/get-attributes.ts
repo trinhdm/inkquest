@@ -100,7 +100,6 @@ const getHtmlAttrs = (
 		attrs.set('disabled', true)
 
 	return Object.fromEntries(attrs)
-	// as ExtractHtmlAttributes<E>
 }
 
 export const getAttributes = (_props: AttrSource) => {

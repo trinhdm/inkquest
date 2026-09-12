@@ -7,8 +7,6 @@ import { Box, polymorphic } from '@/components/core/Box'
 import { ButtonGroup, useButtonGroupProps } from './ButtonGroup'
 import { ButtonProvider, type ButtonContext } from './Button.context'
 import { ButtonSection } from './ButtonSection'
-// import { Icon } from '../Icon'
-// import { setThemeCSS, type ColorVariable } from '@/lib/theme'
 import type { ComponentPropsWithoutRef, MouseEventHandler, ReactNode, Ref } from 'react'
 import type { Route } from 'next'
 import type { Priority as ThemePriority, Variant as ThemeVariant } from '@/lib/theme'
@@ -16,8 +14,6 @@ import classes from './Button.module.scss'
 
 const NAME = 'Button' as const,
 	DEFAULT_TAG = 'button' as const
-
-// type ButtonVars = ColorVariable<typeof NAME>
 
 type ButtonSize =
 	| 'sm'
@@ -64,7 +60,6 @@ interface ButtonSpecs {
 		Group: typeof ButtonGroup
 		Section: typeof ButtonSection
 	}
-	// tokens: { stylesheet?: ButtonVars }
 }
 
 const buildSections = (
@@ -210,36 +205,3 @@ export declare namespace Button {
 		export type Specs = ButtonSection.Specs
 	}
 }
-
-
-// const tokens = setThemeCSS<ButtonSpecs>((theme, _props) => {
-// 	const rootTokens = {}
-
-// 	if (Object.hasOwn(_props, 'variant')) {
-
-// 		const variants = deriveVariants({ name: NAME }, theme)
-// 		console.log({ variants })
-// 		// const styles = serializeStyles([variants]) ?? undefined
-// 		if (!!variants)
-// 			Object.assign(rootTokens, { stylesheet: variants })
-// 	}
-
-// 	// const buttonHeights = {
-// 	// 	sm: '2.25rem',
-// 	// 	md: '2.5rem',
-// 	// 	lg: '2.75rem',
-// 	// }
-
-// 	return {
-// 		...rootTokens,
-// 		// root: {
-// 		// 	'--button-height': buttonHeights[_props.size],
-// 		// },
-
-// 		// root: {
-// 		// 	// ...variants,
-// 		// 	// '--button-height': 36px,		// .button__inner height: 0.5 * --button-height
-// 		// 	// '--button-pad': `${tokens.space.inset('sm')} ${tokens.space.inset('lg')}`,
-// 		// }
-// 	}
-// })

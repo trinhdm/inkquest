@@ -102,7 +102,7 @@ export const Accordion = polymorphic<AccordionSpecs>(_props => {
 	}, [id, uid])
 
 	const step = useMemo(() => {
-		if (layout !== 'steps' || typeof index !== 'number') return
+		if (layout !== 'steps') return
 		const i = index + 1
 		return (i > 9 ? `${i}` : `0${i}`) as `${number}`
 	}, [index, layout])
@@ -111,7 +111,6 @@ export const Accordion = polymorphic<AccordionSpecs>(_props => {
 		if (disabled) return
 		const next = !isOpen
 		if (!isControlled) setUncontrolled(next)
-		// if (typeof index === 'number')
 		onItemToggle?.(index, next)
 		onToggle?.(next)
 	}, [

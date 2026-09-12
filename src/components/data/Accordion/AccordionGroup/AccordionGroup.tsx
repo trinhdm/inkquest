@@ -21,11 +21,6 @@ interface AccordionGroupProps {
 	defaultOpen?: number | number[]
 	layout?: AccordionGroupLayout
 	type?: AccordionGroupType
-	// animated?: boolean
-	// duration?: number
-	// index?: number
-	// revealed?: boolean
-	// stagger?: number
 }
 
 type AccordionGroupSpecs = {

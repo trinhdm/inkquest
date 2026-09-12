@@ -22,7 +22,6 @@
 		width: 100%;
 
 		&::after {
-			// background: linear-gradient(135deg, var(--ink-4), var(--ink-1));
 			background: var(--inkq-background-gradient);
 			content: '';
 			display: block;
@@ -34,10 +33,8 @@
 		}
 
 		&-caption {
-			// bottom: var(--space-3);
 			color: var(--inkq-color-text-tertiary);
 			font: var(--inkq-text-caption-image);
-			// left: var(--space-3);
 			inset: auto auto var(--space-3) var(--space-3);
 			letter-spacing: var(--inkq-font-tracking-meta);
 			max-width: 80%;

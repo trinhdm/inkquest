@@ -22,14 +22,6 @@ type _Tag<C> =
 		? 'div'
 		: NonNullable<C>
 
-// type _HtmlProps<C, P> =
-// 	[C] extends [never]
-// 		? object
-// 		: Omit<_BaseProps<_Tag<C>>, 'as' | keyof P | NonSemanticAttrs>
-
-// export type PropertiesBase<P = object> =
-// 	Pick<FunctionComponent<P>, 'displayName'>
-
 export type PropertiesBase<P = object> =
 	Required<Pick<FunctionComponent<P>, 'displayName'>>
 
@@ -41,7 +33,7 @@ export type PolymorphicProps<P, C> =
 		unstyled?: boolean
 	}
 	& Omit<P, 'as'>
-	& Omit<_BaseProps<_Tag<C>>, 'as' | keyof P>		// & _HtmlProps<C, P>
+	& Omit<_BaseProps<_Tag<C>>, 'as' | keyof P>
 
 export const toPolymorphic = <
 	P0 extends object,

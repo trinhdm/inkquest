@@ -17,9 +17,9 @@ export interface VariantProps {
 	variant?: Variant
 }
 
-export interface SemanticVariantProps extends VariantProps {
+export interface SemanticVariantProps
+	extends VariantProps {
 	priority?: Priority
-	// variant?: Variant
 }
 
 export interface VariantTokens {
@@ -38,14 +38,16 @@ type StateVariable<
 	S extends string,
 	T extends keyof VariantTokens,
 	K extends StateKey = StateKey
-> = `--${S}-${T}${StateSuffix<K>}` extends CSSVariable
-	? `--${S}-${T}${StateSuffix<K>}`
-	: never
+> =
+	`--${S}-${T}${StateSuffix<K>}` extends CSSVariable
+		? `--${S}-${T}${StateSuffix<K>}`
+		: never
 
 export type ColorVariable<
 	S extends string,
 	T extends keyof VariantTokens = keyof VariantTokens
-> = StateVariable<Lowercase<S>, T>
+> =
+	StateVariable<Lowercase<S>, T>
 
 type StateToken<V, K extends StateKey> =
 	V extends Record<K, infer X>

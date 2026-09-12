@@ -2,7 +2,6 @@ import { COLOR_TOKENS, THEME_SCHEMES } from '../scales'
 import type { CSSProperties } from 'react'
 import type { AtLeastOneKeyOf } from '@/types/utils'
 import type { CSSVars, HexCode, Unit } from '@/types/shared'
-// import type { GetVariantColorsFn, PaintVariantsFn } from '../tokens'
 import type { SemanticTokens } from '../reference'
 
 export type ThemeName =
@@ -29,11 +28,6 @@ export type ThemeTokens<V = unknown> =
 export type BaseVarKey = 'base'
 
 export interface SiteTheme {
-	// getVariantColors: GetVariantColorsFn
-	// paintVariants: PaintVariantsFn
-
-	// tokens: SemanticTokens
-
 	scale: { space: number }
 	colors:
 		& { [K in FlatColorKey]: HexCode }
@@ -52,20 +46,12 @@ export interface SiteTheme {
 	opacity: number[]
 	radius: number[]
 	screenSize: number[]
-
-	// subcomponents?: Record<string, {
-	// 	cssVars?: (theme: SiteTheme, props: unknown, ctx: unknown) => Partial<Record<string, CSSVars>>
-	// }>
 }
 
 export interface SiteThemeConfig
 	extends SemanticTokens {
-	// getVariantColors: GetVariantColorsFn
-	// paintVariants: PaintVariantsFn
-
 	prefixSelector: (name: string) => string
 
-	// config: SiteTheme
 	prefix?: string
 	subcomponents?: Record<string, {
 		cssVars?: (theme: SiteTheme, props: unknown, ctx: unknown) => Partial<Record<string, CSSVars>>

@@ -8,17 +8,14 @@
 .inkq-accordion {
 	$name: &;
 
-	// --accordion-column-width: var(--space-12);
-	// --accordion-gap: var(--space-6);
-
 	--accordion-column-width: var(--space-11);
 	--accordion-gap: var(--space-9);
 	--accordion-indent: calc(var(--accordion-column-width) / 1.5);
 
-    opacity: 1;
+	opacity: 1;
 	position: relative;
-    transform: none;
-    transition: opacity 520ms var(--easing-out) 17ms,
+	transform: none;
+	transition: opacity 520ms var(--easing-out) 17ms,
 		transform 520ms var(--easing-out) 17ms;
 
 	&__divider {
@@ -54,29 +51,20 @@
 
 	--accordion-title-indent: var(--accordion-indent);
 
-    align-items: center;
-    border-color: currentColor;
-    border-style: none;
-    border-width: medium;
-    color: var(--inkq-color-text);
-    cursor: pointer;
+	align-items: center;
+	border-color: currentColor;
+	border-style: none;
+	border-width: medium;
+	color: var(--inkq-color-text);
+	cursor: pointer;
 	display: flex;
-    font: inherit;
-    gap: var(--accordion-gap);
+	font: inherit;
+	gap: var(--accordion-gap);
 	justify-content: space-between;
-    opacity: 1;
-    padding: var(--space-6) 0;
-    text-align: left;
-    width: 100%;
-
-    // background: none;
-	// display: grid;
-	// grid-template-columns: repeat(auto-fit, minmax(var(--screen-size-320), 1fr));
-    // transition: background var(--duration-fast) ease;
-
-	// &:has(#{$name}__indicator:nth-child(3):last-child) {
-	// 	grid-template-columns: 56px 1fr 56px;
-	// }
+	opacity: 1;
+	padding: var(--space-6) 0;
+	text-align: left;
+	width: 100%;
 
 	&__indicator,
 	&__step {
@@ -90,7 +78,6 @@
 		font: var(--inkq-text-prose);
 		font-size: 14px;
 		justify-items: flex-end;
-		// place-items: center;
 	}
 
 	&__text {
@@ -101,7 +88,6 @@
 
 		&:first-child {
 			margin-left: var(--accordion-title-indent);
-			// margin-left: calc(var(--accordion-column-width) / 1.5);
 		}
 	}
 
@@ -109,7 +95,6 @@
 		--icon-size: var(--font-size-24);
 
 		justify-items: flex-start;
-	    // place-items: center;
 
 		&--chevron {
 			--icon-rotate: 180deg;
@@ -142,10 +127,10 @@
 	color: var(--inkq-color-text-secondary);
 	display: grid;
 	font: var(--inkq-text-body);
-    grid-template-rows: 1fr;
-    opacity: 1;
+	grid-template-rows: 1fr;
+	opacity: 1;
 	text-wrap: pretty;
-    transition: grid-template-rows 340ms var(--easing),
+	transition: grid-template-rows 340ms var(--easing),
 		opacity 340ms var(--easing);
 
 	&__inner {
@@ -154,17 +139,10 @@
 	}
 
 	&__wrapper {
-		// margin-left: 76px;
 		margin-left: var(--accordion-content-indent);
 		max-width: var(--inkq-container-block);
 		padding: 0 0 var(--space-6) 0;
 	}
-
-	// &__body {
-	// 	color: var(--inkq-color-text-secondary);
-	// 	font: var(--inkq-text-body);
-	// 	text-wrap: pretty;
-	// }
 
 	.inkq-accordion:not([data-open]) & {
 		grid-template-rows: 0fr;
@@ -184,6 +162,4 @@
 
 .inkq-accordion-group {
 	$name: &;
-
-	// border-bottom: 1px solid var(--accordion-border-color);
 }

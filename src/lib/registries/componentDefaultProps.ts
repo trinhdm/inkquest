@@ -39,24 +39,9 @@ const registry = new ComponentDefaultsRegistry()
 
 // Internal write access — import this path directly. Only factory.tsx should call it.
 export const setDefaultProps = registry.register.bind(registry)
-// registerComponentDefaults
 
 export const getDefaultProps = <T extends object>(name: string): Partial<T> =>
 	registry.resolve<T>(name)
 
 // Test-only: clears registered defaults so tests don't leak state across files.
 export const resetComponentDefaults = registry.reset.bind(registry)
-
-
-// const registry = new Map<string, Partial<object>>()
-
-// export const setDefaultProps = (
-// 	name: string,
-// 	defaults: Partial<object>
-// ) => {
-// 	registry.set(name, defaults)
-// }
-
-// export const getDefaultProps = <T extends object>(name: string): Partial<T> => (
-// 	registry.get(name) ?? {}
-// ) as Partial<T>

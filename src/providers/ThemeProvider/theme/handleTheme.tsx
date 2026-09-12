@@ -1,10 +1,10 @@
 import { deepMerge } from '@/utils/helpers/objects'
-import { tokens, type SiteTheme, type SiteThemeConfig } from '@/lib/theme'
+import { tokens, type SiteThemeConfig } from '@/lib/theme'
 import { toKebabCase } from '@/utils/helpers'
 
-interface ThemeValidator<T,> {
-	(theme: Partial<T>): asserts theme is T
-}
+// interface ThemeValidator<T,> {
+// 	(theme: Partial<T>): asserts theme is T
+// }
 
 const validateTheme = <T,>(theme: T): theme is T => {
 	// if (!(Object.hasOwn(theme, 'font')))
@@ -12,7 +12,10 @@ const validateTheme = <T,>(theme: T): theme is T => {
 	return true
 }
 
-export const mergeTheme = <T extends object>(current: T, override?: Partial<T>) => {
+export const mergeTheme = <T extends object>(
+	current: T,
+	override?: Partial<T>
+) => {
 	let theme = current
 
 	if (override) theme = deepMerge(current, override) as T
@@ -21,7 +24,10 @@ export const mergeTheme = <T extends object>(current: T, override?: Partial<T>) 
 	return theme
 }
 
-const getPrefixSelector = (name: string, prefix?: string) => {
+const getPrefixSelector = (
+	name: string,
+	prefix?: string
+) => {
 	const namespace = toKebabCase(name)
 	let selector = namespace
 
@@ -31,7 +37,10 @@ const getPrefixSelector = (name: string, prefix?: string) => {
 	return `.${selector}`
 }
 
-export const handleTheme = <T extends object>(theme: T, prefix?: string): SiteThemeConfig & { config: T } => {
+export const handleTheme = <T extends object>(
+	theme: T,
+	prefix?: string
+): SiteThemeConfig & { config: T } => {
 	const prefixSelector = (name: string) => getPrefixSelector(name, prefix)
 	const options: SiteThemeConfig & { config: T }= { ...tokens, config: theme, prefix, prefixSelector }
 

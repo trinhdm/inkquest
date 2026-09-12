@@ -140,9 +140,4 @@ Section.setDefaults({ props: { layout: 'default' } })
 export declare namespace Section {
 	export type Props = SectionProps
 	export type Specs = SectionSpecs
-
-	// export namespace Button {
-	// 	export type Props = Button.Props
-	// 	export type Specs = Button.Specs
-	// }
 }

@@ -70,7 +70,6 @@ export const MenuItem = polymorphic<MenuItemSpecs>(_props => {
 	}, [])
 
 	const {
-		// as,
 		hasDropdowns,
 		label,
 		menu,

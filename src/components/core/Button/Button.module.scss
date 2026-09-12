@@ -76,7 +76,6 @@
 
 	&:where([data-disabled]) {
 		background-color: rgb(from var(--button-background) r g b / var(--inkq-opacity-disabled));
-		// opacity: var(--inkq-opacity-disabled);
 	}
 
 	&:where([data-loading]) {

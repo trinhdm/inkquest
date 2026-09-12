@@ -38,13 +38,6 @@ type _MethodSetDefault<S extends Specs> =
 		? { props?: _DefaultProps<S> }
 		: { props: _DefaultProps<S> }
 
-// type _MethodSetDefault<S extends Specs> = {
-// 	props?: Partial<DistributiveOmit<S['props'], 'as'>>
-// 		& (IsPolymorphic<S> extends true
-// 			? Required<AsPolymorphic<S>>
-// 			: { as?: never })
-// }
-
 export interface MethodsBase<
 	S extends Specs,
 	C = _Component<S>,
@@ -74,7 +67,6 @@ export const factory = <
 	T extends Specs,
 	C extends object = _FactoryComponent<T>
 >(
-	// target: (props: _FactoryProps<T>) => ReactNode,
 	target: (props: _BodyProps<T>) => ReactNode,
 	classes?: Record<string, string>
 ) => {

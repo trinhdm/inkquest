@@ -10,11 +10,8 @@ export const getColorTokens = (config: ThemeConfig): ColorTokens => {
 	const configuration = byScheme(config)
 	const textColors = getTextColorTokens(configuration),
 		hueStates = getStateHueTokens(configuration)
-		// opacityScale = getOpacityTokens()
 
-	return {
-		...textColors, ...hueStates,
-	}
+	return { ...textColors, ...hueStates }
 }
 
 export { getOpacityTokens, type OpacityTokens } from './opacity'

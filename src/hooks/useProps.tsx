@@ -15,12 +15,12 @@ export const useProps = <T extends object>(
 			Object.assign(props, filterProps(defaultProps))
 	}
 
-	// Object.assign(props, styleProps(_props))
-
+	type P = Record<string, unknown>
 	const incoming = styleProps(_props)
+
 	for (const key of Object.keys(incoming))
-		if ((incoming as Record<string, unknown>)[key] !== undefined)
-			(props as Record<string, unknown>)[key] = (incoming as Record<string, unknown>)[key]
+		if ((incoming as P)[key] !== undefined)
+			(props as P)[key] = (incoming as P)[key]
 
 	return props
 }

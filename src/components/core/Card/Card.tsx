@@ -2,7 +2,6 @@ import Image from 'next/image'
 import { useProps, useStyles } from '@/hooks'
 import { extractOtherProps } from '@/utils/helpers'
 import { Box, polymorphic } from '@/components/core/Box'
-// import { CardItem } from './CardItem'
 import type { ComponentProps } from 'react'
 import classes from './Card.module.scss'
 

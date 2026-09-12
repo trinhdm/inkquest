@@ -1,25 +1,18 @@
 'use client'
 
 import { useProps, useStyles } from '@/hooks'
-import { extractOtherProps, filterChildren } from '@/utils/helpers'
+import { extractOtherProps } from '@/utils/helpers'
 import { Box, polymorphic } from '@/components/core/Box'
-// import { FooterItem } from './FooterItem'
-import type { ReactNode } from 'react'
 import classes from './Footer.module.scss'
 
 const NAME = 'Footer' as const,
 	DEFAULT_TAG = 'footer' as const
 
-interface FooterProps {
-	// children: ReactNode
-}
+interface FooterProps {}
 
 interface FooterSpecs {
 	defaults: { as: typeof DEFAULT_TAG }
 	props: FooterProps
-	// subcomponents: {
-	// 	Item: typeof FooterItem
-	// }
 }
 
 export const Footer = polymorphic<FooterSpecs>(_props => {
@@ -58,15 +51,9 @@ export const Footer = polymorphic<FooterSpecs>(_props => {
 }, classes)
 
 Footer.displayName = NAME
-// Footer.Item = FooterItem
 Footer.setDefaults({ props: { as: DEFAULT_TAG } })
 
 export declare namespace Footer {
 	export type Props = FooterProps
 	export type Specs = FooterSpecs
-
-	// export namespace Item {
-	// 	export type Props = FooterItem.Props
-	// 	export type Specs = FooterItem.Specs
-	// }
 }

@@ -1,8 +1,7 @@
 import { useProps, useStyles, useVariantStyles } from '@/hooks'
 import { extractOtherProps } from '@/utils/helpers'
 import { Box, polymorphic } from '@/components/core/Box'
-// import { setThemeCSS, type ColorVariable } from '@/lib/theme'
-// import type { ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import classes from './Badge.module.scss'
 
 const NAME = 'Badge' as const,
@@ -18,10 +17,8 @@ type BadgeVariant =
 	| 'warning'
 	| 'danger'
 
-// type BadgeVars = ColorVariable<typeof NAME>
-
 interface BadgeProps {
-	// children: ReactNode
+	children: ReactNode
 	fullWidth?: boolean
 	shape?: 'round' | 'pill'
 	size?: 'sm' | 'lg'
@@ -29,19 +26,12 @@ interface BadgeProps {
 }
 
 interface BadgeSpecs {
-	// cssVars: { root: BadgeVars }
 	defaults: {
 		as: typeof TAG
 		props: 'shape' | 'variant'
 	}
 	props: BadgeProps
 }
-
-// const cssVars = setThemeCSS<BadgeSpecs>((theme, _props) => {
-// 	return {
-// 		root: {}
-// 	}
-// })
 
 export const Badge = polymorphic<BadgeSpecs>(_props => {
 	useVariantStyles(NAME)

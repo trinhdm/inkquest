@@ -6,9 +6,6 @@ export interface PaddingTokens {
 	chip: TokenVariableShape
 
 	menu: string
-
-	// hero: string
-	// section: string
 }
 
 export const getPaddingTokens = (): PaddingTokens => ({
@@ -16,8 +13,4 @@ export const getPaddingTokens = (): PaddingTokens => ({
 	chip: `${base.space('2')} ${base.space('3')}`,
 
 	menu: base.space('2'),
-
-	// hero: base.space('14'),
-	// section: base.space('13'),
-	// chip: `${alias.space.inset('xxs')} ${alias.space.inset('xs')}`,
 })
