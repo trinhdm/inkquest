@@ -2,7 +2,7 @@ import { useProps, useStyles } from '@/hooks'
 import { extractOtherProps } from '@/utils/helpers'
 import { Box, polymorphic } from '@/components/core/Box'
 import { Group } from '@/components/layout'
-import { StatisticGroupProvider } from './StatisticGroup.context'
+import { StatisticGroupProvider, type StatisticGroupContext } from './StatisticGroup.context'
 import classes from '../Statistic.module.scss'
 
 const NAME = 'StatisticGroup' as const
@@ -47,6 +47,7 @@ StatisticGroup.setDefaults({
 })
 
 export declare namespace StatisticGroup {
+	export type Context = StatisticGroupContext
 	export type Props = StatisticGroupProps
 	export type Specs = StatisticGroupSpecs
 }

@@ -6,7 +6,7 @@ import { AccordionContent } from './AccordionContent'
 import { AccordionProvider } from './Accordion.context'
 import { AccordionTitle } from './AccordionTitle'
 import { Box, polymorphic } from '@/components/core/Box'
-import type { AccordionContext, AccordionIds, AccordionIndicator } from './Accordion.context'
+import type { AccordionContext, AccordionIndicator } from './Accordion.context'
 import classes from './Accordion.module.scss'
 
 const NAME = 'Accordion' as const,
@@ -162,9 +162,6 @@ export declare namespace Accordion {
 	export type Context = AccordionContext
 	export type Props = AccordionProps
 	export type Specs = AccordionSpecs
-
-	// export type Idx = AccordionIds
-	// export type Indicator = AccordionIndicator
 
 	export namespace Group {
 		export type Context = AccordionGroup.Context

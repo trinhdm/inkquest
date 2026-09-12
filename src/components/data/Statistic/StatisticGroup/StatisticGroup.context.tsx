@@ -10,7 +10,7 @@ type SharedGroupCxt =
 	| 'unstyled'
 	| 'withinView'
 
-interface StatisticGroupContext
+export interface StatisticGroupContext
 	extends Pick<Group.Context, SharedGroupCxt> {}
 
 export const {

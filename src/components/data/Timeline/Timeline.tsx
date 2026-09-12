@@ -2,8 +2,8 @@ import { useProps, useStyles } from '@/hooks'
 import { extractOtherProps, flattenChildren } from '@/utils/helpers'
 import { Box, polymorphic } from '@/components/core/Box'
 import { TimelineItem } from './TimelineItem'
-import classes from './Timeline.module.scss'
 import type { ReactNode } from 'react'
+import classes from './Timeline.module.scss'
 
 const NAME = 'Timeline' as const,
 	DEFAULT_TAG = 'div' as const
@@ -29,7 +29,7 @@ export const Timeline = polymorphic<TimelineSpecs>(_props => {
 
 	return (
 		<Box as={ as } { ...styles('root') } { ...others }>
-			{ flattenChildren(children, 'TimelineItem').map(child => child) }
+			{ flattenChildren(children, TimelineItem.displayName).map(child => child) }
 		</Box>
 	)
 }, classes)

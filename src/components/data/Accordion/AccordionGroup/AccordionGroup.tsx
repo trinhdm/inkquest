@@ -110,7 +110,4 @@ export declare namespace AccordionGroup {
 	export type Context = AccordionGroupContext
 	export type Props = AccordionGroupProps
 	export type Specs = AccordionGroupSpecs
-
-	// export type Layout = AccordionGroupLayout
-	// export type Type = AccordionGroupType
 }

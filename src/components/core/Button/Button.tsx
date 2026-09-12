@@ -5,7 +5,7 @@ import { useProps, useStyles, useVariantStyles } from '@/hooks'
 import { extractChildrenText, extractOtherProps } from '@/utils/helpers'
 import { Box, polymorphic } from '@/components/core/Box'
 import { ButtonGroup, useButtonGroupProps } from './ButtonGroup'
-import { ButtonProvider } from './Button.context'
+import { ButtonProvider, type ButtonContext } from './Button.context'
 import { ButtonSection } from './ButtonSection'
 // import { Icon } from '../Icon'
 // import { setThemeCSS, type ColorVariable } from '@/lib/theme'
@@ -188,6 +188,7 @@ Button.setDefaults({
 })
 
 export declare namespace Button {
+	export type Context = ButtonContext
 	export type Props = ButtonProps
 	export type Specs = ButtonSpecs
 
@@ -196,6 +197,7 @@ export declare namespace Button {
 	export type Variant = ThemeVariant
 
 	export namespace Group {
+		export type Context = ButtonGroup.Context
 		export type Props = ButtonGroup.Props
 		export type Specs = ButtonGroup.Specs
 	}
