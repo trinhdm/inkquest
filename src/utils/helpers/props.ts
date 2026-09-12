@@ -14,10 +14,8 @@ type SpecStyleProps =
 interface StyleAliasInput
 	extends SpecStyleProps, DOMStyleProps {}
 
-type StyleAliasResult = DOMStyleProps
-
 type RenamedProps<T> =
-	Omit<T, keyof StyleAliasInput> & StyleAliasResult
+	Omit<T, keyof StyleAliasInput> & DOMStyleProps
 
 interface FilterPropsFn {
 	<T extends object>(props: T): T
@@ -39,11 +37,11 @@ export const filterProps = (<T extends object>(
 
 const mergeStyleAliases = <T extends StyleAliasInput>(
 	_props: T
-): StyleAliasResult => {
+): DOMStyleProps => {
 	const className = cx(_props.className, _props.classNames)
 	const style = { ..._props.style, ..._props.styles }
 
-	const result: StyleAliasResult = {}
+	const result: DOMStyleProps = {}
 	if (className) result.className = className
 	if (Object.keys(style).length) result.style = style
 
@@ -66,22 +64,29 @@ export const styleProps = <T extends object>(
 	return filterProps(aliasedProps)
 }
 
-type OtherPropsList<E extends ElementType = ElementType> = {
+type OtherPropsList<E extends ElementType> = {
 	animated?: boolean
 	as?: E
+	displayName?: string
 	loading?: boolean
 	revealed?: boolean
+	withinView?: boolean
 }
 
-type OtherProps<E extends ElementType = ElementType> =
+type OtherProps<E extends ElementType> =
 	StyleAliasInput & OtherPropsList<E>
 
+type ExtractOtherPropNames =
+	'as' | 'withinView'
+
+type OtherExtractedProps<E extends ElementType> =
+	Pick<OtherPropsList<E>, ExtractOtherPropNames>
+
 interface ExtractOtherPropsFn {
-	<T extends object, A extends ElementType = ElementType>(
-		rest: T & OtherProps<A>
-	): {
-		as: A | undefined
-		others: DistributiveOmit<T, keyof StyleAliasInput | 'as'>
+	<T extends object, E extends ElementType = ElementType>(
+		rest: T & OtherProps<E>
+	): OtherExtractedProps<E> & {
+		others: DistributiveOmit<T, keyof StyleAliasInput | ExtractOtherPropNames>
 	}
 }
 
@@ -94,14 +99,16 @@ export const extractOtherProps = (<
 		as,
 		className,
 		classNames,
+		displayName,
 		loading,
 		revealed,
 		style,
 		styles,
+		withinView,
 		...props
 	} = rest
 
 	const others = filterProps(props)
 
-	return { as, others }
+	return { as, others, withinView }
 }) as ExtractOtherPropsFn
