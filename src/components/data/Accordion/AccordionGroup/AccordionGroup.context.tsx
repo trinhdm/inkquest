@@ -1,18 +1,23 @@
 import { createRootCxt } from '@/lib/component'
 
+export type AccordionGroupLayout =
+	'default' | 'steps'
+
 export type AccordionGroupType =
 	'single' | 'multiple'
 
-interface AccordionGroupContext {
-	collapsible?: boolean
-	isOpen?: boolean
+export interface AccordionGroupContext {
 	index?: number
-	type?: AccordionGroupType
+	layout?: AccordionGroupLayout
+	onItemToggle?: (index: number, open: boolean) => void
+	open?: boolean
 	unstyled?: boolean
+	withinView?: boolean
+	// collapsible?: boolean
+	// type?: AccordionGroupType
 	// animated?: boolean
 	// revealed?: boolean
 	// stagger?: number
-	// withinView?: boolean
 }
 
 export const {

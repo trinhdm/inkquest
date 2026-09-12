@@ -1,14 +1,14 @@
-import { isValidElement, useMemo, type CSSProperties, type ReactNode } from 'react'
+import { useMemo, type CSSProperties, type ReactNode } from 'react'
 import { useProps, useStyles } from '@/hooks'
 import { extractOtherProps, flattenChildren } from '@/utils/helpers'
+import { renderWithProvider } from '@/lib/component'
 import { Box, polymorphic } from '@/components/core/Box'
-import { ButtonGroupProvider } from './ButtonGroup.context'
+import { ButtonGroupProvider, type ButtonGroupContext } from './ButtonGroup.context'
 import type { Button } from '../Button'
 import classes from '../Button.module.scss'
 
+const NAME = 'ButtonGroup' as const
 const PRIORITY_ROLES: Button.Priority[] = ['primary', 'secondary', 'tertiary'] as const
-const NAME = 'ButtonGroup' as const,
-	DEFAULT_TAG = 'div' as const
 
 interface ButtonGroupProps {
 	children?: ReactNode
@@ -71,21 +71,14 @@ export const ButtonGroup = polymorphic<ButtonGroupSpecs>(_props => {
 		<Box
 			{ ...styles('root', { module }) }
 			{ ...others }
-			as={ DEFAULT_TAG }
+			as="div"
 			attributes={ {
 				aria: { orientation },
 				data: { block: !!fullWidth || null },
 			} }
 			role="group"
 		>
-			{ items.map((child, index) => (
-				<ButtonGroupProvider
-					key={ isValidElement(child) && child.key !== null ? child.key : index }
-					value={ cxtValues[index] }
-				>
-					{ child }
-				</ButtonGroupProvider>
-			)) }
+			{ renderWithProvider(items, ButtonGroupProvider, cxtValues) }
 		</Box>
 	)
 }, classes)
@@ -99,6 +92,7 @@ ButtonGroup.setDefaults({
 })
 
 export declare namespace ButtonGroup {
+	export type Context = ButtonGroupContext
 	export type Props = ButtonGroupProps
 	export type Specs = ButtonGroupSpecs
 }

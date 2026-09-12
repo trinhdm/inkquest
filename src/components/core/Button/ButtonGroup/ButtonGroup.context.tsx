@@ -1,7 +1,7 @@
 import { createRootCxt } from '@/lib/component'
 import type { Button } from '../Button'
 
-interface ButtonGroupCxtValue {
+export interface ButtonGroupContext {
 	disabled?: boolean
 	loading?: boolean
 	priority?: Button.Priority
@@ -13,4 +13,4 @@ export const {
 	RootCxtProvider: ButtonGroupProvider,
 	useSafeRootCxt: useButtonGroupCxt,
 	useRootProps: useButtonGroupProps,
-} = createRootCxt<ButtonGroupCxtValue>('ButtonGroup')
+} = createRootCxt<ButtonGroupContext>('ButtonGroup')

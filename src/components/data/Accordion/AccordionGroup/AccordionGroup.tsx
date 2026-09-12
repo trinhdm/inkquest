@@ -1,18 +1,26 @@
-import { isValidElement, useMemo, useRef, Fragment } from 'react'
-import { useProps, useStyles } from '@/hooks'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { useInView } from 'framer-motion'
+import { useProps, useStyles } from '@/hooks'
 import { extractOtherProps, flattenChildren } from '@/utils/helpers'
+import { renderWithProvider } from '@/lib/component'
 import { AccordionGroupProvider } from './AccordionGroup.context'
 import { Box, polymorphic } from '@/components/core/Box'
 import { INVIEW_DEFAULTS } from '@/utils/constants'
 import classes from '../Accordion.module.scss'
 
+import type {
+	AccordionGroupContext,
+	AccordionGroupLayout,
+	AccordionGroupType,
+} from './AccordionGroup.context'
+
 const NAME = 'AccordionGroup' as const
 
 interface AccordionGroupProps {
 	collapsible?: boolean
-	isOpen?: boolean
-	type?: 'single' | 'multiple'
+	defaultOpen?: number | number[]
+	layout?: AccordionGroupLayout
+	type?: AccordionGroupType
 	// animated?: boolean
 	// duration?: number
 	// index?: number
@@ -25,6 +33,12 @@ type AccordionGroupSpecs = {
 	specIs: { compound: true }
 }
 
+const handleOpenItems = (value?: AccordionGroupProps['defaultOpen']): number[] =>
+	typeof value === 'number'
+		? [value]
+		: Array.isArray(value)
+			? value : []
+
 export const AccordionGroup = polymorphic<AccordionGroupSpecs>(_props => {
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { classes, props })
@@ -32,6 +46,8 @@ export const AccordionGroup = polymorphic<AccordionGroupSpecs>(_props => {
 	const {
 		children,
 		collapsible,
+		defaultOpen,
+		layout,
 		type,
 		unstyled,
 		...rest
@@ -39,36 +55,45 @@ export const AccordionGroup = polymorphic<AccordionGroupSpecs>(_props => {
 
 	const { others } = extractOtherProps(rest)
 
+	const [openItems, setOpenItems] = useState(() => handleOpenItems(defaultOpen))
+
+	const handleItemToggle = useCallback((
+		i: number,
+		next: boolean
+	) => {
+		setOpenItems(prev => {
+			if (type === 'multiple') return next ? [...prev, i] : prev.filter(h => h !== i)
+			if (!next) return collapsible ? [] : prev
+			return [i]
+		})
+	}, [collapsible, type])
+
 	const items = flattenChildren(children, 'Accordion'),
 		total = items.length
 
 	const root = useRef<HTMLDivElement>(null)
 	const withinView = useInView(root, { amount: INVIEW_DEFAULTS, once: true })
 
-	const cxtValue = useMemo(
-		() => ({ collapsible, type, unstyled, withinView, }),
-		[collapsible, type,  unstyled, withinView]
+	const cxtValues = useMemo(
+		() => Array.from({ length: total }, (_, index) => ({
+			index, layout,
+			onItemToggle: handleItemToggle,
+			open: openItems.includes(index),
+			unstyled, withinView,
+		})),
+		[handleItemToggle, layout, openItems, total, unstyled, withinView]
 	)
 
-	// const cxtValues = useMemo(
-	// 	() => Array.from({ length: total }, (_, index) => ({
-	// 		collapsible, index, type, unstyled, withinView,
-	// 	})),
-	// 	[collapsible, type, total, unstyled, withinView]
-	// )
-
 	return (
-		<AccordionGroupProvider
-			value={ cxtValue }
-			// { ...styles('root') }
-			// { ...others }
+		<Box
+			{ ...styles('root') }
+			{ ...others }
+			as="div"
+			attributes={ { data: { group: true } } }
+			ref={ root }
 		>
-			{ items.map((child, i) => {
-				const key = isValidElement(child) && child.key !== null ? child.key : i
-
-				return <Fragment key={ key }>{ child }</Fragment>
-			}) }
-		</AccordionGroupProvider>
+			{ renderWithProvider(items, AccordionGroupProvider, cxtValues) }
+		</Box>
 	)
 }, classes)
 
@@ -76,11 +101,16 @@ AccordionGroup.displayName = NAME
 AccordionGroup.setDefaults({
 	props: {
 		collapsible: true,
+		defaultOpen: 0,
 		type: 'single',
 	}
 })
 
 export declare namespace AccordionGroup {
+	export type Context = AccordionGroupContext
 	export type Props = AccordionGroupProps
 	export type Specs = AccordionGroupSpecs
+
+	// export type Layout = AccordionGroupLayout
+	// export type Type = AccordionGroupType
 }

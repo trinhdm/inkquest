@@ -8,7 +8,7 @@ import { extractOtherProps, flattenChildren } from '@/utils/helpers'
 import { setThemeCSS } from '@/lib/theme'
 import { Box, polymorphic } from '@/components/core/Box'
 import { INVIEW_DEFAULTS } from '@/utils/constants'
-import type { RootCxtProviderFn } from '@/lib/component'
+import { renderWithProvider, type RootCxtProviderFn } from '@/lib/component'
 import classes from './Group.module.scss'
 
 const NAME = 'Group' as const,
@@ -125,14 +125,7 @@ export const Group = polymorphic<GroupSpecs>(_props => {
 			role="group"
 			ref={ root }
 		>
-			{ items.map((child, i) => {
-				const key = isValidElement(child) && child.key !== null ? child.key : i
-
-				if (Provider)
-					return <Provider key={ key } value={ cxtValues[i] }>{ child }</Provider>
-
-				return <Fragment key={ key }>{ child }</Fragment>
-			}) }
+			{ renderWithProvider(items, Provider, cxtValues) }
 		</Box>
 	)
 }, classes)

@@ -1,7 +1,10 @@
 import {
 	isValidElement, Children, Fragment,
-	type ComponentType, type ReactNode,
+	type ComponentType, type Key, type ReactNode,
 } from 'react'
+
+export const getChildKey = (child: ReactNode, index: number): Key =>
+	isValidElement(child) && child.key !== null ? child.key : index
 
 export const flattenChildren = (children: ReactNode, displayName: string): ReactNode[] => (
 	Children.toArray(children).flatMap<ReactNode>(child => {
