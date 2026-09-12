@@ -46,12 +46,18 @@ const formatConfigClass = <P extends object, V extends object>(
 	modifier: NonNullable<Exclude<ClassValue, object>>,
 	key: keyof SelectorConfig<P, V>['config'],
 	args: SelectorConfig<P, V>
-): string => {
+): string | undefined => {
 	const { name, prefix } = args,
-		mod = `${modifier}`,
-		target = key === 'module' ? `${name}--${mod}` : mod
+		mod = `${modifier}`
 
-	const baseName = getBaseClass(target, prefix),
+	const targets = {
+		global: mod,
+		module: `${name}--${mod}`,
+		selector: `${nameClassBase(args)}--${mod}`,
+	}
+
+	const target = targets[key],
+		baseName = getBaseClass(target, prefix),
 		styleName = getStyleClass(baseName, args)
 
 	return styleName ?? baseName
@@ -86,8 +92,7 @@ const getConfigClassList = <P extends object, V extends object>(
 		return cx(...classList)
 	}
 
-	const className = formatConfigClass(values, key, args)
-	return className
+	return formatConfigClass(values, key, args)
 }
 
 const hasConfig = <P extends object, V extends object>(

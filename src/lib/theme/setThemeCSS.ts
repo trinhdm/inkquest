@@ -22,24 +22,3 @@ export type ThemeCSSConfig<
 export const setThemeCSS = <S extends ThemeSpec>(
 	settings: ThemeCSSConfig<S['props'], _ConvertCSSVars<S['tokens']>, S['ctx']>
 ) => settings
-
-
-// export type ThemeCSSMap<TObj extends SpecsList<TObj>> = {
-// 	[K in keyof TObj]: ThemeCSSConfig<TObj, K>
-// }
-
-// export type ThemeCSSConfig<
-// 	T extends ValidSpecs<T>,
-// 	// K extends keyof T,
-// > = (
-// 	theme: SiteThemeConfig,
-// 	props: T['props'],
-// 	ctx: T['ctx']
-// ) => _ConvertCSSVars<T['tokens']>
-
-// export const setThemeCSS = <
-// 	T extends ValidSpecs<T>,
-// 	// K extends keyof T,
-// >(settings: ThemeCSSConfig<T>) => {
-// 	return settings
-// }

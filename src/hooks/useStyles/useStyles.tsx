@@ -1,7 +1,7 @@
 import { useMemo, type CSSProperties } from 'react'
 import { useTheme } from '@/providers/ThemeProvider'
 import { getClassName } from './getClassName'
-import { getStyles } from './getStyle'
+import { getStyle } from './getStyle'
 import { keyHasValue, pluralizeKeys } from '@/utils/helpers'
 import type { ClassValue } from 'clsx'
 import type { PluralizeKeys } from '@/types/utils'
@@ -14,9 +14,10 @@ interface StyleOptions<P extends object, V extends object = object> {
 	tokens?: ThemeCSSConfig<P, V>
 }
 
-interface SelectorConfigOptions {
+interface SelectorConfigScope {
 	global?: ClassValue
 	module?: ClassValue
+	selector?: ClassValue
 }
 
 interface SelectorArgs {
@@ -24,7 +25,7 @@ interface SelectorArgs {
 		isRoot: boolean
 		isUnstyled: boolean
 	}
-	config?: true | SelectorConfigOptions
+	config?: true | SelectorConfigScope
 	selector: string
 }
 
@@ -59,12 +60,8 @@ export const useStyles = <P extends object, V extends object = object>(
 	opts: StyleOptions<P, V>
 ): StyleFn => {
 	const theme = useTheme()
-	const choices = Object.keys(opts),
-		hasOptions = !!choices.length
 
 	return useMemo<StyleFn>(() => {
-		if (!hasOptions) return (() => ({ className: '', style: {} }))
-
 		const prefix = opts.prefix ?? theme.prefix,
 			sharedArgs = { ...opts, name, prefix, theme },
 			cache = new Map<string, ReturnType<StyleFn>>()
@@ -85,7 +82,7 @@ export const useStyles = <P extends object, V extends object = object>(
 
 			const values: ReturnType<StyleFn> = {
 				className: getClassName(args),
-				style: getStyles(args),
+				style: getStyle(args),
 			}
 
 			const result: ReturnType<StyleFn> = check.isRoot
@@ -96,5 +93,5 @@ export const useStyles = <P extends object, V extends object = object>(
 			return result
 		})
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [hasOptions, name, opts, theme])
+	}, [name, opts.props, opts.classes, opts.prefix, opts.tokens, theme])
 }

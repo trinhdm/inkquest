@@ -1,4 +1,5 @@
 import { keyHasValue } from '@/utils/helpers'
+import type { CSSProperties } from 'react'
 import type { SharedConfig } from './useStyles'
 
 // type ResolvedVars = Partial<Record<string, CSSVars>>
@@ -15,13 +16,13 @@ import type { SharedConfig } from './useStyles'
 // 	}, {})
 // }
 
-export const getStyles = <P extends object, V extends object>({
-	name,
+export const getStyle = <P extends object, V extends object>({
+	// name,
 	props,
 	selector,
 	theme,
 	tokens,
-}: SharedConfig<P, V>) => {
+}: SharedConfig<P, V>): CSSProperties => {
 	if (typeof tokens !== 'function') return {}
 
 	// const themeName = (Array.isArray(name) ? name : [name]).filter((n) => n) as string[]
