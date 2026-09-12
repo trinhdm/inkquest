@@ -7,8 +7,8 @@ import {
 } from 'react'
 
 import { setDefaultProps } from '@/lib/registries'
-import type { AsPolymorphic, IsPolymorphic, Specs } from './specs.types'
-import type { DistributiveOmit } from '@/types/utils'
+import type { AsPolymorphic, IsPolymorphic, SpecDefaultProps, Specs } from './specs.types'
+import type { DistributiveOmit, WithDefaults } from '@/types/utils'
 
 type _FactoryProps<S extends Specs> =
 	S['props']
@@ -20,15 +20,30 @@ type _FactoryProps<S extends Specs> =
 		unstyled?: boolean
 	}
 
-type _MethodSetDefault<S extends Specs> = {
-	props?: Partial<DistributiveOmit<S['props'], 'as'>>
-		& (IsPolymorphic<S> extends true
-			? Required<AsPolymorphic<S>>
-			: { as?: never })
-}
-
 type _Component<S extends Specs> =
 	NamedExoticComponent<_FactoryProps<S>>
+
+type _BodyProps<S extends Specs> =
+	WithDefaults<_FactoryProps<S>, SpecDefaultProps<S>>
+
+type _DefaultProps<S extends Specs> =
+	Partial<DistributiveOmit<S['props'], 'as'>>
+	& Required<Pick<S['props'], SpecDefaultProps<S> & keyof S['props']>>
+	& (IsPolymorphic<S> extends true
+		? Required<AsPolymorphic<S>>
+		: { as?: never })
+
+type _MethodSetDefault<S extends Specs> =
+	[SpecDefaultProps<S>] extends [never]
+		? { props?: _DefaultProps<S> }
+		: { props: _DefaultProps<S> }
+
+// type _MethodSetDefault<S extends Specs> = {
+// 	props?: Partial<DistributiveOmit<S['props'], 'as'>>
+// 		& (IsPolymorphic<S> extends true
+// 			? Required<AsPolymorphic<S>>
+// 			: { as?: never })
+// }
 
 export interface MethodsBase<
 	S extends Specs,
@@ -59,7 +74,8 @@ export const factory = <
 	T extends Specs,
 	C extends object = _FactoryComponent<T>
 >(
-	target: (props: _FactoryProps<T>) => ReactNode,
+	// target: (props: _FactoryProps<T>) => ReactNode,
+	target: (props: _BodyProps<T>) => ReactNode,
 	classes?: Record<string, string>
 ) => {
 	type FC = _FactoryComponent<T>

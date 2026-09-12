@@ -4,15 +4,15 @@ import {
 	type SubcomponentsBase,
 } from './factory'
 
-import type { InferComponentSpec, IsPolymorphic, Specs } from './specs.types'
+import type { IsPolymorphic, SpecDefaultAs, Specs, ValidSpecs } from './specs.types'
 import type { PolymorphicProps, PropertiesBase } from './polymorphic'
 import type { ElementType, ReactElement } from 'react'
 
-const polymorphicFactory = <T extends Specs>(
+const polymorphicFactory = <T extends Specs & ValidSpecs<T>>(
 	target: Parameters<typeof factory<T>>[0],
 	classes?: Record<string, string>
 ) => {
-	type C = InferComponentSpec<T, ElementType>
+	type C = SpecDefaultAs<T, ElementType>
 	type P<U> = PolymorphicProps<T['props'], U>
 
 	type _Component = IsPolymorphic<T> extends true
@@ -33,11 +33,8 @@ const polymorphicFactory = <T extends Specs>(
 }
 
 export const polymorphic = <
-	T extends Specs,
+	T extends Specs & ValidSpecs<T>,
 	U extends typeof polymorphicFactory<T> = typeof polymorphicFactory<T>,
 	P extends Parameters<U>[0] = Parameters<U>[0],
->(
-	target: P,
-	classes?: Record<string, string>
-) =>
+>(target: P, classes?: Record<string, string>) =>
 	polymorphicFactory<T>(target as P, classes)

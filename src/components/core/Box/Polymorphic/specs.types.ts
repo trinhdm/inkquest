@@ -19,14 +19,14 @@ interface SpecsBase<T = unknown, P extends object = object> {
 	id?: string
 	props: P
 	ref?: Ref<TagElement<T>>
-	// variant?: string
 }
 
 interface _CompoundSpecs<P extends object = object>
 	extends SpecsBase<unknown, P> {
 	classNames?: never
-	default?: {
+	defaults?: {
 		component?: never
+		props?: PropertyKey
 	}
 	specIs: { compound: true }
 	styles?: never
@@ -37,8 +37,9 @@ interface _CompoundSpecs<P extends object = object>
 interface _RootSpecs<T = unknown, P extends object = object>
 	extends SpecsBase<T, P> {
 	classNames?: SpecsContract['classNames']
-	default?: {
+	defaults?: {
 		component?: any
+		props?: PropertyKey
 	}
 	specIs?: { compound: false }
 	styles?: SpecsContract['styles']
@@ -54,18 +55,31 @@ export type Specs<T = unknown, P extends object = object> =
 // polymorphism
 
 export type IsPolymorphic<S> =
-	S extends { default: { component: ElementType } } ? true : false
-
-export type InferComponentSpec<S, Fallback = never> =
-	S extends { default: { component: infer C extends ElementType } }
-		? C
-		: Fallback
+	S extends { defaults: { component: ElementType } }
+		? true
+		: false
 
 export type AsPolymorphic<S> =
 	IsPolymorphic<S> extends true
-		? { as?: InferComponentSpec<S> }
+		? { as?: SpecDefaultAs<S> }
 		: { as?: never }
 
+export type SpecDefaultAs<S, Fallback = never> =
+	S extends { defaults: { component: infer C extends ElementType } }
+		? C
+		: Fallback
+
+export type SpecDefaultProps<S> =
+	S extends {
+		defaults: { props: infer K },
+		props: infer P
+	}
+		? Extract<K, keyof P>
+		: never
+
+export type ValidSpecs<T extends { props: object }> = {
+	defaults?: { props?: keyof T['props'] }
+}
 
 type _CommonTag =
 	| 'a' | 'button' | 'div' | 'nav' | 'span' | 'svg'

@@ -27,8 +27,11 @@ type _Tag<C> =
 // 		? object
 // 		: Omit<_BaseProps<_Tag<C>>, 'as' | keyof P | NonSemanticAttrs>
 
+// export type PropertiesBase<P = object> =
+// 	Pick<FunctionComponent<P>, 'displayName'>
+
 export type PropertiesBase<P = object> =
-	Pick<FunctionComponent<P>, 'displayName'>
+	Required<Pick<FunctionComponent<P>, 'displayName'>>
 
 export type PolymorphicProps<P, C> =
 	& Omit<SpecsContract, 'props'>
