@@ -1,5 +1,5 @@
 import { useProps, useStyles } from '@/hooks'
-import { extractOtherProps, flattenChildren } from '@/utils/helpers'
+import { extractOtherProps } from '@/utils/helpers'
 import { Box, polymorphic } from '@/components/core/Box'
 import { GridItem } from './GridItem'
 import type { ReactNode } from 'react'

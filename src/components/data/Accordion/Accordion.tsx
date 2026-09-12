@@ -1,7 +1,7 @@
 import { useCallback, useId, useMemo, useState, Children, type ReactNode } from 'react'
 import { useProps, useStyles } from '@/hooks'
 import { useAccordionGroupProps, AccordionGroup } from './AccordionGroup'
-import { extractOtherProps, flattenChildren } from '@/utils/helpers'
+import { extractOtherProps, filterChildren } from '@/utils/helpers'
 import { AccordionContent } from './AccordionContent'
 import { AccordionProvider } from './Accordion.context'
 import { AccordionTitle } from './AccordionTitle'
@@ -38,28 +38,25 @@ interface AccordionSpecs {
 }
 
 const buildAccordion = (children: AccordionProps['children']) => {
-	const [title, ...extraTitles] = flattenChildren(children, AccordionTitle.displayName),
-		[content, ...extraContent] = flattenChildren(children, AccordionContent.displayName)
+	const childNames = [AccordionTitle.displayName, AccordionContent.displayName]
+	const [title, content, ...extras] = filterChildren(children, childNames)
 
 	if (process.env.NODE_ENV !== 'production') {
-		const matched = extraTitles.length + extraContent.length
+		const ns = { title: `${NAME}.Title`, content: `${NAME}.Content` },
+			subcomponents = `${ns.title}, ${ns.content}`,
+			warning = `an ${NAME} needs exactly one`
+
+		const matched = extras.length
 			+ (title ? 1 : 0) + (content ? 1 : 0)
 
-		const ns = {
-			title: `${NAME}.Title`,
-			content: `${NAME}.Content`,
-		}
-
 		if (!title)
-			console.warn(`${NAME}: no ${ns.title} found; an ${NAME} needs exactly one.`)
+			console.warn(`${NAME}: no ${ns.title} found; ${warning}.`)
 		if (!content)
-			console.warn(`${NAME}: no ${ns.content} found; an ${NAME} needs exactly one.`)
-		if (extraTitles.length)
-			console.warn(`${NAME}: multiple ${ns.title} found; only the first is rendered.`)
-		if (extraContent.length)
-			console.warn(`${NAME}: multiple ${ns.content} found; only the first is rendered.`)
+			console.warn(`${NAME}: no ${ns.content} found; ${warning}.`)
+		if (extras.length)
+			console.warn(`${NAME}: multiple ${subcomponents} found; ${warning} of each.`)
 		if (Children.count(children) > matched)
-			console.warn(`${NAME}: valid children include ${ns.title}, ${ns.content} only.`)
+			console.warn(`${NAME}: children outside of ${subcomponents} detected.`)
 	}
 
 	if (!title || !content) return null

@@ -18,7 +18,7 @@ const Row = ({ children }: { children: ReactNode }) => (
 // A plain label wrapper ONLY — never a direct JSX child of `<Grid>` (see the
 // `GridItem` mounting note below). Each `Group` wraps its OWN separate
 // `<Grid>` internally so the actual `GridItem` stays a literal, direct child
-// of a `Grid` for `flattenChildren` to recognize.
+// of a `Grid` for `filterChildren` to recognize.
 const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 	<div style={ { display: 'flex', flexDirection: 'column', gap: 8 } }>
 		<span style={ { font: 'var(--inkq-text-control)', letterSpacing: '.15em', textTransform: 'uppercase', opacity: 0.6 } }>
@@ -48,7 +48,7 @@ type Story = StoryObj<GridItemStoryProps>
 // `GridItem` is a compound part (`specIs: { compound: true }`), so every story
 // mounts it as a literal, DIRECT JSX child of a real `<Grid>` — NOT via a
 // meta-level `decorators` wrapper. `Grid.tsx` calls
-// `flattenChildren(children, 'GridItem')`, which checks `child.type.displayName`
+// `filterChildren(children, 'GridItem')`, which checks `child.type.displayName`
 // on each of ITS OWN direct `children`; a Storybook `decorators` wrapper
 // renders `<Story />` (Storybook's own internal story-renderer component) as
 // that direct child instead of `GridItem` itself, so the displayName check

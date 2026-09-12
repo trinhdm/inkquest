@@ -1,7 +1,7 @@
 import { useMemo, useRef, type CSSProperties, type ReactNode } from 'react'
 import { useInView } from 'framer-motion'
 import { useProps, useStyles } from '@/hooks'
-import { extractOtherProps, flattenChildren } from '@/utils/helpers'
+import { extractOtherProps, filterChildren } from '@/utils/helpers'
 import { setThemeCSS } from '@/lib/theme'
 import { Box, polymorphic } from '@/components/core/Box'
 import { INVIEW_DEFAULTS } from '@/utils/constants'
@@ -91,7 +91,7 @@ export const Group = polymorphic<GroupSpecs>(_props => {
 		[`${orientation}`]: !!orientation,
 	}
 
-	const items = flattenChildren(children, childName),
+	const items = filterChildren(children, childName),
 		total = items.length
 
 	// one observer for the whole group, so children stagger off a single t=0
@@ -101,7 +101,7 @@ export const Group = polymorphic<GroupSpecs>(_props => {
 
 	// one context value per child — memoised on `total` so identities stay
 	// stable across renders even though each child gets its own object
-	const cxtValues = useMemo(
+	const cxtValues = useMemo<GroupContext[]>(
 		() => Array.from({ length: total }, (_, index) => ({
 			animated, duration, index, revealed, stagger, unstyled, withinView,
 		})),

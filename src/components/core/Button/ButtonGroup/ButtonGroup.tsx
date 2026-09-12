@@ -1,6 +1,6 @@
 import { useMemo, type CSSProperties, type ReactNode } from 'react'
 import { useProps, useStyles } from '@/hooks'
-import { extractOtherProps, flattenChildren } from '@/utils/helpers'
+import { extractOtherProps, filterChildren } from '@/utils/helpers'
 import { renderWithProvider } from '@/lib/component'
 import { Box, polymorphic } from '@/components/core/Box'
 import { ButtonGroupProvider, type ButtonGroupContext } from './ButtonGroup.context'
@@ -56,10 +56,10 @@ export const ButtonGroup = polymorphic<ButtonGroupSpecs>(_props => {
 		[`${size}`]: size,
 	}
 
-	const items = flattenChildren(children, 'Button'),
+	const items = filterChildren(children, 'Button'),
 		total = items.length
 
-	const cxtValues = useMemo(
+	const cxtValues = useMemo<ButtonGroup.Context[]>(
 		() => Array.from({ length: total }, (_, index) => ({
 			disabled, loading, size, unstyled,
 			priority: hasPriority ? derivePriority(index) : undefined,

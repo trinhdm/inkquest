@@ -6,13 +6,23 @@ import {
 export const getChildKey = (child: ReactNode, index: number): Key =>
 	isValidElement(child) && child.key !== null ? child.key : index
 
-export const flattenChildren = (children: ReactNode, displayName: string): ReactNode[] => (
+export const filterChildren = (
+	children: ReactNode,
+	displayName: string | string[]
+): ReactNode[] => (
 	Children.toArray(children).flatMap<ReactNode>(child => {
 		if (isValidElement<{ children?: ReactNode }>(child)) {
 			if (child.type === Fragment)
-				return flattenChildren(child.props.children, displayName)
-			if ((child.type as ComponentType).displayName !== displayName)
+				return filterChildren(child.props.children, displayName)
+
+			const childName = (child.type as ComponentType).displayName
+
+			if (!childName)
 				return []
+			else if (typeof displayName === 'string')
+				if (childName !== displayName) return []
+			else if (Array.isArray(displayName))
+				if (!displayName.includes(childName)) return []
 		}
 
 		return [child]

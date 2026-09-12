@@ -85,7 +85,7 @@ const meta: Meta<ButtonGroupStoryArgs> = {
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `ButtonGroup`\'s own `ButtonGroupProps`. The semantic base class (`inkq-button-group`) on the group\'s root element is ALWAYS emitted regardless of this prop — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it, via the `styles(\'root\')` call `ButtonGroup` makes — see the `Unstyled` story. It also cascades to the child `Button`s: `ButtonGroup` flattens its children (`flattenChildren` — recursing into `Fragment`s, dropping any element whose `displayName` isn\'t `\'Button\'`) and wraps EACH surviving child in its own `ButtonGroupProvider`, publishing `{ disabled, loading, priority, unstyled }`. Each `Button` reads that context via `useButtonGroupProps`, which fills a key on the Button\'s own raw props ONLY when that key is entirely absent there (checked with `Object.hasOwn` on the raw, pre-merge props, and skipping any `undefined` context value) — so a child `Button`\'s own prop, including an explicit `disabled={false}` inside a disabled group, always wins over the group\'s context value.',
+			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `ButtonGroup`\'s own `ButtonGroupProps`. The semantic base class (`inkq-button-group`) on the group\'s root element is ALWAYS emitted regardless of this prop — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it, via the `styles(\'root\')` call `ButtonGroup` makes — see the `Unstyled` story. It also cascades to the child `Button`s: `ButtonGroup` flattens its children (`filterChildren` — recursing into `Fragment`s, dropping any element whose `displayName` isn\'t `\'Button\'`) and wraps EACH surviving child in its own `ButtonGroupProvider`, publishing `{ disabled, loading, priority, unstyled }`. Each `Button` reads that context via `useButtonGroupProps`, which fills a key on the Button\'s own raw props ONLY when that key is entirely absent there (checked with `Object.hasOwn` on the raw, pre-merge props, and skipping any `undefined` context value) — so a child `Button`\'s own prop, including an explicit `disabled={false}` inside a disabled group, always wins over the group\'s context value.',
 		},
 	},
 	args: {
@@ -313,7 +313,7 @@ export const FullWidth: Story = {
 // suppresses the CSS-module-hashed class normally appended alongside it —
 // verified against `ButtonGroup.tsx`'s own render, which only ever calls
 // `styles('root')` (no other selector). It ALSO cascades to the child
-// `Button`s: each surviving child (after `flattenChildren` drops non-`Button`
+// `Button`s: each surviving child (after `filterChildren` drops non-`Button`
 // elements and flattens `Fragment`s) is wrapped in its own
 // `ButtonGroupProvider` publishing `{ disabled, loading, priority, unstyled }`,
 // and each `Button` fills its own `unstyled` from that context via
@@ -383,7 +383,7 @@ export const Justify: Story = {
 	},
 }
 
-// `flattenChildren` (`ButtonGroup.tsx`) recurses into `Fragment`s (flattening
+// `filterChildren` (`ButtonGroup.tsx`) recurses into `Fragment`s (flattening
 // their children into the same list) and drops any element whose
 // `displayName` isn't `'Button'` — a raw `<span>` (or any other non-`Button`
 // element) simply renders nothing; it's excluded before the
@@ -395,7 +395,7 @@ export const NonButtonChildren: Story = {
 				<Button { ...{ variant, size } }>Fragment child A</Button>
 				<Button { ...{ variant, size } }>Fragment child B</Button>
 			</>
-			<span>not a Button — dropped by flattenChildren</span>
+			<span>not a Button — dropped by filterChildren</span>
 			<Button { ...{ variant, size } }>Trailing</Button>
 		</Button.Group>
 	),
@@ -405,7 +405,7 @@ export const NonButtonChildren: Story = {
 			buttons = canvas.getAllByRole('button')
 
 		expect(buttons).toHaveLength(3)
-		await expect(canvas.queryByText('not a Button — dropped by flattenChildren')).not.toBeInTheDocument()
+		await expect(canvas.queryByText('not a Button — dropped by filterChildren')).not.toBeInTheDocument()
 		expect(group.children).toHaveLength(3)
 	},
 }

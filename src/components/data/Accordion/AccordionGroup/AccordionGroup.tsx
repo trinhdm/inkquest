@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { useInView } from 'framer-motion'
 import { useProps, useStyles } from '@/hooks'
-import { extractOtherProps, flattenChildren } from '@/utils/helpers'
+import { extractOtherProps, filterChildren } from '@/utils/helpers'
 import { renderWithProvider } from '@/lib/component'
 import { AccordionGroupProvider } from './AccordionGroup.context'
 import { Box, polymorphic } from '@/components/core/Box'
@@ -68,13 +68,13 @@ export const AccordionGroup = polymorphic<AccordionGroupSpecs>(_props => {
 		})
 	}, [collapsible, type])
 
-	const items = flattenChildren(children, 'Accordion'),
+	const items = filterChildren(children, 'Accordion'),
 		total = items.length
 
 	const root = useRef<HTMLDivElement>(null)
 	const withinView = useInView(root, { amount: INVIEW_DEFAULTS, once: true })
 
-	const cxtValues = useMemo(
+	const cxtValues = useMemo<AccordionGroup.Context[]>(
 		() => Array.from({ length: total }, (_, index) => ({
 			index, layout,
 			onItemToggle: handleItemToggle,

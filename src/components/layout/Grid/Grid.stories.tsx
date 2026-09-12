@@ -63,7 +63,7 @@ const meta: Meta<GridStoryProps> = {
 	argTypes: {
 		children: {
 			control: false,
-			description: 'Rendered completely as-is — `Grid.tsx` spreads `{ children }` directly into its root `<Box>` with NO flattening or filtering applied. `flattenChildren` is still imported but its call site is commented out (`Grid.tsx` line 42); it is dead code. Every child is preserved verbatim regardless of whether it\'s a `Grid.Item`, a plain element, a `Fragment`, or a bare string. See the `RawChildren` story.',
+			description: 'Rendered completely as-is — `Grid.tsx` spreads `{ children }` directly into its root `<Box>` with NO flattening or filtering applied. `filterChildren` is still imported but its call site is commented out (`Grid.tsx` line 42); it is dead code. Every child is preserved verbatim regardless of whether it\'s a `Grid.Item`, a plain element, a `Fragment`, or a bare string. See the `RawChildren` story.',
 		},
 		columns: {
 			control: 'number',
@@ -113,7 +113,7 @@ export const Default: Story = {
 /**
  * All three representative `columns` values, side by side. `Grid.tsx` only
  * ever adds an `inkq-grid--{n}-col` modifier class for a positive `columns`
- * — it never touches `flattenChildren`'s own behavior. `columns={3}` is the
+ * — it never touches `filterChildren`'s own behavior. `columns={3}` is the
  * only value with a matching rule in `Grid.module.scss` (`&--3-col`), so it
  * resolves to a CSS-MODULE HASH rather than the literal class (per
  * `getClassName.tsx`'s `outputExtraClasses`), while `columns={2}`/`{4}` have
@@ -171,15 +171,15 @@ export const Columns: Story = {
 
 /**
  * **Re-verified against the LIVE `Grid.tsx`**: `Grid` no longer calls
- * `flattenChildren` at all — the call is present in source but commented out
- * (`Grid.tsx` line 42, `{/* { flattenChildren(children, 'GridItem').map(...) } *\/}`),
+ * `filterChildren` at all — the call is present in source but commented out
+ * (`Grid.tsx` line 42, `{/* { filterChildren(children, 'GridItem').map(...) } *\/}`),
  * and the actual render is a bare `{ children }` spread (line 41). There is
  * NO flattening and NO filtering anymore: `Fragment`s are not unwrapped (React
  * renders their contents natively either way, so this makes no visible
  * difference), and — the behavioral change that matters — a plain ELEMENT
  * child that isn't a `Grid.Item` is NO LONGER dropped; it renders straight
  * through, unwrapped by any `.inkq-grid-item`, exactly like the bare string
- * child already did. `flattenChildren` (`src/utils/helpers/children.ts`) is
+ * child already did. `filterChildren` (`src/utils/helpers/children.ts`) is
  * still imported by `Grid.tsx` but is now dead code — worth flagging as an
  * unused import, separate from the filtering behavior change itself.
  */
