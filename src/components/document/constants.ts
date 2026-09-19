@@ -3,3 +3,4 @@ import type { ColorScheme } from '@/lib/theme'
 
 export const DEFAULT_COLOR_SCHEME: ColorScheme = 'dark'
 export const SCHEME_STORAGE_KEY: string = `${PREFIX_CSS_SELECTOR}-scheme`
+export const JS_ANIMATE_KEY: string = 'js-animate'

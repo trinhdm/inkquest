@@ -46,9 +46,10 @@ const EXPECTED_STYLES = serializeStyles(
 	resolveStyles({ current: DEFAULT_THEME, prefix: PREFIX_CSS_SELECTOR })
 )
 
-// Distinct from `DEFAULT_THEME` only in `scale.size`, so the resulting CSS
-// custom properties would be verifiably different — if this story's own
-// `theme` arg could reach the DOM at all (it can't; see above).
+// Distinct from `DEFAULT_THEME` only in `scale.space` (the only key
+// `SiteTheme['scale']` has — see `ThemeProvider/constants.ts`), so the
+// resulting CSS custom properties would be verifiably different — if this
+// story's own `theme` arg could reach the DOM at all (it can't; see above).
 const CUSTOM_THEME: SiteTheme = {
 	...DEFAULT_THEME,
 	scale: { space: DEFAULT_THEME.scale.space * 2 },

@@ -2,8 +2,8 @@ import { expect, test } from '@playwright/test'
 
 // Verified from source:
 // - src/utils/constants.ts: PREFIX_CSS_SELECTOR = 'inkq'
-// - src/components/document/ScriptInjector/constants.ts: SCHEME_STORAGE_KEY = `${PREFIX_CSS_SELECTOR}-scheme` = 'inkq-scheme'
-//   and DEFAULT_COLOR_SCHEME = 'dark'
+// - src/components/document/constants.ts: SCHEME_STORAGE_KEY = `${PREFIX_CSS_SELECTOR}-scheme` = 'inkq-scheme',
+//   DEFAULT_COLOR_SCHEME = 'dark', and JS_ANIMATE_KEY = 'js-animate'
 // - src/components/document/ScriptInjector/schemeControls.ts: applyScheme() sets
 //   `document.documentElement.setAttribute('data-inkq-scheme', scheme)` and
 //   persistScheme() writes `localStorage.setItem('inkq-scheme', scheme)`.
@@ -20,12 +20,19 @@ import { expect, test } from '@playwright/test'
 
 const SCHEME_ATTR = 'data-inkq-scheme'
 const SCHEME_STORAGE_KEY = 'inkq-scheme'
+const JS_ANIMATE_ATTR = 'data-js-animate'
 
 test.describe('color scheme persistence', () => {
 	test('defaults to the dark color scheme when nothing is stored yet', async ({ page }) => {
 		await page.goto('/')
 
 		await expect(page.locator('html')).toHaveAttribute(SCHEME_ATTR, 'dark')
+	})
+
+	test('stamps data-js-animate on the document element once the injected script has run', async ({ page }) => {
+		await page.goto('/')
+
+		await expect(page.locator('html')).toHaveAttribute(JS_ANIMATE_ATTR, '')
 	})
 
 	test('persists a selected color scheme across client-side navigation and a full reload', async ({ page }) => {

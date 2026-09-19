@@ -1,10 +1,11 @@
 import {
 	DEFAULT_COLOR_SCHEME,
+	JS_ANIMATE_KEY,
 	schemeControls,
 } from '../src/components/document'
 import { useEffect } from 'react'
-import { AppProvider } from '../src/providers/AppProvider'
 import { inkqDark } from './theme'
+import { AppProvider } from '../src/providers/AppProvider'
 // import { DocsContainer } from '@storybook/addon-docs/blocks'
 import type { Addon_StorySortComparatorV7 } from 'storybook/internal/types'
 import type { Preview } from '@storybook/nextjs-vite'
@@ -30,6 +31,7 @@ const decorators: Preview['decorators'] = [(Story, context) => {
 
 	useEffect(() => {
 		schemeControls().applyScheme(scheme)
+		document.documentElement.setAttribute(`data-${JS_ANIMATE_KEY}`, '')
 	}, [scheme])
 
 	// `AppProvider` now renders `<StyleInliner />` and `<VariantStyleInliner />`

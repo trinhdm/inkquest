@@ -1,5 +1,5 @@
 import { buildScript } from './buildScript'
-import { DEFAULT_COLOR_SCHEME, SCHEME_STORAGE_KEY } from '../constants'
+import { DEFAULT_COLOR_SCHEME, JS_ANIMATE_KEY, SCHEME_STORAGE_KEY } from '../constants'
 
 describe('buildScript', () => {
 	it('returns an empty string when lsKey is explicitly empty', () => {
@@ -11,6 +11,9 @@ describe('buildScript', () => {
 
 		expect(script).toContain(
 			`document.documentElement.setAttribute("data-${ SCHEME_STORAGE_KEY }", "light");`
+		)
+		expect(script).toContain(
+			`document.documentElement.setAttribute("data-${ JS_ANIMATE_KEY }", "");`
 		)
 	})
 
@@ -76,5 +79,41 @@ describe('buildScript', () => {
 
 		expect(script).toContain('localStorage.getItem("my-key")')
 		expect(script).toContain('document.documentElement.setAttribute("data-my-key", initScheme);')
+	})
+
+	describe('JS_ANIMATE_KEY', () => {
+		it('is emitted and quoted as an empty string in the override branch', () => {
+			const script = buildScript({ override: 'dark' })
+
+			expect(script).toContain(`document.documentElement.setAttribute("data-${ JS_ANIMATE_KEY }", "");`)
+		})
+
+		it('is emitted and quoted as an empty string in the IIFE branch', () => {
+			const script = buildScript({ scheme: 'dark' })
+
+			expect(script).toContain(`document.documentElement.setAttribute("data-${ JS_ANIMATE_KEY }", "");`)
+		})
+
+		it('honours a custom keys.jsAnimate in the override branch', () => {
+			const script = buildScript({ keys: { jsAnimate: 'custom-animate' }, override: 'dark' })
+
+			expect(script).toContain('document.documentElement.setAttribute("data-custom-animate", "");')
+			expect(script).not.toContain(`data-${ JS_ANIMATE_KEY }`)
+		})
+
+		it('honours a custom keys.jsAnimate in the IIFE branch', () => {
+			const script = buildScript({ keys: { jsAnimate: 'custom-animate' }, scheme: 'dark' })
+
+			expect(script).toContain('document.documentElement.setAttribute("data-custom-animate", "");')
+			expect(script).not.toContain(`data-${ JS_ANIMATE_KEY }`)
+		})
+
+		it('is a bare key with no data- prefix baked in — the prefix comes from buildScript itself', () => {
+			// Guards against a regression where the "data-" prefix migrates onto
+			// the constant: if it did, this assertion (and the ones above that
+			// look for a single "data-" prefix) would catch a doubled prefix.
+			expect(JS_ANIMATE_KEY).toBe('js-animate')
+			expect(JS_ANIMATE_KEY.startsWith('data-')).toBe(false)
+		})
 	})
 })

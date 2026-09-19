@@ -54,14 +54,15 @@ const meta: Meta<typeof ScriptInjector> = {
 			control: 'select',
 			options: SCHEME_OPTIONS,
 			description:
-				'Forwarded to `buildScript` as its `scheme` fallback. When omitted, `buildScript` falls back to its own internal default (`DEFAULT_COLOR_SCHEME`, currently `"dark"`).',
+				'Forwarded to `buildScript` as its `scheme` fallback. When omitted, `buildScript` delegates to `configDocument` (see `../utils.ts`), which merges in `DEFAULT_DOCUMENT_CONFIG`\'s `scheme` (`DEFAULT_COLOR_SCHEME`, currently `"dark"`).',
 		},
 	},
 	// `ScriptInjector` is a plain function component (no `factory()`/
 	// `polymorphic()` usage, no `.setDefaults`), and `scheme` itself
 	// has no default parameter value in the component's own signature — it's
-	// left `undefined` and delegated straight to `buildScript`'s internal
-	// default. So there's no registered/registry default to read here.
+	// left `undefined` and delegated straight to `buildScript`, which merges
+	// it through `configDocument`'s `DEFAULT_DOCUMENT_CONFIG` (see
+	// `../utils.ts`). So there's no registered/registry default to read here.
 	args: {},
 }
 
@@ -117,6 +118,22 @@ export const NativeScriptAttributes: Story = {
 		// Native attributes pass straight through alongside the component's
 		// own `data-scheme-script` marker and generated body.
 		await expect(script).toHaveAttribute('data-scheme-script')
+		await expect(script?.innerHTML).toBe(buildScript({ scheme: undefined }))
+	},
+}
+
+export const JsAnimateAttribute: Story = {
+	name: 'data-js-animate marker (emitted by both buildScript branches)',
+	play: async ({ canvasElement }) => {
+		const script = canvasElement.querySelector('script[data-scheme-script]')
+
+		// `buildScript` sets `data-js-animate` unconditionally in both its
+		// `override` branch and its default (localStorage-read) branch — this
+		// story just confirms `ScriptInjector` faithfully renders whichever
+		// generated body `buildScript` produces for the default (no `scheme`
+		// arg, no `override` — `ScriptInjector` doesn't accept `override` at
+		// all) case, including that marker.
+		await expect(script?.innerHTML).toContain('setAttribute("data-js-animate", "")')
 		await expect(script?.innerHTML).toBe(buildScript({ scheme: undefined }))
 	},
 }

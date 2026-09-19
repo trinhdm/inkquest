@@ -1,17 +1,25 @@
+import {
+	DEFAULT_COLOR_SCHEME,
+	JS_ANIMATE_KEY,
+	SCHEME_STORAGE_KEY,
+} from './constants'
 import { deepMerge } from '@/utils/helpers'
-import { DEFAULT_COLOR_SCHEME, SCHEME_STORAGE_KEY } from './constants'
 import type { ColorScheme } from '@/lib/theme'
 import type { DeepRequired } from '@/types/utils'
 
 export interface DocumentConfig {
 	keys?: {
+		jsAnimate?: string
 		localStore?: string
 	}
 	scheme?: ColorScheme
 }
 
 const DEFAULT_DOCUMENT_CONFIG: DeepRequired<DocumentConfig> = {
-	keys: { localStore: SCHEME_STORAGE_KEY },
+	keys: {
+		jsAnimate: JS_ANIMATE_KEY,
+		localStore: SCHEME_STORAGE_KEY,
+	},
 	scheme: DEFAULT_COLOR_SCHEME,
 }
 
