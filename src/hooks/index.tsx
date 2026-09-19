@@ -3,4 +3,4 @@ export { useStyles } from './useStyles'
 export { useVariantStyles } from './useVariantStyles'
 
 export { useOutsideClick } from './useOutsideClick'
-export { useCountUp } from './animation'
+export { useCountUp, useReplayInView } from './animation'

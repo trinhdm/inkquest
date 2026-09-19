@@ -1,11 +1,9 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
-import { useInView } from 'framer-motion'
-import { useProps, useStyles } from '@/hooks'
+import { useProps, useReplayInView, useStyles } from '@/hooks'
 import { extractOtherProps, filterChildren } from '@/utils/helpers'
 import { renderWithProvider } from '@/lib/component'
 import { AccordionGroupProvider } from './AccordionGroup.context'
 import { Box, polymorphic } from '@/components/core/Box'
-import { INVIEW_DEFAULTS } from '@/utils/constants'
 import classes from '../Accordion.module.scss'
 
 import type {
@@ -67,7 +65,7 @@ export const AccordionGroup = polymorphic<AccordionGroupSpecs>(_props => {
 		total = items.length
 
 	const root = useRef<HTMLDivElement>(null)
-	const withinView = useInView(root, { amount: INVIEW_DEFAULTS, once: true })
+	const withinView = useReplayInView(root)
 
 	const cxtValues = useMemo<AccordionGroup.Context[]>(
 		() => Array.from({ length: total }, (_, index) => ({

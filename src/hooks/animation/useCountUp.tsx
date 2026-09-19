@@ -5,10 +5,10 @@ import {
 	useEffect, useMemo, useState,
 } from 'react'
 import {
-	animate, type ValueAnimationTransition,
-	useInView, type UseInViewOptions,
-	useIsomorphicLayoutEffect, useReducedMotion,
+	animate, useIsomorphicLayoutEffect, useReducedMotion,
+	type UseInViewOptions, type ValueAnimationTransition,
 } from 'framer-motion'
+import { useReplayInView } from './useReplayInView'
 import { INVIEW_DEFAULTS } from '@/utils/constants'
 
 interface UseCountUpOptions
@@ -87,13 +87,13 @@ export const useCountUp = <T extends HTMLElement = HTMLElement>({
 	const ref = useCallback<RefCallback<T>>(el => { node.current = el }, [])
 
 	// when a group supplies the trigger, keep our own observer idle by handing
-	// `useInView` a ref that is never attached to anything
+	// `useReplayInView` a ref that is never attached to anything
 	const idle = useRef<T | null>(null),
 		observer = typeof withinView === 'boolean' ? idle : node,
 		viewOptions = { amount, once, ...rest }
 
-	const inView = useInView(observer, viewOptions),
-		viewable = withinView ?? inView
+	const inView = useReplayInView(observer, viewOptions),
+ 		viewable = withinView ?? inView
 
 	const reducedMotion = useReducedMotion()
 
@@ -106,7 +106,12 @@ export const useCountUp = <T extends HTMLElement = HTMLElement>({
 	}, [count, enabled, parsed, reducedMotion, start])
 
 	useEffect(() => {
-		if (reducedMotion || !enabled || !parsed || !viewable) return
+		if (reducedMotion || !enabled || !parsed) return
+
+		if (!viewable) {
+			setDisplay(parsed.format(start))
+			return
+		}
 
 		const options: ValueAnimationTransition<number> = {
 			...!!delay ? { delay: delay / 1000 } : {},

@@ -1,17 +1,17 @@
 import { useMemo, useRef, type CSSProperties, type ReactNode } from 'react'
-import { useInView } from 'framer-motion'
-import { useProps, useStyles } from '@/hooks'
+import { useProps, useReplayInView, useStyles } from '@/hooks'
 import { extractOtherProps, filterChildren } from '@/utils/helpers'
+import { renderWithProvider, type RootCxtProviderFn } from '@/lib/component'
 import { setThemeCSS } from '@/lib/theme'
 import { Box, polymorphic } from '@/components/core/Box'
-import { INVIEW_DEFAULTS } from '@/utils/constants'
-import { renderWithProvider, type RootCxtProviderFn } from '@/lib/component'
+import type { UseInViewOptions } from 'framer-motion'
 import classes from './Group.module.scss'
 
 const NAME = 'Group' as const,
 	DEFAULT_TAG = 'div' as const
 
-interface BaseGroupProps {
+interface BaseGroupProps
+	extends Pick<UseInViewOptions, 'amount' | 'once'> {
 	childName: string
 	children: ReactNode
 	columns?: number
@@ -68,6 +68,7 @@ export const Group = polymorphic<GroupSpecs>(_props => {
 	const styles = useStyles(NAME, { classes, props, tokens })
 
 	const {
+		amount,
 		animated,
 		childName,
 		children,
@@ -75,6 +76,7 @@ export const Group = polymorphic<GroupSpecs>(_props => {
 		divider,
 		duration,
 		fullWidth,
+		once,
 		orientation,
 		provider: Provider,
 		revealed,
@@ -97,7 +99,7 @@ export const Group = polymorphic<GroupSpecs>(_props => {
 	// one observer for the whole group, so children stagger off a single t=0
 	// rather than each racing its own IntersectionObserver
 	const root = useRef<HTMLDivElement>(null)
-	const withinView = useInView(root, { amount: INVIEW_DEFAULTS, once: true })
+	const withinView = useReplayInView(root, { amount, once })
 
 	// one context value per child — memoised on `total` so identities stay
 	// stable across renders even though each child gets its own object
