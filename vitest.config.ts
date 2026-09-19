@@ -20,6 +20,14 @@ export default defineConfig({
 				],
 				test: {
 					name: 'storybook',
+					// Array (not a bare string) so Vite CONCATENATES it with the
+					// setup files `@storybook/addon-vitest` injects itself,
+					// rather than overwriting them. Read the header comment in
+					// `.storybook/vitest.setup.ts` before editing that file —
+					// the addon decides whether to auto-provision preview
+					// annotations by substring-scanning it, so what that file
+					// says (not just what it does) changes behaviour.
+					setupFiles: [path.join(dirname, '.storybook/vitest.setup.ts')],
 					browser: {
 						enabled: true,
 						headless: true,
