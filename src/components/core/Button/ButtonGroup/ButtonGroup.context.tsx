@@ -1,7 +1,9 @@
 import { createRootCxt } from '@/lib/component'
 import type { Button } from '../Button'
+import type { RevealItemProps } from '@/hooks'
 
-export interface ButtonGroupContext {
+export interface ButtonGroupContext
+	extends RevealItemProps {
 	disabled?: boolean
 	loading?: boolean
 	priority?: Button.Priority

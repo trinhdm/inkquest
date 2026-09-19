@@ -130,13 +130,21 @@ ul {
 }
 
 /**
-  *	js animation styling
+  *	 js animation styling
+  *  selectors mirror `REVEAL_DATAKEYS` (src/hooks/animation/constants.ts)
   */
 
 @media (prefers-reduced-motion: no-preference) {
 	[data-js-animate] {
 		[data-js-reveal] {
+			--reveal-stagger: .2s;
 			--reveal-state: 0;
+
+			@for $i from 0 through 9 {
+				[data-reveal-item='#{$i}'] {
+					--reveal-index: #{$i};
+				}
+			}
 
 		[data-reveal-item] {
 			--reveal-delay: calc(var(--reveal-index, 0) * var(--reveal-stagger, 90ms));

@@ -1,5 +1,5 @@
 import { useMemo, type CSSProperties, type ReactNode } from 'react'
-import { useProps, useStyles } from '@/hooks'
+import { useProps, useStyles, REVEAL_DATAKEYS } from '@/hooks'
 import { extractOtherProps, filterChildren } from '@/utils/helpers'
 import { renderWithProvider } from '@/lib/component'
 import { Box, polymorphic } from '@/components/core/Box'
@@ -15,6 +15,7 @@ interface ButtonGroupProps {
 	fullWidth?: boolean
 	justify?: CSSProperties['justifyContent']
 	orientation?: 'horizontal' | 'vertical'
+	revealFrom?: number
 
 	disabled?: boolean
 	hasPriority?: boolean
@@ -33,6 +34,14 @@ const derivePriority = (index: number): Button.Priority => {
 	return PRIORITY_ROLES[i]
 }
 
+// `revealFrom` is the index the group's first button takes; the rest follow it.
+// The parent reserves the range (see `Section`'s `orderReveal`) because only the
+// parent knows how many slots came before the group.
+const deriveReveal = (index: number, from?: number) =>
+	typeof from === 'number'
+		? { [REVEAL_DATAKEYS.child]: `${from + index}` as `${number}` }
+		: {}
+
 export const ButtonGroup = polymorphic<ButtonGroupSpecs>(_props => {
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { classes, props })
@@ -44,6 +53,7 @@ export const ButtonGroup = polymorphic<ButtonGroupSpecs>(_props => {
 		hasPriority,
 		loading,
 		orientation,
+		revealFrom,
 		size,
 		unstyled,
 		...rest
@@ -63,8 +73,9 @@ export const ButtonGroup = polymorphic<ButtonGroupSpecs>(_props => {
 		() => Array.from({ length: total }, (_, index) => ({
 			disabled, loading, size, unstyled,
 			priority: hasPriority ? derivePriority(index) : undefined,
+			...deriveReveal(index, revealFrom),
 		})),
-		[disabled, hasPriority, loading, size, total, unstyled]
+		[disabled, hasPriority, loading, revealFrom, size, total, unstyled]
 	)
 
 	return (

@@ -2,8 +2,8 @@
 
 import { useCallback, useRef } from 'react'
 import { useInView, useReducedMotion, type UseInViewOptions } from 'framer-motion'
-import { REVEAL_INVIEW } from './constants'
-import type { CSSProperties, RefObject } from 'react'
+import { REVEAL_DATAKEYS, REVEAL_INVIEW } from './constants'
+import type { RefObject } from 'react'
 
 interface UseRevealOptions extends UseInViewOptions {
 	animated?: boolean
@@ -11,18 +11,17 @@ interface UseRevealOptions extends UseInViewOptions {
 	withinView?: boolean
 }
 
-interface RevealItemProps {
-	'data-reveal-item'?: ''
-	style?: CSSProperties
+interface RevealRootProps {
+	[REVEAL_DATAKEYS.root.base]?: ''
+	[REVEAL_DATAKEYS.root.active]?: ''
 }
 
-interface RevealRootProps {
-	'data-js-reveal'?: ''
-	'data-revealed'?: ''
+export interface RevealItemProps {
+	[REVEAL_DATAKEYS.child]?: `${number}`
 }
 
 interface RevealValue<T> {
-	item: (index?: number) => RevealItemProps
+	item: (index: number) => RevealItemProps
 	ref: RefObject<T | null>
 	root: RevealRootProps
 	visible: boolean
@@ -49,19 +48,30 @@ export const useReveal = <T extends HTMLElement = HTMLElement>({
 	const reducedMotion = useReducedMotion()
 
 	const visible = revealed ?? withinView ?? (!!reducedMotion || inView)
+	const {
+		child: dataChild,
+		root: dataRoot,
+	} = REVEAL_DATAKEYS
 
 	// index is caller-assigned, never derived from the DOM — heterogeneous
 	// slots are built in visual order, so the caller is the only thing that
 	// knows the order (see `orderReveal` in Section.tsx)
-	const item = useCallback((index = 0): RevealItemProps => (
-		animated
-			? { 'data-reveal-item': '', style: { '--reveal-index': index } as CSSProperties }
-			: {}
+	const item = useCallback((index: number): RevealItemProps => (
+		animated ? { [dataChild]: `${index}` } : {}
 	), [animated])
 
-	const root: RevealRootProps = animated
-		? { 'data-js-reveal': '', ...visible ? { 'data-revealed': '' } as const : {} }
+
+	const attributes: RevealRootProps = animated
+		? {
+			[dataRoot.base]: '',
+			...(visible ? { [dataRoot.active]: '' } as const : {}),
+		}
 		: {}
 
-	return { item, ref: node, root, visible: !animated || visible }
+	return {
+		item,
+		ref: node,
+		root: attributes,
+		visible: !animated || visible,
+	}
 }

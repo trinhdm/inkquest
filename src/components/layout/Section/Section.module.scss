@@ -16,6 +16,12 @@
 		}
 	}
 
+	&__body {
+		& > :first-child {
+			margin-top: 0;
+		}
+	}
+
 	&__description {
 		margin-top: var(--inkq-stack-gap-lede);
 		text-wrap: pretty;

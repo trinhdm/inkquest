@@ -1,8 +1,5 @@
-import {
-	cloneElement, isValidElement, Children,
-	type ReactNode, type CSSProperties,
-} from 'react'
-import { useProps, useReveal, useStyles } from '@/hooks'
+import { isValidElement, Children, type ReactNode } from 'react'
+import { useProps, useReveal, useStyles, type RevealItemProps } from '@/hooks'
 import { extractOtherProps } from '@/utils/helpers'
 import { setThemeCSS } from '@/lib/theme'
 import { Box, polymorphic } from '@/components/core/Box'
@@ -40,36 +37,33 @@ interface SectionSpecs {
 	}
 }
 
-type RevealItem =
-	ReturnType<ReturnType<typeof useReveal>['item']>
-type RevealFn =
-	() => RevealItem
+interface RevealCounter {
+	/** consumes one index and returns the attribute bag for a slot */
+	next: () => RevealItemProps
+	/** reserves `total` indices and returns the first, for a child that hands them out itself */
+	reserve: (total: number) => number
+}
 
 // index is caller-assigned, never derived from the DOM — heterogeneous slots
 // (eyebrow, title, N content children, N buttons) are built in visual order,
 // so the caller is the only thing that knows the true order
-const orderReveal = (item: ReturnType<typeof useReveal>['item']): RevealFn => {
-	let index = 0
-	return () => item(index++)
-}
+const orderReveal = (item: (index: number) => RevealItemProps): RevealCounter => {
+	let cursor = 0
 
-// passes ONLY `data-reveal` + `style` — never `className` (would replace the
-// child's base class via `inheritClasses`); `cloneElement` preserves `key`
-// and `type`, so `ButtonGroup`'s `filterChildren` still matches on `Button`
-const markReveal = (
-	child: ReactNode,
-	props: RevealItem
-): ReactNode => {
-	if (!isValidElement<{ style?: CSSProperties }>(child)) return child
-
-	const style = { ...child.props.style, ...props.style }
-	return cloneElement(child, { ...props, style })
+	return {
+		next: () => item(cursor++),
+		reserve: total => {
+			const from = cursor
+			cursor += total
+			return from
+		},
+	}
 }
 
 const orderSection = (
 	children: SectionProps['children'],
 	styles: ReturnType<typeof useStyles>,
-	reveal: RevealFn
+	reveal: RevealCounter
 ) => {
 	const buttons: ReactNode[] = [],
 		items: ReactNode[] = []
@@ -91,11 +85,16 @@ const orderSection = (
 	const content: ReactNode[] = []
 
 	if (!!items.length) {
-		const revealed = items.map(child => markReveal(child, reveal())),
-			wrapper = <div key="section-desc" { ...styles('description') }>{ revealed }</div>,
-			description = revealed.length > 1 ? wrapper : revealed
+		const description = items.length > 1
+			? <div { ...styles('description') }>{ items }</div>
+			: items
+		const body = (
+			<div key="section-body" { ...styles('body') } { ...reveal.next() }>
+				{ description }
+			</div>
+		)
 
-		content.push(description)
+		content.push(body)
 	}
 
 	if (!!buttons.length) {
@@ -104,9 +103,10 @@ const orderSection = (
 				key="section-cta"
 				{ ...styles('cta') }
 				hasPriority={ buttons.length > 1 }
+				revealFrom={ reveal.reserve(buttons.length) }
 				size="lg"
 			>
-				{ buttons.map(button => markReveal(button, reveal())) }
+				{ buttons }
 			</Button.Group>
 		)
 
@@ -119,16 +119,16 @@ const orderSection = (
 const buildSection = (
 	props: SectionProps,
 	styles: ReturnType<typeof useStyles>,
-	reveal: RevealFn
+	reveal: RevealCounter
 ) => {
 	const { children, eyebrow, layout, title } = props,
 		HTag = layout === 'hero' ? 'h1' : 'h2'
 
-	const heading = <Box as={ HTag } { ...styles('title') } { ...reveal() }>{ title }</Box>,
-		tagline = <span { ...styles('eyebrow', true) } { ...reveal() }>{ eyebrow }</span>
+	const tagline = !!eyebrow && <span { ...styles('eyebrow', true) } { ...reveal.next() }>{ eyebrow }</span>,
+		heading = !!title && <Box as={ HTag } { ...styles('title') } { ...reveal.next() }>{ title }</Box>
 
 	const content = orderSection(children, styles, reveal),
-		header = <>{ !!eyebrow && tagline }{ !!title && heading }</>,
+		header = <>{ tagline }{ heading }</>,
 		inner = <>{ header }{ content }</>
 
 	switch (layout) {
@@ -160,20 +160,23 @@ export const Section = polymorphic<SectionSpecs>(_props => {
 
 	const {
 		animated,
+		duration,
+		revealed,
+		stagger,
+		withinView,
+		//
 		children,
 		eyebrow,
 		layout,
 		title,
-		unstyled,
-		withinView,
 		...rest
 	} = props
 
 	const { others } = extractOtherProps(rest)
 
 	const { item, ref, root } = useReveal<HTMLElement>({
-		animated: animated && !unstyled,
-		revealed: props.revealed,
+		animated: animated && !props.unstyled,
+		revealed,
 		withinView,
 	})
 
