@@ -3,7 +3,7 @@ import { useAccordionCxt } from '../Accordion.context'
 import { extractOtherProps } from '@/utils/helpers'
 import { Box, polymorphic } from '@/components/core/Box'
 import { Icon } from '@/components/core'
-import type {  ReactNode } from 'react'
+import type { KeyboardEvent, ReactNode } from 'react'
 import classes from '../Accordion.module.scss'
 
 const NAME = 'AccordionTitle' as const
@@ -19,6 +19,7 @@ interface AccordionTitleSpecs {
 
 export const AccordionTitle = polymorphic<AccordionTitleSpecs>(_props => {
 	const {
+		disabled,
 		handleToggle,
 		idx,
 		indicator,
@@ -36,6 +37,26 @@ export const AccordionTitle = polymorphic<AccordionTitleSpecs>(_props => {
 		[`${indicator}`]: indicator !== 'none',
 	}
 
+	const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
+		const group = event.currentTarget.closest('[data-group]')
+		if (!group) return
+
+		const titles = [...group.querySelectorAll<HTMLButtonElement>('[data-title]')],
+			current = titles.indexOf(event.currentTarget)
+
+		let next = -1
+		switch (event.key) {
+			case 'ArrowDown': next = (current + 1) % titles.length; break
+			case 'ArrowUp': next = (current - 1 + titles.length) % titles.length; break
+			case 'Home': next = 0; break
+			case 'End': next = titles.length - 1; break
+			default: return
+		}
+
+		event.preventDefault()
+		titles[next]?.focus()
+	}
+
 	return (
 		<Box
 			{ ...styles('root') }
@@ -45,10 +66,16 @@ export const AccordionTitle = polymorphic<AccordionTitleSpecs>(_props => {
 				aria: {
 					controls: idx.content,
 					expanded: isOpen,
-				}
+				},
+				data: {
+					open: isOpen || null,
+					title: true,
+				},
 			} }
+			disabled={ disabled }
 			id={ idx.title }
 			onClick={ handleToggle }
+			onKeyDown={ handleKeyDown }
 			type="button"
 		>
 			{ !!step && (

@@ -120,8 +120,8 @@ export const Accordion = polymorphic<AccordionSpecs>(_props => {
 	])
 
 	const cxtValue = useMemo(() => ({
-		name: NAME, handleToggle, idx, indicator, isOpen, step, unstyled,
-	}), [handleToggle, idx, indicator, isOpen, step, unstyled])
+		disabled, handleToggle, idx, indicator, isOpen, step, unstyled,
+	}), [disabled, handleToggle, idx, indicator, isOpen, step, unstyled])
 
 	return (
 		<Box

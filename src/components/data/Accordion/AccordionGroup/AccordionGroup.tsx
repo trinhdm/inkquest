@@ -17,6 +17,7 @@ const NAME = 'AccordionGroup' as const
 interface AccordionGroupProps {
 	collapsible?: boolean
 	defaultOpen?: number | number[]
+	disabled?: boolean
 	layout?: AccordionGroupLayout
 	type?: AccordionGroupType
 }
@@ -40,6 +41,7 @@ export const AccordionGroup = polymorphic<AccordionGroupSpecs>(_props => {
 		children,
 		collapsible,
 		defaultOpen,
+		disabled,
 		layout,
 		type,
 		unstyled,
@@ -48,33 +50,38 @@ export const AccordionGroup = polymorphic<AccordionGroupSpecs>(_props => {
 
 	const { others } = extractOtherProps(rest)
 
-	const [openItems, setOpenItems] = useState(() => handleOpenItems(defaultOpen))
+	const root = useRef<HTMLDivElement>(null)
+	const withinView = useReplayInView(root)
+
+	const [openItems, setOpenItems] = useState<number[]>(() => {
+		const indices = handleOpenItems(defaultOpen)
+		return type === 'multiple' ? indices : indices.slice(0, 1)
+	})
 
 	const handleItemToggle = useCallback((
-		i: number,
+		index: number,
 		next: boolean
 	) => {
 		setOpenItems(prev => {
-			if (type === 'multiple') return next ? [...prev, i] : prev.filter(h => h !== i)
-			if (!next) return collapsible ? [] : prev
-			return [i]
+			if (type === 'multiple')
+				return next ? [...prev, index] : prev.filter(i => i !== index)
+			else if (!next)
+				return collapsible ? [] : prev
+			return [index]
 		})
 	}, [collapsible, type])
 
 	const items = filterChildren(children, 'Accordion'),
 		total = items.length
 
-	const root = useRef<HTMLDivElement>(null)
-	const withinView = useReplayInView(root)
-
 	const cxtValues = useMemo<AccordionGroup.Context[]>(
 		() => Array.from({ length: total }, (_, index) => ({
-			index, layout,
+			disabled, index, layout,
 			onItemToggle: handleItemToggle,
 			open: openItems.includes(index),
 			unstyled, withinView,
 		})),
-		[handleItemToggle, layout, openItems, total, unstyled, withinView]
+		[disabled, handleItemToggle, layout, openItems, total, unstyled, withinView]
 	)
 
 	return (
