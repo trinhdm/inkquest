@@ -1,5 +1,5 @@
 import { isValidElement, Children, type ReactNode } from 'react'
-import { useProps, useReveal, useStyles, type RevealItemProps } from '@/hooks'
+import { useProps, useReveal, useStyles, type RevealCounter } from '@/hooks'
 import { extractOtherProps } from '@/utils/helpers'
 import { setThemeCSS } from '@/lib/theme'
 import { Box, polymorphic } from '@/components/core/Box'
@@ -34,29 +34,6 @@ interface SectionSpecs {
 	props: SectionProps
 	subcomponents: {
 		Button: typeof Button
-	}
-}
-
-interface RevealCounter {
-	/** consumes one index and returns the attribute bag for a slot */
-	next: () => RevealItemProps
-	/** reserves `total` indices and returns the first, for a child that hands them out itself */
-	reserve: (total: number) => number
-}
-
-// index is caller-assigned, never derived from the DOM — heterogeneous slots
-// (eyebrow, title, N content children, N buttons) are built in visual order,
-// so the caller is the only thing that knows the true order
-const orderReveal = (item: (index: number) => RevealItemProps): RevealCounter => {
-	let cursor = 0
-
-	return {
-		next: () => item(cursor++),
-		reserve: total => {
-			const from = cursor
-			cursor += total
-			return from
-		},
 	}
 }
 
@@ -174,7 +151,7 @@ export const Section = polymorphic<SectionSpecs>(_props => {
 
 	const { others } = extractOtherProps(rest)
 
-	const { item, ref, root } = useReveal<HTMLElement>({
+	const { orderReveal, ref, root } = useReveal<HTMLElement>({
 		animated: animated && !props.unstyled,
 		revealed,
 		withinView,
@@ -192,7 +169,7 @@ export const Section = polymorphic<SectionSpecs>(_props => {
 			as={ Container }
 			ref={ ref }
 		>
-			{ buildSection(props, styles, orderReveal(item)) }
+			{ buildSection(props, styles, orderReveal()) }
 		</Box>
 	)
 }, classes)

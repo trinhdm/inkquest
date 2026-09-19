@@ -4,7 +4,7 @@ export { useVariantStyles } from './useVariantStyles'
 
 export {
 	useCountUp, useReplayInView,
-	useReveal, REVEAL_DATAKEYS, type RevealItemProps,
+	useReveal, revealItemFrom, REVEAL_DATAKEYS, type RevealCounter, type RevealItemProps,
 } from './animation'
 
 export { useOutsideClick } from './useOutsideClick'
