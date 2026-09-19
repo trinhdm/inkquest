@@ -10,7 +10,7 @@ const buildAccordion = (props: Partial<Accordion.Props> = {}) => (
 )
 
 describe('Accordion', () => {
-	reset('Accordion', 'AccordionTitle', 'AccordionContent')
+	reset('Accordion', 'Accordion.Title', 'Accordion.Content')
 
 	it('renders the title as a button and the content as a labelled region', () => {
 		render(buildAccordion())
@@ -123,7 +123,7 @@ describe('Accordion', () => {
 	it('throws when Accordion.Title is rendered outside an Accordion', () => {
 		const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
 		expect(() => render(<Accordion.Title>Orphan</Accordion.Title>)).toThrow(
-			'<AccordionTitle /> must be rendered inside <Accordion>'
+			'<Accordion.Title /> must be rendered inside <Accordion>'
 		)
 		spy.mockRestore()
 	})
@@ -131,7 +131,7 @@ describe('Accordion', () => {
 	it('throws when Accordion.Content is rendered outside an Accordion', () => {
 		const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
 		expect(() => render(<Accordion.Content>Orphan</Accordion.Content>)).toThrow(
-			'<AccordionContent /> must be rendered inside <Accordion>'
+			'<Accordion.Content /> must be rendered inside <Accordion>'
 		)
 		spy.mockRestore()
 	})

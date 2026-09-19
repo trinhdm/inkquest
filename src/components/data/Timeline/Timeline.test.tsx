@@ -3,7 +3,7 @@ import { render, reset, screen } from '@/tests/test-utils'
 import { Timeline } from './Timeline'
 
 describe('Timeline', () => {
-	reset('Timeline', 'TimelineItem')
+	reset('Timeline', 'Timeline.Item')
 
 	it('renders every Timeline.Item child', () => {
 		render(

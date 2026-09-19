@@ -53,7 +53,7 @@ const renderGroup = ({ variant, size }: ButtonGroupStoryArgs) => {
 // are Button's own defaults, since those two fields only ever feed the
 // `Button` children here — pulled separately rather than spreading both
 // registries together, since they'd otherwise collide on the shared `as` key.
-const buttonGroupDefaults = getDefaultProps<Button.Group.Props>('ButtonGroup')
+const buttonGroupDefaults = getDefaultProps<Button.Group.Props>('Button.Group')
 const buttonDefaults = getDefaultProps<Button.Props>('Button')
 
 const meta: Meta<ButtonGroupStoryArgs> = {

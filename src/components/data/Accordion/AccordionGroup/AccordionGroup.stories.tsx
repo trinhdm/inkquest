@@ -77,7 +77,7 @@ const meta: Meta<AccordionGroupStoryProps> = {
 		},
 	},
 	args: {
-		...getDefaultProps<Accordion.Group.Props>('AccordionGroup'),
+		...getDefaultProps<Accordion.Group.Props>('Accordion.Group'),
 	},
 	render: args => (
 		<Accordion.Group { ...args }>

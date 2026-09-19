@@ -3,7 +3,7 @@ import { Box, polymorphic } from '@/components/core/Box'
 import type { ReactNode } from 'react'
 import classes from '../Grid.module.scss'
 
-const NAME = 'GridItem' as const
+const NAME = 'Grid.Item' as const
 
 interface GridItemProps {
 	children: ReactNode

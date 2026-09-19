@@ -46,4 +46,13 @@ describe('toKebabCase', () => {
 	it('leaves non-alphabetic characters untouched aside from the dash insertions', () => {
 		expect(toKebabCase('data2Value')).toBe('data2-value')
 	})
+
+	it('collapses a compound-component dot so the class name matches the undotted form', () => {
+		expect(toKebabCase('Accordion.Title')).toBe('accordion-title')
+		expect(toKebabCase('Accordion.Title')).toBe(toKebabCase('AccordionTitle'))
+	})
+
+	it('keeps a dot that is not followed by an uppercase letter', () => {
+		expect(toKebabCase('St. Louis')).toBe('st. -louis')
+	})
 })

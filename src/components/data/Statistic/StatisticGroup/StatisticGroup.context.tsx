@@ -17,4 +17,4 @@ export const {
 	RootCxtProvider: StatisticGroupProvider,
 	useSafeRootCxt: useStatisticGroupCxt,
 	useRootProps: useStatisticGroupProps,
-} = createRootCxt<StatisticGroupContext>('StatisticGroup')
+} = createRootCxt<StatisticGroupContext>('Statistic.Group')

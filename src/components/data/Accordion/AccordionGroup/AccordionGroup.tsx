@@ -12,7 +12,7 @@ import type {
 	AccordionGroupType,
 } from './AccordionGroup.context'
 
-const NAME = 'AccordionGroup' as const
+const NAME = 'Accordion.Group' as const
 
 interface AccordionGroupProps {
 	collapsible?: boolean

@@ -63,7 +63,7 @@ const meta: Meta<TimelineItemStoryProps> = {
 		},
 	},
 	args: {
-		...getDefaultProps<Timeline.Item.Props>('TimelineItem'),
+		...getDefaultProps<Timeline.Item.Props>('Timeline.Item'),
 		content: 'Wireframes signed off by stakeholders.',
 		title: 'Design review',
 	},

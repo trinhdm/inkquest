@@ -10,7 +10,7 @@ const item = (title: string, content: string) => (
 )
 
 describe('Accordion.Group', () => {
-	reset('AccordionGroup', 'Accordion', 'AccordionTitle', 'AccordionContent')
+	reset('Accordion.Group', 'Accordion', 'Accordion.Title', 'Accordion.Content')
 
 	it('renders as a group container with a data-group marker', () => {
 		const { container } = render(

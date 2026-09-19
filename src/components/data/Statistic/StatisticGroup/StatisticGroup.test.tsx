@@ -22,7 +22,7 @@ jest.mock('framer-motion', () => {
 import { animate } from 'framer-motion'
 
 describe('Statistic.Group', () => {
-	reset('StatisticGroup', 'Statistic')
+	reset('Statistic.Group', 'Statistic')
 
 	afterEach(() => {
 		jest.mocked(animate).mockClear()

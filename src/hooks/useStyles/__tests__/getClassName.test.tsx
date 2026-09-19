@@ -35,6 +35,10 @@ describe('getClassName', () => {
 			expect(getClassName(args({ name: 'ButtonGroup' }))).toBe('ink-button-group')
 		})
 
+		it('gives a dotted subcomponent name the same class as its undotted form', () => {
+			expect(getClassName(args({ name: 'Button.Group' }))).toBe('ink-button-group')
+		})
+
 		it('does not double up the prefix when the name already starts with it', () => {
 			expect(getClassName(args({ name: 'InkButton' }))).toBe('ink-button')
 		})

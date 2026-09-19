@@ -3,7 +3,7 @@ import { useProps, useStyles, extractOtherProps } from '@/hooks'
 import { Box, polymorphic } from '@/components/core/Box'
 import classes from '../Button.module.scss'
 
-const NAME = 'ButtonSection' as const
+const NAME = 'Button.Section' as const
 
 interface LeftSectionProps {
 	left: true

@@ -239,7 +239,7 @@ export const Unstyled: Story = {
 // `ButtonSection` now reads `Button.context` via the REQUIRED reader
 // (`useButtonCxt` = `useRootCxt`, not the optional `useSafeRootCxt`) —
 // `const { rootName } = useButtonCxt(NAME)` in `ButtonSection.tsx` throws
-// (`createRootCxt.tsx`'s `useRootCxt`: `<ButtonSection /> must be rendered
+// (`createRootCxt.tsx`'s `useRootCxt`: `<Button.Section /> must be rendered
 // inside <Button>`) the instant it's rendered with no wrapping `Button` at
 // all, rather than silently falling back to styling under its own name.
 // There's also no more dynamic per-parent naming to demonstrate even if it
@@ -278,7 +278,7 @@ export const RequiresButtonParent: Story = {
 		await expect(validSection).toHaveClass('inkq-button__section')
 
 		const errorFallback = await canvas.findByTestId('button-section-error')
-		await expect(errorFallback).toHaveTextContent('<ButtonSection /> must be rendered inside <Button>')
+		await expect(errorFallback).toHaveTextContent('<Button.Section /> must be rendered inside <Button>')
 	},
 }
 

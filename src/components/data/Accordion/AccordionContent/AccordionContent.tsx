@@ -5,7 +5,7 @@ import { Box, polymorphic } from '@/components/core/Box'
 import type { ReactNode } from 'react'
 import classes from '../Accordion.module.scss'
 
-const NAME = 'AccordionContent' as const
+const NAME = 'Accordion.Content' as const
 
 interface AccordionContentProps {
 	children: ReactNode

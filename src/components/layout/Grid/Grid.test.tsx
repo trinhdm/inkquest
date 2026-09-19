@@ -3,7 +3,7 @@ import { render, reset, screen } from '@/tests/test-utils'
 import { Grid } from './Grid'
 
 describe('Grid', () => {
-	reset('Grid', 'GridItem')
+	reset('Grid', 'Grid.Item')
 
 	it('renders as the registered default tag ("div")', () => {
 		const defaults = getDefaultProps<Grid.Props & { as?: string }>('Grid')

@@ -4,7 +4,7 @@ import { Group } from '@/components/layout'
 import { StatisticGroupProvider, type StatisticGroupContext } from './StatisticGroup.context'
 import classes from '../Statistic.module.scss'
 
-const NAME = 'StatisticGroup' as const
+const NAME = 'Statistic.Group' as const
 
 interface StatisticGroupProps
 	extends Omit<Group.Props, 'childName' | 'provider'> {}

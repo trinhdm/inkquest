@@ -275,7 +275,7 @@ describe('Button', () => {
 		// Guards the fix above at its root: if a `left` default is ever
 		// re-registered, `data-side="right"` silently breaks again.
 		it('registers no default props, so neither side is pre-filled', () => {
-			expect(getDefaultProps('ButtonSection')).toEqual({})
+			expect(getDefaultProps('Button.Section')).toEqual({})
 		})
 
 		it('warns in dev and renders only the first section when a side is duplicated', () => {

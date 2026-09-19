@@ -15,4 +15,4 @@ export const {
 	RootCxtProvider: ButtonGroupProvider,
 	useSafeRootCxt: useButtonGroupCxt,
 	useRootProps: useButtonGroupProps,
-} = createRootCxt<ButtonGroupContext>('ButtonGroup')
+} = createRootCxt<ButtonGroupContext>('Button.Group')

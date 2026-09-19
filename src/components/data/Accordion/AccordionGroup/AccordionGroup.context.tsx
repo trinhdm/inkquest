@@ -20,4 +20,4 @@ export const {
 	RootCxtProvider: AccordionGroupProvider,
 	useSafeRootCxt: useAccordionGroupCxt,
 	useRootProps: useAccordionGroupProps,
-} = createRootCxt<AccordionGroupContext>('AccordionGroup')
+} = createRootCxt<AccordionGroupContext>('Accordion.Group')

@@ -3,7 +3,7 @@ import { render, reset, screen, within } from '@/tests/test-utils'
 import { Section } from './Section'
 
 describe('Section', () => {
-	reset('Section', 'Container', 'Grid', 'GridItem', 'Button', 'ButtonGroup')
+	reset('Section', 'Container', 'Grid', 'Grid.Item', 'Button', 'Button.Group')
 
 	it('defaults layout to "default"', () => {
 		expect(getDefaultProps<Section.Props>('Section').layout).toBe('default')

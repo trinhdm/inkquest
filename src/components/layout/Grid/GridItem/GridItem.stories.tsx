@@ -70,7 +70,7 @@ const meta: Meta<GridItemStoryProps> = {
 		},
 	},
 	args: {
-		...getDefaultProps<Grid.Item.Props>('GridItem'),
+		...getDefaultProps<Grid.Item.Props>('Grid.Item'),
 	},
 }
 

@@ -67,7 +67,7 @@ const renderStatistics = (count: number) => Array.from({ length: count }, (_, in
 	/>
 ))
 
-const statisticGroupDefaults = getDefaultProps<Statistic.Group.Props>('StatisticGroup')
+const statisticGroupDefaults = getDefaultProps<Statistic.Group.Props>('Statistic.Group')
 
 const meta: Meta<StatisticGroupStoryProps> = {
 	component: Statistic.Group,

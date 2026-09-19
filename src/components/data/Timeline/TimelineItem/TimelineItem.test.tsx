@@ -2,7 +2,7 @@ import { render, reset, screen } from '@/tests/test-utils'
 import { Timeline } from '../Timeline'
 
 describe('Timeline.Item', () => {
-	reset('TimelineItem')
+	reset('Timeline.Item')
 
 	it('renders the title and content text', () => {
 		render(<Timeline.Item content="Something happened" title="Launch day" />)

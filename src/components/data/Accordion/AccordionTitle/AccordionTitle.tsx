@@ -5,7 +5,7 @@ import { Icon } from '@/components/core'
 import type { KeyboardEvent, ReactNode } from 'react'
 import classes from '../Accordion.module.scss'
 
-const NAME = 'AccordionTitle' as const
+const NAME = 'Accordion.Title' as const
 
 interface AccordionTitleProps {
 	children: ReactNode

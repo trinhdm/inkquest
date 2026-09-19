@@ -3,7 +3,7 @@ import { Box, polymorphic } from '@/components/core/Box'
 import { useRef, type ReactNode } from 'react'
 import classes from '../Timeline.module.scss'
 
-const NAME = 'TimelineItem' as const
+const NAME = 'Timeline.Item' as const
 
 interface TimelineItemProps {
 	bullet?: ReactNode

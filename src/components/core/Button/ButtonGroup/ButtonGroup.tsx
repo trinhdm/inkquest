@@ -7,7 +7,7 @@ import { ButtonGroupProvider, type ButtonGroupContext } from './ButtonGroup.cont
 import type { Button } from '../Button'
 import classes from '../Button.module.scss'
 
-const NAME = 'ButtonGroup' as const
+const NAME = 'Button.Group' as const
 const PRIORITY_ROLES: Button.Priority[] = ['primary', 'secondary', 'tertiary'] as const
 
 interface ButtonGroupProps {

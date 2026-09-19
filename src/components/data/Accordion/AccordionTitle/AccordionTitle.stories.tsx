@@ -307,6 +307,6 @@ export const RequiresAccordionParent: Story = {
 		await expect(validTitle).toBeInTheDocument()
 
 		const errorFallback = await canvas.findByTestId('accordion-title-error')
-		await expect(errorFallback).toHaveTextContent('<AccordionTitle /> must be rendered inside <Accordion>')
+		await expect(errorFallback).toHaveTextContent('<Accordion.Title /> must be rendered inside <Accordion>')
 	},
 }
