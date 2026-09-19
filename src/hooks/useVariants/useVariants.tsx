@@ -2,7 +2,7 @@
 
 import { useInsertionEffect } from 'react'
 import { useTheme } from '@/providers/ThemeProvider'
-import { deriveVariants } from '@/lib/theme/deriveVariants'
+import { deriveVariants } from './helpers'
 import { hasInjectVariant, markInjectVariant } from './variantsRegistry'
 import { serializeStyles } from '@/components/document'
 

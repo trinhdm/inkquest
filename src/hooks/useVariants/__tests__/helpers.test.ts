@@ -1,6 +1,5 @@
-import { deriveVariants } from '../deriveVariants'
-import { semanticTokens } from '../reference'
-import type { SiteThemeConfig } from '../types'
+import { deriveVariants } from '../helpers'
+import { tokens, type SiteThemeConfig } from '@/lib/theme'
 
 // SiteThemeConfig extends SemanticTokens, so a hand-typed fixture would need
 // to fake the entire accessor catalog. Since reference/semantic.ts is real,
@@ -10,7 +9,7 @@ import type { SiteThemeConfig } from '../types'
 const makeTheme = (options: { prefix?: string } = { prefix: 'inkq' }): SiteThemeConfig => {
 	const { prefix } = options
 	return {
-		...semanticTokens,
+		...tokens,
 		prefix,
 		prefixSelector: (name: string) => `.${prefix}-${name}`,
 	}

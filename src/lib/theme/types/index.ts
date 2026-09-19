@@ -1,13 +1,12 @@
 export type {
 	BaseVarKey, ColorScheme,
-	SiteTheme, SiteThemeConfig, ThemeName, ThemeTokens,
+	SiteTheme, SiteThemeConfig,
+	ThemeName, ThemeTokens,
 } from './theme.types'
 
 export type {
-	ColorMixtures, ThemeColor,
-	PaddedIndexLabels, StaticColorNames,
-	TokenStateHues, TokenStatesList,
-	TokenVariableShape,
+	StaticColorNames,
+	TokenState, TokenStateHues, TokenVariableShape,
 } from './token.types'
 
 export type {

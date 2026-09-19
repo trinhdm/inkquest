@@ -1,6 +1,6 @@
 import type { BaseVarKey } from './theme.types'
 import type { CSSVariable, CSSVars } from '@/types/shared'
-import type { TokenGroup, TokenStatesList } from './token.types'
+import type { TokenGroup, TokenStates } from './token.types'
 
 export type Variant =
 	| 'solid' | 'outline' | 'ghost' | 'light' | 'dark'
@@ -29,7 +29,7 @@ export interface VariantTokens {
 }
 
 type StateKey =
-	keyof TokenStatesList
+	keyof TokenStates
 
 type StateSuffix<K extends StateKey> =
 	K extends BaseVarKey ? '' : `-${K}`

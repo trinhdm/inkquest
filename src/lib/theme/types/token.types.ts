@@ -12,21 +12,25 @@ export type TokenVariableShape =
 type TokenItem<T extends keyof CSSProperties = 'color'> =
 	CSSProperties[T]
 
-export interface TokenStatesList<T extends keyof CSSProperties = 'color'> {
+export type TokenState =
+	| 'hover'
+	| 'active'
+	| 'disable'
+	| 'focus'
+	| 'pressed'
+	| 'select'
+
+export interface TokenStates<T extends keyof CSSProperties = 'color'>
+	extends Partial<Record<Exclude<TokenState, 'hover'>, TokenItem<T>>> {
 	base: TokenItem<T>
 	hover: TokenItem<T>
-	active?: TokenItem<T>
-	disable?: TokenItem<T>
-	focus?: TokenItem<T>
-	pressed?: TokenItem<T>
-	select?: TokenItem<T>
 }
 
 export type TokenGroup<T extends keyof CSSProperties> =
 	| TokenItem<T>
-	| TokenStatesList<T>
+	| TokenStates<T>
 
-export interface ColorMixtures {
+interface ColorMixtures {
 	base: string
 	bright: string
 	dim: string
@@ -37,8 +41,8 @@ export interface ColorMixtures {
 
 export interface TokenStateHues
 	extends Omit<ColorMixtures, 'base'>,
-		Omit<TokenStatesList, 'base'> {
-	base: (ColorMixtures | TokenStatesList)['base']
+		Omit<TokenStates, 'base'> {
+	base: (ColorMixtures | TokenStates)['base']
 }
 
 
@@ -69,10 +73,6 @@ export type PaddedIndexLabels<
 > = T extends readonly [unknown, ...infer Rest]
 	? PaddedIndexLabels<Rest, Acc | `0${Increment<Counted>['length']}`, Increment<Counted>>
 	: Acc
-
-export type ColorScaleStep =
-	| ColorStepLabels<typeof COLOR_TOKENS.ink>
-	| ColorStepLabels<typeof COLOR_TOKENS.paper>
 
 
 type SiteColors = typeof COLOR_TOKENS

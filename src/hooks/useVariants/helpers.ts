@@ -1,17 +1,16 @@
 import { toKebabCase } from '@/utils/helpers'
-import type { CssRule, SiteThemeConfig, VariantTokens } from './types'
+import type { CssRule, SiteThemeConfig, TokenState, VariantTokens } from '@/lib/theme'
 
-type BridgeSlot = keyof VariantTokens		// 'background' | 'border' | 'color'
-type BridgeState = 'hover' | 'active' | 'disable' | 'focus' | 'press' | 'select'
+type TokenSlot = keyof VariantTokens
 
-export interface VariantBridge {
+interface VariantBridge {
 	name: string
-	slots?: BridgeSlot[]
-	states?: BridgeState[]
+	slots?: TokenSlot[]
+	states?: TokenState[]
 }
 
-const DEFAULT_SLOTS: BridgeSlot[] = ['background', 'border', 'color'],
-	DEFAULT_STATES: BridgeState[] = ['hover']
+const DEFAULT_SLOTS: TokenSlot[] = ['background', 'border', 'color'],
+	DEFAULT_STATES: TokenState[] = ['hover']
 
 // Single source of truth for the `--variant-* -> --<component>-*` bridge.
 // Static per component: no prop values, no per-instance theme values other

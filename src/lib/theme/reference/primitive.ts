@@ -1,5 +1,5 @@
 import { baseVar, token } from './utils'
-import type { PaddedIndexLabels, ThemeColor } from '../types'
+import type { PaddedIndexLabels, ThemeColor } from '../types/token.types'
 import type {
 	FONT_FAMILY_SCALE, FONT_SIZE_SCALE, FONT_WEIGHT_SCALE,
 	LETTER_SPACING_SCALE, LINE_HEIGHT_SCALE,
