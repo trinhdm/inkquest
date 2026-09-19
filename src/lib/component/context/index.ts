@@ -1,3 +1,3 @@
-export { createRootCxt } from './createRootCxt'
+export { createRootCtx } from './createRootCtx'
 export { renderWithProvider } from './renderWithProvider'
-export type { RootCxtProviderFn, RootCxtProviderProps } from './createRootCxt'
+export type { RootProviderFn, RootProviderProps } from './createRootCtx'

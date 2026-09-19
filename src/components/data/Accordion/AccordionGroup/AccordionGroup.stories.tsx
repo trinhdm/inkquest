@@ -33,7 +33,7 @@ type AccordionGroupStoryProps = Parameters<typeof Accordion.Group>[0]
 type Story = StoryObj<AccordionGroupStoryProps>
 
 // `Accordion.Group` assigns each surviving `Accordion` child a SEQUENTIAL
-// `index` via `cxtValues` (`Array.from({ length: total }, (_, index) => ...)`)
+// `index` via `ctxValues` (`Array.from({ length: total }, (_, index) => ...)`)
 // regardless of any prop set on the child itself — so a plain, unkeyed-index
 // item list is enough to exercise every story here.
 const renderItems = (count: number) =>

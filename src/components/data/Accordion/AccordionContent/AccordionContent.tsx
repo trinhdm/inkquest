@@ -1,6 +1,6 @@
 import { useProps, useStyles, extractOtherProps } from '@/hooks'
 import { useReducedMotion } from 'framer-motion'
-import { useAccordionCxt } from '../Accordion.context'
+import { useAccordionCtx } from '../Accordion.context'
 import { Box, polymorphic } from '@/components/core/Box'
 import type { ReactNode } from 'react'
 import classes from '../Accordion.module.scss'
@@ -17,7 +17,7 @@ interface AccordionContentSpecs {
 }
 
 export const AccordionContent = polymorphic<AccordionContentSpecs>(_props => {
-	const { idx, isOpen } = useAccordionCxt(NAME)
+	const { idx, isOpen } = useAccordionCtx(NAME)
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { classes, props })
 

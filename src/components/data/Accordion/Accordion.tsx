@@ -119,7 +119,7 @@ export const Accordion = polymorphic<AccordionSpecs>(_props => {
 		onItemToggle, onToggle,
 	])
 
-	const cxtValue = useMemo(() => ({
+	const ctxValues = useMemo(() => ({
 		disabled, handleToggle, idx, indicator, isOpen, step, unstyled,
 	}), [disabled, handleToggle, idx, indicator, isOpen, step, unstyled])
 
@@ -133,7 +133,7 @@ export const Accordion = polymorphic<AccordionSpecs>(_props => {
 			} }
 			id={ idx.root }
 		>
-			<AccordionProvider value={ cxtValue }>
+			<AccordionProvider value={ ctxValues }>
 				<div { ...styles('wrapper') }>
 					<span { ...styles('divider') } />
 					{ buildAccordion(children) }

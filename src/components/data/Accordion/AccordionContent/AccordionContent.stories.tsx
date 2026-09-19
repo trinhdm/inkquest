@@ -55,7 +55,7 @@ class RenderErrorBoundary extends Component<{ children: ReactNode }, ErrorBounda
 type AccordionContentStoryProps = Parameters<typeof Accordion.Content>[0]
 type Story = StoryObj<AccordionContentStoryProps>
 
-// `AccordionContent` hard-throws (`useAccordionCxt`) unless it's rendered
+// `AccordionContent` hard-throws (`useAccordionCtx`) unless it's rendered
 // inside a real `<Accordion>` — and `Accordion` itself only renders its
 // title/content pair at all when BOTH an `Accordion.Title` and an
 // `Accordion.Content` are present among its children (`buildAccordion`
@@ -89,7 +89,7 @@ const meta: Meta<AccordionContentStoryProps> = {
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `AccordionContent`\'s own `AccordionContentProps`. Read purely off `AccordionContent`\'s OWN props (`useProps(NAME, _props)`) — unlike `Accordion`, it does NOT inherit `unstyled` from the wrapping `Accordion`\'s context (`useAccordionCxt` only ever destructures `idx`/`isOpen` here). The semantic base classes (`inkq-accordion-content`, `inkq-accordion-content__inner`, `inkq-accordion-content__wrapper`) are ALWAYS emitted regardless of this prop — it only suppresses the CSS-module-hashed class normally appended alongside each. See the `Unstyled` story.',
+			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `AccordionContent`\'s own `AccordionContentProps`. Read purely off `AccordionContent`\'s OWN props (`useProps(NAME, _props)`) — unlike `Accordion`, it does NOT inherit `unstyled` from the wrapping `Accordion`\'s context (`useAccordionCtx` only ever destructures `idx`/`isOpen` here). The semantic base classes (`inkq-accordion-content`, `inkq-accordion-content__inner`, `inkq-accordion-content__wrapper`) are ALWAYS emitted regardless of this prop — it only suppresses the CSS-module-hashed class normally appended alongside each. See the `Unstyled` story.',
 		},
 	},
 	args: {
@@ -163,7 +163,7 @@ export const KeyboardToggle: Story = {
 // `unstyled` is `AccordionContent`'s OWN prop, read straight off its own
 // `_props` via `useProps` — unlike `Accordion` (which merges an enclosing
 // `Accordion.Group`'s context), `AccordionContent` only pulls `idx`/`isOpen`
-// off `Accordion.context` (`useAccordionCxt`), never `unstyled`. So it must
+// off `Accordion.context` (`useAccordionCtx`), never `unstyled`. So it must
 // be set directly on `AccordionContent` itself here, NOT on the wrapping
 // `Accordion` (which has no effect on it at all).
 //
@@ -224,8 +224,8 @@ export const Unstyled: Story = {
 	},
 }
 
-// `useAccordionCxt(NAME)` (`createRootCxt`'s REQUIRED reader, not the
-// optional `useSafeRootCxt`) throws the instant `AccordionContent` is
+// `useAccordionCtx(NAME)` (`createRootCtx`'s REQUIRED reader, not the
+// optional `useSafeRootCtx`) throws the instant `AccordionContent` is
 // rendered with no wrapping `Accordion` at all, rather than silently
 // rendering unstyled/inert. A raw, uncaught render throw would crash every
 // other group in this story, so the misuse case is wrapped in a local
@@ -239,7 +239,7 @@ export const RequiresAccordionParent: Story = {
 			<Group label="inside an Accordion (valid)">
 				{ contentTemplate(args) }
 			</Group>
-			<Group label="standalone — throws (guarded by useAccordionCxt)">
+			<Group label="standalone — throws (guarded by useAccordionCtx)">
 				<RenderErrorBoundary>
 					<Accordion.Content>{ args.children }</Accordion.Content>
 				</RenderErrorBoundary>

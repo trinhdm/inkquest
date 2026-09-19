@@ -1,11 +1,11 @@
 import { Fragment, type ReactNode } from 'react'
 import { getChildKey } from '@/utils/helpers'
 import type { NoExcessKeys } from '@/types/utils'
-import type { RootCxtProviderFn } from './createRootCxt'
+import type { RootProviderFn } from './createRootCtx'
 
 export const renderWithProvider = <T, V extends T>(
 	items: ReactNode[],
-	Provider: RootCxtProviderFn<T> | undefined,
+	Provider: RootProviderFn<T> | undefined,
 	values: (V & NoExcessKeys<T, V>)[]
 ): ReactNode[] => items.map((child, index) => {
     const key = getChildKey(child, index)

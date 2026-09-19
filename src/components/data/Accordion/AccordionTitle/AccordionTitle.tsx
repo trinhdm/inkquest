@@ -1,5 +1,5 @@
 import { useProps, useStyles, extractOtherProps } from '@/hooks'
-import { useAccordionCxt } from '../Accordion.context'
+import { useAccordionCtx } from '../Accordion.context'
 import { Box, polymorphic } from '@/components/core/Box'
 import { Icon } from '@/components/core'
 import type { KeyboardEvent, ReactNode } from 'react'
@@ -24,7 +24,7 @@ export const AccordionTitle = polymorphic<AccordionTitleSpecs>(_props => {
 		indicator,
 		isOpen,
 		step,
-	} = useAccordionCxt(NAME)
+	} = useAccordionCtx(NAME)
 
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { classes, props })

@@ -1,7 +1,7 @@
-import { createRootCxt } from '@/lib/component'
+import { createRootCtx } from '@/lib/component'
 import type { Group } from '@/components/layout'
 
-type SharedGroupCxt =
+type SharedGroupCtx =
 	| 'animated'
 	| 'duration'
 	| 'index'
@@ -11,10 +11,10 @@ type SharedGroupCxt =
 	| 'withinView'
 
 export interface StatisticGroupContext
-	extends Pick<Group.Context, SharedGroupCxt> {}
+	extends Pick<Group.Context, SharedGroupCtx> {}
 
 export const {
-	RootCxtProvider: StatisticGroupProvider,
-	useSafeRootCxt: useStatisticGroupCxt,
+	RootProvider: StatisticGroupProvider,
+	useSafeRootCtx: useStatisticGroupCtx,
 	useRootProps: useStatisticGroupProps,
-} = createRootCxt<StatisticGroupContext>('Statistic.Group')
+} = createRootCtx<StatisticGroupContext>('Statistic.Group')

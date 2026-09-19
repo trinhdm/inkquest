@@ -1,27 +1,27 @@
 import { render, screen } from '@testing-library/react'
-import { createRootCxt } from '../createRootCxt'
+import { createRootCtx } from '../createRootCtx'
 import { renderWithProvider } from '../renderWithProvider'
 
 interface TestCtxValue {
 	label: string
 }
 
-const Consumer = ({ useRootCxt }: { useRootCxt: (name: string) => TestCtxValue & { rootName: string } }) => {
-	const ctx = useRootCxt('Consumer')
+const Consumer = ({ useRootCtx }: { useRootCtx: (name: string) => TestCtxValue & { rootName: string } }) => {
+	const ctx = useRootCtx('Consumer')
 	return <span>{ ctx.label }</span>
 }
 
 describe('renderWithProvider', () => {
-	const { RootCxtProvider, useRootCxt } = createRootCxt<TestCtxValue>('TestRoot')
+	const { RootProvider, useRootCtx } = createRootCtx<TestCtxValue>('TestRoot')
 
 	it('wraps each item with its own Provider instance, matched to it by index', () => {
 		const items = [
-			<Consumer key="a" useRootCxt={ useRootCxt } />,
-			<Consumer key="b" useRootCxt={ useRootCxt } />,
+			<Consumer key="a" useRootCtx={ useRootCtx } />,
+			<Consumer key="b" useRootCtx={ useRootCtx } />,
 		]
 		const values = [{ label: 'first' }, { label: 'second' }]
 
-		render(<>{ renderWithProvider<TestCtxValue, TestCtxValue>(items, RootCxtProvider, values) }</>)
+		render(<>{ renderWithProvider<TestCtxValue, TestCtxValue>(items, RootProvider, values) }</>)
 
 		expect(screen.getByText('first')).toBeInTheDocument()
 		expect(screen.getByText('second')).toBeInTheDocument()

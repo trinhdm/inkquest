@@ -74,7 +74,7 @@ export const AccordionGroup = polymorphic<AccordionGroupSpecs>(_props => {
 	const items = filterChildren(children, 'Accordion'),
 		total = items.length
 
-	const cxtValues = useMemo<AccordionGroup.Context[]>(
+	const ctxValues = useMemo<AccordionGroup.Context[]>(
 		() => Array.from({ length: total }, (_, index) => ({
 			disabled, index, layout,
 			onItemToggle: handleItemToggle,
@@ -92,7 +92,7 @@ export const AccordionGroup = polymorphic<AccordionGroupSpecs>(_props => {
 			attributes={ { data: { group: true } } }
 			ref={ root }
 		>
-			{ renderWithProvider(items, AccordionGroupProvider, cxtValues) }
+			{ renderWithProvider(items, AccordionGroupProvider, ctxValues) }
 		</Box>
 	)
 }, classes)

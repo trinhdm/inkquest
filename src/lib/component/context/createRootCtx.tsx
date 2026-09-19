@@ -4,38 +4,38 @@ import {
 } from 'react'
 import type { NoExcessKeys } from '@/types/utils'
 
-export interface RootCxtProviderProps<T, V extends T = T> {
+export interface RootProviderProps<T, V extends T = T> {
     children: ReactNode
     rootName?: string
     unstyled?: boolean
     value: V & NoExcessKeys<T, V>
 }
 
-export type RootCxtProviderFn<T> =
-	<V extends T>(props: RootCxtProviderProps<T, V>) => ReactElement
+export type RootProviderFn<T> =
+	<V extends T>(props: RootProviderProps<T, V>) => ReactElement
 
-export const createRootCxt = <T extends object>(name: string) => {
-	type RootCxtValue = T & { rootName: string }
-	type RootCxtOptions = RootCxtValue | null
+export const createRootCtx = <T extends object>(name: string) => {
+	type RootCtxValue = T & { rootName: string }
+	type RootCtxOptions = RootCtxValue | null
 
-	const RootCxt = createContext<RootCxtOptions>(null)
+	const RootCtx = createContext<RootCtxOptions>(null)
 	const uninherited: (keyof T)[] = ['rootName'] as (keyof T)[]
 
-	const RootCxtProvider = <V extends T>({
+	const RootProvider = <V extends T>({
 		children,
 		rootName,
 		value,
-	}: RootCxtProviderProps<T, V>) => {
-		const cxtValue = useMemo(
+	}: RootProviderProps<T, V>) => {
+		const ctxValue = useMemo(
 			() => ({ ...value, rootName: rootName ?? name }),
 			[rootName, value]
 		)
 
-		return <RootCxt value={ cxtValue }>{ children }</RootCxt>
+		return <RootCtx value={ ctxValue }>{ children }</RootCtx>
 	}
 
-	const useRootCxt = (componentName: string): RootCxtValue => {
-		const ctx = use(RootCxt)
+	const useRootCtx = (componentName: string): RootCtxValue => {
+		const ctx = use(RootCtx)
 
 		if (ctx === null)
 			throw new Error(`<${componentName} /> must be rendered inside <${name}>`)
@@ -43,8 +43,8 @@ export const createRootCxt = <T extends object>(name: string) => {
 		return ctx
 	}
 
-	const useSafeRootCxt = (): RootCxtOptions =>
-		use(RootCxt)
+	const useSafeRootCtx = (): RootCtxOptions =>
+		use(RootCtx)
 
 	/** Fills keys absent from `_props` with context values. Own prop always wins. */
 	// refactor: NEW — and deliberately not exported. Previously this lived as
@@ -54,7 +54,7 @@ export const createRootCxt = <T extends object>(name: string) => {
 	// invert the precedence — `useRootProps` below is the only door in.
 	const inheritProps = <P extends object>(
 		_props: P,
-		ctx: RootCxtOptions
+		ctx: RootCtxOptions
 	): P => {
 		if (!ctx) return _props
 		const inherited = {} as Partial<T>
@@ -79,12 +79,12 @@ export const createRootCxt = <T extends object>(name: string) => {
 	// `useProps(NAME, useRootProps(_props))` with no way to get the
 	// precedence or the guard wrong
 	const useRootProps = <P extends object>(_props: P): P =>
-		inheritProps(_props, use(RootCxt))
+		inheritProps(_props, use(RootCtx))
 
 	return {
-		RootCxtProvider,
-		useRootCxt,
-		useSafeRootCxt,
+		RootProvider,
+		useRootCtx,
+		useSafeRootCtx,
 		useRootProps,
 	}
 }

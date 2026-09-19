@@ -84,7 +84,7 @@ const meta: Meta<ButtonSectionStoryArgs> = {
 		loading: { control: 'boolean' },
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `ButtonSection`\'s own `ButtonSectionProps`. The semantic base class (`inkq-button__section`) on this section\'s `<span data-side="...">` wrapper is ALWAYS emitted regardless of this prop — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it, via the `styles(\'section\')` call `ButtonSection` makes, styled under `rootName` read from the REQUIRED `Button.context` (`useButtonCxt` = `useRootCxt`, fixed to `\'Button\'` — `ButtonSection` now throws entirely when rendered outside a `Button`, see the `RequiresButtonParent` story). Set directly on `Button.Section` itself here, independent of the wrapping `Button`\'s own `unstyled` state — see the `Unstyled` story.',
+			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `ButtonSection`\'s own `ButtonSectionProps`. The semantic base class (`inkq-button__section`) on this section\'s `<span data-side="...">` wrapper is ALWAYS emitted regardless of this prop — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it, via the `styles(\'section\')` call `ButtonSection` makes, styled under `rootName` read from the REQUIRED `Button.context` (`useButtonCtx` = `useRootCtx`, fixed to `\'Button\'` — `ButtonSection` now throws entirely when rendered outside a `Button`, see the `RequiresButtonParent` story). Set directly on `Button.Section` itself here, independent of the wrapping `Button`\'s own `unstyled` state — see the `Unstyled` story.',
 		},
 	},
 	args: {
@@ -184,7 +184,7 @@ export const MultipleSections: Story = {
 // (via `useProps(NAME, _props)`/`useStyles`), not off the `Button.context`
 // value the wrapping `Button` publishes through `ButtonProvider` (that value
 // only carries `unstyled` — and `ButtonSection.tsx` only ever destructures
-// `rootName` off the required context, via `useButtonCxt`, never `unstyled` —
+// `rootName` off the required context, via `useButtonCtx`, never `unstyled` —
 // see the `RequiresButtonParent` story for that required-context contract).
 export const Unstyled: Story = {
 	parameters: { controls: { exclude: ['unstyled'] } },
@@ -237,15 +237,15 @@ export const Unstyled: Story = {
 }
 
 // `ButtonSection` now reads `Button.context` via the REQUIRED reader
-// (`useButtonCxt` = `useRootCxt`, not the optional `useSafeRootCxt`) —
-// `const { rootName } = useButtonCxt(NAME)` in `ButtonSection.tsx` throws
-// (`createRootCxt.tsx`'s `useRootCxt`: `<Button.Section /> must be rendered
+// (`useButtonCtx` = `useRootCtx`, not the optional `useSafeRootCtx`) —
+// `const { rootName } = useButtonCtx(NAME)` in `ButtonSection.tsx` throws
+// (`createRootCtx.tsx`'s `useRootCtx`: `<Button.Section /> must be rendered
 // inside <Button>`) the instant it's rendered with no wrapping `Button` at
 // all, rather than silently falling back to styling under its own name.
 // There's also no more dynamic per-parent naming to demonstrate even if it
 // didn't throw: `Button.tsx`'s `ButtonProvider` never passes an explicit
-// `rootName`, so `createRootCxt`'s own default (`rootName ?? name`, `name`
-// being the fixed `'Button'` passed to `createRootCxt<ButtonContext>('Button')`)
+// `rootName`, so `createRootCtx`'s own default (`rootName ?? name`, `name`
+// being the fixed `'Button'` passed to `createRootCtx<ButtonContext>('Button')`)
 // always resolves to `'Button'` — `rootName` is no longer derived from a
 // `ctx.displayName` that could vary.
 //
@@ -263,7 +263,7 @@ export const RequiresButtonParent: Story = {
 					Download
 				</Button>
 			</Group>
-			<Group label="standalone — throws (guarded by useButtonCxt)">
+			<Group label="standalone — throws (guarded by useButtonCtx)">
 				<RenderErrorBoundary>
 					<Button.Section left><Icon type="download" /></Button.Section>
 				</RenderErrorBoundary>

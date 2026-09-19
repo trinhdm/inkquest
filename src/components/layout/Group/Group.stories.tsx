@@ -4,7 +4,7 @@ import { getDefaultProps } from '@/hooks/useProps'
 import { Group } from './Group'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
-import type { RootCxtProviderFn } from '@/lib/component'
+import type { RootProviderFn } from '@/lib/component'
 import moduleClasses from './Group.module.scss'
 
 const ORIENTATION_OPTIONS: readonly NonNullable<Group.Props['orientation']>[] =
@@ -63,15 +63,15 @@ const OtherItem = ({ label }: { label: string }) => (
 )
 OtherItem.displayName = 'OtherItem'
 
-// Local debug context — stands in for whatever a real `RootCxtProviderFn`
-// consumer would build with `createRootCxt`. `Group` only cares that
-// `provider` is a function matching `RootCxtProviderFn<GroupContext>`; this
+// Local debug context — stands in for whatever a real `RootProviderFn`
+// consumer would build with `createRootCtx`. `Group` only cares that
+// `provider` is a function matching `RootProviderFn<GroupContext>`; this
 // one just exposes the per-child `value` it receives on a plain React
 // Context, so `DebugItem` can render it back out as inspectable `data-*`
 // attributes for assertions.
 const DebugContext = createContext<Group.Context | null>(null)
 
-const DebugProvider: RootCxtProviderFn<Group.Context> = ({ children, value }) => (
+const DebugProvider: RootProviderFn<Group.Context> = ({ children, value }) => (
 	<DebugContext value={ value }>{ children }</DebugContext>
 )
 
@@ -150,7 +150,7 @@ const meta: Meta<GroupStoryProps> = {
 		},
 		provider: {
 			control: false,
-			description: 'A `RootCxtProviderFn<GroupContext>` that receives a per-child context value (`{ animated, duration, index, revealed, stagger, unstyled, withinView }`) via `renderWithProvider`. Without it, filtered children render unwrapped (plain `Fragment`s) — no context is published at all. See the `AnimatedState`/`Revealed` stories.',
+			description: 'A `RootProviderFn<GroupContext>` that receives a per-child context value (`{ animated, duration, index, revealed, stagger, unstyled, withinView }`) via `renderWithProvider`. Without it, filtered children render unwrapped (plain `Fragment`s) — no context is published at all. See the `AnimatedState`/`Revealed` stories.',
 		},
 		animated: {
 			control: 'boolean',

@@ -1,4 +1,4 @@
-import { createRootCxt } from '@/lib/component'
+import { createRootCtx } from '@/lib/component'
 
 export type AccordionIndicator =
 	| 'chevron'
@@ -22,7 +22,7 @@ export interface AccordionContext {
 }
 
 export const {
-	RootCxtProvider: AccordionProvider,
-	useRootCxt: useAccordionCxt,
+	RootProvider: AccordionProvider,
+	useRootCtx: useAccordionCtx,
 	useRootProps: useAccordionProps,
-} = createRootCxt<AccordionContext>('Accordion')
+} = createRootCtx<AccordionContext>('Accordion')

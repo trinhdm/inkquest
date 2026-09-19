@@ -136,10 +136,10 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 		...styles('root', clsx),
 	}
 
-	const cxtValue = useMemo(() => ({ unstyled }), [unstyled])
+	const ctxValues = useMemo(() => ({ unstyled }), [unstyled])
 
 	const inner = (
-		<ButtonProvider value={ cxtValue }>
+		<ButtonProvider value={ ctxValues }>
 			<Box as="span" { ...styles('inner') }>
 				{ loading && <Box as={ LoaderCircle } { ...styles('icon') } /> }
 				{ buildSections(children, styles) }

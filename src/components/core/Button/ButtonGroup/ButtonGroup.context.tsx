@@ -1,4 +1,4 @@
-import { createRootCxt } from '@/lib/component'
+import { createRootCtx } from '@/lib/component'
 import type { Button } from '../Button'
 import type { RevealItemProps } from '@/hooks'
 
@@ -12,7 +12,7 @@ export interface ButtonGroupContext
 }
 
 export const {
-	RootCxtProvider: ButtonGroupProvider,
-	useSafeRootCxt: useButtonGroupCxt,
+	RootProvider: ButtonGroupProvider,
+	useSafeRootCtx: useButtonGroupCtx,
 	useRootProps: useButtonGroupProps,
-} = createRootCxt<ButtonGroupContext>('Button.Group')
+} = createRootCtx<ButtonGroupContext>('Button.Group')

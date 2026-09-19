@@ -1,4 +1,4 @@
-import { createRootCxt } from '@/lib/component'
+import { createRootCtx } from '@/lib/component'
 
 export type AccordionGroupLayout =
 	'default' | 'steps'
@@ -17,7 +17,7 @@ export interface AccordionGroupContext {
 }
 
 export const {
-	RootCxtProvider: AccordionGroupProvider,
-	useSafeRootCxt: useAccordionGroupCxt,
+	RootProvider: AccordionGroupProvider,
+	useSafeRootCtx: useAccordionGroupCtx,
 	useRootProps: useAccordionGroupProps,
-} = createRootCxt<AccordionGroupContext>('Accordion.Group')
+} = createRootCtx<AccordionGroupContext>('Accordion.Group')

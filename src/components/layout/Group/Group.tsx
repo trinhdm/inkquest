@@ -1,7 +1,7 @@
 import { useMemo, useRef, type CSSProperties, type ReactNode } from 'react'
 import { useProps, useReplayInView, useStyles, extractOtherProps } from '@/hooks'
 import { filterChildren } from '@/utils/helpers'
-import { renderWithProvider, type RootCxtProviderFn } from '@/lib/component'
+import { renderWithProvider, type RootProviderFn } from '@/lib/component'
 import { setThemeCSS } from '@/lib/theme'
 import { Box, polymorphic } from '@/components/core/Box'
 import type { UseInViewOptions } from 'framer-motion'
@@ -19,7 +19,7 @@ interface BaseGroupProps
 	fullWidth?: boolean
 	justify?: CSSProperties['justifyContent']
 	orientation?: 'horizontal' | 'vertical'
-	provider?: RootCxtProviderFn<GroupContext>
+	provider?: RootProviderFn<GroupContext>
 	revealed?: boolean
 }
 
@@ -103,7 +103,7 @@ export const Group = polymorphic<GroupSpecs>(_props => {
 
 	// one context value per child — memoised on `total` so identities stay
 	// stable across renders even though each child gets its own object
-	const cxtValues = useMemo<GroupContext[]>(
+	const ctxValues = useMemo<GroupContext[]>(
 		() => Array.from({ length: total }, (_, index) => ({
 			animated, duration, index, revealed, stagger, unstyled, withinView,
 		})),
@@ -122,7 +122,7 @@ export const Group = polymorphic<GroupSpecs>(_props => {
 			role="group"
 			ref={ root }
 		>
-			{ renderWithProvider(items, Provider, cxtValues) }
+			{ renderWithProvider(items, Provider, ctxValues) }
 		</Box>
 	)
 }, classes)

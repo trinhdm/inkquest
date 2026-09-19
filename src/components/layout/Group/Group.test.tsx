@@ -2,7 +2,7 @@ import { createContext, useContext } from 'react'
 import { getDefaultProps } from '@/hooks/useProps'
 import { render, reset, screen } from '@/tests/test-utils'
 import { Group } from './Group'
-import type { RootCxtProviderFn } from '@/lib/component'
+import type { RootProviderFn } from '@/lib/component'
 
 // A plain, library-external component with its own `displayName` — the
 // contract `Group`'s `childName` filters against (`filterChildren(children,
@@ -14,13 +14,13 @@ GroupItem.displayName = 'GroupItem'
 const OtherItem = ({ label }: { label: string }) => <div>{ label }</div>
 OtherItem.displayName = 'OtherItem'
 
-// Stands in for a real `RootCxtProviderFn` consumer (e.g. `StatisticGroup`'s
+// Stands in for a real `RootProviderFn` consumer (e.g. `StatisticGroup`'s
 // own provider) — exposes each child's published context value back out as
 // inspectable `data-*` attributes, since none of `animated`/`duration`/
 // `revealed`/`stagger`/`unstyled` have any DOM effect of Group's own.
 const DebugContext = createContext<Group.Context | null>(null)
 
-const DebugProvider: RootCxtProviderFn<Group.Context> = ({ children, value }) => (
+const DebugProvider: RootProviderFn<Group.Context> = ({ children, value }) => (
 	<DebugContext value={ value }>{ children }</DebugContext>
 )
 

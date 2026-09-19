@@ -1,4 +1,4 @@
-import { useButtonCxt } from '../Button.context'
+import { useButtonCtx } from '../Button.context'
 import { useProps, useStyles, extractOtherProps } from '@/hooks'
 import { Box, polymorphic } from '@/components/core/Box'
 import classes from '../Button.module.scss'
@@ -25,7 +25,7 @@ type ButtonSectionSpecs = {
 }
 
 export const ButtonSection = polymorphic<ButtonSectionSpecs>(_props => {
-	const { rootName } = useButtonCxt(NAME)
+	const { rootName } = useButtonCtx(NAME)
 	const props = useProps(NAME, _props)
 	const styles = useStyles(rootName, { classes, props })
 

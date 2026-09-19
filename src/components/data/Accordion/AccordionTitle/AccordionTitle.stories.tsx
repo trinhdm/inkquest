@@ -54,7 +54,7 @@ class RenderErrorBoundary extends Component<{ children: ReactNode }, ErrorBounda
 type AccordionTitleStoryProps = Parameters<typeof Accordion.Title>[0]
 type Story = StoryObj<AccordionTitleStoryProps>
 
-// `AccordionTitle` hard-throws (`useAccordionCxt`) unless it's rendered
+// `AccordionTitle` hard-throws (`useAccordionCtx`) unless it's rendered
 // inside a real `<Accordion>` — and `Accordion` itself only renders its
 // title/content pair at all when BOTH an `Accordion.Title` and an
 // `Accordion.Content` are present among its children (`buildAccordion`
@@ -278,8 +278,8 @@ export const DisabledParent: Story = {
 	},
 }
 
-// `useAccordionCxt(NAME)` (`createRootCxt`'s REQUIRED reader, not the
-// optional `useSafeRootCxt`) throws the instant `AccordionTitle` is rendered
+// `useAccordionCtx(NAME)` (`createRootCtx`'s REQUIRED reader, not the
+// optional `useSafeRootCtx`) throws the instant `AccordionTitle` is rendered
 // with no wrapping `Accordion` at all, rather than silently rendering
 // unstyled/inert. A raw, uncaught render throw would crash every other
 // group in this story, so the misuse case is wrapped in a local
@@ -293,7 +293,7 @@ export const RequiresAccordionParent: Story = {
 			<Group label="inside an Accordion (valid)">
 				{ titleTemplate(args) }
 			</Group>
-			<Group label="standalone — throws (guarded by useAccordionCxt)">
+			<Group label="standalone — throws (guarded by useAccordionCtx)">
 				<RenderErrorBoundary>
 					<Accordion.Title>{ args.children }</Accordion.Title>
 				</RenderErrorBoundary>

@@ -1,26 +1,26 @@
 import { render, renderHook } from '@testing-library/react'
+import { createRootCtx } from '../createRootCtx'
 import type { ReactNode } from 'react'
-import { createRootCxt } from '../createRootCxt'
 
 interface TestCtxValue {
 	color?: string
 	size?: number
 }
 
-describe('createRootCxt', () => {
-	const { RootCxtProvider, useRootCxt, useSafeRootCxt, useRootProps } =
-		createRootCxt<TestCtxValue>('TestRoot')
+describe('createRootCtx', () => {
+	const { RootProvider, useRootCtx, useSafeRootCtx, useRootProps } =
+		createRootCtx<TestCtxValue>('TestRoot')
 
 	const wrapperWith = (value: TestCtxValue, rootName?: string) =>
 		({ children }: { children: ReactNode }) => (
-			<RootCxtProvider value={ value } rootName={ rootName }>{ children }</RootCxtProvider>
+			<RootProvider value={ value } rootName={ rootName }>{ children }</RootProvider>
 		)
 
-	describe('useRootCxt', () => {
+	describe('useRootCtx', () => {
 		it('throws a named error when used outside of its provider', () => {
 			const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
 
-			expect(() => renderHook(() => useRootCxt('Consumer'))).toThrow(
+			expect(() => renderHook(() => useRootCtx('Consumer'))).toThrow(
 				'<Consumer /> must be rendered inside <TestRoot>'
 			)
 
@@ -28,7 +28,7 @@ describe('createRootCxt', () => {
 		})
 
 		it('returns the provided context value plus a `rootName` defaulted from the creator name', () => {
-			const { result } = renderHook(() => useRootCxt('Consumer'), {
+			const { result } = renderHook(() => useRootCtx('Consumer'), {
 				wrapper: wrapperWith({ color: 'red', size: 12 }),
 			})
 
@@ -36,7 +36,7 @@ describe('createRootCxt', () => {
 		})
 
 		it('lets the provider override `rootName`', () => {
-			const { result } = renderHook(() => useRootCxt('Consumer'), {
+			const { result } = renderHook(() => useRootCtx('Consumer'), {
 				wrapper: wrapperWith({ color: 'blue' }, 'CustomRoot'),
 			})
 
@@ -46,31 +46,31 @@ describe('createRootCxt', () => {
 		it('propagates a changed context value down to consumers when the provider re-renders with a new value', () => {
 			const seen: (string | undefined)[] = []
 			const Consumer = () => {
-				const ctx = useRootCxt('Consumer')
+				const ctx = useRootCtx('Consumer')
 				seen.push(ctx.color)
 				return null
 			}
 
 			const { rerender } = render(
-				<RootCxtProvider value={ { color: 'red' } }><Consumer /></RootCxtProvider>
+				<RootProvider value={ { color: 'red' } }><Consumer /></RootProvider>
 			)
 			rerender(
-				<RootCxtProvider value={ { color: 'blue' } }><Consumer /></RootCxtProvider>
+				<RootProvider value={ { color: 'blue' } }><Consumer /></RootProvider>
 			)
 
 			expect(seen).toEqual(['red', 'blue'])
 		})
 	})
 
-	describe('useSafeRootCxt', () => {
+	describe('useSafeRootCtx', () => {
 		it('returns null outside of a provider instead of throwing', () => {
-			const { result } = renderHook(() => useSafeRootCxt())
+			const { result } = renderHook(() => useSafeRootCtx())
 
 			expect(result.current).toBeNull()
 		})
 
 		it('returns the context value inside a provider', () => {
-			const { result } = renderHook(() => useSafeRootCxt(), {
+			const { result } = renderHook(() => useSafeRootCtx(), {
 				wrapper: wrapperWith({ color: 'green' }),
 			})
 
