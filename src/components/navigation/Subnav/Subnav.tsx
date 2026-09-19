@@ -1,6 +1,7 @@
 'use client'
 
 import { useProps, useStyles } from '@/hooks'
+import { extractOtherProps } from '@/utils/helpers'
 import { filterNavigation, NavRoute } from '@/utils/navigation'
 import { Box, polymorphic } from '@/components/core/Box'
 import { Menu } from '../Menu'
@@ -22,14 +23,16 @@ export const Subnav = polymorphic<SubnavSpecs>(_props => {
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { classes, props })
 
-	const { as, routes, ...rest } = props
+	const { routes, ...rest } = props
+	const { as, others } = extractOtherProps(rest)
+
 	const navItems = filterNavigation(routes)
 
 	return (
 		<Box
-			as={ as }
 			{ ...styles('root') }
-			{ ...rest }
+			{ ...others }
+			as={ as }
 		>
 			<div { ...styles('wrapper', true) }>
 				<div { ...styles('inner') }>

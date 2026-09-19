@@ -1,4 +1,5 @@
 import { useProps, useStyles } from '@/hooks'
+import { extractOtherProps } from '@/utils/helpers'
 import { Box, polymorphic } from '@/components/core/Box'
 import { ICON_MAP, type IconType } from './IconMap'
 import type { LucideProps } from 'lucide-react'
@@ -27,17 +28,18 @@ export const Icon = polymorphic<IconSpecs>(_props => {
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { classes, props })
 
-	const { as, filled, type, ...rest } = props
+	const { filled, type, ...rest } = props
+	const { others } = extractOtherProps(rest)
 
 	const component = ICON_MAP[type]
 	if (!component) return null
 
 	return (
 		<Box
+			{ ...styles('root') }
+			{ ...others }
 			as={ component }
 			fill={ filled ? 'currentColor' : undefined }
-			{ ...styles('root') }
-			{ ...rest }
 		/>
 	)
 }, classes)

@@ -1,11 +1,12 @@
 'use client'
 
+import Link from 'next/link'
 import { useProps, useStyles } from '@/hooks'
+import { extractOtherProps } from '@/utils/helpers'
 import { filterNavigation, NavRoute } from '@/utils/navigation'
 import { Box, polymorphic } from '@/components/core/Box'
 import { Button } from '@/components/core'
 import { Menu } from '../Menu'
-import Link from 'next/link'
 import classes from './Navbar.module.scss'
 
 const NAME = 'Navbar' as const,
@@ -23,16 +24,18 @@ interface NavbarSpecs {
 export const Navbar = polymorphic<NavbarSpecs>(_props => {
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { classes, props })
-	const { as, routes, ...rest } = props
+
+	const { routes, ...rest } = props
+	const { as, others } = extractOtherProps(rest)
 
 	const navItems = filterNavigation(routes)
 
 	return (
 		<Box
-			as="nav"
-			role="navigation"
 			{ ...styles('root') }
-			{ ...rest }
+			{ ...others }
+			as={ as }
+			role="navigation"
 		>
 			<div { ...styles('wrapper', true) }>
 				<div { ...styles('inner') }>

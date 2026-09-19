@@ -13,6 +13,7 @@
 	display: grid;
 	gap: var(--inkq-stack-gap-kicker);
 	grid-template-columns: var(--space-8) minmax(0, 1fr);
+	opacity: .75;
 
 	&__body {
 		display: grid;

@@ -28,7 +28,12 @@ export const Timeline = polymorphic<TimelineSpecs>(_props => {
 	const { as, others } = extractOtherProps(rest)
 
 	return (
-		<Box as={ as } { ...styles('root') } { ...others }>
+		<Box
+			{ ...styles('root') }
+			{ ...others }
+			as={ as }
+			attributes={ { data: { timeline: true } } }
+		>
 			{ filterChildren(children, TimelineItem.displayName).map(child => child) }
 		</Box>
 	)
