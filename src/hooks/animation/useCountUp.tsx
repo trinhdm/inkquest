@@ -9,7 +9,7 @@ import {
 	type UseInViewOptions, type ValueAnimationTransition,
 } from 'framer-motion'
 import { useReplayInView } from './useReplayInView'
-import { INVIEW_DEFAULTS } from '@/utils/constants'
+import { DEFAULT_INVIEW } from './constants'
 
 interface UseCountUpOptions
 	extends UseInViewOptions {
@@ -69,7 +69,7 @@ const parseCountValue = (count: string): ParsedValue | null => {
 }
 
 export const useCountUp = <T extends HTMLElement = HTMLElement>({
-	amount = INVIEW_DEFAULTS,
+	amount = DEFAULT_INVIEW,
 	delay,
 	duration = 3000,
 	enabled = true,
