@@ -1,5 +1,4 @@
-import { useProps, useStyles, useVariantStyles } from '@/hooks'
-import { extractOtherProps } from '@/utils/helpers'
+import { useProps, useStyles, useVariantStyles, extractOtherProps } from '@/hooks'
 import { Box, polymorphic } from '@/components/core/Box'
 import type { ReactNode } from 'react'
 import classes from './Badge.module.scss'

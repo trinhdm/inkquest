@@ -1,6 +1,5 @@
 import { isValidElement, Children, type ReactNode } from 'react'
-import { useProps, useReveal, useStyles, type RevealCounter } from '@/hooks'
-import { extractOtherProps } from '@/utils/helpers'
+import { useProps, useReveal, useStyles, extractOtherProps, type RevealCounter } from '@/hooks'
 import { setThemeCSS } from '@/lib/theme'
 import { Box, polymorphic } from '@/components/core/Box'
 import { Button } from '@/components/core'

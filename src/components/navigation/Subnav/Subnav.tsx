@@ -1,7 +1,6 @@
 'use client'
 
-import { useProps, useStyles } from '@/hooks'
-import { extractOtherProps } from '@/utils/helpers'
+import { useProps, useStyles, extractOtherProps } from '@/hooks'
 import { filterNavigation, NavRoute } from '@/utils/navigation'
 import { Box, polymorphic } from '@/components/core/Box'
 import { Menu } from '../Menu'

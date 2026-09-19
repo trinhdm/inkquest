@@ -1,6 +1,5 @@
-import { useProps, useStyles } from '@/hooks'
+import { useProps, useStyles, extractOtherProps } from '@/hooks'
 import { useAccordionCxt } from '../Accordion.context'
-import { extractOtherProps } from '@/utils/helpers'
 import { Box, polymorphic } from '@/components/core/Box'
 import { Icon } from '@/components/core'
 import type { KeyboardEvent, ReactNode } from 'react'

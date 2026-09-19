@@ -1,4 +1,4 @@
-import { filterProps, styleProps } from '@/utils/helpers'
+import { filterProps, styleProps } from './helpers'
 import { getDefaultProps } from '@/lib/registries'
 
 export const useProps = <T extends object>(

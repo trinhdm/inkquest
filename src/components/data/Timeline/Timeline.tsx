@@ -1,5 +1,5 @@
-import { useProps, useStyles } from '@/hooks'
-import { extractOtherProps, filterChildren } from '@/utils/helpers'
+import { useProps, useStyles, extractOtherProps } from '@/hooks'
+import { filterChildren } from '@/utils/helpers'
 import { Box, polymorphic } from '@/components/core/Box'
 import { TimelineItem } from './TimelineItem'
 import type { ReactNode } from 'react'

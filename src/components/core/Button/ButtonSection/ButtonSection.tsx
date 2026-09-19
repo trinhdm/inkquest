@@ -1,6 +1,5 @@
 import { useButtonCxt } from '../Button.context'
-import { useProps, useStyles} from '@/hooks'
-import { extractOtherProps } from '@/utils/helpers'
+import { useProps, useStyles, extractOtherProps } from '@/hooks'
 import { Box, polymorphic } from '@/components/core/Box'
 import classes from '../Button.module.scss'
 

@@ -1,6 +1,6 @@
 import { useMemo, useRef, type CSSProperties, type ReactNode } from 'react'
-import { useProps, useReplayInView, useStyles } from '@/hooks'
-import { extractOtherProps, filterChildren } from '@/utils/helpers'
+import { useProps, useReplayInView, useStyles, extractOtherProps } from '@/hooks'
+import { filterChildren } from '@/utils/helpers'
 import { renderWithProvider, type RootCxtProviderFn } from '@/lib/component'
 import { setThemeCSS } from '@/lib/theme'
 import { Box, polymorphic } from '@/components/core/Box'

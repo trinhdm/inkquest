@@ -1,5 +1,4 @@
-import { useProps, useStyles } from '@/hooks'
-import { extractOtherProps } from '@/utils/helpers'
+import { useProps, useStyles, extractOtherProps } from '@/hooks'
 import { Box, polymorphic } from '@/components/core/Box'
 import { useRef, type ReactNode } from 'react'
 import classes from '../Timeline.module.scss'
