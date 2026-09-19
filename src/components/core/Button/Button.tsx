@@ -132,10 +132,11 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 
 	const sharedProps = {
 		attributes: { aria, data },
+		unstyled,
 		...styles('root', clsx),
 	}
 
-	const cxtValue = useMemo(() => ({ displayName: NAME, unstyled }), [unstyled])
+	const cxtValue = useMemo(() => ({ unstyled }), [unstyled])
 
 	const inner = (
 		<ButtonProvider value={ cxtValue }>

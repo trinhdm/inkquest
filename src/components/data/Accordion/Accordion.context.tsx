@@ -12,11 +12,13 @@ export interface AccordionIds {
 }
 
 export interface AccordionContext {
+	disabled?: boolean
 	handleToggle: () => void
 	idx: AccordionIds
 	indicator?: AccordionIndicator
 	isOpen: boolean
 	step?: `${number}`
+	unstyled?: boolean
 }
 
 export const {

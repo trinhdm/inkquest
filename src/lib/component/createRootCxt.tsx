@@ -2,16 +2,17 @@ import {
 	createContext, use, useMemo,
 	type ReactElement, type ReactNode,
 } from 'react'
+import type { NoExcessKeys } from '@/types/utils'
 
-export interface RootCxtProviderProps<T> {
-	children: ReactNode
-	rootName?: string
-	unstyled?: boolean
-	value: T
+export interface RootCxtProviderProps<T, V extends T = T> {
+    children: ReactNode
+    rootName?: string
+    unstyled?: boolean
+    value: V & NoExcessKeys<T, V>
 }
 
 export type RootCxtProviderFn<T> =
-	(props: RootCxtProviderProps<T>) => ReactElement
+	<V extends T>(props: RootCxtProviderProps<T, V>) => ReactElement
 
 export const createRootCxt = <T extends object>(name: string) => {
 	type RootCxtValue = T & { rootName: string }
@@ -20,7 +21,11 @@ export const createRootCxt = <T extends object>(name: string) => {
 	const RootCxt = createContext<RootCxtOptions>(null)
 	const uninherited: (keyof T)[] = ['rootName'] as (keyof T)[]
 
-	const RootCxtProvider = ({ children, rootName, value }: RootCxtProviderProps<T>) => {
+	const RootCxtProvider = <V extends T>({
+		children,
+		rootName,
+		value,
+	}: RootCxtProviderProps<T, V>) => {
 		const cxtValue = useMemo(
 			() => ({ ...value, rootName: rootName ?? name }),
 			[rootName, value]

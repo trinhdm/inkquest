@@ -7,6 +7,7 @@ export type AccordionGroupType =
 	'single' | 'multiple'
 
 export interface AccordionGroupContext {
+	disabled?: boolean
 	index?: number
 	layout?: AccordionGroupLayout
 	onItemToggle?: (index: number, open: boolean) => void
