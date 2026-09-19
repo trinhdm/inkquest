@@ -72,6 +72,7 @@ type OtherPropsList<E extends ElementType> = {
 	loading?: boolean
 	once?: boolean
 	revealed?: boolean
+	revealFrom?: number
 	withinView?: boolean
 }
 
@@ -101,6 +102,7 @@ function extractOthers(rest: OtherProps<ElementType>) {
 		loading,
 		once,
 		revealed,
+		revealFrom,
 		style,
 		styles,
 		withinView,
@@ -109,7 +111,11 @@ function extractOthers(rest: OtherProps<ElementType>) {
 
 	const others = filterProps(props)
 
-	return { as, others, withinView }
+	return {
+		as,
+		others,
+		withinView,
+	}
 }
 
 interface ExtractOtherPropsFn {

@@ -38,9 +38,8 @@ const getStyleClass = <P extends object, V extends object>(
 }
 
 type SelectorConfig<P extends object, V extends object> =
-	Omit<SharedConfig<P, V>, 'config'> & {
-		config: Extract<SharedConfig<P, V>['config'], object>
-	}
+	Omit<SharedConfig<P, V>, 'config'>
+	& { config: Extract<SharedConfig<P, V>['config'], object> }
 
 const formatConfigClass = <P extends object, V extends object>(
 	modifier: NonNullable<Exclude<ClassValue, object>>,
@@ -63,7 +62,7 @@ const formatConfigClass = <P extends object, V extends object>(
 	return styleName ?? baseName
 }
 
-const getConfigClassList = <P extends object, V extends object>(
+const getConfigClass = <P extends object, V extends object>(
 	key: keyof SelectorConfig<P, V>['config'],
 	args: SelectorConfig<P, V>
 ): string | undefined => {
@@ -103,7 +102,6 @@ const hasConfig = <P extends object, V extends object>(
 const getConfigClasses = <P extends object, V extends object>(
 	args: SharedConfig<P, V>
 ): string | undefined => {
-
 	const { config, prefix, selector } = args
 
 	if (typeof config === 'boolean')
@@ -115,7 +113,7 @@ const getConfigClasses = <P extends object, V extends object>(
 		keys = Object.keys(args.config) as (keyof typeof config)[]
 
 	for (const key of keys) {
-		const configClasses = getConfigClassList(key, args)
+		const configClasses = getConfigClass(key, args)
 		classList.push(configClasses)
 	}
 
@@ -123,7 +121,8 @@ const getConfigClasses = <P extends object, V extends object>(
 }
 
 type InheritConfig<P extends object, V extends object> =
-	Omit<SharedConfig<P, V>, 'props'> & { props: P & Record<'className', string> }
+	Omit<SharedConfig<P, V>, 'props'>
+	& { props: P & Record<'className', string> }
 
 const canInherit = <P extends object, V extends object>(
 	args: SharedConfig<P, V>

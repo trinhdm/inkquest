@@ -53,6 +53,8 @@
 	}
 
 	&--hero {
+		--reveal-distance: 1rem;
+
 		padding-block: var(--inkq-hero-padding);
 
 		#{$name} {
@@ -62,18 +64,22 @@
 		}
 	}
 
-	&--cta #{$name} {
-		&__inner {
-			margin: 0 auto;
-			text-align: center;
-		}
+	&--cta {
+		--reveal-distance: .5rem;
 
-		&__title {
-			font-size: var(--inkq-font-size-display-cta);
-		}
+		#{$name} {
+			&__inner {
+				margin: 0 auto;
+				text-align: center;
+			}
 
-		&__cta {
-			justify-self: center;
+			&__title {
+				font-size: var(--inkq-font-size-display-cta);
+			}
+
+			&__cta {
+				justify-self: center;
+			}
 		}
 	}
 

@@ -128,3 +128,33 @@ ul {
 	--inkq-border-backup: var(--inkq-color-info-hover);
 	--inkq-color-backup: var(--inkq-color-info);
 }
+
+/**
+  *	js animation styling
+  */
+
+@media (prefers-reduced-motion: no-preference) {
+	[data-js-animate] {
+		[data-js-reveal] {
+			--reveal-state: 0;
+
+		[data-reveal-item] {
+			--reveal-delay: calc(var(--reveal-index, 0) * var(--reveal-stagger, 90ms));
+			--reveal-motion: var(--reveal-duration, var(--duration-gradual)) var(--easing-out) var(--reveal-delay);
+
+			opacity: var(--reveal-state, 1);
+			transform: translateY(calc((1 - var(--reveal-state, 1)) * var(--reveal-distance, .75rem)));
+			transition: opacity var(--reveal-motion), transform var(--reveal-motion);
+			will-change: opacity, transform;
+		}
+
+			&[data-revealed] {
+				--reveal-state: 1;
+
+				[data-reveal-item] {
+			will-change: auto;
+				}
+			}
+		}
+	}
+}
