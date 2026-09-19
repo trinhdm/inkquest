@@ -53,3 +53,4 @@ storybook-static
 /blob-report
 /playwright/.cache
 /reports
+/.stryker-tmp

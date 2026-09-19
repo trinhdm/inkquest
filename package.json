@@ -11,10 +11,14 @@
     "test:storybook": "vitest run --project storybook",
     "test:unit": "jest",
     "test:unit:watch": "jest --watch",
+    "test:unit:coverage": "jest --coverage",
+    "test:types": "tsc --noEmit -p tsconfig.typetest.json",
+    "test:mutation": "stryker run",
     "test:e2e": "playwright test",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "typecheck:watch": "tsc --watch"
+    "typecheck:watch": "tsc --watch",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@stripe/react-stripe-js": "^6.8.0",
@@ -44,6 +48,8 @@
     "@storybook/addon-mcp": "latest",
     "@storybook/addon-vitest": "^10.5.9",
     "@storybook/nextjs-vite": "^10.5.9",
+    "@stryker-mutator/core": "^10.0.0",
+    "@stryker-mutator/jest-runner": "^10.0.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^7.0.0",
     "@testing-library/react": "^16.3.2",
