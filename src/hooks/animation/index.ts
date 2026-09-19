@@ -4,4 +4,3 @@ export {
 	useReveal, revealItemFrom,
 	type RevealCounter, type RevealItemProps,
 } from './useReveal'
-export { REVEAL_DATAKEYS } from './constants'
