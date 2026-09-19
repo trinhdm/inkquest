@@ -57,7 +57,7 @@ describe('buildScript', () => {
 		// alt of "dark" is "light" — the guard should compare against both
 		expect(script).toContain('lsScheme !== "dark" && lsScheme !== "light"')
 		// matchMedia fallback still resolves to the requested scheme ("dark")
-		expect(script).toContain('? "dark" : "dark"')
+		expect(script).toContain('? "dark" : "light"')
 	})
 
 	it('computes the alternate scheme as the opposite of light', () => {

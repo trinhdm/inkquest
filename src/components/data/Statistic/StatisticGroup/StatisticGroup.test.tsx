@@ -1,6 +1,5 @@
 import { render, reset, screen } from '@/tests/test-utils'
 import { Statistic } from '../Statistic'
-import { StatisticGroup } from './StatisticGroup'
 
 // Same rationale as Statistic.test.tsx: stub framer-motion's `animate` so
 // group-inherited `duration`/`animated`/`stagger` values are asserted via
@@ -22,7 +21,7 @@ jest.mock('framer-motion', () => {
 
 import { animate } from 'framer-motion'
 
-describe('StatisticGroup', () => {
+describe('Statistic.Group', () => {
 	reset('StatisticGroup', 'Statistic')
 
 	afterEach(() => {
@@ -31,10 +30,10 @@ describe('StatisticGroup', () => {
 
 	it('renders as an accessible group and renders each Statistic child', () => {
 		render(
-			<StatisticGroup>
+			<Statistic.Group>
 				<Statistic caption="Users" value="10" />
 				<Statistic caption="Orders" value="20" />
-			</StatisticGroup>
+			</Statistic.Group>
 		)
 
 		expect(screen.getByRole('group')).toBeInTheDocument()
@@ -44,10 +43,10 @@ describe('StatisticGroup', () => {
 
 	it('drops children that are not Statistic instances', () => {
 		render(
-			<StatisticGroup>
+			<Statistic.Group>
 				<Statistic caption="Users" value="10" />
 				<div>not a statistic</div>
-			</StatisticGroup>
+			</Statistic.Group>
 		)
 
 		expect(screen.queryByText('not a statistic')).not.toBeInTheDocument()
@@ -58,9 +57,9 @@ describe('StatisticGroup', () => {
 	// stay pinned at their un-animated start value and `animate` is never called
 	it('does not animate its children while the group itself is not in view', () => {
 		render(
-			<StatisticGroup>
+			<Statistic.Group>
 				<Statistic caption="Users" value="1,000" />
-			</StatisticGroup>
+			</Statistic.Group>
 		)
 
 		expect(screen.getByText('0')).toBeInTheDocument()
@@ -69,10 +68,10 @@ describe('StatisticGroup', () => {
 
 	it('a child Statistic overrides the group-inherited duration with its own explicit prop', () => {
 		render(
-			<StatisticGroup duration={ 3000 }>
+			<Statistic.Group duration={ 3000 }>
 				<Statistic duration={ 7000 } value="9" withinView />
 				<Statistic value="4" withinView />
-			</StatisticGroup>
+			</Statistic.Group>
 		)
 
 		expect(animate).toHaveBeenCalledWith(0, 9, expect.objectContaining({ duration: 7 }))
@@ -81,9 +80,9 @@ describe('StatisticGroup', () => {
 
 	it('a child Statistic overrides group animated=true by explicitly passing animated={false}', () => {
 		render(
-			<StatisticGroup>
+			<Statistic.Group>
 				<Statistic animated={ false } value="5" withinView />
-			</StatisticGroup>
+			</Statistic.Group>
 		)
 
 		expect(screen.getByText('5')).toBeInTheDocument()
@@ -92,10 +91,10 @@ describe('StatisticGroup', () => {
 
 	it('staggers each child\'s animation delay by its index * the group stagger, in seconds', () => {
 		render(
-			<StatisticGroup stagger={ 100 }>
+			<Statistic.Group stagger={ 100 }>
 				<Statistic value="1" withinView />
 				<Statistic value="2" withinView />
-			</StatisticGroup>
+			</Statistic.Group>
 		)
 
 		expect(animate).toHaveBeenNthCalledWith(1, 0, 1, expect.not.objectContaining({ delay: expect.anything() }))

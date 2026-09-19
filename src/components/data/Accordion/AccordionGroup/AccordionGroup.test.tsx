@@ -1,7 +1,6 @@
 import userEvent from '@testing-library/user-event'
 import { render, reset, screen } from '@/tests/test-utils'
 import { Accordion } from '../Accordion'
-import { AccordionGroup } from './AccordionGroup'
 
 const item = (title: string, content: string) => (
 	<Accordion key={ title }>
@@ -10,26 +9,26 @@ const item = (title: string, content: string) => (
 	</Accordion>
 )
 
-describe('AccordionGroup', () => {
+describe('Accordion.Group', () => {
 	reset('AccordionGroup', 'Accordion', 'AccordionTitle', 'AccordionContent')
 
 	it('renders as a group container with a data-group marker', () => {
 		const { container } = render(
-			<AccordionGroup>
+			<Accordion.Group>
 				{ item('One', 'First body') }
 				{ item('Two', 'Second body') }
-			</AccordionGroup>
+			</Accordion.Group>
 		)
 		expect(container.querySelector('[data-group]')).toBeInTheDocument()
 	})
 
 	it('assigns each child Accordion its position via context (steps layout numbering)', () => {
 		render(
-			<AccordionGroup layout="steps">
+			<Accordion.Group layout="steps">
 				{ item('One', 'First body') }
 				{ item('Two', 'Second body') }
 				{ item('Three', 'Third body') }
-			</AccordionGroup>
+			</Accordion.Group>
 		)
 
 		expect(screen.getByText('01')).toBeInTheDocument()
@@ -40,10 +39,10 @@ describe('AccordionGroup', () => {
 	it('defaults to type="single": opening one item closes any other that was open', async () => {
 		const user = userEvent.setup()
 		render(
-			<AccordionGroup defaultOpen={ 0 }>
+			<Accordion.Group defaultOpen={ 0 }>
 				{ item('One', 'First body') }
 				{ item('Two', 'Second body') }
-			</AccordionGroup>
+			</Accordion.Group>
 		)
 
 		const [first, second] = screen.getAllByRole('button')
@@ -59,10 +58,10 @@ describe('AccordionGroup', () => {
 	it('allows several open at once when type="multiple"', async () => {
 		const user = userEvent.setup()
 		render(
-			<AccordionGroup defaultOpen={ [] } type="multiple">
+			<Accordion.Group defaultOpen={ [] } type="multiple">
 				{ item('One', 'First body') }
 				{ item('Two', 'Second body') }
-			</AccordionGroup>
+			</Accordion.Group>
 		)
 
 		const [first, second] = screen.getAllByRole('button')
@@ -76,10 +75,10 @@ describe('AccordionGroup', () => {
 	it('defaults collapsible=true: clicking the only open item in "single" mode closes it', async () => {
 		const user = userEvent.setup()
 		render(
-			<AccordionGroup defaultOpen={ 0 }>
+			<Accordion.Group defaultOpen={ 0 }>
 				{ item('One', 'First body') }
 				{ item('Two', 'Second body') }
-			</AccordionGroup>
+			</Accordion.Group>
 		)
 
 		const [first] = screen.getAllByRole('button')
@@ -92,10 +91,10 @@ describe('AccordionGroup', () => {
 	it('when collapsible=false, clicking the only open item in "single" mode leaves it open', async () => {
 		const user = userEvent.setup()
 		render(
-			<AccordionGroup collapsible={ false } defaultOpen={ 0 }>
+			<Accordion.Group collapsible={ false } defaultOpen={ 0 }>
 				{ item('One', 'First body') }
 				{ item('Two', 'Second body') }
-			</AccordionGroup>
+			</Accordion.Group>
 		)
 
 		const [first] = screen.getAllByRole('button')
@@ -107,11 +106,11 @@ describe('AccordionGroup', () => {
 
 	it('honours defaultOpen as an array of indices when type="multiple"', () => {
 		render(
-			<AccordionGroup defaultOpen={ [0, 2] } type="multiple">
+			<Accordion.Group defaultOpen={ [0, 2] } type="multiple">
 				{ item('One', 'First body') }
 				{ item('Two', 'Second body') }
 				{ item('Three', 'Third body') }
-			</AccordionGroup>
+			</Accordion.Group>
 		)
 
 		const [first, second, third] = screen.getAllByRole('button')
@@ -123,10 +122,10 @@ describe('AccordionGroup', () => {
 	it('supports ArrowDown/ArrowUp keyboard navigation between titles in the group', async () => {
 		const user = userEvent.setup()
 		render(
-			<AccordionGroup>
+			<Accordion.Group>
 				{ item('One', 'First body') }
 				{ item('Two', 'Second body') }
-			</AccordionGroup>
+			</Accordion.Group>
 		)
 
 		const [first, second] = screen.getAllByRole('button')
@@ -140,10 +139,10 @@ describe('AccordionGroup', () => {
 
 	it('drops children that are not Accordion instances', () => {
 		render(
-			<AccordionGroup>
+			<Accordion.Group>
 				{ item('One', 'First body') }
 				<div>not an accordion</div>
-			</AccordionGroup>
+			</Accordion.Group>
 		)
 
 		expect(screen.queryByText('not an accordion')).not.toBeInTheDocument()

@@ -1,7 +1,6 @@
 import { expect, within } from 'storybook/test'
 import { getDefaultProps } from '@/hooks/useProps'
 import { Grid } from '../Grid'
-import { GridItem } from './GridItem'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import moduleClasses from '../Grid.module.scss'
@@ -37,13 +36,13 @@ const ROOT_SELECTOR = '.inkq-grid-item'
 // `GridItem.Props` (the `declare namespace` export) is just the raw
 // `GridItemProps` interface — it doesn't include `as`/`unstyled`/`attributes`/
 // etc., which only exist on the actual accepted prop type,
-// `PolymorphicProps<GridItemProps, C>`. `Parameters<typeof GridItem>[0]` reads
+// `PolymorphicProps<GridItemProps, C>`. `Parameters<typeof Grid.Item>[0]` reads
 // that real, wrapped type straight off the component itself. `GridItemSpecs`
 // declares no `defaults.as`, so the generic call signature's default
 // `C` resolves to `'div'` (`polymorphic`'s own fallback), and
 // `GridItem.setDefaults({})` registers no defaults at all — `as` is left
 // entirely up to the caller.
-type GridItemStoryProps = Parameters<typeof GridItem>[0]
+type GridItemStoryProps = Parameters<typeof Grid.Item>[0]
 type Story = StoryObj<GridItemStoryProps>
 
 // `GridItem` is a compound part (`isCompound: true`), so every story
@@ -57,9 +56,9 @@ type Story = StoryObj<GridItemStoryProps>
 // Verified: this is exactly what happened before this fix (every story in
 // this file rendered nothing).
 const meta: Meta<GridItemStoryProps> = {
-	component: GridItem,
+	component: Grid.Item,
 	title: 'Layout/Grid/Grid.Item',
-	render: (args) => <Grid><GridItem { ...args } /></Grid>,
+	render: (args) => <Grid><Grid.Item { ...args } /></Grid>,
 	argTypes: {
 		as: {
 			control: 'text',
@@ -71,7 +70,7 @@ const meta: Meta<GridItemStoryProps> = {
 		},
 	},
 	args: {
-		...getDefaultProps<GridItem.Props>('GridItem'),
+		...getDefaultProps<Grid.Item.Props>('GridItem'),
 	},
 }
 
@@ -113,10 +112,10 @@ export const AsPropIgnored: Story = {
 	render: (args) => (
 		<Row>
 			<Group label='as="div" (default)'>
-				<GridItem { ...args }>div item</GridItem>
+				<Grid.Item { ...args }>div item</Grid.Item>
 			</Group>
 			<Group label='as="article" (ignored)'>
-				<GridItem { ...args } as={ 'article' as never }>article item</GridItem>
+				<Grid.Item { ...args } as={ 'article' as never }>article item</Grid.Item>
 			</Group>
 		</Row>
 	),
@@ -142,7 +141,7 @@ export const Unstyled: Story = {
 		<Row>
 			{ ([true, false] as const).map(unstyled => (
 				<Group key={ String(unstyled) } label={ String(unstyled) }>
-					<GridItem { ...args } unstyled={ unstyled }>{ `unstyled=${unstyled}` }</GridItem>
+					<Grid.Item { ...args } unstyled={ unstyled }>{ `unstyled=${unstyled}` }</Grid.Item>
 				</Group>
 			)) }
 		</Row>

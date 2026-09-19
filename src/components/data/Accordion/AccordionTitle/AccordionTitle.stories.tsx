@@ -1,7 +1,6 @@
-import { Accordion } from '../Accordion'
-import { AccordionTitle } from './AccordionTitle'
 import { Component } from 'react'
 import { expect, userEvent, within } from 'storybook/test'
+import { Accordion } from '../Accordion'
 import { INDICATOR_OPTIONS } from '../options.story'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
@@ -48,11 +47,11 @@ class RenderErrorBoundary extends Component<{ children: ReactNode }, ErrorBounda
 // `AccordionTitleProps` interface — it doesn't include `unstyled`/
 // `attributes`/etc., which only exist on the actual accepted prop type,
 // `PolymorphicProps<AccordionTitleProps, C>`. `Parameters<typeof
-// AccordionTitle>[0]` reads that real, wrapped type straight off the
+// Accordion.Title>[0]` reads that real, wrapped type straight off the
 // component itself — `AccordionTitleSpecs`'s `isCompound: true` makes `as`
 // resolve to `never` (compound components don't take a tag override), so
 // this also correctly excludes `as` from the story's own controls.
-type AccordionTitleStoryProps = Parameters<typeof AccordionTitle>[0]
+type AccordionTitleStoryProps = Parameters<typeof Accordion.Title>[0]
 type Story = StoryObj<AccordionTitleStoryProps>
 
 // `AccordionTitle` hard-throws (`useAccordionCxt`) unless it's rendered
@@ -73,13 +72,13 @@ const titleTemplate = (
 	accordionProps: AccordionWrapperProps = { children: null }
 ) => (
 	<Accordion { ...accordionProps }>
-		<AccordionTitle { ...args } />
+		<Accordion.Title { ...args } />
 		<Accordion.Content>Refunds are processed within 5 business days of approval.</Accordion.Content>
 	</Accordion>
 )
 
 const meta: Meta<AccordionTitleStoryProps> = {
-	component: AccordionTitle,
+	component: Accordion.Title,
 	title: 'Data/Accordion/Accordion.Title',
 	render: args => titleTemplate(args),
 	argTypes: {
@@ -215,15 +214,15 @@ export const KeyboardFocus: Story = {
 	render: () => (
 		<Accordion.Group defaultOpen={ 0 }>
 			<Accordion>
-				<AccordionTitle>First</AccordionTitle>
+				<Accordion.Title>First</Accordion.Title>
 				<Accordion.Content>First content.</Accordion.Content>
 			</Accordion>
 			<Accordion>
-				<AccordionTitle>Second</AccordionTitle>
+				<Accordion.Title>Second</Accordion.Title>
 				<Accordion.Content>Second content.</Accordion.Content>
 			</Accordion>
 			<Accordion>
-				<AccordionTitle>Third</AccordionTitle>
+				<Accordion.Title>Third</Accordion.Title>
 				<Accordion.Content>Third content.</Accordion.Content>
 			</Accordion>
 		</Accordion.Group>
@@ -296,7 +295,7 @@ export const RequiresAccordionParent: Story = {
 			</Group>
 			<Group label="standalone — throws (guarded by useAccordionCxt)">
 				<RenderErrorBoundary>
-					<AccordionTitle>{ args.children }</AccordionTitle>
+					<Accordion.Title>{ args.children }</Accordion.Title>
 				</RenderErrorBoundary>
 			</Group>
 		</Row>

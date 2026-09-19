@@ -1,11 +1,10 @@
-import { Accordion } from '../Accordion'
-import { AccordionContent } from './AccordionContent'
-import { BOOLEAN_OPTIONS } from '../options.story'
 import { Component } from 'react'
 import { expect, userEvent, within } from 'storybook/test'
-import classes from '../Accordion.module.scss'
+import { Accordion } from '../Accordion'
+import { BOOLEAN_OPTIONS } from '../options.story'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+import classes from '../Accordion.module.scss'
 
 const Row = ({ children }: { children: ReactNode }) => (
 	<div style={ { display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'flex-start' } }>
@@ -49,11 +48,11 @@ class RenderErrorBoundary extends Component<{ children: ReactNode }, ErrorBounda
 // `AccordionContentProps` interface — it doesn't include `unstyled`/
 // `attributes`/etc., which only exist on the actual accepted prop type,
 // `PolymorphicProps<AccordionContentProps, C>`. `Parameters<typeof
-// AccordionContent>[0]` reads that real, wrapped type straight off the
+// Accordion.Content>[0]` reads that real, wrapped type straight off the
 // component itself — `AccordionContentSpecs`'s `isCompound: true` makes `as`
 // resolve to `never` (compound components don't take a tag override), so
 // this also correctly excludes `as` from the story's own controls.
-type AccordionContentStoryProps = Parameters<typeof AccordionContent>[0]
+type AccordionContentStoryProps = Parameters<typeof Accordion.Content>[0]
 type Story = StoryObj<AccordionContentStoryProps>
 
 // `AccordionContent` hard-throws (`useAccordionCxt`) unless it's rendered
@@ -75,12 +74,12 @@ const contentTemplate = (
 ) => (
 	<Accordion { ...accordionProps }>
 		<Accordion.Title>What is your refund policy?</Accordion.Title>
-		<AccordionContent { ...args } />
+		<Accordion.Content { ...args } />
 	</Accordion>
 )
 
 const meta: Meta<AccordionContentStoryProps> = {
-	component: AccordionContent,
+	component: Accordion.Content,
 	title: 'Data/Accordion/Accordion.Content',
 	render: args => contentTemplate(args),
 	argTypes: {
@@ -242,7 +241,7 @@ export const RequiresAccordionParent: Story = {
 			</Group>
 			<Group label="standalone — throws (guarded by useAccordionCxt)">
 				<RenderErrorBoundary>
-					<AccordionContent>{ args.children }</AccordionContent>
+					<Accordion.Content>{ args.children }</Accordion.Content>
 				</RenderErrorBoundary>
 			</Group>
 		</Row>
