@@ -1,4 +1,4 @@
-import { getAttributes, type AttrSource } from './get-attributes'
+import { getAttributes, type AttrSource } from './getAttributes'
 import { styleProps } from '@/hooks'
 
 export const handleProps = <T extends AttrSource>(_props: T) => {

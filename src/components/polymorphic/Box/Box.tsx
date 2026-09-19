@@ -1,5 +1,5 @@
-import { handleProps } from './utils/handle-props'
-import { toPolymorphic, POLYMORPHIC } from './Polymorphic'
+import { handleProps } from './utils/handleProps'
+import { toPolymorphic, POLYMORPHIC } from '@/lib/component'
 import type { ComponentType, ElementType, ReactNode } from 'react'
 
 const NAME = 'PolymorphicBox' as const
