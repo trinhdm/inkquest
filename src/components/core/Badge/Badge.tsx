@@ -1,4 +1,4 @@
-import { useProps, useStyles, useVariantStyles, extractOtherProps } from '@/hooks'
+import { useProps, useStyles, useVariants, extractOtherProps } from '@/hooks'
 import { Box, polymorphic } from '@/components/core/Box'
 import type { ReactNode } from 'react'
 import classes from './Badge.module.scss'
@@ -33,7 +33,7 @@ interface BadgeSpecs {
 }
 
 export const Badge = polymorphic<BadgeSpecs>(_props => {
-	useVariantStyles(NAME)
+	useVariants(NAME)
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { classes, props })
 

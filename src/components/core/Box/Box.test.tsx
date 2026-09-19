@@ -2,7 +2,7 @@ import { render, screen } from '@/tests/test-utils'
 import { Box } from '@/components/core/Box/Box'
 
 // `Box` (`toPolymorphic`, not `polymorphic`/`factory`) doesn't call
-// `useVariantStyles`/`setDefaults`, so there's no variant-style or
+// `useVariants`/`setDefaults`, so there's no variant-style or
 // component-defaults registry state to reset here — unlike the `factory()`
 // components (`Button`, `Badge`, `Card`, `Icon`).
 describe('Box', () => {

@@ -3,20 +3,20 @@
 import { useInsertionEffect } from 'react'
 import { useTheme } from '@/providers/ThemeProvider'
 import { deriveVariants } from '@/lib/theme/deriveVariants'
+import { hasInjectVariant, markInjectVariant } from './variantsRegistry'
 import { serializeStyles } from '@/components/document'
-import { hasInjectedVariantStyles, markVariantStylesInjected } from '@/lib/registries/variantStyleRegistry'
 
-export const useVariantStyles = (name: string) => {
+export const useVariants = (name: string) => {
 	const theme = useTheme()
 
 	useInsertionEffect(() => {
-		if (hasInjectedVariantStyles(name)) return
+		if (hasInjectVariant(name)) return
 
 		const variants = deriveVariants({ name }, theme),
 			styles = serializeStyles([variants]) ?? undefined
 
 		if (!styles) return
-		markVariantStylesInjected(name)
+		markInjectVariant(name)
 
 		const stylesheet = document.createElement('style')
 		stylesheet.dataset.targetVars = name

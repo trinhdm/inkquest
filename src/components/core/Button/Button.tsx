@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { LoaderCircle } from 'lucide-react'
 import { isValidElement, useMemo, Children } from 'react'
-import { useProps, useStyles, useVariantStyles, extractOtherProps } from '@/hooks'
+import { useProps, useStyles, useVariants, extractOtherProps } from '@/hooks'
 import { extractChildrenText } from '@/utils/helpers'
 import { Box, polymorphic } from '@/components/core/Box'
 import { ButtonGroup, useButtonGroupProps } from './ButtonGroup'
@@ -95,7 +95,7 @@ const buildSections = (
 }
 
 export const Button = polymorphic<ButtonSpecs>(_props => {
-	useVariantStyles(NAME)
+	useVariants(NAME)
 	const props = useProps(NAME, useButtonGroupProps(_props))
 	const styles = useStyles(NAME, { classes, props })
 

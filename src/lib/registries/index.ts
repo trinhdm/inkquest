@@ -1,1 +1,0 @@
-export { resetVariantStyles } from './variantStyleRegistry'

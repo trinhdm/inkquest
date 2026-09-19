@@ -1,11 +1,11 @@
 import { render } from '@testing-library/react'
 import { resetComponentDefaults } from '@/hooks/useProps'
-import { resetVariantStyles } from '@/lib/registries'
+import { resetVariantStyles } from '@/hooks/useVariants'
 import { ThemeProvider } from '@/providers/ThemeProvider'
 import type { ReactElement, ReactNode } from 'react'
 import type { RenderOptions } from '@testing-library/react'
 
-// `useVariantStyles` (used by every factory component, e.g. `Button`) reads
+// `useVariants` (used by every factory component, e.g. `Button`) reads
 // from `ThemeContext` and throws `missing ThemeProvider` outside of one, so
 // any test that renders a factory component needs this wrapper.
 const AllProviders = ({ children }: { children: ReactNode }) => (

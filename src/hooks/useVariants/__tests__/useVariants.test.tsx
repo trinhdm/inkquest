@@ -1,22 +1,22 @@
 import { renderHook } from '@testing-library/react'
-import type { ReactNode } from 'react'
-import { useVariantStyles } from '../useVariantStyles'
+import { useVariants } from '../useVariants'
+import { resetVariantStyles } from '../variantsRegistry'
 import { ThemeProvider } from '@/providers/ThemeProvider'
-import { resetVariantStyles } from '@/lib/registries'
+import type { ReactNode } from 'react'
 
 const wrapperWithPrefix = (prefix: string) =>
 	({ children }: { children: ReactNode }) => (
 		<ThemeProvider prefix={ prefix }>{ children }</ThemeProvider>
 	)
 
-describe('useVariantStyles', () => {
+describe('useVariants', () => {
 	afterEach(() => {
 		document.querySelectorAll('style[data-target-vars]').forEach(node => node.remove())
 		resetVariantStyles()
 	})
 
 	it('injects a <style> tag scoped to the prefixed component selector on first render', () => {
-		renderHook(() => useVariantStyles('TestComponent'), {
+		renderHook(() => useVariants('TestComponent'), {
 			wrapper: wrapperWithPrefix('ink'),
 		})
 
@@ -26,7 +26,7 @@ describe('useVariantStyles', () => {
 	})
 
 	it('derives the default background/border/color CSS variables with a hover fallback bridge', () => {
-		renderHook(() => useVariantStyles('TestComponent'), {
+		renderHook(() => useVariants('TestComponent'), {
 			wrapper: wrapperWithPrefix('ink'),
 		})
 
@@ -40,7 +40,7 @@ describe('useVariantStyles', () => {
 	})
 
 	it('kebab-cases a multi-word PascalCase component name for both selector and var names', () => {
-		renderHook(() => useVariantStyles('ButtonGroup'), {
+		renderHook(() => useVariants('ButtonGroup'), {
 			wrapper: wrapperWithPrefix('ink'),
 		})
 
@@ -52,7 +52,7 @@ describe('useVariantStyles', () => {
 	})
 
 	it('does not inject a second stylesheet for the same name on re-render (registry short-circuit)', () => {
-		const { rerender } = renderHook(() => useVariantStyles('TestComponent'), {
+		const { rerender } = renderHook(() => useVariants('TestComponent'), {
 			wrapper: wrapperWithPrefix('ink'),
 		})
 
@@ -64,7 +64,7 @@ describe('useVariantStyles', () => {
 	})
 
 	it('injects again for the same name once both the in-memory registry AND the old <style> tag are cleared', () => {
-		renderHook(() => useVariantStyles('TestComponent'), {
+		renderHook(() => useVariants('TestComponent'), {
 			wrapper: wrapperWithPrefix('ink'),
 		})
 		expect(document.querySelectorAll('style[data-target-vars="TestComponent"]')).toHaveLength(1)
@@ -76,7 +76,7 @@ describe('useVariantStyles', () => {
 		resetVariantStyles('TestComponent')
 		document.querySelectorAll('style[data-target-vars="TestComponent"]').forEach(node => node.remove())
 
-		renderHook(() => useVariantStyles('TestComponent'), {
+		renderHook(() => useVariants('TestComponent'), {
 			wrapper: wrapperWithPrefix('ink'),
 		})
 
@@ -84,13 +84,13 @@ describe('useVariantStyles', () => {
 	})
 
 	it('resetVariantStyles alone does NOT cause re-injection while the old <style> tag remains in the DOM', () => {
-		renderHook(() => useVariantStyles('TestComponent'), {
+		renderHook(() => useVariants('TestComponent'), {
 			wrapper: wrapperWithPrefix('ink'),
 		})
 
 		resetVariantStyles('TestComponent')
 
-		renderHook(() => useVariantStyles('TestComponent'), {
+		renderHook(() => useVariants('TestComponent'), {
 			wrapper: wrapperWithPrefix('ink'),
 		})
 
@@ -105,7 +105,7 @@ describe('useVariantStyles', () => {
 		preExisting.textContent = '.pre-seeded { --pre-seeded-background: red; }'
 		document.head.appendChild(preExisting)
 
-		renderHook(() => useVariantStyles('PreSeeded'), {
+		renderHook(() => useVariants('PreSeeded'), {
 			wrapper: wrapperWithPrefix('ink'),
 		})
 
@@ -113,7 +113,7 @@ describe('useVariantStyles', () => {
 	})
 
 	it('renders under a prefix-less ThemeProvider, but the backup CSS variable literally embeds "undefined" (no prefix guard) — a real defect worth flagging', () => {
-		renderHook(() => useVariantStyles('TestComponent'), {
+		renderHook(() => useVariants('TestComponent'), {
 			wrapper: ({ children }) => <ThemeProvider>{ children }</ThemeProvider>,
 		})
 

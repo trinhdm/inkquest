@@ -1,6 +1,6 @@
 export { useProps, extractOtherProps, styleProps } from './useProps'
 export { useStyles } from './useStyles'
-export { useVariantStyles } from './useVariantStyles'
+export { useVariants } from './useVariants'
 
 export {
 	useCountUp, useReplayInView,
