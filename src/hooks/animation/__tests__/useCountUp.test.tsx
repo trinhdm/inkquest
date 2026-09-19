@@ -1,6 +1,6 @@
 import { act, renderHook } from '@testing-library/react'
-import { useCountUp } from '../useCountUp'
 import { animate, useReducedMotion } from 'framer-motion'
+import { useCountUp } from '../useCountUp'
 
 jest.mock('framer-motion', () => {
 	const actual = jest.requireActual('framer-motion')
