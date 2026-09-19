@@ -1,6 +1,6 @@
 import { useProps } from '../useProps'
-import { setDefaultProps, resetVariantStyles } from '@/lib/registries'
-import { resetComponentDefaults } from '@/lib/registries/componentDefaultProps'
+import { resetComponentDefaults, setDefaultProps } from '../defaultsRegistry'
+import { resetVariantStyles } from '@/lib/registries'
 
 // `useProps` fills registered defaults in BEFORE merging the caller's own
 // props, and only overwrites a key the caller *actually passed* (i.e. the

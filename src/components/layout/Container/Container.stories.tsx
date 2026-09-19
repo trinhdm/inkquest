@@ -1,9 +1,9 @@
-import { Container } from './Container'
 import { expect, within } from 'storybook/test'
-import { getDefaultProps } from '@/lib/registries'
-import moduleClasses from './Container.module.scss'
+import { getDefaultProps } from '@/hooks/useProps'
+import { Container } from './Container'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+import moduleClasses from './Container.module.scss'
 
 // `Container` has no enum-valued props of its own (just `children` and
 // `fullWidth`, plus the polymorphic `as`/Box escape hatches), so — same as

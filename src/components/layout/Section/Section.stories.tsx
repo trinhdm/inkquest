@@ -1,5 +1,5 @@
 import { expect, within } from 'storybook/test'
-import { getDefaultProps } from '@/lib/registries'
+import { getDefaultProps } from '@/hooks/useProps'
 import { Section } from './Section'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'

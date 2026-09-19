@@ -61,7 +61,7 @@ export const createRootCxt = <T extends object>(name: string) => {
 
 		// `Object.hasOwn` on the RAW `_props` — not a `useProps`-merged result —
 		// is what keeps "unset" and "explicitly set to the registry default" distinguishable.
-		// `filterProps` (utils/helpers/props.ts) treats any *present* key as valid,
+		// `filterProps` (hooks/useProps/helpers.ts) treats any *present* key as valid,
 		// `undefined` value included, so a naive `{ ...ctx, ..._props }` spread
 		// would let an explicit `size={undefined}` silently clobber a registry default
 		// like `Icon`'s `size: 24`.

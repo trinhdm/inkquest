@@ -1,10 +1,10 @@
 import { Fragment } from 'react'
 import { expect, within } from 'storybook/test'
-import { getDefaultProps } from '@/lib/registries'
+import { getDefaultProps } from '@/hooks/useProps'
 import { Grid } from './Grid'
-import moduleClasses from './Grid.module.scss'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+import moduleClasses from './Grid.module.scss'
 
 // `Grid`'s own props are `{ children, columns }` (plus the polymorphic
 // `as`/Box escape hatches). `columns` is a plain `number`, not a fixed enum,

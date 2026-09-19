@@ -1,9 +1,9 @@
-import { Icon } from './Icon'
-import type { IconType } from './IconMap'
 import { expect } from 'storybook/test'
-import { getDefaultProps } from '@/lib/registries'
+import { getDefaultProps } from '@/hooks/useProps'
+import { Icon } from './Icon'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+import type { IconType } from './IconMap'
 
 // Single source of truth for this file's option lists. `Icon` has no
 // subcomponent family (unlike Button/ButtonGroup/ButtonSection), so these

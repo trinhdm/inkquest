@@ -1,7 +1,7 @@
-import { resetVariantStyles } from '@/lib/registries'
-import { resetComponentDefaults } from '@/lib/registries/componentDefaultProps'
-import { renderWithTheme as render, screen } from '@/tests/test-utils'
 import userEvent from '@testing-library/user-event'
+import { renderWithTheme as render, screen } from '@/tests/test-utils'
+import { resetComponentDefaults } from '@/hooks/useProps'
+import { resetVariantStyles } from '@/lib/registries'
 import { Accordion } from './Accordion'
 
 const buildAccordion = (props: Partial<Accordion.Props> = {}) => (

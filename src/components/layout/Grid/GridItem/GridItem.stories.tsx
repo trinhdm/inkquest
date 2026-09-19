@@ -1,10 +1,10 @@
 import { expect, within } from 'storybook/test'
-import { getDefaultProps } from '@/lib/registries'
+import { getDefaultProps } from '@/hooks/useProps'
 import { Grid } from '../Grid'
 import { GridItem } from './GridItem'
-import moduleClasses from '../Grid.module.scss'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+import moduleClasses from '../Grid.module.scss'
 
 // `GridItem` has no enum-valued or boolean props of its own — just `children`
 // (plus the polymorphic `as`/Box escape hatches) — so there is nothing to move
@@ -63,7 +63,7 @@ const meta: Meta<GridItemStoryProps> = {
 	argTypes: {
 		as: {
 			control: 'text',
-			description: '**Source bug, verified against the live `GridItem.tsx`**: accepted by the polymorphic contract, but SILENTLY IGNORED at runtime. `extractOtherProps(rest)` (`src/utils/helpers/props.ts`) splits its return into `{ as, others }` — `GridItem` destructures only `{ others }` from that call and never reads the sibling `as` value, so it never reaches `Box`. `GridItem` always renders a `div` regardless of what `as` is set to. See the `AsPropIgnored` story.',
+			description: '**Source bug, verified against the live `GridItem.tsx`**: accepted by the polymorphic contract, but SILENTLY IGNORED at runtime. `extractOtherProps(rest)` (`hooks/useProps/helpers.ts`) splits its return into `{ as, others }` — `GridItem` destructures only `{ others }` from that call and never reads the sibling `as` value, so it never reaches `Box`. `GridItem` always renders a `div` regardless of what `as` is set to. See the `AsPropIgnored` story.',
 		},
 		unstyled: {
 			control: 'boolean',

@@ -1,7 +1,7 @@
 import { expect, within } from 'storybook/test'
-import { getDefaultProps } from '@/lib/registries'
-import { NAV_ROUTES } from '@/utils/navigation'
+import { getDefaultProps } from '@/hooks/useProps'
 import { Subnav } from './Subnav'
+import { NAV_ROUTES } from '@/utils/navigation'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 

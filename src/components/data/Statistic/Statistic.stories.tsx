@@ -1,11 +1,11 @@
-import { BOOLEAN_OPTIONS } from './options.story'
-import { Statistic } from './Statistic'
 import { expect, within } from 'storybook/test'
-import { getDefaultProps } from '@/lib/registries'
+import { getDefaultProps } from '@/hooks/useProps'
 import { Icon } from '@/components/core/Icon'
-import moduleClasses from './Statistic.module.scss'
+import { Statistic } from './Statistic'
+import { BOOLEAN_OPTIONS } from './options.story'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+import moduleClasses from './Statistic.module.scss'
 
 const Row = ({ children }: { children: ReactNode }) => (
 	<div style={ { display: 'flex', gap: 24, flexWrap: 'wrap' } }>

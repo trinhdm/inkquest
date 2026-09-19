@@ -1,6 +1,6 @@
-import { getDefaultProps, setDefaultProps, resetComponentDefaults } from '../componentDefaultProps'
+import { getDefaultProps, resetComponentDefaults, setDefaultProps } from '../defaultsRegistry'
 
-describe('componentDefaultProps registry', () => {
+describe('component defaults registry', () => {
 	const originalNodeEnv = process.env.NODE_ENV
 
 	afterEach(() => {

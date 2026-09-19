@@ -1,7 +1,6 @@
-import { resetVariantStyles } from '@/lib/registries'
-import { resetComponentDefaults } from '@/lib/registries/componentDefaultProps'
+import { getDefaultProps, resetComponentDefaults } from '@/hooks/useProps'
 import { renderWithTheme as render, screen } from '@/tests/test-utils'
-import { getDefaultProps } from '@/lib/registries'
+import { resetVariantStyles } from '@/lib/registries'
 import { Timeline } from './Timeline'
 
 describe('Timeline', () => {

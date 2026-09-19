@@ -6,7 +6,7 @@ import {
 	type ReactNode,
 } from 'react'
 
-import { setDefaultProps } from '@/lib/registries'
+import { setDefaultProps } from '@/hooks/useProps'
 import type { AsPolymorphic, IsPolymorphic, SpecDefaultProps, Specs } from './specs.types'
 import type { DistributiveOmit, WithDefaults } from '@/types/utils'
 

@@ -1,9 +1,9 @@
-import { Footer } from './Footer'
 import { expect } from 'storybook/test'
-import { getDefaultProps } from '@/lib/registries'
-import moduleClasses from './Footer.module.scss'
+import { getDefaultProps } from '@/hooks/useProps'
+import { Footer } from './Footer'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+import moduleClasses from './Footer.module.scss'
 
 const BOOLEAN_OPTIONS = [true, false] as const
 

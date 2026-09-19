@@ -1,9 +1,9 @@
-import { BOOLEAN_OPTIONS, SIZE_OPTIONS, VARIANT_OPTIONS } from '../options.story'
-import { Button } from '../Button'
 import { Component } from 'react'
 import { expect, within } from 'storybook/test'
+import { getDefaultProps } from '@/hooks/useProps'
+import { Button } from '../Button'
 import { Icon } from '@/components/core/Icon'
-import { getDefaultProps } from '@/lib/registries'
+import { BOOLEAN_OPTIONS, SIZE_OPTIONS, VARIANT_OPTIONS } from '../options.story'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 

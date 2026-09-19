@@ -1,6 +1,6 @@
-import { resetVariantStyles, getDefaultProps } from '@/lib/registries'
-import { resetComponentDefaults } from '@/lib/registries/componentDefaultProps'
+import { getDefaultProps, resetComponentDefaults } from '@/hooks/useProps'
 import { renderWithTheme as render, screen } from '@/tests/test-utils'
+import { resetVariantStyles } from '@/lib/registries'
 import { Grid } from './Grid'
 
 describe('Grid', () => {

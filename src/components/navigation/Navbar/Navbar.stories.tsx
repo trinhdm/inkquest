@@ -1,5 +1,5 @@
 import { expect, within } from 'storybook/test'
-import { getDefaultProps } from '@/lib/registries'
+import { getDefaultProps } from '@/hooks/useProps'
 import { Navbar } from './Navbar'
 import { NAV_ROUTES } from '@/utils/navigation'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'

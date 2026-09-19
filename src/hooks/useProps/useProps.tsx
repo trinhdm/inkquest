@@ -1,5 +1,5 @@
 import { filterProps, styleProps } from './helpers'
-import { getDefaultProps } from '@/lib/registries'
+import { getDefaultProps } from './defaultsRegistry'
 
 export const useProps = <T extends object>(
 	name: string | undefined | (string | undefined)[],

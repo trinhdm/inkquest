@@ -47,7 +47,7 @@ export const ButtonSection = polymorphic<ButtonSectionSpecs>(_props => {
 }, classes)
 
 ButtonSection.displayName = NAME
-ButtonSection.setDefaults({ props: { left: true } })
+ButtonSection.setDefaults({})
 
 export declare namespace ButtonSection {
 	export type Props = ButtonSectionProps

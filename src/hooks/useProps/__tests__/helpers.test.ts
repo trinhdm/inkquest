@@ -1,4 +1,4 @@
-import { extractOtherProps, filterProps, styleProps } from '../props'
+import { extractOtherProps, filterProps, styleProps } from '../helpers'
 
 describe('filterProps', () => {
 	it('returns a shallow copy of all own enumerable keys by default (omitEmpty=false)', () => {

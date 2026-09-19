@@ -1,9 +1,9 @@
-import { Quote } from './Quote'
 import { expect, within } from 'storybook/test'
-import { getDefaultProps } from '@/lib/registries'
-import moduleClasses from './Quote.module.scss'
+import { getDefaultProps } from '@/hooks/useProps'
+import { Quote } from './Quote'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+import moduleClasses from './Quote.module.scss'
 
 const BOOLEAN_OPTIONS = [true, false] as const
 

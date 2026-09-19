@@ -1,11 +1,7 @@
 import { expect, userEvent, waitFor, within } from 'storybook/test'
-import { getDefaultProps } from '@/lib/registries'
+import { getDefaultProps } from '@/hooks/useProps'
 import { Menu } from './Menu'
-import {
-	NAV_ROUTES,
-	NAVIGATION_DATA,
-	type NavigationItem,
-} from '@/utils/navigation'
+import { NAV_ROUTES, NAVIGATION_DATA, type NavigationItem } from '@/utils/navigation'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 

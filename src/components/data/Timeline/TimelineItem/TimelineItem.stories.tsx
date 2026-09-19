@@ -1,10 +1,10 @@
-import { Timeline } from '../Timeline'
 import { expect, within } from 'storybook/test'
-import { getDefaultProps } from '@/lib/registries'
+import { getDefaultProps } from '@/hooks/useProps'
 import { Icon } from '@/components/core/Icon'
-import moduleClasses from '../Timeline.module.scss'
+import { Timeline } from '../Timeline'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+import moduleClasses from '../Timeline.module.scss'
 
 const BOOLEAN_OPTIONS = [true, false] as const
 

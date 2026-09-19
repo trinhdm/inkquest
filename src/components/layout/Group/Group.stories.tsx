@@ -1,11 +1,11 @@
 import { createContext, useContext } from 'react'
-import { Group } from './Group'
 import { expect, within } from 'storybook/test'
-import { getDefaultProps } from '@/lib/registries'
-import moduleClasses from './Group.module.scss'
-import type { RootCxtProviderFn } from '@/lib/component'
+import { getDefaultProps } from '@/hooks/useProps'
+import { Group } from './Group'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+import type { RootCxtProviderFn } from '@/lib/component'
+import moduleClasses from './Group.module.scss'
 
 const ORIENTATION_OPTIONS: readonly NonNullable<Group.Props['orientation']>[] =
 	['horizontal', 'vertical']

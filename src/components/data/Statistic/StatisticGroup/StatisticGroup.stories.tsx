@@ -1,10 +1,10 @@
-import { ORIENTATION_OPTIONS, COLUMNS_OPTIONS, BOOLEAN_OPTIONS } from '../options.story'
-import { Statistic } from '../Statistic'
 import { expect, within } from 'storybook/test'
-import { getDefaultProps } from '@/lib/registries'
-import groupClasses from '@/components/layout/Group/Group.module.scss'
+import { getDefaultProps } from '@/hooks/useProps'
+import { Statistic } from '../Statistic'
+import { BOOLEAN_OPTIONS, COLUMNS_OPTIONS, ORIENTATION_OPTIONS } from '../options.story'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+import groupClasses from '@/components/layout/Group/Group.module.scss'
 
 const Row = ({ children }: { children: ReactNode }) => (
 	<div style={ { display: 'flex', gap: 24, flexWrap: 'wrap' } }>
@@ -96,7 +96,7 @@ const meta: Meta<StatisticGroupStoryProps> = {
 		},
 		revealed: {
 			control: 'boolean',
-			description: '**Probable source bug, verified against the live `StatisticGroup.tsx`**: `StatisticGroup` only destructures `children` before calling `extractOtherProps(rest)` on everything else — and `extractOtherProps` (`utils/helpers/props.ts`) unconditionally strips `revealed` (along with `animated`/`loading`/`displayName`/the style aliases) out of the `others` it returns, INSTEAD of forwarding it. Since `revealed` never makes it into `others`, it never reaches the inner `<Group>` element `StatisticGroup` renders as (`<Box as={Group} {...others} .../>`) at all — `Group` always sees `revealed` as `undefined`, regardless of what\'s passed to `Statistic.Group`, so its otherwise-correct publish-to-context logic never has a real value to publish. Contrast with `columns`/`divider`/`duration`/`fullWidth`/`justify`/`orientation`/`stagger`/`unstyled`, none of which are in `extractOtherProps`\'s strip list, and which all DO reach `Group` correctly (see their own stories in this file). No story exercises `revealed` beyond this doc note, since there is no reachable runtime value to demonstrate.',
+			description: '**Probable source bug, verified against the live `StatisticGroup.tsx`**: `StatisticGroup` only destructures `children` before calling `extractOtherProps(rest)` on everything else — and `extractOtherProps` (`hooks/useProps/helpers.ts`) unconditionally strips `revealed` (along with `animated`/`loading`/`displayName`/the style aliases) out of the `others` it returns, INSTEAD of forwarding it. Since `revealed` never makes it into `others`, it never reaches the inner `<Group>` element `StatisticGroup` renders as (`<Box as={Group} {...others} .../>`) at all — `Group` always sees `revealed` as `undefined`, regardless of what\'s passed to `Statistic.Group`, so its otherwise-correct publish-to-context logic never has a real value to publish. Contrast with `columns`/`divider`/`duration`/`fullWidth`/`justify`/`orientation`/`stagger`/`unstyled`, none of which are in `extractOtherProps`\'s strip list, and which all DO reach `Group` correctly (see their own stories in this file). No story exercises `revealed` beyond this doc note, since there is no reachable runtime value to demonstrate.',
 		},
 		animated: {
 			control: 'boolean',

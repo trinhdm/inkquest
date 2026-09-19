@@ -1,7 +1,7 @@
 import { screen } from '@testing-library/react'
-import { resetVariantStyles, getDefaultProps } from '@/lib/registries'
-import { resetComponentDefaults } from '@/lib/registries/componentDefaultProps'
+import { getDefaultProps, resetComponentDefaults } from '@/hooks/useProps'
 import { renderWithTheme as render } from '@/tests/test-utils'
+import { resetVariantStyles } from '@/lib/registries'
 import { Footer } from './Footer'
 
 describe('Footer', () => {

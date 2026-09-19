@@ -1,10 +1,10 @@
-import { BOOLEAN_OPTIONS, LAYOUT_OPTIONS, TYPE_OPTIONS } from '../options.story'
-import { Accordion } from '../Accordion'
 import { expect, userEvent, within } from 'storybook/test'
-import { getDefaultProps } from '@/lib/registries'
-import classes from '../Accordion.module.scss'
+import { getDefaultProps } from '@/hooks/useProps'
+import { Accordion } from '../Accordion'
+import { BOOLEAN_OPTIONS, LAYOUT_OPTIONS, TYPE_OPTIONS } from '../options.story'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+import classes from '../Accordion.module.scss'
 
 const Row = ({ children }: { children: ReactNode }) => (
 	<div style={ { display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'flex-start' } }>

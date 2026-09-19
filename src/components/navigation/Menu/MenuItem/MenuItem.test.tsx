@@ -1,7 +1,7 @@
 import { act, fireEvent, screen } from '@testing-library/react'
-import { resetVariantStyles } from '@/lib/registries'
-import { resetComponentDefaults } from '@/lib/registries/componentDefaultProps'
 import { renderWithTheme as render } from '@/tests/test-utils'
+import { resetComponentDefaults } from '@/hooks/useProps'
+import { resetVariantStyles } from '@/lib/registries'
 import { MenuItem } from './MenuItem'
 
 // `MenuItem.tsx` imports `usePathname` from `next/navigation`, but it is

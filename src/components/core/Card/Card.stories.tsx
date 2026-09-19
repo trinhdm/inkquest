@@ -1,9 +1,9 @@
-import { Card } from './Card'
 import { expect, within } from 'storybook/test'
-import { getDefaultProps } from '@/lib/registries'
-import moduleClasses from './Card.module.scss'
+import { getDefaultProps } from '@/hooks/useProps'
+import { Card } from './Card'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+import moduleClasses from './Card.module.scss'
 
 const BOOLEAN_OPTIONS = [true, false] as const
 

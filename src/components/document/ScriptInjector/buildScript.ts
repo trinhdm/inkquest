@@ -16,27 +16,29 @@ export const buildScript = (args: BuildScriptArgs) => {
 		scheme,
 	} = configDocument(args)
 
-	const jsaDataKey = `data-${jsaKey}`,
+	const jsaScript = `document.documentElement.setAttribute("data-${jsaKey}", "");`,
 		lsDataKey = `data-${lsKey}`
 
 	if (!lsKey) {
 		return ''
 	} else if (override) {
-		return `document.documentElement.setAttribute("${lsDataKey}", "${override}");
-		document.documentElement.setAttribute("${jsaDataKey}", "");`
+		return `document.documentElement.setAttribute("${lsDataKey}", "${override}"); ${jsaScript}`
 	}
 
-	const altScheme = scheme === 'dark' ? 'light' : 'dark',
-		lsScheme = 'lsScheme'
+	const schemes = {
+		alt: scheme === 'dark' ? 'light' : 'dark',
+		init: 'initScheme',
+		stored: 'lsScheme',
+	}
 
 	const script = `;(function() {
+		${jsaScript}
 		try {
-			const ${lsScheme} = localStorage.getItem("${lsKey}");
-			let initScheme = ${lsScheme}
-			if (${lsScheme} !== "${scheme}" && ${lsScheme} !== "${altScheme}")
-				initScheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "${scheme}";
-			document.documentElement.setAttribute("${lsDataKey}", initScheme);
-			document.documentElement.setAttribute("${jsaDataKey}", "");
+			const ${schemes.stored} = localStorage.getItem("${lsKey}");
+			let ${schemes.init} = ${schemes.stored}
+			if (${schemes.stored} !== "${scheme}" && ${schemes.stored} !== "${schemes.alt}")
+				${schemes.init} = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+			document.documentElement.setAttribute("${lsDataKey}", ${schemes.init});
 		} catch(e) {}
 	})()`
 

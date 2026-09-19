@@ -1,6 +1,6 @@
-import { resetVariantStyles, getDefaultProps } from '@/lib/registries'
-import { resetComponentDefaults } from '@/lib/registries/componentDefaultProps'
+import { getDefaultProps, resetComponentDefaults } from '@/hooks/useProps'
 import { renderWithTheme as render, screen } from '@/tests/test-utils'
+import { resetVariantStyles } from '@/lib/registries'
 import { Container } from './Container'
 
 describe('Container', () => {
@@ -42,7 +42,7 @@ describe('Container', () => {
 
 	// `ContainerProps` declares `revealed`, but `Container.tsx` never reads it —
 	// it flows into `extractOtherProps(rest)`, whose own destructuring (see
-	// `src/utils/helpers/props.ts`) explicitly pulls `revealed` out of `rest`
+	// `hooks/useProps/helpers.ts`) explicitly pulls `revealed` out of `rest`
 	// and never re-attaches it to the returned `others` bag. So, verified
 	// against the live source (not the `revealed` argType doc in
 	// `Container.stories.tsx`, which claims it "falls straight through...

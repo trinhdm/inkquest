@@ -3,8 +3,8 @@ import {
 	SIZE_OPTIONS, VARIANT_OPTIONS,
 } from '../options.story'
 import { expect, userEvent, within } from 'storybook/test'
+import { getDefaultProps } from '@/hooks/useProps'
 import { Button } from '../Button'
-import { getDefaultProps } from '@/lib/registries'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 

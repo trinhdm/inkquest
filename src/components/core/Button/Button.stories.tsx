@@ -1,11 +1,11 @@
+import { expect, fn, userEvent, within } from 'storybook/test'
+import { getDefaultProps } from '@/hooks/useProps'
+import { Button } from './Button'
+import { Icon } from '../Icon'
 import {
 	BOOLEAN_OPTIONS, PRIORITY_OPTIONS,
 	SIZE_OPTIONS, VARIANT_OPTIONS,
 } from './options.story'
-import { Button } from './Button'
-import { expect, fn, userEvent, within } from 'storybook/test'
-import { getDefaultProps } from '@/lib/registries'
-import { Icon } from '../Icon'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
