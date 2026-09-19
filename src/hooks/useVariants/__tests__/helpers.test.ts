@@ -37,6 +37,12 @@ describe('deriveVariants', () => {
 		expect(rule.vars['--card-border-focus']).toBe('var(--variant-border-focus, var(--card-border))')
 	})
 
+	it('builds only the base slot var when states is explicitly empty (no hover bridge)', () => {
+		const rule = deriveVariants({ name: 'Card', slots: ['color'], states: [] }, makeTheme())
+
+		expect(Object.keys(rule.vars)).toEqual(['--card-color'])
+	})
+
 	it('kebab-cases a multi-word component name for the variable namespace', () => {
 		const rule = deriveVariants({ name: 'MenuItem', slots: ['color'] }, makeTheme())
 

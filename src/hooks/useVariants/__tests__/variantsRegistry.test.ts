@@ -63,6 +63,23 @@ describe('variant styles registry', () => {
 		expect(hasInjectVariant('Registry.ToReset')).toBe(false)
 	})
 
+	it('returns false without probing the DOM when `document` is undefined (SSR guard)', () => {
+		const originalDocument = global.document
+		const querySpy = jest.spyOn(originalDocument, 'querySelector')
+		// eslint-disable-next-line no-console
+		console.log('DEBUG descriptor', Object.getOwnPropertyDescriptor(global, 'document'))
+		;(global as { document: Document | undefined }).document = undefined
+
+		try {
+			// eslint-disable-next-line no-console
+			console.log('DEBUG typeof document', typeof document)
+			expect(hasInjectVariant('Registry.SSR')).toBe(false)
+			expect(querySpy).not.toHaveBeenCalled()
+		} finally {
+			global.document = originalDocument
+		}
+	})
+
 	it('reset() with no name clears every marked name', () => {
 		markInjectVariant('Registry.A')
 		markInjectVariant('Registry.B')

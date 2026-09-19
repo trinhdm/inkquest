@@ -9,12 +9,13 @@
     "enableFindRelatedTests": true
   },
   "coverageAnalysis": "perTest",
-  "_scope": "Default scope is the leaf modules — pure, branch-heavy, and NOT imported by half the tree. Breadth is cheap to add on the command line (`npm run test:mutation -- --mutate 'src/utils/helpers/objects.ts'`) and expensive to make the default: `objects.ts`, `props.ts` and `children.ts` are imported almost everywhere, so with perTest analysis nearly all 763 tests cover each of their mutants, which pushed a full run past four hours. Widen deliberately, on a nightly job.",
+  "_scope": "Default scope is the leaf modules — pure, branch-heavy, and NOT imported by half the tree. Breadth is cheap to add on the command line (`npm run test:mutation -- --mutate 'src/utils/helpers/objects.ts'`) and expensive to make the default: `objects.ts`, `hooks/useProps/helpers.ts` and `children.ts` are imported almost everywhere, so with perTest analysis nearly all 763 tests cover each of their mutants, which pushed a full run past four hours. Widen deliberately, on a nightly job.",
   "mutate": [
     "src/utils/helpers/checks.ts",
     "src/utils/helpers/strings.ts",
     "src/utils/navigation.ts",
-    "src/lib/registries/*.ts",
+    "src/hooks/useProps/defaultsRegistry.ts",
+    "src/hooks/useVariants/variantsRegistry.ts",
     "src/lib/general/*.ts",
     "src/lib/theme/format/*.ts",
     "!src/**/*.test.{ts,tsx}",

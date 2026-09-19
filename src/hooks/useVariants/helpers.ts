@@ -14,9 +14,10 @@ const DEFAULT_SLOTS: TokenSlot[] = ['background', 'border', 'color'],
 
 // Single source of truth for the `--variant-* -> --<component>-*` bridge.
 // Static per component: no prop values, no per-instance theme values other
-// than `theme.prefix`, so this runs once at SSR time (VariantStyleInliner)
-// instead of once per render. Adding a variant-aware component is a
-// one-line entry in `variantBridges.ts`, never a copy of this function.
+// than `theme.prefix`, so `useVariants` runs this once per component name
+// (deduped by `variantsRegistry`) instead of once per render. Adding a
+// variant-aware component is a `useVariants(NAME)` call, never a copy of
+// this function.
 export const deriveVariants = (
 	{ name, slots = DEFAULT_SLOTS, states = DEFAULT_STATES }: VariantBridge,
 	theme: SiteThemeConfig

@@ -69,7 +69,7 @@ describe('useVariants', () => {
 		})
 		expect(document.querySelectorAll('style[data-target-vars="TestComponent"]')).toHaveLength(1)
 
-		// `hasInjectedVariantStyles` also re-derives "already injected" from a
+		// `hasInjectVariant` also re-derives "already injected" from a
 		// live DOM query (`[data-target-vars="name"]`), so clearing only the
 		// in-memory Set is not sufficient on its own -- the stale tag must go
 		// too, or the DOM fallback re-marks the name as injected anyway.
@@ -95,7 +95,7 @@ describe('useVariants', () => {
 		})
 
 		// still just the one original tag -- the DOM fallback in
-		// `hasInjectedVariantStyles` re-marks the name as injected
+		// `hasInjectVariant` re-marks the name as injected
 		expect(document.querySelectorAll('style[data-target-vars="TestComponent"]')).toHaveLength(1)
 	})
 

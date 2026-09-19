@@ -1,8 +1,8 @@
 // Raw, `as const` token-scale data — the single source of truth for both
 // DEFAULT_THEME (constants.ts) and the tkn registry (reference/). Lives
 // here, with zero imports of its own, specifically so neither side has to
-// import the other: constants.ts pulls in `paintVariants` (which depends on
-// reference/), so a direct reference/ -> constants.ts value import closes a
+// import the other: constants.ts imports the `@/lib/theme` barrel (which
+// loads reference/), so a direct reference/ -> constants.ts value import closes a
 // real runtime cycle — verified: it throws "Cannot access '...' before
 // initialization" at module-load time. Both sides depending on this leaf
 // module instead avoids that entirely.
