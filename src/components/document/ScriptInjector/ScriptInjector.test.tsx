@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react'
-import { ScriptInjector } from './ScriptInjector'
 import { buildScript } from './buildScript'
+import { ScriptInjector } from './ScriptInjector'
 
 describe('ScriptInjector', () => {
 	it('marks the injected script with data-scheme-script so it can be located post-hydration', () => {
@@ -10,14 +10,14 @@ describe('ScriptInjector', () => {
 		expect(script).toHaveAttribute('data-scheme-script')
 	})
 
-	it('injects the exact string produced by buildScript for the given defaultScheme', () => {
-		const { container } = render(<ScriptInjector defaultScheme="light" />)
+	it('injects the exact string produced by buildScript for the given scheme', () => {
+		const { container } = render(<ScriptInjector scheme="light" />)
 		const script = container.querySelector('script')
 
 		expect(script?.innerHTML).toBe(buildScript({ scheme: 'light' }))
 	})
 
-	it('falls back to the default color scheme when defaultScheme is omitted', () => {
+	it('falls back to the default color scheme when scheme is omitted', () => {
 		const { container } = render(<ScriptInjector />)
 		const script = container.querySelector('script')
 

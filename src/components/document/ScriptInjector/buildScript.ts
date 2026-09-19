@@ -1,29 +1,35 @@
-import { DEFAULT_COLOR_SCHEME, SCHEME_STORAGE_KEY } from './constants'
+import { configDocument, type DocumentConfig } from '../utils'
 import type { ColorScheme } from '@/lib/theme'
 
-interface BuildScriptArgs {
-	lsKey?: string
+interface BuildScriptArgs
+	extends DocumentConfig {
 	override?: ColorScheme
-	scheme?: ColorScheme
 }
 
-export const buildScript = ({
-	lsKey = SCHEME_STORAGE_KEY,
-	override,
-	scheme = DEFAULT_COLOR_SCHEME,
-}: BuildScriptArgs) => {
-	if (!lsKey) return ''
-	if (override)
-		return `document.documentElement.setAttribute("data-${lsKey}", "${override}");`
+export const buildScript = (args: BuildScriptArgs) => {
+	const {
+		keys: { localStore: lsKey },
+		override,
+		scheme,
+	} = configDocument(args)
 
-	const altScheme = scheme === 'dark' ? 'light' : 'dark'
+	const lsDataKey = `data-${lsKey}`
+
+	if (!lsKey)
+		return ''
+	else if (override)
+		return `document.documentElement.setAttribute("${lsDataKey}", "${override}");`
+
+	const altScheme = scheme === 'dark' ? 'light' : 'dark',
+		lsScheme = 'lsScheme'
+
 	const script = `;(function() {
 		try {
-			const lsScheme = localStorage.getItem("${lsKey}");
-			let initScheme = lsScheme
-			if (lsScheme !== "${scheme}" && lsScheme !== "${altScheme}")
+			const ${lsScheme} = localStorage.getItem("${lsKey}");
+			let initScheme = ${lsScheme}
+			if (${lsScheme} !== "${scheme}" && ${lsScheme} !== "${altScheme}")
 				initScheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "${scheme}";
-			document.documentElement.setAttribute("data-${lsKey}", initScheme);
+			document.documentElement.setAttribute("${lsDataKey}", initScheme);
 		} catch(e) {}
 	})()`
 

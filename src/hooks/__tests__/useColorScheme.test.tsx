@@ -1,6 +1,6 @@
 import { act, renderHook } from '@testing-library/react'
 import { useColorScheme } from '../useColorScheme'
-import { SCHEME_STORAGE_KEY, DEFAULT_COLOR_SCHEME } from '@/components/document/ScriptInjector/constants'
+import { DEFAULT_COLOR_SCHEME, SCHEME_STORAGE_KEY } from '@/components/document/constants'
 
 const attr = `data-${ SCHEME_STORAGE_KEY }`
 

@@ -1,6 +1,6 @@
-import { standardizeRules, resolveStyles } from './resolver'
-import { SCHEME_STORAGE_KEY } from '../ScriptInjector'
 import { buildSchemes } from '@/lib/theme'
+import { resolveStyles, standardizeRules } from './resolver'
+import { SCHEME_STORAGE_KEY } from '../constants'
 import type { SiteTheme, ThemeTokens } from '@/lib/theme'
 
 jest.mock('@/lib/theme', () => ({

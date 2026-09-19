@@ -1,17 +1,15 @@
 import { buildScript } from './buildScript'
 import type { ComponentProps } from 'react'
-import type { ColorScheme } from '@/lib/theme'
+import type { DocumentConfig } from '../utils'
 
 interface ScriptInjectorProps
-	extends ComponentProps<'script'> {
-	defaultScheme?: ColorScheme
-}
+	extends ComponentProps<'script'>, Pick<DocumentConfig, 'scheme'> {}
 
 export const ScriptInjector = ({
-	defaultScheme,
+	scheme,
 	...props
 }: ScriptInjectorProps) => {
-	const script = buildScript({ scheme: defaultScheme })
+	const script = buildScript({ scheme })
 
 	return (
 		<script

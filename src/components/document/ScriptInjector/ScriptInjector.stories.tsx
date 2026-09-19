@@ -50,7 +50,7 @@ const meta: Meta<typeof ScriptInjector> = {
 	component: ScriptInjector,
 	title: 'Document/ScriptInjector',
 	argTypes: {
-		defaultScheme: {
+		scheme: {
 			control: 'select',
 			options: SCHEME_OPTIONS,
 			description:
@@ -58,7 +58,7 @@ const meta: Meta<typeof ScriptInjector> = {
 		},
 	},
 	// `ScriptInjector` is a plain function component (no `factory()`/
-	// `polymorphic()` usage, no `.setDefaults`), and `defaultScheme` itself
+	// `polymorphic()` usage, no `.setDefaults`), and `scheme` itself
 	// has no default parameter value in the component's own signature — it's
 	// left `undefined` and delegated straight to `buildScript`'s internal
 	// default. So there's no registered/registry default to read here.
@@ -81,9 +81,9 @@ export const Default: Story = {
 export const Schemes: Story = {
 	render: () => (
 		<Row>
-			{ SCHEME_OPTIONS.map(defaultScheme => (
-				<Group key={ defaultScheme } label={ defaultScheme }>
-					<ScriptInjector defaultScheme={ defaultScheme } />
+			{ SCHEME_OPTIONS.map(scheme => (
+				<Group key={ scheme } label={ scheme }>
+					<ScriptInjector scheme={ scheme } />
 				</Group>
 			)) }
 		</Row>
@@ -93,7 +93,7 @@ export const Schemes: Story = {
 
 		await expect(scripts).toHaveLength(SCHEME_OPTIONS.length)
 
-		// Each `defaultScheme` produces a genuinely different generated script
+		// Each `scheme` produces a genuinely different generated script
 		// body (the target scheme and its inverse swap places in the source),
 		// verified against the real `buildScript` output rather than a
 		// hand-written string, per scheme.

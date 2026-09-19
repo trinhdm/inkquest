@@ -1,6 +1,6 @@
 import { buildSchemes, type SiteTheme } from '@/lib/theme'
 import { deepMerge } from '@/utils/helpers'
-import { SCHEME_STORAGE_KEY } from '../ScriptInjector'
+import { SCHEME_STORAGE_KEY } from '../constants'
 import type { CssRule, ThemeTokens } from '@/lib/theme'
 
 interface ResolveCSSProps {

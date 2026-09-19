@@ -1,5 +1,5 @@
 import { schemeControls } from './schemeControls'
-import { DEFAULT_COLOR_SCHEME, SCHEME_STORAGE_KEY } from './constants'
+import { SCHEME_STORAGE_KEY } from '../constants'
 
 describe('schemeControls', () => {
 	// jsdom has no matchMedia implementation at all — define a fresh stub
@@ -41,7 +41,7 @@ describe('schemeControls', () => {
 		it('falls back to matchMedia when localStorage has no entry', () => {
 			jest.spyOn(window, 'matchMedia').mockReturnValue({ matches: false } as MediaQueryList)
 
-			const { getInitialScheme } = schemeControls({ defaultScheme: 'light' })
+			const { getInitialScheme } = schemeControls({ scheme: 'light' })
 
 			expect(getInitialScheme()).toBe('light')
 		})
@@ -60,23 +60,23 @@ describe('schemeControls', () => {
 			})
 			jest.spyOn(window, 'matchMedia').mockReturnValue({ matches: false } as MediaQueryList)
 
-			const { getInitialScheme } = schemeControls({ defaultScheme: 'light' })
+			const { getInitialScheme } = schemeControls({ scheme: 'light' })
 
 			expect(getInitialScheme()).toBe('light')
 		})
 
 		it('respects a custom lsKey when reading from localStorage', () => {
 			localStorage.setItem('custom-key', 'light')
-			const { getInitialScheme } = schemeControls({ lsKey: 'custom-key' })
+			const { getInitialScheme } = schemeControls({ keys: { localStore: 'custom-key' } })
 
 			expect(getInitialScheme()).toBe('light')
 		})
 
-		it('returns defaultScheme without touching window when window is undefined (SSR)', () => {
+		it('returns scheme without touching window when window is undefined (SSR)', () => {
 			const matchMediaSpy = jest.spyOn(window, 'matchMedia')
 			const windowSpy = jest.spyOn(globalThis, 'window', 'get').mockReturnValue(undefined as never)
 
-			const { getInitialScheme } = schemeControls({ defaultScheme: 'light' })
+			const { getInitialScheme } = schemeControls({ scheme: 'light' })
 
 			expect(getInitialScheme()).toBe('light')
 			expect(matchMediaSpy).not.toHaveBeenCalled()
@@ -93,22 +93,22 @@ describe('schemeControls', () => {
 			expect(getStoredScheme()).toBe('light')
 		})
 
-		it('falls back to defaultScheme when the attribute is absent', () => {
-			const { getStoredScheme } = schemeControls({ defaultScheme: 'light' })
+		it('falls back to scheme when the attribute is absent', () => {
+			const { getStoredScheme } = schemeControls({ scheme: 'light' })
 
 			expect(getStoredScheme()).toBe('light')
 		})
 
-		it('falls back to defaultScheme when the attribute holds an invalid value', () => {
+		it('falls back to scheme when the attribute holds an invalid value', () => {
 			document.documentElement.setAttribute(`data-${ SCHEME_STORAGE_KEY }`, 'garbage')
-			const { getStoredScheme } = schemeControls({ defaultScheme: 'light' })
+			const { getStoredScheme } = schemeControls({ scheme: 'light' })
 
 			expect(getStoredScheme()).toBe('light')
 		})
 
 		it('uses a custom lsKey to look up the attribute', () => {
 			document.documentElement.setAttribute('data-custom-key', 'dark')
-			const { getStoredScheme } = schemeControls({ lsKey: 'custom-key', defaultScheme: 'light' })
+			const { getStoredScheme } = schemeControls({ keys: { localStore: 'custom-key' }, scheme: 'light' })
 
 			expect(getStoredScheme()).toBe('dark')
 		})
@@ -123,7 +123,7 @@ describe('schemeControls', () => {
 		})
 
 		it('uses a custom lsKey when setting the attribute', () => {
-			const { applyScheme } = schemeControls({ lsKey: 'custom-key' })
+			const { applyScheme } = schemeControls({ keys: { localStore: 'custom-key' } })
 			applyScheme('dark')
 
 			expect(document.documentElement.getAttribute('data-custom-key')).toBe('dark')
@@ -139,7 +139,7 @@ describe('schemeControls', () => {
 		})
 
 		it('uses a custom lsKey when persisting', () => {
-			const { persistScheme } = schemeControls({ lsKey: 'custom-key' })
+			const { persistScheme } = schemeControls({ keys: { localStore: 'custom-key' } })
 			persistScheme('dark')
 
 			expect(localStorage.getItem('custom-key')).toBe('dark')

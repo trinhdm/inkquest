@@ -1,15 +1,12 @@
-import { DEFAULT_COLOR_SCHEME, SCHEME_STORAGE_KEY } from './constants'
+import { configDocument, type DocumentConfig } from '../utils'
 import type { ColorScheme } from '@/lib/theme'
 
-interface SchemeControlsOptions {
-	defaultScheme?: ColorScheme
-	lsKey?: string
-}
+export const schemeControls = (args: DocumentConfig = {}) => {
+	const {
+		keys: { localStore: lsKey },
+		scheme: defaultScheme,
+	} = configDocument(args)
 
-export const schemeControls = ({
-	defaultScheme = DEFAULT_COLOR_SCHEME,
-	lsKey = SCHEME_STORAGE_KEY,
-}: SchemeControlsOptions = {}) => {
 	return {
 		getInitialScheme: () => {
 			if (typeof window === 'undefined') return defaultScheme

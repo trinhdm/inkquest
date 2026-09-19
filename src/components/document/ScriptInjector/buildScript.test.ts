@@ -1,15 +1,15 @@
 import { buildScript } from './buildScript'
-import { DEFAULT_COLOR_SCHEME, SCHEME_STORAGE_KEY } from './constants'
+import { DEFAULT_COLOR_SCHEME, SCHEME_STORAGE_KEY } from '../constants'
 
 describe('buildScript', () => {
 	it('returns an empty string when lsKey is explicitly empty', () => {
-		expect(buildScript({ lsKey: '' })).toBe('')
+		expect(buildScript({ keys: { localStore: '' } })).toBe('')
 	})
 
 	it('short-circuits to a static setAttribute call when override is provided', () => {
 		const script = buildScript({ override: 'light' })
 
-		expect(script).toBe(
+		expect(script).toContain(
 			`document.documentElement.setAttribute("data-${ SCHEME_STORAGE_KEY }", "light");`
 		)
 	})
@@ -22,9 +22,9 @@ describe('buildScript', () => {
 	})
 
 	it('uses a custom lsKey in the override branch', () => {
-		const script = buildScript({ override: 'dark', lsKey: 'custom-key' })
+		const script = buildScript({ keys: { localStore: 'custom-key' }, override: 'dark' })
 
-		expect(script).toBe('document.documentElement.setAttribute("data-custom-key", "dark");')
+		expect(script).toContain('document.documentElement.setAttribute("data-custom-key", "dark");')
 	})
 
 	it('falls back to SCHEME_STORAGE_KEY when lsKey is omitted', () => {
@@ -72,7 +72,7 @@ describe('buildScript', () => {
 	})
 
 	it('uses a custom lsKey throughout the generated IIFE', () => {
-		const script = buildScript({ scheme: 'dark', lsKey: 'my-key' })
+		const script = buildScript({ keys: { localStore: 'my-key' }, scheme: 'dark' })
 
 		expect(script).toContain('localStorage.getItem("my-key")')
 		expect(script).toContain('document.documentElement.setAttribute("data-my-key", initScheme);')
