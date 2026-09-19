@@ -1,0 +1,25 @@
+{
+	// Runs the `*.test-d.ts` compile-time assertions on their own.
+	//
+	// Deliberately narrower than the root config: it drops the generated
+	// `.next/**/types` from `include`, so a stale or half-written Next type
+	// artifact can't make this run fail (or, worse, abort early on a syntax
+	// error and mask the real assertions — which is exactly what happened
+	// once already). TypeScript still pulls in whatever the test files
+	// import, so the contracts under test are the real ones.
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"incremental": false,
+		"types": ["node"]
+	},
+	"include": [
+		"next-env.d.ts",
+		"src/**/*.test-d.ts"
+	],
+	"exclude": [
+		"node_modules",
+		"dist",
+		"build",
+		".next"
+	]
+}
