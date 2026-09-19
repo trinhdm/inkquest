@@ -2,7 +2,7 @@
 
 import { useProps, useStyles, extractOtherProps } from '@/hooks'
 import { filterNavigation, NavRoute } from '@/utils/navigation'
-import { Box, polymorphic } from '@/components/core/Box'
+import { polymorphic, Box } from '@/components/polymorphic'
 import { Menu } from '../Menu'
 import classes from './Subnav.module.scss'
 

@@ -2,10 +2,10 @@ import { useCallback, useId, useMemo, useState, Children, type ReactNode } from 
 import { useProps, useStyles, extractOtherProps } from '@/hooks'
 import { useAccordionGroupProps, AccordionGroup } from './AccordionGroup'
 import { filterChildren } from '@/utils/helpers'
+import { polymorphic, Box } from '@/components/polymorphic'
 import { AccordionContent } from './AccordionContent'
 import { AccordionProvider } from './Accordion.context'
 import { AccordionTitle } from './AccordionTitle'
-import { Box, polymorphic } from '@/components/core/Box'
 import type { AccordionContext, AccordionIndicator } from './Accordion.context'
 import classes from './Accordion.module.scss'
 

@@ -1,5 +1,5 @@
 import { useProps, useStyles, extractOtherProps } from '@/hooks'
-import { Box, polymorphic } from '@/components/core/Box'
+import { polymorphic, Box } from '@/components/polymorphic'
 import { Group } from '@/components/layout'
 import { StatisticGroupProvider, type StatisticGroupContext } from './StatisticGroup.context'
 import classes from '../Statistic.module.scss'

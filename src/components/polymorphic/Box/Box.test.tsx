@@ -1,5 +1,5 @@
 import { render, screen } from '@/tests/test-utils'
-import { Box } from '@/components/core/Box/Box'
+import { Box } from './Box'
 
 // `Box` (`toPolymorphic`, not `polymorphic`/`factory`) doesn't call
 // `useVariants`/`setDefaults`, so there's no variant-style or

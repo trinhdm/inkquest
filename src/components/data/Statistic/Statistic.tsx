@@ -1,6 +1,6 @@
 import { useCountUp, useProps, useStyles, extractOtherProps } from '@/hooks'
 import { useStatisticGroupProps } from './StatisticGroup'
-import { Box, polymorphic } from '@/components/core/Box'
+import { polymorphic, Box } from '@/components/polymorphic'
 import { StatisticGroup } from './StatisticGroup'
 import type { ReactNode } from 'react'
 import classes from './Statistic.module.scss'

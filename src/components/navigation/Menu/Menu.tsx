@@ -1,5 +1,5 @@
 import { useProps, useStyles, extractOtherProps } from '@/hooks'
-import { Box, polymorphic } from '@/components/core/Box'
+import { polymorphic, Box } from '@/components/polymorphic'
 import { MenuItem } from './MenuItem'
 import type { NavigationItem } from '@/utils/navigation'
 import classes from './Menu.module.scss'

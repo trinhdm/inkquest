@@ -1,5 +1,5 @@
 import { useProps, useStyles, extractOtherProps } from '@/hooks'
-import { Box, polymorphic } from '@/components/core/Box'
+import { polymorphic, Box } from '@/components/polymorphic'
 import { ICON_MAP, type IconType } from './IconMap'
 import type { LucideProps } from 'lucide-react'
 import classes from './Icon.module.scss'

@@ -1,6 +1,6 @@
 import { useButtonCtx } from '../Button.context'
 import { useProps, useStyles, extractOtherProps } from '@/hooks'
-import { Box, polymorphic } from '@/components/core/Box'
+import { polymorphic, Box } from '@/components/polymorphic'
 import classes from '../Button.module.scss'
 
 const NAME = 'Button.Section' as const

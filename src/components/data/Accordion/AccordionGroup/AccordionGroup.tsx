@@ -1,9 +1,9 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { useProps, useReplayInView, useStyles, extractOtherProps } from '@/hooks'
 import { filterChildren } from '@/utils/helpers'
+import { polymorphic, Box } from '@/components/polymorphic'
 import { renderWithProvider } from '@/lib/component'
 import { AccordionGroupProvider } from './AccordionGroup.context'
-import { Box, polymorphic } from '@/components/core/Box'
 import classes from '../Accordion.module.scss'
 
 import type {

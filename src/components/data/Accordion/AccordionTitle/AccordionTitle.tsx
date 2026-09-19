@@ -1,6 +1,6 @@
 import { useProps, useStyles, extractOtherProps } from '@/hooks'
 import { useAccordionCtx } from '../Accordion.context'
-import { Box, polymorphic } from '@/components/core/Box'
+import { polymorphic, Box } from '@/components/polymorphic'
 import { Icon } from '@/components/core'
 import type { KeyboardEvent, ReactNode } from 'react'
 import classes from '../Accordion.module.scss'

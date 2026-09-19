@@ -1,5 +1,5 @@
 import { useProps, useStyles, useVariants, extractOtherProps } from '@/hooks'
-import { Box, polymorphic } from '@/components/core/Box'
+import { polymorphic, Box } from '@/components/polymorphic'
 import type { ReactNode } from 'react'
 import classes from './Badge.module.scss'
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useProps, useStyles, extractOtherProps } from '@/hooks'
-import { Box, polymorphic } from '@/components/core/Box'
+import { polymorphic, Box } from '@/components/polymorphic'
 import classes from './Footer.module.scss'
 
 const NAME = 'Footer' as const,

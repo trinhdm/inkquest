@@ -1,6 +1,6 @@
 import { useProps, useStyles, extractOtherProps } from '@/hooks'
 import { filterChildren } from '@/utils/helpers'
-import { Box, polymorphic } from '@/components/core/Box'
+import { polymorphic, Box } from '@/components/polymorphic'
 import { TimelineItem } from './TimelineItem'
 import type { ReactNode } from 'react'
 import classes from './Timeline.module.scss'

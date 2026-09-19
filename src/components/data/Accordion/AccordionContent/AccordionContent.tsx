@@ -1,7 +1,7 @@
 import { useProps, useStyles, extractOtherProps } from '@/hooks'
 import { useReducedMotion } from 'framer-motion'
 import { useAccordionCtx } from '../Accordion.context'
-import { Box, polymorphic } from '@/components/core/Box'
+import { polymorphic, Box } from '@/components/polymorphic'
 import type { ReactNode } from 'react'
 import classes from '../Accordion.module.scss'
 

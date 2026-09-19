@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useProps, useStyles, extractOtherProps } from '@/hooks'
 import { filterNavigation, NavRoute } from '@/utils/navigation'
-import { Box, polymorphic } from '@/components/core/Box'
+import { polymorphic, Box } from '@/components/polymorphic'
 import { Button } from '@/components/core'
 import { Menu } from '../Menu'
 import classes from './Navbar.module.scss'
