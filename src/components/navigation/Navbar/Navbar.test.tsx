@@ -1,7 +1,5 @@
-import { screen } from '@testing-library/react'
-import { getDefaultProps, resetComponentDefaults } from '@/hooks/useProps'
-import { renderWithTheme as render } from '@/tests/test-utils'
-import { resetVariantStyles } from '@/lib/registries'
+import { getDefaultProps } from '@/hooks/useProps'
+import { render, reset, screen } from '@/tests/test-utils'
 import { NavRoutes, type NavRoute } from '@/utils/navigation'
 import { Navbar } from './Navbar'
 
@@ -12,17 +10,7 @@ import { Navbar } from './Navbar'
 // mock is required for these to render correctly.
 
 describe('Navbar', () => {
-	afterEach(() => {
-		resetVariantStyles('Navbar')
-		resetVariantStyles('Menu')
-		resetVariantStyles('MenuItem')
-		resetVariantStyles('Button')
-		resetVariantStyles('Button.Group')
-	})
-
-	afterAll(() => {
-		resetComponentDefaults('Navbar')
-	})
+	reset('Navbar', 'Menu', 'MenuItem', 'Button', 'Button.Group')
 
 	it('renders a navigation landmark', () => {
 		render(<Navbar />)

@@ -1,7 +1,5 @@
 import userEvent from '@testing-library/user-event'
-import { renderWithTheme as render, screen } from '@/tests/test-utils'
-import { resetComponentDefaults } from '@/hooks/useProps'
-import { resetVariantStyles } from '@/lib/registries'
+import { render, reset, screen } from '@/tests/test-utils'
 import { Accordion } from '../Accordion'
 import { AccordionGroup } from './AccordionGroup'
 
@@ -13,19 +11,7 @@ const item = (title: string, content: string) => (
 )
 
 describe('AccordionGroup', () => {
-	afterEach(() => {
-		resetVariantStyles('AccordionGroup')
-		resetVariantStyles('Accordion')
-		resetVariantStyles('AccordionTitle')
-		resetVariantStyles('AccordionContent')
-	})
-
-	afterAll(() => {
-		resetComponentDefaults('AccordionGroup')
-		resetComponentDefaults('Accordion')
-		resetComponentDefaults('AccordionTitle')
-		resetComponentDefaults('AccordionContent')
-	})
+	reset('AccordionGroup', 'Accordion', 'AccordionTitle', 'AccordionContent')
 
 	it('renders as a group container with a data-group marker', () => {
 		const { container } = render(

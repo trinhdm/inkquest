@@ -1,16 +1,9 @@
-import { getDefaultProps, resetComponentDefaults } from '@/hooks/useProps'
-import { renderWithTheme as render, screen } from '@/tests/test-utils'
-import { resetVariantStyles } from '@/lib/registries'
+import { getDefaultProps } from '@/hooks/useProps'
+import { render, reset, screen } from '@/tests/test-utils'
 import { Container } from './Container'
 
 describe('Container', () => {
-	afterEach(() => {
-		resetVariantStyles('Container')
-	})
-
-	afterAll(() => {
-		resetComponentDefaults('Container')
-	})
+	reset('Container')
 
 	it('renders children inside the root', () => {
 		render(<Container>Container content</Container>)

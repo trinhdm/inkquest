@@ -1,20 +1,10 @@
-import { screen } from '@testing-library/react'
-import { getDefaultProps, resetComponentDefaults } from '@/hooks/useProps'
-import { renderWithTheme as render } from '@/tests/test-utils'
-import { resetVariantStyles } from '@/lib/registries'
+import { getDefaultProps } from '@/hooks/useProps'
+import { render, reset, screen } from '@/tests/test-utils'
 import { Menu } from './Menu'
 import type { NavigationItem } from '@/utils/navigation'
 
 describe('Menu', () => {
-	afterEach(() => {
-		resetVariantStyles('Menu')
-		resetVariantStyles('MenuItem')
-	})
-
-	afterAll(() => {
-		resetComponentDefaults('Menu')
-		resetComponentDefaults('MenuItem')
-	})
+	reset('Menu', 'MenuItem')
 
 	const leafItems: NavigationItem['menu'] = [
 		{ label: 'Marketplace', route: '/marketplace' },

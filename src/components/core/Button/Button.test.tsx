@@ -1,21 +1,9 @@
-import { screen } from '@testing-library/react'
-import { getDefaultProps, resetComponentDefaults } from '@/hooks/useProps'
-import { renderWithTheme as render } from '@/tests/test-utils'
-import { resetVariantStyles } from '@/lib/registries'
+import { getDefaultProps } from '@/hooks/useProps'
+import { render, reset, screen } from '@/tests/test-utils'
 import { Button } from './Button'
 
 describe('Button', () => {
-	afterEach(() => {
-		resetVariantStyles('Button')
-	})
-
-	// `Button.setDefaults({...})` in Button.tsx only runs once, at module import,
-	// so resetting the defaults registry after every test (rather than after
-	// the whole suite) would permanently wipe the "as/size/variant" defaults
-	// for every test that follows — nothing re-registers them mid-file.
-	afterAll(() => {
-		resetComponentDefaults('Button')
-	})
+	reset('Button')
 
 	it('renders its children', () => {
 		render(<Button>Save</Button>)

@@ -1,18 +1,9 @@
-import { getDefaultProps, resetComponentDefaults } from '@/hooks/useProps'
-import { renderWithTheme as render, screen } from '@/tests/test-utils'
-import { resetVariantStyles } from '@/lib/registries'
+import { getDefaultProps } from '@/hooks/useProps'
+import { render, reset, screen } from '@/tests/test-utils'
 import { Timeline } from './Timeline'
 
 describe('Timeline', () => {
-	afterEach(() => {
-		resetVariantStyles('Timeline')
-		resetVariantStyles('TimelineItem')
-	})
-
-	afterAll(() => {
-		resetComponentDefaults('Timeline')
-		resetComponentDefaults('TimelineItem')
-	})
+	reset('Timeline', 'TimelineItem')
 
 	it('renders every Timeline.Item child', () => {
 		render(

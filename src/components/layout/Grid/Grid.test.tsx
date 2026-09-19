@@ -1,18 +1,9 @@
-import { getDefaultProps, resetComponentDefaults } from '@/hooks/useProps'
-import { renderWithTheme as render, screen } from '@/tests/test-utils'
-import { resetVariantStyles } from '@/lib/registries'
+import { getDefaultProps } from '@/hooks/useProps'
+import { render, reset, screen } from '@/tests/test-utils'
 import { Grid } from './Grid'
 
 describe('Grid', () => {
-	afterEach(() => {
-		resetVariantStyles('Grid')
-		resetVariantStyles('GridItem')
-	})
-
-	afterAll(() => {
-		resetComponentDefaults('Grid')
-		resetComponentDefaults('GridItem')
-	})
+	reset('Grid', 'GridItem')
 
 	it('renders as the registered default tag ("div")', () => {
 		const defaults = getDefaultProps<Grid.Props & { as?: string }>('Grid')

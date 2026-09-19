@@ -1,7 +1,4 @@
-import { act, fireEvent, screen } from '@testing-library/react'
-import { renderWithTheme as render } from '@/tests/test-utils'
-import { resetComponentDefaults } from '@/hooks/useProps'
-import { resetVariantStyles } from '@/lib/registries'
+import { act, fireEvent, render, reset, screen } from '@/tests/test-utils'
 import { MenuItem } from './MenuItem'
 
 // `MenuItem.tsx` imports `usePathname` from `next/navigation`, but it is
@@ -11,15 +8,7 @@ import { MenuItem } from './MenuItem'
 // correctly — this is asserted directly in the "active link" section below.
 
 describe('MenuItem', () => {
-	afterEach(() => {
-		resetVariantStyles('MenuItem')
-		resetVariantStyles('Menu')
-	})
-
-	afterAll(() => {
-		resetComponentDefaults('MenuItem')
-		resetComponentDefaults('Menu')
-	})
+	reset('MenuItem', 'Menu')
 
 	describe('non-dropdown item (no menu)', () => {
 		it('renders a single menuitem link for a routed item', () => {

@@ -1,6 +1,4 @@
-import { renderWithTheme as render, screen } from '@/tests/test-utils'
-import { resetComponentDefaults } from '@/hooks/useProps'
-import { resetVariantStyles } from '@/lib/registries'
+import { render, reset, screen } from '@/tests/test-utils'
 import { Statistic } from '../Statistic'
 import { StatisticGroup } from './StatisticGroup'
 
@@ -25,15 +23,10 @@ jest.mock('framer-motion', () => {
 import { animate } from 'framer-motion'
 
 describe('StatisticGroup', () => {
-	afterEach(() => {
-		resetVariantStyles('StatisticGroup')
-		resetVariantStyles('Statistic')
-		jest.mocked(animate).mockClear()
-	})
+	reset('StatisticGroup', 'Statistic')
 
-	afterAll(() => {
-		resetComponentDefaults('StatisticGroup')
-		resetComponentDefaults('Statistic')
+	afterEach(() => {
+		jest.mocked(animate).mockClear()
 	})
 
 	it('renders as an accessible group and renders each Statistic child', () => {

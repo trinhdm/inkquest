@@ -1,7 +1,5 @@
 import userEvent from '@testing-library/user-event'
-import { renderWithTheme as render, screen } from '@/tests/test-utils'
-import { resetComponentDefaults } from '@/hooks/useProps'
-import { resetVariantStyles } from '@/lib/registries'
+import { render, reset, screen } from '@/tests/test-utils'
 import { Accordion } from './Accordion'
 
 const buildAccordion = (props: Partial<Accordion.Props> = {}) => (
@@ -12,20 +10,7 @@ const buildAccordion = (props: Partial<Accordion.Props> = {}) => (
 )
 
 describe('Accordion', () => {
-	afterEach(() => {
-		resetVariantStyles('Accordion')
-		resetVariantStyles('AccordionTitle')
-		resetVariantStyles('AccordionContent')
-	})
-
-	// `Accordion.setDefaults`/`AccordionTitle.setDefaults`/`AccordionContent.setDefaults`
-	// each run once at module import — resetting per-test would permanently
-	// wipe them for every later test in this file.
-	afterAll(() => {
-		resetComponentDefaults('Accordion')
-		resetComponentDefaults('AccordionTitle')
-		resetComponentDefaults('AccordionContent')
-	})
+	reset('Accordion', 'AccordionTitle', 'AccordionContent')
 
 	it('renders the title as a button and the content as a labelled region', () => {
 		render(buildAccordion())

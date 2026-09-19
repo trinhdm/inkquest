@@ -1,16 +1,8 @@
-import { renderWithTheme as render, screen } from '@/tests/test-utils'
-import { resetComponentDefaults } from '@/hooks/useProps'
-import { resetVariantStyles } from '@/lib/registries'
+import { render, reset, screen } from '@/tests/test-utils'
 import { TimelineItem } from './TimelineItem'
 
 describe('TimelineItem', () => {
-	afterEach(() => {
-		resetVariantStyles('TimelineItem')
-	})
-
-	afterAll(() => {
-		resetComponentDefaults('TimelineItem')
-	})
+	reset('TimelineItem')
 
 	it('renders the title and content text', () => {
 		render(<TimelineItem content="Something happened" title="Launch day" />)

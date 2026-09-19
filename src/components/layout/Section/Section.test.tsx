@@ -1,27 +1,9 @@
-import { within } from '@testing-library/react'
-import { getDefaultProps, resetComponentDefaults } from '@/hooks/useProps'
-import { renderWithTheme as render, screen } from '@/tests/test-utils'
-import { resetVariantStyles } from '@/lib/registries'
+import { getDefaultProps } from '@/hooks/useProps'
+import { render, reset, screen, within } from '@/tests/test-utils'
 import { Section } from './Section'
 
 describe('Section', () => {
-	afterEach(() => {
-		resetVariantStyles('Section')
-		resetVariantStyles('Container')
-		resetVariantStyles('Grid')
-		resetVariantStyles('GridItem')
-		resetVariantStyles('Button')
-		resetVariantStyles('ButtonGroup')
-	})
-
-	afterAll(() => {
-		resetComponentDefaults('Section')
-		resetComponentDefaults('Container')
-		resetComponentDefaults('Grid')
-		resetComponentDefaults('GridItem')
-		resetComponentDefaults('Button')
-		resetComponentDefaults('ButtonGroup')
-	})
+	reset('Section', 'Container', 'Grid', 'GridItem', 'Button', 'ButtonGroup')
 
 	it('defaults layout to "default"', () => {
 		expect(getDefaultProps<Section.Props>('Section').layout).toBe('default')
@@ -73,7 +55,10 @@ describe('Section', () => {
 		expect(container.firstElementChild).toBeInTheDocument()
 	})
 
-	it('does not wrap a single non-string content child in an extra container', () => {
+	// `orderSection` always wraps content items in a `body` element that sits
+	// beside the heading; only 2+ items get an extra `description` wrapper
+	// inside that body.
+	it('places a single non-string content child directly in a body beside the heading', () => {
 		render(
 			<Section title="t">
 				<span>Only content</span>
@@ -81,12 +66,13 @@ describe('Section', () => {
 		)
 
 		const heading = screen.getByRole('heading', { name: 't' }),
-			content = screen.getByText('Only content')
+			body = screen.getByText('Only content').parentElement
 
-		expect(content.parentElement).toBe(heading.parentElement)
+		expect(body).not.toBe(heading.parentElement)
+		expect(body?.parentElement).toBe(heading.parentElement)
 	})
 
-	it('wraps two or more non-string content children in a shared container', () => {
+	it('wraps two or more non-string content children in a shared container inside the body', () => {
 		render(
 			<Section title="t">
 				<span>First</span>
@@ -96,12 +82,12 @@ describe('Section', () => {
 
 		const heading = screen.getByRole('heading', { name: 't' }),
 			first = screen.getByText('First'),
-			second = screen.getByText('Second')
+			description = first.parentElement,
+			body = description?.parentElement
 
-		expect(first.parentElement).toBe(second.parentElement)
-		// the wrapping container sits between the heading's own parent and the
-		// content items, so it is NOT the same element the heading lives in.
-		expect(first.parentElement).not.toBe(heading.parentElement)
+		expect(screen.getByText('Second').parentElement).toBe(description)
+		expect(body).not.toBe(heading.parentElement)
+		expect(body?.parentElement).toBe(heading.parentElement)
 	})
 
 	it('groups up to two Section.Button children into a CTA button group', () => {

@@ -1,17 +1,9 @@
-import { screen } from '@testing-library/react'
-import { getDefaultProps, resetComponentDefaults } from '@/hooks/useProps'
-import { renderWithTheme as render } from '@/tests/test-utils'
-import { resetVariantStyles } from '@/lib/registries'
+import { getDefaultProps } from '@/hooks/useProps'
+import { render, reset, screen } from '@/tests/test-utils'
 import { Footer } from './Footer'
 
 describe('Footer', () => {
-	afterEach(() => {
-		resetVariantStyles('Footer')
-	})
-
-	afterAll(() => {
-		resetComponentDefaults('Footer')
-	})
+	reset('Footer')
 
 	it('renders the tagline', () => {
 		render(<Footer />)

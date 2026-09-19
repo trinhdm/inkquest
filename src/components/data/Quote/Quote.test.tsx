@@ -1,16 +1,9 @@
-import { getDefaultProps, resetComponentDefaults } from '@/hooks/useProps'
-import { renderWithTheme as render, screen } from '@/tests/test-utils'
-import { resetVariantStyles } from '@/lib/registries'
+import { getDefaultProps } from '@/hooks/useProps'
+import { render, reset, screen } from '@/tests/test-utils'
 import { Quote } from './Quote'
 
 describe('Quote', () => {
-	afterEach(() => {
-		resetVariantStyles('Quote')
-	})
-
-	afterAll(() => {
-		resetComponentDefaults('Quote')
-	})
+	reset('Quote')
 
 	it('wraps the quote prop text in curly quotation marks', () => {
 		render(<Quote quote="Simplicity is the ultimate sophistication" />)

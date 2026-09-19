@@ -1,16 +1,9 @@
-import { getDefaultProps, resetComponentDefaults } from '@/hooks/useProps'
-import { renderWithTheme as render } from '@/tests/test-utils'
-import { resetVariantStyles } from '@/lib/registries'
+import { getDefaultProps } from '@/hooks/useProps'
+import { render, reset } from '@/tests/test-utils'
 import { Icon } from './Icon'
 
 describe('Icon', () => {
-	afterEach(() => {
-		resetVariantStyles('Icon')
-	})
-
-	afterAll(() => {
-		resetComponentDefaults('Icon')
-	})
+	reset('Icon')
 
 	it('renders the svg for a mapped icon type', () => {
 		const { container } = render(<Icon type="close" />)

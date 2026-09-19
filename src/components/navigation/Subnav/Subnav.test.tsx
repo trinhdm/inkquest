@@ -1,7 +1,5 @@
-import { screen } from '@testing-library/react'
-import { getDefaultProps, resetComponentDefaults } from '@/hooks/useProps'
-import { renderWithTheme as render } from '@/tests/test-utils'
-import { resetVariantStyles } from '@/lib/registries'
+import { getDefaultProps } from '@/hooks/useProps'
+import { render, reset, screen } from '@/tests/test-utils'
 import { NavRoutes, type NavRoute } from '@/utils/navigation'
 import { Subnav } from './Subnav'
 
@@ -9,15 +7,7 @@ import { Subnav } from './Subnav'
 // `Menu`/`filterNavigation` exactly like `Navbar`, so no router mock is needed.
 
 describe('Subnav', () => {
-	afterEach(() => {
-		resetVariantStyles('Subnav')
-		resetVariantStyles('Menu')
-		resetVariantStyles('MenuItem')
-	})
-
-	afterAll(() => {
-		resetComponentDefaults('Subnav')
-	})
+	reset('Subnav', 'Menu', 'MenuItem')
 
 	it('renders as the registered default tag (div)', () => {
 		const defaults = getDefaultProps<Subnav.Props & { as: string }>('Subnav')

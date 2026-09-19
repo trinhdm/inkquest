@@ -1,17 +1,9 @@
-import { screen } from '@testing-library/react'
-import { getDefaultProps, resetComponentDefaults } from '@/hooks/useProps'
-import { renderWithTheme as render } from '@/tests/test-utils'
-import { resetVariantStyles } from '@/lib/registries'
+import { getDefaultProps } from '@/hooks/useProps'
+import { render, reset, screen } from '@/tests/test-utils'
 import { Card } from './Card'
 
 describe('Card', () => {
-	afterEach(() => {
-		resetVariantStyles('Card')
-	})
-
-	afterAll(() => {
-		resetComponentDefaults('Card')
-	})
+	reset('Card')
 
 	it('renders the title in a heading', () => {
 		render(<Card title="Rose Sleeve" />)

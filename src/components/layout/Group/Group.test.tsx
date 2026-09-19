@@ -1,7 +1,6 @@
 import { createContext, useContext } from 'react'
-import { getDefaultProps, resetComponentDefaults } from '@/hooks/useProps'
-import { renderWithTheme as render, screen } from '@/tests/test-utils'
-import { resetVariantStyles } from '@/lib/registries'
+import { getDefaultProps } from '@/hooks/useProps'
+import { render, reset, screen } from '@/tests/test-utils'
 import { Group } from './Group'
 import type { RootCxtProviderFn } from '@/lib/component'
 
@@ -43,13 +42,7 @@ const DebugItem = ({ label }: { label: string }) => {
 DebugItem.displayName = 'DebugItem'
 
 describe('Group', () => {
-	afterEach(() => {
-		resetVariantStyles('Group')
-	})
-
-	afterAll(() => {
-		resetComponentDefaults('Group')
-	})
+	reset('Group')
 
 	it('registers no defaults of its own (Group.setDefaults({}))', () => {
 		expect(getDefaultProps<Group.Props>('Group')).toEqual({})

@@ -1,6 +1,4 @@
-import { renderWithTheme as render, screen } from '@/tests/test-utils'
-import { resetComponentDefaults } from '@/hooks/useProps'
-import { resetVariantStyles } from '@/lib/registries'
+import { render, reset, screen } from '@/tests/test-utils'
 import { Statistic } from './Statistic'
 
 // `useCountUp` (src/hooks/useCountUp.tsx) delegates the actual tween to
@@ -28,14 +26,11 @@ jest.mock('framer-motion', () => {
 import { animate, useReducedMotion } from 'framer-motion'
 
 describe('Statistic', () => {
+	reset('Statistic')
+
 	afterEach(() => {
-		resetVariantStyles('Statistic')
 		jest.mocked(animate).mockClear()
 		jest.mocked(useReducedMotion).mockReturnValue(false)
-	})
-
-	afterAll(() => {
-		resetComponentDefaults('Statistic')
 	})
 
 	it('renders the caption text alongside the value', () => {

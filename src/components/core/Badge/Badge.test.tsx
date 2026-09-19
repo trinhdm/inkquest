@@ -1,19 +1,9 @@
-import { screen } from '@testing-library/react'
-import { getDefaultProps, resetComponentDefaults } from '@/hooks/useProps'
-import { renderWithTheme as render } from '@/tests/test-utils'
-import { resetVariantStyles } from '@/lib/registries'
+import { getDefaultProps } from '@/hooks/useProps'
+import { render, reset, screen } from '@/tests/test-utils'
 import { Badge } from './Badge'
 
 describe('Badge', () => {
-	afterEach(() => {
-		resetVariantStyles('Badge')
-	})
-
-	// `Badge.setDefaults({...})` runs once at module import — see the
-	// `Button.test.tsx` note on why this is `afterAll`, not `afterEach`.
-	afterAll(() => {
-		resetComponentDefaults('Badge')
-	})
+	reset('Badge')
 
 	it('renders its children inside the inner wrapper', () => {
 		render(<Badge>New</Badge>)

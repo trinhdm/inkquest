@@ -1,5 +1,4 @@
-import { screen } from '@testing-library/react'
-import { renderWithTheme as render } from '@/tests/test-utils'
+import { render, screen } from '@/tests/test-utils'
 import { Box } from '@/components/core/Box/Box'
 
 // `Box` (`toPolymorphic`, not `polymorphic`/`factory`) doesn't call
