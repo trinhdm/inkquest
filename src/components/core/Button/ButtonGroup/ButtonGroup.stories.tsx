@@ -79,13 +79,17 @@ const meta: Meta<ButtonGroupStoryArgs> = {
 			control: 'boolean',
 			description: 'Stretches the group to fill its container\'s width (adds a `data-block` attribute to the root element via `attributes.data`, present only when truthy — `ButtonGroup.tsx`\'s `data: { block: !!fullWidth || null }`). Unlike `Button`\'s own `fullWidth`, this does NOT also add a global `inkq-block` class — `ButtonGroup` only ever passes a `module` config (`orientation`/`size`) to `styles(\'root\', ...)`, no `global` config. `aria-orientation` is unrelated: it always reflects the group\'s own `orientation` prop, independent of `fullWidth`. See the `FullWidth` story.',
 		},
+		revealFrom: {
+			control: 'number',
+			description: 'Fed into `revealItemFrom(index, revealFrom)` (`@/hooks`) for each surviving child, and spread onto that child\'s `ButtonGroupContext` value alongside `disabled`/`loading`/`priority`/`size`/`unstyled` (`ButtonGroupContext extends RevealItemProps`). When `revealFrom` is a number, each child\'s context carries a `data-reveal-item` value (`revealFrom + index`, stringified); when it\'s `undefined`, `revealItemFrom` returns `{}` and no such key is published at all. That context key reaches each child `Button` via `useButtonGroupProps` (own props always win, same precedence as the other cascaded fields) and, since `Button` doesn\'t destructure it, flows through `...rest`/`extractOtherProps` straight onto the rendered element as a literal `data-reveal-item` attribute. See the `RevealFrom` story.',
+		},
 		justify: {
 			control: 'text',
 			description: 'NOT destructured anywhere in `ButtonGroup`\'s render, so it falls through `...rest` and is spread onto the root `Box` as a literal `justify="..."` DOM attribute — it has no effect on actual layout/justification despite the name. See the `Justify` story.',
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `ButtonGroup`\'s own `ButtonGroupProps`. The semantic base class (`inkq-button-group`) on the group\'s root element is ALWAYS emitted regardless of this prop — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it, via the `styles(\'root\')` call `ButtonGroup` makes — see the `Unstyled` story. It also cascades to the child `Button`s: `ButtonGroup` flattens its children (`filterChildren` — recursing into `Fragment`s, dropping any element whose `displayName` isn\'t `\'Button\'`) and wraps EACH surviving child in its own `ButtonGroupProvider`, publishing `{ disabled, loading, priority, unstyled }`. Each `Button` reads that context via `useButtonGroupProps`, which fills a key on the Button\'s own raw props ONLY when that key is entirely absent there (checked with `Object.hasOwn` on the raw, pre-merge props, and skipping any `undefined` context value) — so a child `Button`\'s own prop, including an explicit `disabled={false}` inside a disabled group, always wins over the group\'s context value.',
+			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `ButtonGroup`\'s own `ButtonGroupProps`. The semantic base class (`inkq-button-group`) on the group\'s root element is ALWAYS emitted regardless of this prop — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it, via the `styles(\'root\')` call `ButtonGroup` makes — see the `Unstyled` story. It also cascades to the child `Button`s: `ButtonGroup` flattens its children (`filterChildren` — recursing into `Fragment`s, dropping any element whose `displayName` isn\'t `\'Button\'`) and wraps EACH surviving child in its own `ButtonGroupProvider`, publishing `{ disabled, loading, priority, size, unstyled }` plus whatever `revealItemFrom(index, revealFrom)` returns (`ButtonGroupContext extends RevealItemProps`). Each `Button` reads that context via `useButtonGroupProps`, which fills a key on the Button\'s own raw props ONLY when that key is entirely absent there (checked with `Object.hasOwn` on the raw, pre-merge props, and skipping any `undefined` context value) — so a child `Button`\'s own prop, including an explicit `disabled={false}` inside a disabled group, always wins over the group\'s context value.',
 		},
 	},
 	args: {
@@ -269,8 +273,10 @@ export const Loading: Story = {
 			loadingButtons = within(loadingGroup).getAllByRole('button'),
 			notLoadingButtons = within(notLoadingGroup).getAllByRole('button')
 
+		// Reflected as a VALUELESS attribute (`data-loading=""`), not `"true"`
+		// — matches `Button.test.tsx`'s own assertion.
 		for (const button of loadingButtons)
-			await expect(button).toHaveAttribute('data-loading', 'true')
+			await expect(button).toHaveAttribute('data-loading', '')
 
 		for (const button of notLoadingButtons)
 			await expect(button).not.toHaveAttribute('data-loading')
@@ -356,12 +362,13 @@ export const FullWidth: Story = {
 // `styles('root')` (no other selector). It ALSO cascades to the child
 // `Button`s: each surviving child (after `filterChildren` drops non-`Button`
 // elements and flattens `Fragment`s) is wrapped in its own
-// `ButtonGroupProvider` publishing `{ disabled, loading, priority, unstyled }`,
-// and each `Button` fills its own `unstyled` from that context via
-// `useButtonGroupProps` ONLY because none of these children set `unstyled`
-// themselves — so passing `unstyled` to `ButtonGroup` suppresses each child
-// `Button`'s own hashed module class too (same "base always present, module
-// class suppressed" contract, one level down).
+// `ButtonGroupProvider` publishing `{ disabled, loading, priority, size,
+// unstyled }` plus any `revealItemFrom` result, and each `Button` fills its
+// own `unstyled` from that context via `useButtonGroupProps` ONLY because
+// none of these children set `unstyled` themselves — so passing `unstyled`
+// to `ButtonGroup` suppresses each child `Button`'s own hashed module class
+// too (same "base always present, module class suppressed" contract, one
+// level down).
 export const Unstyled: Story = {
 	parameters: { controls: { exclude: ['unstyled'] } },
 	render: ({ size, variant, ...args }) => (
@@ -431,6 +438,45 @@ export const Justify: Story = {
 	},
 }
 
+// `revealFrom` feeds `revealItemFrom(index, revealFrom)` for each surviving
+// child, publishing a `data-reveal-item` value (`revealFrom + index`) through
+// `ButtonGroupContext` — reaching each `Button` unmodified (it isn't a prop
+// `Button` destructures, so it falls through to the DOM) as a literal
+// attribute. `undefined` (the default) means no such key is published at all
+// on any child.
+export const RevealFrom: Story = {
+	render: ({ size, variant, ...args }) => (
+		<Row>
+			<Group label="revealFrom: undefined (default)">
+				<Button.Group { ...args }>
+					{ renderGroup({ size, variant }) }
+				</Button.Group>
+			</Group>
+			<Group label="revealFrom: 10">
+				<Button.Group { ...args } revealFrom={ 10 }>
+					{ renderGroup({ size, variant }) }
+				</Button.Group>
+			</Group>
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			groups = canvas.getAllByRole('group')
+
+		expect(groups).toHaveLength(2)
+
+		const [undefinedGroup, revealFromGroup] = groups,
+			undefinedButtons = within(undefinedGroup).getAllByRole('button'),
+			revealFromButtons = within(revealFromGroup).getAllByRole('button')
+
+		for (const button of undefinedButtons)
+			await expect(button).not.toHaveAttribute('data-reveal-item')
+
+		for (const [index, button] of revealFromButtons.entries())
+			await expect(button).toHaveAttribute('data-reveal-item', `${ 10 + index }`)
+	},
+}
+
 // `filterChildren` (`ButtonGroup.tsx`) recurses into `Fragment`s (flattening
 // their children into the same list) and drops any element whose
 // `displayName` isn't `'Button'` — a raw `<span>` (or any other non-`Button`
@@ -482,6 +528,6 @@ export const ChildOverrides: Story = {
 
 		// the group publishes `loading={false}`; this child's own `loading`
 		// still wins over it
-		await expect(ownLoadingTrue).toHaveAttribute('data-loading', 'true')
+		await expect(ownLoadingTrue).toHaveAttribute('data-loading', '')
 	},
 }

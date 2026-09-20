@@ -62,7 +62,7 @@ type Story = StoryObj<MenuItemStoryProps>
 
 const meta: Meta<MenuItemStoryProps> = {
 	component: MenuItem,
-	title: 'Navigation/Menu/Menu.Item',
+	title: 'Navigation/Menu/MenuItem',
 	decorators: [(Story) => <MenubarWrapper><Story /></MenubarWrapper>],
 	argTypes: {
 		hasDropdowns: {

@@ -57,7 +57,7 @@ const meta: Meta<SubnavStoryProps> = {
 		routes: {
 			control: 'multi-select',
 			options: Object.values(NAV_ROUTES),
-			description: 'Required (unlike `Navbar`, where it is optional). Handed to `filterNavigation(NAVIGATION_DATA, routes)`. There is no separate `label` prop — the visible label (`inkq-subnav__label`) is derived straight from the FIRST filtered item\'s own `label` (`navItems[0].label`), so it is entirely data-driven. When `routes` matches nothing, `filterNavigation` returns `[]` and `Subnav` guards its whole inner block (label AND `<Menu>`) with `!!navItems.length` — neither renders.',
+			description: 'Required (unlike `Navbar`, where it is optional). Handed to `filterNavigation(routes, NAVIGATION_DATA)`. There is no separate `label` prop — the visible label (`inkq-subnav__label`) is derived straight from the FIRST filtered item\'s own `label` (`navItems[0].label`), so it is entirely data-driven. When `routes` matches nothing, `filterNavigation` returns `[]` and `Subnav` guards its whole inner block (label AND `<Menu>`) with `!!navItems.length` — neither renders.',
 		},
 		unstyled: {
 			control: 'boolean',

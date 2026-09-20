@@ -2,7 +2,23 @@ import { expect, within } from 'storybook/test'
 import { getDefaultProps } from '@/hooks/useProps'
 import { Navbar } from './Navbar'
 import { NAV_ROUTES } from '@/utils/navigation'
+import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+
+const Row = ({ children }: { children: ReactNode }) => (
+	<div style={ { display: 'flex', flexDirection: 'column', gap: 32 } }>
+		{ children }
+	</div>
+)
+
+const Group = ({ label, children }: { label: string, children: ReactNode }) => (
+	<div style={ { display: 'flex', flexDirection: 'column', gap: 8 } }>
+		<span style={ { font: 'var(--inkq-text-control)', letterSpacing: '.15em', textTransform: 'uppercase', opacity: 0.6 } }>
+			{ label }
+		</span>
+		<div>{ children }</div>
+	</div>
+)
 
 // `Navbar.Props` (the `declare namespace` export) is just the raw `NavbarProps`
 // interface — it doesn't include `as`/`unstyled`/`attributes`/etc., which only
@@ -23,11 +39,11 @@ const meta: Meta<NavbarStoryProps> = {
 		routes: {
 			control: 'multi-select',
 			options: Object.values(NAV_ROUTES),
-			description: 'Allow-list handed to `filterNavigation(NAVIGATION_DATA, routes)`. Omitted/empty means "no filtering" — the full nav tree renders. Filtering is shallow-first: an item is kept only if its OWN `route` is in the list (so the route-less `User` item is always dropped), and its children are then filtered by the same list.',
+			description: 'Allow-list handed to `filterNavigation(routes, NAVIGATION_DATA)`. Omitted/empty means "no filtering" — the full nav tree renders. Filtering is shallow-first: an item is kept only if its OWN `route` is in the list (so the route-less `User` item is always dropped), and its children are then filtered by the same list.',
 		},
 		as: {
 			control: false,
-			description: '`Navbar` destructures `as` out of its props but renders a hardcoded `as="nav"`, so this prop has NO effect — hence there is no `AsElement` story here (unlike `Subnav`, which does honour `as`).',
+			description: '`Navbar` forwards `as` to its root `<Box>` via `extractOtherProps`, so the rendered tag genuinely changes — see `AsElement`.',
 		},
 		unstyled: {
 			control: 'boolean',
@@ -128,5 +144,37 @@ export const NoMatchingRoutes: Story = {
 
 		await expect(canvas.getAllByRole('button')).toHaveLength(2)
 		await expect(canvas.getByText('logo')).toBeInTheDocument()
+	},
+}
+
+/**
+ * `Navbar` forwards `as` to its root `<Box>` (via `extractOtherProps`), so the
+ * rendered tag genuinely changes.
+ */
+export const AsElement: Story = {
+	render: (args) => (
+		<Row>
+			<Group label='as="nav" (default)'>
+				<Navbar { ...args } />
+			</Group>
+			<Group label='as="div"'>
+				<Navbar { ...args } as="div" />
+			</Group>
+			<Group label='as="section"'>
+				<Navbar { ...args } as="section" />
+			</Group>
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			navs = canvas.getAllByRole('navigation')
+
+		await expect(navs).toHaveLength(3)
+
+		const [asNav, asDiv, asSection] = navs
+
+		await expect(asNav.tagName).toBe('NAV')
+		await expect(asDiv.tagName).toBe('DIV')
+		await expect(asSection.tagName).toBe('SECTION')
 	},
 }

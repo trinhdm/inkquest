@@ -2,14 +2,11 @@ import { createContext, useContext } from 'react'
 import { expect, within } from 'storybook/test'
 import { getDefaultProps } from '@/hooks/useProps'
 import { Group } from './Group'
+import { ORIENTATION_OPTIONS, BOOLEAN_OPTIONS } from './options.story'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import type { RootProviderFn } from '@/lib/component'
 import moduleClasses from './Group.module.scss'
-
-const ORIENTATION_OPTIONS: readonly NonNullable<Group.Props['orientation']>[] =
-	['horizontal', 'vertical']
-const BOOLEAN_OPTIONS = [true, false] as const
 
 const Row = ({ children }: { children: ReactNode }) => (
 	<div style={ { display: 'flex', gap: 24, flexWrap: 'wrap', width: '100%' } }>
@@ -31,31 +28,21 @@ const Labeled = ({ label, children }: { label: string, children: ReactNode }) =>
 
 // Detects the REAL compiled CSS-module hash, keyed off the actual
 // `Group.module.scss` export map — not a naive "any extra class" heuristic.
-// `getConfigClasses`/`formatConfigClass` (`getClassName.tsx`) resolve a
-// `module`-scoped modifier (`divider`/`grid`, both of which DO have a
-// matching SCSS rule) to the compiled HASH when styled and fall back to the
-// literal, unhashed base name (`inkq-group--divider`/`inkq-group--grid`)
-// only when unstyled — so asserting a literal `toHaveClass('inkq-group--grid')`
-// would incorrectly fail in the styled (default) case. `orientation`'s
-// `horizontal`/`vertical` modifiers have NO matching SCSS rule at all, so
-// those stay literal/unhashed in BOTH states — see the `Orientations` story.
+// `Group.tsx` calls `styles('root')` with NO `module`/`global`/`selector`
+// config at all — unlike `Grid`, it never sets any config-driven modifier
+// class. The base class (`inkq-group`) is still real: `.inkq-group`'s SCSS
+// block has self-referencing `&:not([data-divide])`/`&:where([data-divide])`
+// rules (not just nested descendant selectors like `&__item`), so CSS
+// Modules compiles a genuine hash for it.
 const hasModuleClass = (el: Element, base: string) => {
 	const moduleClass = (moduleClasses as Record<string, string>)[base]
 	return !!moduleClass && el.classList.contains(moduleClass)
 }
 
-// A plain, library-external component with its own `displayName` — the
-// contract `Group`'s `childName` filters against (`filterChildren(children,
-// childName)`, keyed off `child.type.displayName`). `Group` doesn't export
-// its own child/item subcomponent; a consumer supplies whatever component it
-// wants filtered.
-const GroupItem = ({ label }: { label: string }) => (
-	<div style={ { padding: 16, border: '1px dashed currentColor', borderRadius: 8, minWidth: 96, textAlign: 'center' } }>
-		{ label }
-	</div>
-)
-GroupItem.displayName = 'GroupItem'
-
+// A component with a DIFFERENT `displayName` from the real `Group.Item` —
+// used only as a negative case in the `ChildFiltering` story, to show that
+// `filterChildren(children, childName)` drops anything whose own
+// `displayName` doesn't match.
 const OtherItem = ({ label }: { label: string }) => (
 	<div style={ { padding: 16, border: '1px dashed currentColor', borderRadius: 8 } }>
 		{ label }
@@ -94,22 +81,27 @@ const DebugItem = ({ label }: { label: string }) => {
 DebugItem.displayName = 'DebugItem'
 
 // `Group.Props` (the `declare namespace` export) is the raw, UNION-typed
-// `GroupProps` interface — it doesn't include `unstyled`/`attributes`/etc.,
-// which only exist on the actual accepted prop type, `PolymorphicProps<
+// `GroupProps` interface — it doesn't include `as`/`unstyled`/`attributes`/
+// etc., which only exist on the actual accepted prop type, `PolymorphicProps<
 // GroupProps, C>`. `Parameters<typeof Group>[0]` reads that real, wrapped
-// type straight off the component itself. `Group`'s spec is `isCompound:
-// true` with NO `defaults.as`, so `IsPolymorphic<GroupSpecs>` is `false` —
-// the generic call signature collapses to a single, non-polymorphic overload
-// (`(props: PolymorphicProps<GroupProps, never>) => ReactElement`), which
-// resolves `as?: never`: there really is no `as` prop here, matching
-// `Group.tsx` hardcoding `as={DEFAULT_TAG}` itself.
+// type straight off the component itself. **Re-verified against the live
+// `Group.tsx`**: `GroupSpecs` DOES declare `defaults: { as: typeof TAG }`
+// (`TAG = 'div'`) and NOT `isCompound: true` — `Group` genuinely IS
+// polymorphic (`Group.tsx` renders `as={ as }`, not a hardcoded tag). See the
+// `AsElement` story.
 type GroupStoryProps = Parameters<typeof Group>[0]
 
-// Mirrors `GroupProps`' own discriminated union (`AnimatedGroupProps`
-// requires `{ animated: true; duration: number; stagger? }`,
-// `StaticGroupProps` is `{ animated?: never; duration?: never; stagger?:
-// never }`) rather than casting through `any` — same pattern
-// `Button.stories.tsx` uses for its own `href`/native union.
+// Mirrors `MaybeAnimationProps`'s own discriminated union
+// (`src/hooks/animation/constants.ts`) — `AnimatedComponentProps` requires
+// `{ animated: true; duration: number; stagger?; amount?; once?; lead?;
+// margin? }`, `StaticComponentProps` sets all of those to `never` — rather
+// than casting through `any`, same pattern `Button.stories.tsx` uses for its
+// own `href`/native union. `GroupProps` itself is `BaseGroupProps &
+// (CompoundGroupProps | NamedGroupProps) & MaybeAnimationProps` — the
+// `childName`/`provider`/`valuesCtx` union no longer plays into the
+// `animated` narrowing at all (that used to be conflated under one
+// `AnimatedGroupProps`/`StaticGroupProps` pair declared directly on
+// `GroupProps`; it's since moved out to the shared `MaybeAnimationProps`).
 type StaticGroupArgs = Exclude<GroupStoryProps, { animated: true }>
 
 type Story = StoryObj<GroupStoryProps>
@@ -118,18 +110,22 @@ const meta: Meta<GroupStoryProps> = {
 	component: Group,
 	title: 'Layout/Group',
 	argTypes: {
+		as: {
+			control: 'text',
+			description: 'Polymorphic escape hatch via the shared `Box` contract. `GroupSpecs` declares `defaults: { as: \'div\' }`, so — unlike `GridItem`/`Section`, whose `as` is silently ignored — `Group` genuinely forwards it: `Group.tsx` destructures `{ as, others } = extractOtherProps(rest)` and renders `<Box ... as={ as }>`. See the `AsElement` story.',
+		},
 		childName: {
 			control: 'text',
-			description: 'Required. Drives `filterChildren(children, childName)` — any child whose own `displayName` static property doesn\'t match is silently DROPPED (not rendered at all); a plain string/number child bypasses the check entirely (not a React element). See the `ChildFiltering` story.',
+			description: 'Required (`NamedGroupProps`) unless `Group` is used in its compound form (`CompoundGroupProps`, where `childName`/`provider`/`valuesCtx` are all `never`). Drives `filterChildren(children, childName)` — any child whose own `displayName` static property doesn\'t match is silently DROPPED (not rendered at all); a plain string/number child bypasses the check entirely (not a React element). The registered default is `GroupItem.displayName` (`\'Group.Item\'`), matching the real `Group.Item` subcomponent used throughout this file. See the `ChildFiltering` story.',
 		},
 		orientation: {
 			control: 'select',
 			options: ORIENTATION_OPTIONS,
-			description: 'Feeds `aria-orientation` directly, and also the root modifier class via `module: { grid: !orientation, [orientation]: !!orientation }` — when `orientation` is entirely UNSET, the group falls back to a CSS-grid layout (`--grid`) instead of an orientation-specific class. See the `Orientations` story.',
+			description: 'Feeds `aria-orientation` directly on the root (`attributes.aria.orientation`) — **re-verified against the live `Group.tsx`**: it does NOT add any `inkq-group--*` modifier class; `Group.tsx` calls `styles(\'root\')` with no `module`/`global`/`selector` config at all. `orientation` also participates in the `--group-item-count` token calculation when `columns` is unset (see `columns` below). See the `Orientations` story.',
 		},
 		divider: {
 			control: 'boolean',
-			description: 'Adds the (literal, unhashed — `Group.module.scss` has no `&--divider` rule) `inkq-group--divider` class and a `data-divide` attribute; the actual `box-shadow` divider styling lives on the self-referencing `&:where([data-divide])` selector. See the `Divider` story.',
+			description: 'Adds a `data-divide` attribute to the root (`data: { divide: !!divider || null }`) — no class of any kind (`Group.module.scss` has no `&--divider` rule; the `box-shadow` divider styling lives entirely on the self-referencing `&:where([data-divide])` selector). See the `Divider` story.',
 		},
 		fullWidth: {
 			control: 'boolean',
@@ -137,27 +133,43 @@ const meta: Meta<GroupStoryProps> = {
 		},
 		columns: {
 			control: 'number',
-			description: 'Feeds a `--group-cols` CSS custom property on the root via an inline style (`setThemeCSS`\'s `tokens`), NOT a class — absent entirely from the root\'s inline style when unset. See the `Columns` story.',
+			description: 'Feeds a `--group-item-count` CSS custom property on the root via an inline style (`setThemeCSS`\'s `tokens`), NOT a class — `--group-cols` (referenced by `Group.module.scss`\'s `grid-template-columns`) is a STYLESHEET-INTERNAL value composed FROM `--group-item-count`; it is never itself set inline. When `columns` is a positive number, `--group-item-count` is set to it directly. When `columns` is unset AND `orientation` is set, `--group-item-count` is instead computed from `Children.count(children)` (`count > 1 ? count - 1 : count`). When both are unset, the property is absent entirely and `Group.module.scss`\'s own base rule (`--group-item-count: auto-fit`) applies. See the `Columns` and `Orientations` stories.',
 		},
 		justify: {
 			control: 'text',
-			description: '**Probable source bug, verified against the live `Group.tsx`**: declared on `BaseGroupProps` (typed as `CSSProperties[\'justifyContent\']`) but never destructured or applied to any inline style — `extractOtherProps` only pulls out `as`/`withinView` plus the style-alias fields (`className`/`classNames`/`style`/`styles`); `justify` falls straight through into `others` and lands as a raw, invalid `justify="..."` DOM attribute instead of `justifyContent` in the root\'s `style`. No story exercises it beyond this doc note.',
+			description: '**Probable source bug, verified against the live `Group.tsx`**: declared on `BaseGroupProps` (typed as `CSSProperties[\'justifyContent\']`) but never destructured or applied to any inline style — `extractOtherProps` only pulls out `as`/`childName`/`children`/`displayName`/`loading`/`revealFrom`/`withinView` plus the style-alias fields (`className`/`classNames`/`style`/`styles`); `justify` falls straight through into `others` and lands as a raw `justify="..."` DOM attribute instead of `justifyContent` in the root\'s `style`. (It\'s all-lowercase, so React forwards it to the DOM without a console warning — which is why this is easy to miss.) No story exercises it beyond this doc note.',
 		},
 		provider: {
 			control: false,
-			description: 'A `RootProviderFn<GroupContext>` that receives a per-child context value (`{ animated, duration, index, stagger, unstyled, withinView }`) via `renderWithProvider`. Without it, filtered children render unwrapped (plain `Fragment`s) — no context is published at all. See the `AnimatedState` stories.',
+			description: 'A `RootProviderFn<GroupContext>` that receives a per-child context value via `withProvider` (`@/lib/component`). The value handed to each child is `{ animated, duration, index, stagger, unstyled, withinView, ...valuesCtx }` — `valuesCtx` is spread LAST, so it can override any of the auto-computed fields. Without a `provider`, filtered children render unwrapped in a plain `Fragment` instead — no context is published at all. See the `AnimatedState`/`ValuesCtx` stories.',
+		},
+		valuesCtx: {
+			control: 'object',
+			description: 'Extra fields spread into every child\'s context value AFTER the auto-computed ones (`{ animated, duration, index, stagger, unstyled, withinView, ...valuesCtx }`), so `valuesCtx` can override any of them per-`Group`. Registered default is `{}`. Only meaningful paired with a custom `provider` — the default `GroupProvider`/`GroupContext` shape only reads the animation-related keys. See the `ValuesCtx` story.',
+		},
+		amount: {
+			control: false,
+			description: 'Forwarded verbatim into `useReplayInView(ref, { amount, once })` as the `IntersectionObserver` trigger threshold. Not asserted directly in any story here — `withinView`\'s timing is environment-dependent (framer-motion\'s `useInView`) and unsafe to assert on without `waitFor`, per the same caveat noted on the `AnimatedState` story.',
+		},
+		once: {
+			control: 'boolean',
+			description: 'Forwarded verbatim into `useReplayInView(ref, { amount, once })` — controls whether the group\'s reveal-trigger observer disarms once no part of the element is on screen, or stays armed for replay. Not asserted directly, same `withinView` timing caveat as `amount`.',
+		},
+		lead: {
+			control: false,
+			description: 'Accepted by the type but NOT wired to the observer. `lead` reaches `GroupProps` through `MaybeAnimationProps` → `AnimatedComponentProps extends ReplayInViewOptions` (so it only typechecks alongside `animated: true`), and `useReplayInView` does consume it — `triggerMargin = margin ?? (amount === undefined ? revealMargin(lead) : undefined)`. But `Group.tsx`\'s own destructure never names `lead`, and it passes only `{ amount, once }` to `useReplayInView`, so the hook always falls back to `revealMargin(undefined)` → the `REVEAL_LEAD` constant (`-4`). The passed value instead survives into `others` and lands as a `lead="..."` DOM attribute on the root. `margin` has the same shape. Note this is invisible in practice: nothing in the codebase passes `lead` to a `Group`, and React forwards the all-lowercase attribute without a console warning — so the only symptom is that tuning `lead` on a `Group` silently does nothing. No story exercises it beyond this doc note.',
 		},
 		animated: {
 			control: 'boolean',
-			description: 'Discriminates the props union: `animated: true` REQUIRES `duration` (and allows `stagger`); leaving `animated` unset means `duration`/`stagger` must also be unset (`StaticGroupProps`). See the `AnimatedState` story.',
+			description: 'Discriminates `MaybeAnimationProps`: `animated: true` REQUIRES `duration` (and allows `stagger`/`amount`/`once`/`lead`/`margin`); leaving `animated` unset means `duration`/`stagger`/etc. must also be unset. Published into each child\'s context value. See the `AnimatedState` story.',
 		},
 		duration: {
 			control: 'number',
-			description: 'Only valid alongside `animated: true` (see `AnimatedGroupProps`). Published into each child\'s context value.',
+			description: 'Only valid alongside `animated: true` (see `MaybeAnimationProps`). Published into each child\'s context value.',
 		},
 		stagger: {
 			control: 'number',
-			description: 'Only valid alongside `animated: true` (see `AnimatedGroupProps`). Published into each child\'s context value.',
+			description: 'Only valid alongside `animated: true` (see `MaybeAnimationProps`). Published into each child\'s context value.',
 		},
 		unstyled: {
 			control: 'boolean',
@@ -166,12 +178,11 @@ const meta: Meta<GroupStoryProps> = {
 	},
 	args: {
 		...getDefaultProps<Group.Props>('Group'),
-		childName: 'GroupItem',
 		children: (
 			<>
-				<GroupItem label="Item 1" />
-				<GroupItem label="Item 2" />
-				<GroupItem label="Item 3" />
+				<Group.Item>Item 1</Group.Item>
+				<Group.Item>Item 2</Group.Item>
+				<Group.Item>Item 3</Group.Item>
 			</>
 		),
 	},
@@ -181,15 +192,27 @@ export default meta
 
 export const Default: Story = {}
 
-// `module: { divider, grid: !orientation, [orientation]: !!orientation }` —
-// the "undefined" group below demonstrates the non-obvious `grid: !orientation`
-// fallback: with `orientation` entirely unset, `Group` renders as a CSS grid
-// rather than picking an orientation-specific modifier.
+/**
+ * All `orientation` values, side by side, plus the `undefined` fallback.
+ * **Re-verified against the live `Group.tsx`**: `orientation` toggles
+ * `aria-orientation` only — there is NO `inkq-group--grid`/`--horizontal`/
+ * `--vertical` modifier class (`Group.tsx` calls `styles('root')` with no
+ * `module` config at all). Separately, `orientation` participates in the
+ * `--group-item-count` token: with `columns` unset and `orientation` set,
+ * `Group` computes the count from `Children.count(children)` via
+ * `count > 1 ? count - 1 : count`.
+ *
+ * NOTE the gotcha this story pins down: `meta.args.children` is a SINGLE
+ * fragment (`<>…</>`) wrapping the three `Group.Item`s, and `Children.count`
+ * counts top-level nodes — a fragment is one node. So the count is `1`, not
+ * `3`, and the token resolves to `1` rather than the `2` you'd expect from
+ * three items. Passing the items as an array instead would yield `2`.
+ */
 export const Orientations: Story = {
 	parameters: { layout: 'padded' },
 	render: (args) => (
 		<Row>
-			<Labeled label="undefined (grid fallback)">
+			<Labeled label="undefined">
 				<Group { ...args as StaticGroupArgs } orientation={ undefined } />
 			</Labeled>
 			{ ORIENTATION_OPTIONS.map(orientation => (
@@ -205,20 +228,25 @@ export const Orientations: Story = {
 
 		await expect(groups).toHaveLength(3)
 
-		const [gridFallback, horizontal, vertical] = groups
+		const [unset, horizontal, vertical] = groups
 
-		await expect(gridFallback).not.toHaveAttribute('aria-orientation')
-		expect(hasModuleClass(gridFallback, 'inkq-group--grid')).toBe(true)
+		await expect(unset).not.toHaveAttribute('aria-orientation')
+		// `columns` and `orientation` are BOTH unset here, so `--group-item-count`
+		// is absent entirely — `Group.module.scss`'s own base rule applies.
+		expect(unset.style.getPropertyValue('--group-item-count')).toBe('')
 
+		// `1`, not `2` — the fragment counts as a single child. See the note above.
 		await expect(horizontal).toHaveAttribute('aria-orientation', 'horizontal')
-		// No matching SCSS rule for `--horizontal`, so this stays a literal,
-		// unhashed class — unlike `--grid`/`--divider` above/below.
-		await expect(horizontal).toHaveClass('inkq-group--horizontal')
-		expect(hasModuleClass(horizontal, 'inkq-group--grid')).toBe(false)
+		expect(horizontal.style.getPropertyValue('--group-item-count')).toBe('1')
 
 		await expect(vertical).toHaveAttribute('aria-orientation', 'vertical')
-		await expect(vertical).toHaveClass('inkq-group--vertical')
-		expect(hasModuleClass(vertical, 'inkq-group--grid')).toBe(false)
+		expect(vertical.style.getPropertyValue('--group-item-count')).toBe('1')
+
+		// No `inkq-group--*` modifier class exists for any value.
+		for (const root of [unset, horizontal, vertical]) {
+			const modifiers = Array.from(root.classList).filter(c => c.includes('--'))
+			await expect(modifiers).toHaveLength(0)
+		}
 	},
 }
 
@@ -241,16 +269,18 @@ export const Divider: Story = {
 
 		const [withDivider, withoutDivider] = groups
 
-		// `Group.module.scss` has no `&--divider` rule at all anymore (divider
-		// styling now lives on the self-referencing `&:where([data-divide])`
-		// selector instead) — so `inkq-group--divider` is ALWAYS a literal,
-		// unhashed token, with no compiled export to look up. The real,
-		// observable toggle is the `data-divide` attribute Group sets via
-		// `attributes.data.divide`.
+		// `Group.module.scss` has no `&--divider` rule at all — divider styling
+		// lives on the self-referencing `&:where([data-divide])` selector
+		// instead, and `Group.tsx` never applies any `module`/`global`/`selector`
+		// config to `styles('root')`. The real, observable toggle is the
+		// `data-divide` attribute `Group` sets via `attributes.data.divide`.
 		await expect(withDivider).toHaveAttribute('data-divide')
-		await expect(withDivider).toHaveClass('inkq-group--divider')
 		await expect(withoutDivider).not.toHaveAttribute('data-divide')
-		await expect(withoutDivider).not.toHaveClass('inkq-group--divider')
+
+		for (const root of [withDivider, withoutDivider]) {
+			const modifiers = Array.from(root.classList).filter(c => c.includes('--'))
+			await expect(modifiers).toHaveLength(0)
+		}
 	},
 }
 
@@ -278,8 +308,11 @@ export const FullWidth: Story = {
 	},
 }
 
-// `columns` feeds `--group-cols` as an inline CSS custom property
+// `columns` feeds `--group-item-count` as an inline CSS custom property
 // (`setThemeCSS`'s `tokens`), not a class — assert `style`, not `className`.
+// `--group-cols` (referenced by `grid-template-columns`) stays a
+// stylesheet-internal value COMPOSED FROM `--group-item-count`; it's never
+// itself set inline.
 export const Columns: Story = {
 	parameters: { controls: { exclude: ['columns'] } },
 	render: (args) => (
@@ -300,8 +333,10 @@ export const Columns: Story = {
 
 		const [unset, withColumns] = groups
 
-		expect(unset.style.getPropertyValue('--group-cols')).toBe('')
-		expect(withColumns.style.getPropertyValue('--group-cols')).toBe('3')
+		// `orientation` is unset here too, so the unset group's
+		// `--group-item-count` is absent entirely (not computed from children).
+		expect(unset.style.getPropertyValue('--group-item-count')).toBe('')
+		expect(withColumns.style.getPropertyValue('--group-item-count')).toBe('3')
 	},
 }
 
@@ -309,20 +344,19 @@ export const Columns: Story = {
 // carries a matching `displayName` static property. A component with a
 // DIFFERENT `displayName`, a raw host element (`<div>`, whose `type` is the
 // string `'div'` — strings have no `displayName` property, so it's treated
-// as unnamed and dropped), and a matching component are all mixed together
-// here; a plain string child isn't a React element at all, so it skips the
-// check entirely and always survives.
+// as unnamed and dropped), and a matching `Group.Item` are all mixed
+// together here; a plain string child isn't a React element at all, so it
+// skips the check entirely and always survives.
 export const ChildFiltering: Story = {
 	parameters: { layout: 'padded' },
 	args: {
-		childName: 'GroupItem',
 		children: (
 			<>
-				<GroupItem label="Kept 1" />
+				<Group.Item>Kept 1</Group.Item>
 				<OtherItem label="Dropped (wrong displayName)" />
 				<div>Dropped (host element, no displayName)</div>
 				{ 'Kept (plain string, not a React element)' }
-				<GroupItem label="Kept 2" />
+				<Group.Item>Kept 2</Group.Item>
 			</>
 		),
 	},
@@ -337,8 +371,8 @@ export const ChildFiltering: Story = {
 	},
 }
 
-// The discriminated union in practice: `animated` unset (`StaticGroupProps`)
-// vs. `animated: true` with `duration`/`stagger` (`AnimatedGroupProps`) — a
+// The discriminated union in practice: `animated` unset (`StaticComponentProps`)
+// vs. `animated: true` with `duration`/`stagger` (`AnimatedComponentProps`) — a
 // `DebugProvider` publishes each branch's context values back out as
 // `data-*` attributes on `DebugItem`, since `animated`/`duration`/`stagger`
 // otherwise have no visible DOM effect of their own on `Group`. Assertions
@@ -390,22 +424,72 @@ export const AnimatedState: Story = {
 	},
 }
 
-// `unstyled` does NOT remove `Group`'s own semantic base class (`inkq-group`)
-// — it's always emitted. Unlike `Container`'s root, `.inkq-group`'s SCSS
-// block DOES compile its own hash: `&:not([data-divide])`/
-// `&:where([data-divide])` are self-referencing rules (not just nested
-// descendant selectors like `&__item`), so CSS Modules generates a real hash
-// for the base class itself — suppressed when `unstyled`, present when
-// styled, same as every other hashed selector. The `grid` modifier
-// (`.inkq-group--grid`, the default here since `orientation` is unset) is
-// independently hashed too, via its own `&--grid` declaration, emitted by
-// `getConfigClasses` regardless of `unstyled` (`check.isUnstyled` only gates
-// the base-class hash lookup, not modifier classes) and falling back to the
-// literal `inkq-group--grid` token specifically when unstyled (see
-// `getStyleClass`'s own `check.isUnstyled` guard, reused by
-// `formatConfigClass`). NOTE: `Group.module.scss` no longer has an
-// `&--divider` rule at all — see the `Divider` story for that one's own,
-// now-literal-only, behavior.
+// `valuesCtx` is spread LAST into each child's context value (`{ animated,
+// duration, index, stagger, unstyled, withinView, ...valuesCtx }`), so it can
+// override any of the auto-computed fields — here it overrides `index` (which
+// would otherwise auto-number from `0`) to a fixed, shared value on every
+// child.
+export const ValuesCtx: Story = {
+	parameters: { layout: 'padded' },
+	render: () => (
+		<Group childName="DebugItem" provider={ DebugProvider } valuesCtx={ { index: 99 } }>
+			<DebugItem label="Item 1" />
+			<DebugItem label="Item 2" />
+		</Group>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			items = canvas.getAllByText(/^Item /)
+
+		await expect(items).toHaveLength(2)
+
+		// Both children get the SAME overridden `index`, not the auto-computed
+		// `0`/`1` — `valuesCtx` wins because it's spread after the auto fields.
+		await expect(items[0]).toHaveAttribute('data-index', '99')
+		await expect(items[1]).toHaveAttribute('data-index', '99')
+	},
+}
+
+// `GroupSpecs` declares `defaults: { as: 'div' }` — `Group` genuinely IS
+// polymorphic (`Group.tsx` renders `as={ as }`), unlike `GridItem`/`Section`
+// where the same prop is silently ignored at runtime.
+export const AsElement: Story = {
+	parameters: { controls: { exclude: ['as'] } },
+	render: (args) => (
+		<Row>
+			<Labeled label='as="div" (default)'>
+				<Group { ...args as StaticGroupArgs } as="div" />
+			</Labeled>
+			<Labeled label='as="ul"'>
+				<Group { ...args as StaticGroupArgs } as="ul" />
+			</Labeled>
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			groups = canvas.getAllByRole('group')
+
+		await expect(groups).toHaveLength(2)
+
+		const [divGroup, ulGroup] = groups
+
+		await expect(divGroup.tagName).toBe('DIV')
+		await expect(ulGroup.tagName).toBe('UL')
+	},
+}
+
+/**
+ * `unstyled` does NOT remove `Group`'s own semantic base class (`inkq-group`)
+ * — it's always emitted. `.inkq-group`'s SCSS block DOES compile its own
+ * hash: `&:not([data-divide])`/`&:where([data-divide])` are self-referencing
+ * rules (not just nested descendant selectors like `&__item`), so CSS
+ * Modules generates a real hash for the base class itself — suppressed when
+ * `unstyled`, present when styled, same as every other hashed selector.
+ * **Re-verified against the live `Group.tsx`**: there is NO modifier class of
+ * any kind (`grid`/`divider`/`horizontal`/`vertical`) to check alongside it —
+ * `styles('root')` is called with no `module`/`global`/`selector` config at
+ * all, so the base class is the only thing `unstyled` has any effect on here.
+ */
 export const Unstyled: Story = {
 	parameters: { controls: { exclude: ['unstyled'] } },
 	render: (args) => (
@@ -429,16 +513,7 @@ export const Unstyled: Story = {
 
 		await expect(styled).toHaveClass('inkq-group')
 		await expect(unstyledGroup).toHaveClass('inkq-group')
-		// The root DOES compile its own hash — `&:not([data-divide])`/
-		// `&:where([data-divide])` are self-referencing rules, not just nested
-		// descendant selectors — so it behaves like every other hashed
-		// selector: present when styled, suppressed when unstyled.
 		expect(hasModuleClass(styled, 'inkq-group')).toBe(true)
 		expect(hasModuleClass(unstyledGroup, 'inkq-group')).toBe(false)
-
-		expect(hasModuleClass(styled, 'inkq-group--grid')).toBe(true)
-		expect(hasModuleClass(unstyledGroup, 'inkq-group--grid')).toBe(false)
-		// Falls back to the literal token once unstyled removes the hash.
-		await expect(unstyledGroup).toHaveClass('inkq-group--grid')
 	},
 }

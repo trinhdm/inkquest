@@ -15,10 +15,14 @@ const Row = ({ children }: { children: ReactNode }) => (
 	</div>
 )
 
-// A plain label wrapper ONLY — never a direct JSX child of `<Grid>` (see the
-// `GridItem` mounting note below). Each `Group` wraps its OWN separate
-// `<Grid>` internally so the actual `GridItem` stays a literal, direct child
-// of a `Grid` for `filterChildren` to recognize.
+// A plain label wrapper. `GridItem` (`GridItemSpecs`'s `isCompound: true`)
+// has no context dependency of its own — it doesn't call any `useRootCtx`/
+// `useSafeRootCtx` reader — so it renders identically whether or not it's
+// mounted inside a real `<Grid>`. It's still wrapped in one here purely as a
+// realistic usage example: `Grid.tsx`'s own `filterChildren(children,
+// 'GridItem')` call is commented out (dead code, see `Grid.stories.tsx`), so
+// `Grid` no longer requires — or even recognizes — `GridItem` as a special
+// child type; every child renders through as-is regardless.
 const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 	<div style={ { display: 'flex', flexDirection: 'column', gap: 8 } }>
 		<span style={ { font: 'var(--inkq-text-control)', letterSpacing: '.15em', textTransform: 'uppercase', opacity: 0.6 } }>
@@ -45,16 +49,6 @@ const ROOT_SELECTOR = '.inkq-grid-item'
 type GridItemStoryProps = Parameters<typeof Grid.Item>[0]
 type Story = StoryObj<GridItemStoryProps>
 
-// `GridItem` is a compound part (`isCompound: true`), so every story
-// mounts it as a literal, DIRECT JSX child of a real `<Grid>` — NOT via a
-// meta-level `decorators` wrapper. `Grid.tsx` calls
-// `filterChildren(children, 'GridItem')`, which checks `child.type.displayName`
-// on each of ITS OWN direct `children`; a Storybook `decorators` wrapper
-// renders `<Story />` (Storybook's own internal story-renderer component) as
-// that direct child instead of `GridItem` itself, so the displayName check
-// fails and `Grid` silently drops it — the canvas ends up completely empty.
-// Verified: this is exactly what happened before this fix (every story in
-// this file rendered nothing).
 const meta: Meta<GridItemStoryProps> = {
 	component: Grid.Item,
 	title: 'Layout/Grid/Grid.Item',
@@ -62,7 +56,7 @@ const meta: Meta<GridItemStoryProps> = {
 	argTypes: {
 		as: {
 			control: 'text',
-			description: '**Source bug, verified against the live `GridItem.tsx`**: accepted by the polymorphic contract, but SILENTLY IGNORED at runtime. `extractOtherProps(rest)` (`hooks/useProps/helpers.ts`) splits its return into `{ as, others }` — `GridItem` destructures only `{ others }` from that call and never reads the sibling `as` value, so it never reaches `Box`. `GridItem` always renders a `div` regardless of what `as` is set to. See the `AsPropIgnored` story.',
+			description: 'NOT part of `Grid.Item`\'s accepted props. `GridItemSpecs` declares `isCompound: true` with no `defaults.as`, which is the codebase-wide signal for a compound part with a fixed tag — `polymorphic()`\'s non-polymorphic call-signature branch then types `as` as `never`, so only `undefined` is assignable and passing a tag is a type error. `GridItem` correspondingly hardcodes `as="div"` on its `Box` and takes only `{ others }` from `extractOtherProps`. This is the same deliberate contract used by `Group.Item`, `Timeline.Item`, `Table.Row`/`Table.Cell`, `Button.Section` and the `Accordion` parts (see `Grid.test.tsx` and `Table.test.tsx`, which assert it directly) — not an oversight. See the `FixedTag` story.',
 		},
 		unstyled: {
 			control: 'boolean',
@@ -90,43 +84,29 @@ export const Default: Story = {
 }
 
 /**
- * **Source bug, verified against the live `GridItem.tsx` and
- * `extractOtherProps`**: `extractOtherProps(rest)` returns `{ as, others }`
- * as two SEPARATE keys — `GridItem` destructures only `{ others } =
- * extractOtherProps(rest)`, so the `as` value it also returns is silently
- * discarded and never reaches the underlying `Box`. Unlike `Grid`/`Section`/
- * `MenuItem` (which each forward or otherwise account for their own `as`),
- * `GridItem` — a compound part accepting an `as` prop via the shared
- * polymorphic contract — has NO working way to change its rendered tag: it's
- * always a `div`, regardless of what `as` is set to. Flagged as a real
- * source-side gap, not "fixed" here.
+ * `Grid.Item` is a COMPOUND part: `GridItemSpecs` sets `isCompound: true` and
+ * declares no `defaults.as`, so `polymorphic()` types `as` as `never` and the
+ * component hardcodes `as="div"` on its `Box`. The rendered tag is part of the
+ * contract, not a caller decision — `<Grid.Item as="article">` doesn't "get
+ * ignored", it doesn't typecheck. `Grid.test.tsx` asserts this directly.
  *
- * NOTE: `GridItemSpecs` declares no `defaults.as`, so `polymorphic()`'s
- * non-polymorphic call-signature branch types `as` as `never` (only
- * `undefined` is assignable) — consistent with the fact that it's genuinely
- * inert at runtime too. The `as={ 'article' as never }` cast below is the
- * narrowest possible escape hatch for that one value, scoped to this single
- * JSX attribute.
+ * This story pins that fixed tag so a future refactor can't quietly change it.
+ * The same contract governs `Group.Item`, `Timeline.Item`, `Table.Row`/
+ * `Table.Cell`, `Button.Section` and the `Accordion` parts.
  */
-export const AsPropIgnored: Story = {
+export const FixedTag: Story = {
 	render: (args) => (
 		<Row>
-			<Group label='as="div" (default)'>
+			<Group label="div (fixed)">
 				<Grid.Item { ...args }>div item</Grid.Item>
-			</Group>
-			<Group label='as="article" (ignored)'>
-				<Grid.Item { ...args } as={ 'article' as never }>article item</Grid.Item>
 			</Group>
 		</Row>
 	),
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement),
-			asDiv = canvas.getByText('div item').closest(ROOT_SELECTOR) as HTMLElement,
-			asArticle = canvas.getByText('article item').closest(ROOT_SELECTOR) as HTMLElement
+			asDiv = canvas.getByText('div item').closest(ROOT_SELECTOR) as HTMLElement
 
-		// Both render as `div` — `as="article"` has no effect.
 		await expect(asDiv.tagName).toBe('DIV')
-		await expect(asArticle.tagName).toBe('DIV')
 	},
 }
 

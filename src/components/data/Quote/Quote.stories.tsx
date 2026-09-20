@@ -38,22 +38,22 @@ const meta: Meta<QuoteStoryProps> = {
 	component: Quote,
 	title: 'Data/Quote',
 	argTypes: {
-		quote: {
+		content: {
 			control: 'text',
-			description: 'Required. **Probable source bug, verified against the live `Quote.tsx`**: the paragraph body renders `{ quote ?? children }` — but `quote` is a REQUIRED prop on the public type, so the `children` fallback is dead code, unreachable through any type-safe call site. No story here exercises `children` as a substitute for `quote`; doing so would document behavior the component\'s own type system doesn\'t actually allow.',
+			description: 'Required. Rendered verbatim inside the `content` paragraph as `"{ content }"` — there is no `children` fallback in source.',
 		},
 		author: {
 			control: 'text',
-			description: '**Probable source bug, verified against the live `Quote.tsx`**: the caption `<span>` (`styles(\'caption\', true)`) renders UNCONDITIONALLY — unlike `Timeline.Item`\'s sibling `title`, which is gated behind `{ title && (...) }`. With `author` omitted, an empty, classed `<span>` is still emitted to the DOM. See the `AuthorPresence` story, which documents this honestly (an empty element, not an absent one) rather than asserting it disappears.',
+			description: 'The caption `<span>` (`styles(\'caption\', true)`) renders UNCONDITIONALLY — unlike `Timeline.Item`\'s sibling `title`, which is gated behind `{ title && (...) }`. With `author` omitted, an empty, classed `<span>` is still emitted to the DOM. See the `AuthorPresence` story, which documents this honestly (an empty element, not an absent one) rather than asserting it disappears.',
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps`, not `Quote`\'s own `QuoteProps`. The semantic base class is ALWAYS emitted for `root`/`rail`/`content` (`inkq-quote`, `inkq-quote__rail`, `inkq-quote__content`) regardless of this prop — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it, for each of those three selectors (all three have real declarations in `Quote.module.scss`). The `caption` selector is a special case with no own SCSS declaration at all — see the `author` description and the `Unstyled` story.',
+			description: 'Part of `PolymorphicProps`, not `Quote`\'s own `QuoteProps`. The semantic base class is ALWAYS emitted for `root`/`rail`/`content` (`inkq-quote`, `inkq-quote__rail`, `inkq-quote__content`) regardless of this prop — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it, for each selector that actually has one (`root` and `content` have real declarations in `Quote.module.scss`; `rail` does not). Global-config classes (root\'s `item--block`, content\'s `h4`) and `caption`\'s literal `inkq-caption` boolean-config class have no CSS-module hash to suppress in the first place, so they survive `unstyled` unchanged too — see the `Unstyled` story.',
 		},
 	},
 	args: {
 		...getDefaultProps<Quote.Props>('Quote'),
-		quote: 'Design is not just what it looks like and feels like. Design is how it works.',
+		content: 'Design is not just what it looks like and feels like. Design is how it works.',
 		author: 'Steve Jobs',
 	},
 }
@@ -64,14 +64,14 @@ export const Default: Story = {
 	play: async ({ canvasElement, args }) => {
 		const canvas = within(canvasElement)
 
-		await expect(canvas.getByText(`"${args.quote}"`)).toBeInTheDocument()
+		await expect(canvas.getByText(`"${args.content}"`)).toBeInTheDocument()
 		await expect(canvas.getByText(args.author as string)).toBeInTheDocument()
 	},
 }
 
-// `author` is optional, but — per the documented source bug above — the
-// caption `<span>` is rendered either way. "Without author" therefore means
-// an EMPTY, still-present caption element, not a missing one.
+// `author` is optional, but the caption `<span>` is rendered either way.
+// "Without author" therefore means an EMPTY, still-present caption element,
+// not a missing one.
 export const AuthorPresence: Story = {
 	parameters: { controls: { exclude: ['author'] } },
 	render: (args) => (
@@ -86,7 +86,7 @@ export const AuthorPresence: Story = {
 	),
 	play: async ({ canvasElement, args }) => {
 		const canvas = within(canvasElement),
-			quotes = canvas.getAllByText(`"${args.quote}"`)
+			quotes = canvas.getAllByText(`"${args.content}"`)
 
 		expect(quotes).toHaveLength(2)
 
@@ -100,7 +100,7 @@ export const AuthorPresence: Story = {
 		await expect(withAuthorCaption).toBeInTheDocument()
 		await expect(withAuthorCaption).toHaveTextContent('Steve Jobs')
 
-		// Present, per the documented bug — just empty, not removed from the DOM.
+		// Present unconditionally — just empty, not removed from the DOM.
 		await expect(withoutAuthorCaption).toBeInTheDocument()
 		await expect(withoutAuthorCaption).toHaveTextContent('')
 	},
@@ -120,7 +120,7 @@ export const AsElement: Story = {
 	),
 	play: async ({ canvasElement, args }) => {
 		const canvas = within(canvasElement),
-			quotes = canvas.getAllByText(`"${args.quote}"`)
+			quotes = canvas.getAllByText(`"${args.content}"`)
 
 		expect(quotes).toHaveLength(2)
 
@@ -136,14 +136,18 @@ export const AsElement: Story = {
 // `unstyled` does NOT remove any of `Quote`'s semantic base classes — per
 // `getClassName.tsx`, the base class is now ALWAYS emitted. It only
 // suppresses the CSS-module-hashed class normally appended alongside it, and
-// only where a hash exists to suppress in the first place: `root`, `rail`,
-// and `content` each have a real declaration in `Quote.module.scss`, but
-// `caption` (`&__caption`) has NONE — so `caption` never carries a
-// CSS-module hash, styled or unstyled alike. `caption` ALSO always carries a
-// second, literal `inkq-caption` utility class from the `styles('caption',
-// true)` boolean-shorthand config — `getConfigClasses` only checks
-// `check.isUnstyled` inside `getStyleClass`, never for the boolean-config
-// branch itself, so that literal class survives `unstyled` too.
+// only where a hash exists to suppress in the first place: `root` and
+// `content` each have a real declaration in `Quote.module.scss`, but `rail`
+// and `caption` (`&__rail`, `&__caption`) have NONE — so those two never
+// carry a CSS-module hash, styled or unstyled alike.
+//
+// `root` and `content` ALSO each carry a literal global-config class from
+// `styles('root', { global: { 'item--block': true } })` and
+// `styles('content', { global: { h4: true } })` — `inkq-item--block` and
+// `inkq-h4` respectively. Those global classes have no own SCSS declaration
+// either, so — same as `rail`/`caption`'s boolean-config classes — they
+// survive `unstyled` too: `getConfigClasses` falls back to the literal class
+// name whenever no hash exists to suppress.
 export const Unstyled: Story = {
 	parameters: { controls: { exclude: ['unstyled'] } },
 	render: (args) => (
@@ -157,7 +161,7 @@ export const Unstyled: Story = {
 	),
 	play: async ({ canvasElement, args }) => {
 		const canvas = within(canvasElement),
-			quotes = canvas.getAllByText(`"${args.quote}"`)
+			quotes = canvas.getAllByText(`"${args.content}"`)
 
 		expect(quotes).toHaveLength(2)
 
@@ -170,27 +174,29 @@ export const Unstyled: Story = {
 			return !!moduleClass && el.classList.contains(moduleClass)
 		}
 
-		// root
-		await expect(styledRoot).toHaveClass('inkq-quote')
-		await expect(unstyledRoot).toHaveClass('inkq-quote')
+		// root — base class, hashed module class, and the `item--block`
+		// global-config class (unhashed, always present).
+		await expect(styledRoot).toHaveClass('inkq-quote', 'inkq-item--block')
+		await expect(unstyledRoot).toHaveClass('inkq-quote', 'inkq-item--block')
 		expect(hasModuleClass(styledRoot, 'inkq-quote')).toBe(true)
 		expect(hasModuleClass(unstyledRoot, 'inkq-quote')).toBe(false)
 
-		// rail
+		// rail — no own SCSS declaration, so no hash exists to suppress.
 		const styledRail = styledRoot.querySelector('.inkq-quote__rail') as HTMLElement,
 			unstyledRail = unstyledRoot.querySelector('.inkq-quote__rail') as HTMLElement
 
 		await expect(styledRail).toHaveClass('inkq-quote__rail')
 		await expect(unstyledRail).toHaveClass('inkq-quote__rail')
-		expect(hasModuleClass(styledRail, 'inkq-quote__rail')).toBe(true)
+		expect(hasModuleClass(styledRail, 'inkq-quote__rail')).toBe(false)
 		expect(hasModuleClass(unstyledRail, 'inkq-quote__rail')).toBe(false)
 
-		// content
+		// content — base class, hashed module class, and the `h4`
+		// global-config class (unhashed, always present).
 		const styledContent = styledRoot.querySelector('.inkq-quote__content') as HTMLElement,
 			unstyledContent = unstyledRoot.querySelector('.inkq-quote__content') as HTMLElement
 
-		await expect(styledContent).toHaveClass('inkq-quote__content')
-		await expect(unstyledContent).toHaveClass('inkq-quote__content')
+		await expect(styledContent).toHaveClass('inkq-quote__content', 'inkq-h4')
+		await expect(unstyledContent).toHaveClass('inkq-quote__content', 'inkq-h4')
 		expect(hasModuleClass(styledContent, 'inkq-quote__content')).toBe(true)
 		expect(hasModuleClass(unstyledContent, 'inkq-quote__content')).toBe(false)
 

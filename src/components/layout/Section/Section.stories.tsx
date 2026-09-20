@@ -48,6 +48,26 @@ const ROOT_SELECTOR = '.inkq-section'
 // `PolymorphicProps<SectionProps, C>`. `Parameters<typeof Section>[0]` reads
 // that real, wrapped type straight off the component itself.
 type SectionStoryProps = Parameters<typeof Section>[0]
+
+// `SectionProps` is an INTERSECTION that contains the union
+// (`BaseSectionProps & LayoutSectionProps & MaybeAnimationProps`), not a
+// top-level union, so `Extract`/`Exclude` can't select a branch off it —
+// `Extract` collapses to `never` and `Exclude` silently returns the whole
+// type. Each use site supplies the discriminant explicitly in JSX right
+// after the spread, so the cast's job is to REMOVE the discriminant-governed
+// keys from the spread and let the explicit props pick the branch.
+//
+// `blocks` forbids `title`/`eyebrow` entirely (`SectionBlocksProps`), so they
+// come off the spread too.
+type SectionBlocksArgs = Omit<SectionStoryProps, 'eyebrow' | 'layout' | 'title'>
+type SectionContentArgs = Omit<SectionStoryProps, 'layout'>
+
+// Same treatment for `MaybeAnimationProps`'s union
+// (`src/hooks/animation/constants.ts`): both groups set `animated`/`duration`/
+// `stagger` explicitly, so all three come off the spread.
+type AnimatedSectionArgs = Omit<SectionStoryProps, 'animated' | 'duration' | 'stagger'>
+type StaticSectionArgs = AnimatedSectionArgs
+
 type Story = StoryObj<SectionStoryProps>
 
 const meta: Meta<SectionStoryProps> = {
@@ -56,24 +76,36 @@ const meta: Meta<SectionStoryProps> = {
 	argTypes: {
 		as: {
 			control: false,
-			description: 'Accepted (via the shared `PolymorphicProps`/`Box` contract) but silently IGNORED — `Section.tsx` destructures `others` from `extractOtherProps(rest)` but never reads the sibling `as` value it also returns, and always hardcodes `<Box as={Container} ...>`. Passing `as="div"` has zero effect on the rendered tag (always `Container`\'s own default, `<section>`); see the `AsPropIgnored` story.',
+			description: 'NOT part of `Section`\'s accepted props. Per `specs.types.ts`, `IsPolymorphic<S>` is true only when `S[\'defaults\'][\'as\']` is an `ElementType`; `SectionSpecs` declares `defaults: { props: ... }` with no `as`, so `AsPolymorphic` resolves to `{ as?: never }` — only `undefined` is assignable and passing a tag is a type error. `Section` correspondingly hardcodes its root as `<Box as={Container} ...>`, whose own default tag is `<section>`. This is a different route to the same fixed-tag contract than the compound parts (`Grid.Item`, `Group.Item`, ...), which get there via `isCompound: true` forcing `defaults.as?: never`. See the `FixedTag` story.',
 		},
 		eyebrow: {
 			control: 'text',
-			description: '**Re-verified against the live `Section.tsx`**: rendered CONDITIONALLY — `{ eyebrow && <span {...styles(\'eyebrow\', true)}>{eyebrow}</span> }`. The `true` shorthand (`SelectorConfigScope`\'s boolean branch, per `getConfigClasses` in `getClassName.tsx`) just emits the selector\'s own base class (`inkq-section__eyebrow`) with no extra module/global/selector modifier classes layered on. When `eyebrow` is falsy (`undefined`/`\'\'`), the `<span>` isn\'t rendered at all — there is no longer an empty placeholder span in the DOM. See the `Eyebrow` story.',
+			description: '**Re-verified against the live `Section.tsx`/`builder.tsx`**: rendered CONDITIONALLY — `buildHeader` pushes `{ eyebrow && <span {...styles(\'eyebrow\', true)} {...reveal.next()}>{eyebrow}</span> }`. The `true` shorthand (`SelectorConfigScope`\'s boolean branch, per `getConfigClasses` in `getClassName.tsx`) just emits the selector\'s own base class (`inkq-section__eyebrow`) with no extra module/global/selector modifier classes layered on. When `eyebrow` is falsy (`undefined`/`\'\'`), the `<span>` isn\'t rendered at all. Forbidden entirely (`never`) when `layout: \'blocks\'` — see `SectionBlocksProps`. See the `Eyebrow` story.',
 		},
 		layout: {
 			control: 'select',
 			options: LAYOUT_OPTIONS,
-			description: 'Changes the heading tag (`h1` for `hero`, `h2` otherwise) and the content wrapper: `hero`/`cta` wrap in a plain `<div class="inkq-section__inner">`, `split` wraps in a two-`Grid.Item` `Grid`, and `default`/`blocks` render the header/content with no wrapper element at all (`blocks` falls through `buildSection`\'s `switch` to the same `default:` branch as `\'default\'`). Also toggles the `inkq-section--<layout>` modifier class for every value except `\'default\'` (`blocks` included — see `Section.module.scss`\'s `&--blocks { padding-block: 0; }` rule). See the `Layout` story.',
+			description: 'Changes the heading tag (`h1` for `hero`, `h2` otherwise) and the content wrapper: `hero`/`cta` wrap in a plain `<div class="inkq-section__inner">`, `split` wraps in a two-`Grid.Item` `Grid`, and `default`/`blocks` render the header/content with no wrapper element at all (`blocks` falls through `buildSection`\'s `switch` to the same `default:` branch as `\'default\'`). Also toggles the `inkq-section--<layout>` modifier class for every value except `\'default\'` (`blocks` included — see `Section.module.scss`\'s `&--blocks { padding-block: 0; }` rule). `layout: \'blocks\'` (`SectionBlocksProps`) additionally FORBIDS `title`/`eyebrow` at the type level — see the `Layout` story\'s `blocks` group.',
 		},
 		title: {
 			control: 'text',
-			description: '**Re-verified against the live `Section.tsx`**: now OPTIONAL (`title?: string`), rendered CONDITIONALLY — `{ title && <Box as={HTag}>{title}</Box> }`. When `title` is falsy, no heading element is rendered at all. See the `NoTitle` story.',
+			description: '**Re-verified against the live `builder.tsx`**: optional (`title?: string`), rendered CONDITIONALLY as a BARE tag, not a `Box` — `buildHeader` pushes `{ title && <Tag {...styles(\'title\')}>{title}</Tag> }` where `Tag` is `\'h1\'`/`\'h2\'` depending on `layout`. When `title` is falsy, no heading element is rendered at all. Forbidden entirely (`never`) when `layout: \'blocks\'` — see `SectionBlocksProps`. See the `NoTitle` story.',
 		},
 		children: {
 			control: false,
 			description: 'Passed through `orderSection` (see the `ContentComposition` story) rather than rendered as-is: string children become a description paragraph, and any `isValidElement` child whose `type !== Button` is treated as ordinary content while a genuine `Section.Button` (up to 2) becomes a CTA `Button.Group` entry.',
+		},
+		animated: {
+			control: 'boolean',
+			description: 'Discriminates `MaybeAnimationProps`: `animated: true` REQUIRES `duration` (registered default `600`; also allows `stagger`/`amount`/`once`/`lead`/`margin`); leaving `animated` unset means `duration`/`stagger`/etc. must also be unset. Drives `useReveal`\'s `isAnimated` gate (`animated && !unstyled`), which controls whether the deterministic `data-js-reveal` root attribute (and per-item `data-reveal-item` attributes) are applied at all. See the `Animated` story.',
+		},
+		duration: {
+			control: 'number',
+			description: 'Only valid alongside `animated: true`. Feeds the inline `--reveal-duration` CSS custom property (`setThemeCSS`\'s `tokens`, formatted `${duration}ms`) — computed purely off `props.duration`, independent of whether `animated` is actually `true`. Registered default is `600`. See the `Animated` story.',
+		},
+		stagger: {
+			control: 'number',
+			description: 'Only valid alongside `animated: true`. Feeds the inline `--reveal-stagger` CSS custom property the same way `duration` feeds `--reveal-duration` — computed purely off `props.stagger`, independent of `animated`. Registered default is `150`. See the `Animated` story.',
 		},
 		unstyled: {
 			control: 'boolean',
@@ -82,7 +114,6 @@ const meta: Meta<SectionStoryProps> = {
 	},
 	args: {
 		...getDefaultProps<Section.Props>('Section'),
-		title: 'Section title',
 	},
 }
 
@@ -90,6 +121,7 @@ export default meta
 
 export const Default: Story = {
 	args: {
+		title: 'Section title',
 		eyebrow: 'Eyebrow',
 		children: 'A short description of this section.',
 	},
@@ -118,28 +150,35 @@ export const Default: Story = {
  * inline — `blocks` isn't its own `case`, so it falls through to the same
  * `default:` branch as `'default'`). Separately, the ROOT modifier class
  * (`inkq-section--<layout>`) is toggled for every value EXCEPT `'default'`
- * (`Section.tsx`'s `clsx = { [...]: !!(layout && layout !== 'default') }`),
+ * (`Section.tsx`'s `module = { [\`${layout}\`]: !!(layout && layout !== 'default') }`),
  * so `blocks` DOES get a modifier class even though it has no wrapper — the
  * two behaviors are independent.
+ *
+ * The `blocks` group mirrors `SectionBlocksProps` (`title`/`eyebrow` both
+ * `never`) — no heading is rendered for it at all, unlike every other layout.
  */
 export const Layout: Story = {
 	parameters: {
 		layout: 'padded',
-		controls: { exclude: ['layout'] },
+		controls: { exclude: ['layout', 'title', 'eyebrow'] },
 	},
 	render: (args) => (
 		<Row>
 			{ LAYOUT_OPTIONS.map(layout => (
 				<Group key={ layout } label={ layout }>
-					<Section
-						{ ...args }
-						layout={ layout }
-						title={ `Layout: ${ layout }` }
-					>
-						A description that appears in every layout.
-						<Section.Button>Learn more</Section.Button>
-						<Section.Button>View more</Section.Button>
-					</Section>
+					{ layout === 'blocks' ? (
+						<Section { ...args as SectionBlocksArgs } layout="blocks">
+							{ `A description for the ${ layout } layout.` }
+							<Section.Button>Learn more</Section.Button>
+							<Section.Button>View more</Section.Button>
+						</Section>
+					) : (
+						<Section { ...args as SectionContentArgs } layout={ layout } title={ `Layout: ${ layout }` }>
+							{ `A description for the ${ layout } layout.` }
+							<Section.Button>Learn more</Section.Button>
+							<Section.Button>View more</Section.Button>
+						</Section>
+					) }
 				</Group>
 			)) }
 		</Row>
@@ -148,20 +187,23 @@ export const Layout: Story = {
 		const canvas = within(canvasElement)
 
 		const defaultHeading = canvas.getByRole('heading', { name: 'Layout: default' }),
-			blocksHeading = canvas.getByRole('heading', { name: 'Layout: blocks' }),
 			ctaHeading = canvas.getByRole('heading', { name: 'Layout: cta' }),
 			heroHeading = canvas.getByRole('heading', { name: 'Layout: hero' }),
 			splitHeading = canvas.getByRole('heading', { name: 'Layout: split' })
 
+		// `blocks` renders NO heading at all — `title`/`eyebrow` are forbidden by
+		// `SectionBlocksProps`, so its root is located via its description text.
+		const blocksRoot = canvas.getByText('A description for the blocks layout.')
+			.closest(ROOT_SELECTOR) as HTMLElement
+		await expect(within(blocksRoot).queryByRole('heading')).not.toBeInTheDocument()
+
 		// Only `hero` renders an `h1`; every other layout renders an `h2`.
 		await expect(heroHeading.tagName).toBe('H1')
 		await expect(defaultHeading.tagName).toBe('H2')
-		await expect(blocksHeading.tagName).toBe('H2')
 		await expect(ctaHeading.tagName).toBe('H2')
 		await expect(splitHeading.tagName).toBe('H2')
 
 		const defaultRoot = defaultHeading.closest(ROOT_SELECTOR) as HTMLElement,
-			blocksRoot = blocksHeading.closest(ROOT_SELECTOR) as HTMLElement,
 			ctaRoot = ctaHeading.closest(ROOT_SELECTOR) as HTMLElement,
 			heroRoot = heroHeading.closest(ROOT_SELECTOR) as HTMLElement,
 			splitRoot = splitHeading.closest(ROOT_SELECTOR) as HTMLElement
@@ -194,7 +236,7 @@ export const Layout: Story = {
 		// `default` AND `blocks` both fall through to `buildSection`'s
 		// `default:` branch — no wrapper element at all around the header/content.
 		await expect(defaultHeading.closest('.inkq-section__inner')).not.toBeInTheDocument()
-		await expect(blocksHeading.closest('.inkq-section__inner')).not.toBeInTheDocument()
+		await expect(blocksRoot.querySelector('.inkq-section__inner')).not.toBeInTheDocument()
 
 		// `split` wraps the header and content in two separate `Grid.Item`s.
 		await expect(splitRoot.querySelectorAll('.inkq-grid-item')).toHaveLength(2)
@@ -208,11 +250,10 @@ export const Layout: Story = {
 }
 
 /**
- * **Re-verified against the LIVE `Section.tsx`**: `eyebrow` is now genuinely
- * conditional — `{ eyebrow && <span {...styles('eyebrow', true)}>{eyebrow}
- * </span> }`. When `eyebrow` is falsy, there is NO `<span>` in the DOM
- * at all (previously it rendered an always-present, empty span — that's no
- * longer the case).
+ * **Re-verified against the LIVE `Section.tsx`/`builder.tsx`**: `eyebrow` is
+ * genuinely conditional — `{ eyebrow && <span {...styles('eyebrow', true)}
+ * {...reveal.next()}>{eyebrow}</span> }`. When `eyebrow` is falsy, there is
+ * NO `<span>` in the DOM at all.
  */
 export const Eyebrow: Story = {
 	parameters: {
@@ -222,10 +263,10 @@ export const Eyebrow: Story = {
 	render: (args) => (
 		<Row>
 			<Group label='eyebrow="New Arrivals"'>
-				<Section { ...args } eyebrow="New Arrivals" title="With an eyebrow" />
+				<Section { ...args as SectionContentArgs } eyebrow="New Arrivals" title="With an eyebrow" />
 			</Group>
 			<Group label="eyebrow: undefined">
-				<Section { ...args } eyebrow={ undefined } title="Without an eyebrow" />
+				<Section { ...args as SectionContentArgs } eyebrow={ undefined } title="Without an eyebrow" />
 			</Group>
 		</Row>
 	),
@@ -249,11 +290,11 @@ export const Eyebrow: Story = {
 }
 
 /**
- * **New coverage, tracking a real source change**: `title` was previously a
- * required `string`; it's now `title?: string` and rendered conditionally —
- * `{ title && <Box as={HTag}>{title}</Box> }` (`Section.tsx`). When `title`
- * is falsy, no heading element is rendered at all (mirroring `eyebrow`'s own
- * conditional, see the `Eyebrow` story above).
+ * `title` is optional (`title?: string`) and rendered conditionally as a
+ * bare heading tag (`buildHeader`'s `{ title && <Tag {...styles('title')}>
+ * {title}</Tag> }`, `builder.tsx`) — mirroring `eyebrow`'s own conditional,
+ * see the `Eyebrow` story above. When `title` is falsy, no heading element is
+ * rendered at all.
  */
 export const NoTitle: Story = {
 	parameters: {
@@ -263,12 +304,12 @@ export const NoTitle: Story = {
 	render: (args) => (
 		<Row>
 			<Group label='title="With a title"'>
-				<Section { ...args } title="With a title">
+				<Section { ...args as SectionContentArgs } title="With a title">
 					Section with a title.
 				</Section>
 			</Group>
 			<Group label="title: undefined">
-				<Section { ...args } title={ undefined }>
+				<Section { ...args as SectionContentArgs } title={ undefined }>
 					Section without a title.
 				</Section>
 			</Group>
@@ -308,9 +349,9 @@ export const NoTitle: Story = {
  * `Section` a real array of 3 distinct children instead.
  */
 export const ContentComposition: Story = {
-	args: { eyebrow: 'Featured' },
+	args: { title: 'Content composition', eyebrow: 'Featured' },
 	render: (args) => (
-		<Section { ...args }>
+		<Section { ...args as SectionContentArgs }>
 			A single string child becomes one description paragraph.
 			<Section.Button>Learn more</Section.Button>
 			<Section.Button>View more</Section.Button>
@@ -357,22 +398,92 @@ export const MinimalContent: Story = {
 	},
 }
 
-// `Section.tsx` computes `as`/`others` via `extractOtherProps(rest)` but only
-// ever reads `others` — the `as` value is discarded, and the root is always
-// rendered via the hardcoded `<Box as={Container}>`. Passing `as="div"` has no
-// effect on the rendered tag.
-//
-// NOTE: `SectionSpecs` declares no `defaults.as`, so `polymorphic()`'s
-// non-polymorphic call-signature branch types `as` as `never` (only
-// `undefined` is assignable) — matching the fact that it's genuinely inert at
-// runtime too. The `as={ 'div' as never }` cast below is the narrowest
-// possible escape hatch for that one value, scoped to this single attribute.
-export const AsPropIgnored: Story = {
-	args: { title: 'as is ignored' },
-	render: (args) => <Section { ...args } as={ 'div' as never } />,
+/**
+ * `duration`/`stagger` feed the inline `--reveal-duration`/`--reveal-stagger`
+ * custom properties (`setThemeCSS`'s `tokens`) purely off their own prop
+ * values — computed independently of whether `animated` is actually `true`.
+ * The `false` branch never passes `duration`/`stagger` at all (forbidden by
+ * `MaybeAnimationProps`'s `StaticComponentProps` branch), so both tokens are
+ * absent there. `data-js-reveal` is the deterministic (non-timing-dependent)
+ * half of `useReveal`'s reveal-root attributes — present whenever `isAnimated`
+ * (`animated && !unstyled`), regardless of the `IntersectionObserver`'s
+ * actual triggered state, which is NOT asserted here (environment-dependent,
+ * framer-motion's `useInView`).
+ */
+export const Animated: Story = {
+	parameters: {
+		layout: 'padded',
+		controls: { exclude: ['animated', 'duration', 'stagger'] },
+	},
+	render: (args) => (
+		<Row>
+			<Group label="true">
+				<Section
+					{ ...args as AnimatedSectionArgs }
+					animated
+					duration={ 600 }
+					stagger={ 150 }
+					title="Animated: true"
+				>
+					Reveals on scroll.
+				</Section>
+			</Group>
+			<Group label="false">
+				<Section
+					{ ...args as StaticSectionArgs }
+					animated={ false }
+					duration={ undefined }
+					stagger={ undefined }
+					title="Animated: false"
+				>
+					No reveal animation applied.
+				</Section>
+			</Group>
+		</Row>
+	),
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement),
-			root = canvas.getByRole('heading', { name: 'as is ignored' })
+			animatedRoot = canvas.getByRole('heading', { name: 'Animated: true' })
+				.closest(ROOT_SELECTOR) as HTMLElement,
+			staticRoot = canvas.getByRole('heading', { name: 'Animated: false' })
+				.closest(ROOT_SELECTOR) as HTMLElement
+
+		expect(animatedRoot.style.getPropertyValue('--reveal-duration')).toBe('600ms')
+		expect(animatedRoot.style.getPropertyValue('--reveal-stagger')).toBe('150ms')
+
+		// `tokens` keys off `duration`/`stagger` ALONE — it never reads
+		// `animated`. Passing `duration={undefined}` doesn't clear them either,
+		// because `useProps` backfills the registered defaults (600/150) first.
+		// So the static group carries the same tokens; only `data-js-reveal`
+		// below actually distinguishes the two.
+		expect(staticRoot.style.getPropertyValue('--reveal-duration')).toBe('600ms')
+		expect(staticRoot.style.getPropertyValue('--reveal-stagger')).toBe('150ms')
+
+		await expect(animatedRoot).toHaveAttribute('data-js-reveal')
+		await expect(staticRoot).not.toHaveAttribute('data-js-reveal')
+	},
+}
+
+// `as` is NOT part of `Section`'s accepted props. Per `specs.types.ts`,
+// `IsPolymorphic<S>` is true only when `S['defaults']['as']` is an
+// `ElementType`; `SectionSpecs` declares `defaults: { props: ... }` with no
+// `as`, so `AsPolymorphic` resolves to `{ as?: never }` and passing a tag is a
+// type error, not something that gets "ignored".
+//
+// Note this is a DIFFERENT route to the same contract than the compound parts
+// (`Grid.Item`, `Group.Item`, `Timeline.Item`, ...): those set
+// `isCompound: true`, which forces `defaults.as?: never`. `Section` isn't
+// compound — it simply opts out of polymorphism by declaring no default tag,
+// and correspondingly hardcodes its root as `<Box as={Container}>`, whose own
+// default tag is `<section>`.
+//
+// This story pins that fixed tag so a future refactor can't quietly change it.
+export const FixedTag: Story = {
+	args: { title: 'fixed tag' },
+	render: (args) => <Section { ...args as SectionContentArgs } />,
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			root = canvas.getByRole('heading', { name: 'fixed tag' })
 				.closest(ROOT_SELECTOR) as HTMLElement
 
 		await expect(root.tagName).toBe('SECTION')
@@ -388,7 +499,7 @@ export const AsPropIgnored: Story = {
  * **Real, verified behavior (re-checked against the live `Box.tsx`)**:
  * `unstyled` now ALSO reaches `Container`. `Section` never destructures
  * `unstyled` out of `rest` — neither `useReveal`'s own destructure
- * (`amount`/`animated`/`once`/`withinView`) nor
+ * (`amount`/`animated`/`lead`/`margin`/`once`/`withinView`) nor
  * `extractOtherProps`'s reserved-key list names it — so it survives into
  * `others` and is spread onto `<Box as={Container} {...others}>`. `Box.tsx`
  * itself forwards its own `unstyled` prop straight through to the `as` target
@@ -419,7 +530,7 @@ export const Unstyled: Story = {
 			{ ([true, false] as const).map(unstyled => (
 				<Group key={ String(unstyled) } label={ String(unstyled) }>
 					<Section
-						{ ...args }
+						{ ...args as SectionContentArgs }
 						unstyled={ unstyled }
 						title={ `unstyled=${ unstyled }` }
 					/>

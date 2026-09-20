@@ -17,8 +17,22 @@ export const ORIENTATION_OPTIONS: readonly NonNullable<Statistic.Group.Props['or
 	'horizontal', 'vertical',
 ]
 
-// `columns` is a free-form `number` (fed straight into the `--group-cols`
-// CSS custom property, no validation/clamping in `Group.tsx`) — these are
-// just a few representative values to render side-by-side, not an
-// exhaustive enum.
+// `columns` is a free-form `number` (fed straight into the
+// `--group-item-count` CSS custom property via `setThemeCSS`, no
+// validation/clamping in `Group.tsx`; `--group-cols` itself is computed
+// FROM `--group-item-count` inside `Group.module.scss` and never set
+// inline) — these are just a few representative values to render
+// side-by-side, not an exhaustive enum.
 export const COLUMNS_OPTIONS = [2, 3, 4] as const
+
+// Shared between `Statistic.Props['order']`/`['size']` and
+// `Statistic.Group.Props['order']`/`['size']` (`Statistic`'s own `order`/
+// `size` are typed straight off `StatisticGroup.Props`'s) — read off the
+// namespace type itself rather than re-declared by hand.
+export const ORDER_OPTIONS: readonly NonNullable<Statistic.Group.Props['order']>[] = [
+	'ascend', 'descend',
+]
+
+export const SIZE_OPTIONS: readonly NonNullable<Statistic.Group.Props['size']>[] = [
+	'sm', 'lg',
+]

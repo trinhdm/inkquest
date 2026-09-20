@@ -5,9 +5,9 @@ import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
 // `Badge.Props` (the `declare namespace` export) is just the raw `BadgeProps`
-// interface — it doesn't include `as`/`children`/`unstyled`/`attributes`/etc.
-// (`BadgeProps`'s own `children` field is even commented out in source), all
-// of which only exist on the actual accepted prop type,
+// interface — `children` IS a real, required field on it (`children:
+// ReactNode`), but the export still doesn't include `as`/`unstyled`/
+// `attributes`/etc., which only exist on the actual accepted prop type,
 // `PolymorphicProps<BadgeProps, C>`. `Parameters<typeof Badge>[0]` reads that
 // real, wrapped type straight off the component itself — the generic call
 // signature's default `C` resolves to `'div'` here, since `BadgeSpecs`'s

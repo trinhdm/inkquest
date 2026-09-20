@@ -67,6 +67,10 @@ const meta: Meta<MenuStoryProps> = {
 	component: Menu,
 	title: 'Navigation/Menu',
 	argTypes: {
+		as: {
+			control: false,
+			description: 'Part of `PolymorphicProps`, but `Menu` ignores it: `Menu.tsx` hardcodes `as={ TAG }` (`TAG = \'ul\'`) on its root `<Box>` instead of forwarding the destructured `as` from props, so this control has NO effect on the rendered tag — unlike `Subnav`, which does honour it.',
+		},
 		hasDropdowns: {
 			control: 'boolean',
 			description: 'Forwarded to every `MenuItem`. When `true`, an item that has its own `menu` renders a trigger `<button>` plus a nested `Menu` (opened on hover/click). When `false`, such an item renders NO trigger and NO label of its own — `MenuItem` returns a flat ARRAY of its children\'s `<li>`s instead (see the `FlattenedItems` story).',

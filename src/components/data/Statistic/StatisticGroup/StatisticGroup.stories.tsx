@@ -1,10 +1,10 @@
 import { expect, within } from 'storybook/test'
 import { getDefaultProps } from '@/hooks/useProps'
 import { Statistic } from '../Statistic'
-import { BOOLEAN_OPTIONS, COLUMNS_OPTIONS, ORIENTATION_OPTIONS } from '../options.story'
+import { BOOLEAN_OPTIONS, COLUMNS_OPTIONS, ORDER_OPTIONS, ORIENTATION_OPTIONS, SIZE_OPTIONS } from '../options.story'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
-import groupClasses from '@/components/layout/Group/Group.module.scss'
+import statisticModuleClasses from '../Statistic.module.scss'
 
 const Row = ({ children }: { children: ReactNode }) => (
 	<div style={ { display: 'flex', gap: 24, flexWrap: 'wrap' } }>
@@ -44,20 +44,19 @@ type AnimatedGroupArgs = Exclude<StatisticGroupStoryProps, { animated?: never }>
 
 type Story = StoryObj<StatisticGroupStoryProps>
 
-const hasModuleClass = (el: Element, base: string) => {
-	const moduleClass = (groupClasses as Record<string, string>)[base]
+const hasStatisticModuleClass = (el: Element, base: string) => {
+	const moduleClass = (statisticModuleClasses as Record<string, string>)[base]
 	return !!moduleClass && el.classList.contains(moduleClass)
 }
 
 // Every child here is rendered with its own `animated={false}` purely for
 // story determinism (structural stories about `columns`/`divider`/
 // `fullWidth`/`orientation`/`justify` don't need a live count-up race to
-// prove their point). Note this ISN'T actually overriding a cascaded group
-// value in practice — see the `animated` argType doc note above: a wiring
-// bug in `StatisticGroup.tsx` means its `animated` prop never reaches the
-// inner `Group`/context at all, so every child already falls back to its own
-// registered default (`animated: true`) regardless. See `ContextPrecedence`
-// for the cascade that DOES genuinely work (`duration`/`stagger`).
+// prove their point) — the group's own `animated`/`duration`/`stagger` DO
+// genuinely cascade to any child that doesn't set its own (see the
+// `animated` argType doc note and `ContextPrecedence` below), so this is
+// just each child opting out individually, the same way an explicit own
+// prop always wins over the inherited one.
 const renderStatistics = (count: number) => Array.from({ length: count }, (_, index) => (
 	<Statistic
 		key={ index }
@@ -75,11 +74,11 @@ const meta: Meta<StatisticGroupStoryProps> = {
 	argTypes: {
 		columns: {
 			control: 'number',
-			description: 'Fed straight into a `--group-cols` CSS custom property on the root element via `setThemeCSS` (`tokens.root`) — no clamping/validation. Rendered as an inline style, not a class. See the `Columns` story.',
+			description: 'Fed straight into a `--group-item-count` CSS custom property on the root element via `setThemeCSS` (`tokens.root`) — no clamping/validation. `--group-cols` (the property `Group.module.scss`\'s `grid-template-columns` actually reads) is computed FROM `--group-item-count` inside the stylesheet itself and is never set inline, so it isn\'t something a story can assert on directly. Rendered as an inline style, not a class. See the `Columns` story.',
 		},
 		divider: {
 			control: 'boolean',
-			description: 'A `module`-scope config class (`module = { divider, ... }`) — but `Group.module.scss` no longer declares an `&--divider` rule (divider styling now lives on the self-referencing `&:where([data-divide])` selector instead), so this stays a literal, unhashed `inkq-group--divider` class; the real toggle to key off is the `data-divide` attribute (`attributes.data.divide`). See the `Divider` story.',
+			description: '`Group.tsx` no longer applies any `module`/`global`-scope config class at all (`styles(\'root\')` is called with no second argument) — divider styling lives entirely on the self-referencing `&:where([data-divide])` selector in `Group.module.scss`, keyed off the `data-divide` attribute (`attributes.data.divide`) `Group` sets directly. There is no `inkq-group--divider` class to assert on. See the `Divider` story.',
 		},
 		fullWidth: {
 			control: 'boolean',
@@ -88,7 +87,7 @@ const meta: Meta<StatisticGroupStoryProps> = {
 		orientation: {
 			control: 'select',
 			options: ORIENTATION_OPTIONS,
-			description: 'Sets `aria-orientation` on the root unconditionally, and ALSO flips the `module` config\'s `grid` flag off (`grid: !orientation`) — when set, the grid layout (and its `&--grid` CSS-module class) is replaced by a literal `inkq-group--horizontal`/`inkq-group--vertical` class, since `Group.module.scss` has no matching `&--horizontal`/`&--vertical` rule to hash against. See the `Orientation` story.',
+			description: 'Sets `aria-orientation` on the root unconditionally when present — that\'s its ONLY effect. `Group.tsx` calls `styles(\'root\')` with no config object at all, so there is no accompanying `inkq-group--horizontal`/`inkq-group--vertical`/`inkq-group--grid` class in either state; the actual layout switch (grid vs. row/column) lives entirely in `Group.module.scss`\'s `&:not([aria-orientation])` selector, keyed off the same attribute. See the `Orientation` story.',
 		},
 		justify: {
 			control: 'text',
@@ -96,7 +95,7 @@ const meta: Meta<StatisticGroupStoryProps> = {
 		},
 		animated: {
 			control: 'boolean',
-			description: '**wiring bug, verified against the live `StatisticGroup.tsx`**: `animated` is also unconditionally stripped by `extractOtherProps` before `others` is spread onto the inner `<Group>` — so `Statistic.Group`\'s own `animated` prop NEVER reaches `Group`, and therefore never reaches `StatisticGroupProvider`\'s context, no matter what\'s passed here. Every child `Statistic` ends up using its OWN registered default (`animated: true`) or its own explicit prop — never the group\'s. (Separately, `animated` is also part of a discriminated union with `duration`: TypeScript only allows `true` or entirely-absent, never an explicit `false`, on `Group`/`Statistic.Group` — but that\'s moot here since the value never reaches its destination either way.) See `ContextPrecedence`, which demonstrates the cascade that DOES work (`duration`/`stagger`, unaffected by this bug) rather than asserting a false positive on `animated` itself.',
+			description: 'Cascades correctly to every child `Statistic` that doesn\'t set its own `animated` — `extractOtherProps` (`@/hooks/useProps/helpers.ts`) only strips `as`/`childName`/`children`/`className`/`classNames`/`displayName`/`loading`/`revealFrom`/`style`/`styles`/`withinView`; `animated` (along with `duration`/`stagger`/`once`) is NOT in that list, so `StatisticGroup.tsx`\'s `others` spread genuinely forwards it to the inner `<Group>`, which folds it into each child\'s context value. (Separately, `animated` is also part of a discriminated union with `duration`: TypeScript only allows `true` or entirely-absent, never an explicit `false`, on `Group`/`Statistic.Group`.) See `ContextPrecedence`, which demonstrates the cascade end to end via `duration`/`stagger` (chosen over `animated` itself purely to avoid a flaky always-true/always-false assertion).',
 		},
 		duration: {
 			control: 'number',
@@ -105,6 +104,20 @@ const meta: Meta<StatisticGroupStoryProps> = {
 		stagger: {
 			control: 'number',
 			description: 'Combines with each child\'s auto-assigned `index` (0-based position among surviving `Statistic` children) as `delay: index * stagger` — one shared `IntersectionObserver` on the group\'s own root drives every child off the same `t = 0`, rather than each child racing its own observer. Registered default `200`ms. See `ContextPrecedence`.',
+		},
+		once: {
+			control: 'boolean',
+			description: 'Cascades to the inner `<Group>` exactly like `animated`/`duration`/`stagger`. `once` was previously in `extractOtherProps`\' hard-coded strip list (`@/hooks/useProps/helpers.ts`), which meant `Statistic.Group`\'s registered `once: false` — and any explicit override — never reached `Group`\'s `useReplayInView` call. It has since been removed from that list, so `others` now genuinely forwards it: `Group` destructures `once` and passes it into `useReplayInView(ref, { amount, once })`. With `once: true` the reveal latches on first entry instead of replaying each time the group re-enters the viewport.',
+		},
+		order: {
+			control: 'select',
+			options: ORDER_OPTIONS,
+			description: 'Not part of `StatisticGroup`\'s own `DEFAULT_PROPS` (no registered default at the group level) — passed straight through to `valuesCtx={ { order, size } }`, which `Group` folds into each child\'s context value. Any child `Statistic` that doesn\'t set its own `order` inherits this one (`useStatisticGroupProps`\'s `Object.hasOwn` guard on the child\'s raw, pre-merge props); a child\'s own explicit `order` still wins. See the `OrderAndSize` story.',
+		},
+		size: {
+			control: 'select',
+			options: SIZE_OPTIONS,
+			description: 'Not part of `StatisticGroup`\'s own `DEFAULT_PROPS` (no registered default at the group level) — passed straight through to `valuesCtx={ { order, size } }`, which `Group` folds into each child\'s context value. Any child `Statistic` that doesn\'t set its own `size` inherits this one; a child\'s own explicit `size` still wins. See the `OrderAndSize` story.',
 		},
 	},
 	args: {
@@ -152,16 +165,14 @@ export const Columns: Story = {
 		expect(groups).toHaveLength(COLUMNS_OPTIONS.length)
 
 		for (const [index, columns] of COLUMNS_OPTIONS.entries())
-			await expect(groups[index]).toHaveStyle({ '--group-cols': String(columns) })
+			await expect(groups[index]).toHaveStyle({ '--group-item-count': String(columns) })
 	},
 }
 
-// `divider` is a `module`-scope config, but `Group.module.scss` no longer
-// declares an `&--divider` rule (divider styling now lives on the
-// self-referencing `&:where([data-divide])` selector instead) — so
-// `inkq-group--divider` stays a literal, unhashed class, with no compiled
-// export to look up. The real, observable toggle is the `data-divide`
-// attribute `Group` sets via `attributes.data.divide`.
+// `divider` only ever surfaces as the `data-divide` attribute `Group` sets
+// via `attributes.data.divide` — `Group.tsx` calls `styles('root')` with no
+// config object at all, so there is no accompanying class to assert on in
+// either state.
 export const Divider: Story = {
 	parameters: { controls: { exclude: ['divider'] } },
 	render: (args) => (
@@ -184,9 +195,7 @@ export const Divider: Story = {
 		const [withDivider, withoutDivider] = groups
 
 		await expect(withDivider).toHaveAttribute('data-divide')
-		await expect(withDivider).toHaveClass('inkq-group--divider')
 		await expect(withoutDivider).not.toHaveAttribute('data-divide')
-		await expect(withoutDivider).not.toHaveClass('inkq-group--divider')
 	},
 }
 
@@ -219,11 +228,12 @@ export const FullWidth: Story = {
 	},
 }
 
-// The default (no `orientation` set) lays out as a CSS grid (`module.grid:
-// !orientation`, hashed via `Group.module.scss`'s real `&--grid` rule).
-// Setting `orientation` flips `grid` off and adds a literal
-// `inkq-group--horizontal`/`inkq-group--vertical` class instead — neither has
-// a matching SCSS rule, so both stay un-hashed literals.
+// The default (no `orientation` set) lays out as a CSS grid purely via
+// `Group.module.scss`'s `&:not([aria-orientation])` selector — setting
+// `orientation` only ever adds the `aria-orientation` attribute itself.
+// `Group.tsx` applies no config class at all (`styles('root')`, no second
+// argument), so there's no `inkq-group--grid`/`--horizontal`/`--vertical`
+// class in any state to assert on.
 export const Orientation: Story = {
 	parameters: {
 		layout: 'padded',
@@ -254,15 +264,8 @@ export const Orientation: Story = {
 		const [gridDefault, horizontal, vertical] = groups
 
 		await expect(gridDefault).not.toHaveAttribute('aria-orientation')
-		expect(hasModuleClass(gridDefault, 'inkq-group--grid')).toBe(true)
-
 		await expect(horizontal).toHaveAttribute('aria-orientation', 'horizontal')
-		await expect(horizontal).toHaveClass('inkq-group--horizontal')
-		expect(hasModuleClass(horizontal, 'inkq-group--grid')).toBe(false)
-
 		await expect(vertical).toHaveAttribute('aria-orientation', 'vertical')
-		await expect(vertical).toHaveClass('inkq-group--vertical')
-		expect(hasModuleClass(vertical, 'inkq-group--grid')).toBe(false)
 	},
 }
 
@@ -307,15 +310,13 @@ export const NonStatisticChildren: Story = {
 	},
 }
 
-// `duration`/`stagger` (unlike `animated` — see their own
-// argType doc notes above) reach the inner `<Group>` element correctly, and
-// DO cascade to children with no own `duration`/`stagger` via
-// `StatisticGroupProvider`. This is demonstrated here by pinning the
-// group's own `duration` to something far shorter than `Statistic`'s
-// registered default (`3000`ms) and asserting the inherited child settles
-// well BEFORE that default would have allowed — if the cascade were broken
-// the same way `animated` are, this child would still be
-// mid-animation (or not yet started) at the 2s mark. A second child's own
+// `duration`/`stagger` reach the inner `<Group>` element correctly, and DO
+// cascade to children with no own `duration`/`stagger` via
+// `StatisticGroupProvider`. This is demonstrated here by pinning the group's
+// own `duration` to something far shorter than `Statistic`'s registered
+// default (`3000`ms) and asserting the inherited child settles well BEFORE
+// that default would have allowed — if the cascade were broken, this child
+// would still be mid-animation (or not yet started) at the 2s mark. A second child's own
 // EXPLICIT `duration`/`stagger` still wins over the group's, per
 // `useStatisticGroupProps`' `Object.hasOwn` guard on that child's raw,
 // pre-merge props — proven by pinning its own `duration` even shorter still
@@ -339,5 +340,49 @@ export const ContextPrecedence: Story = {
 		// override (`10`ms) both took effect, not the registered default.
 		await expect(await canvas.findByText('999', {}, { timeout: 2000 })).toBeInTheDocument()
 		await expect(await canvas.findByText('250', {}, { timeout: 2000 })).toBeInTheDocument()
+	},
+}
+
+// `order`/`size` aren't part of `StatisticGroup`'s own registered defaults —
+// they're passed straight through to `valuesCtx={ { order, size } }`, which
+// `Group` folds into each child's context value. A child `Statistic` with no
+// own `order`/`size` inherits the group's; a child with its own explicit
+// value keeps it regardless of the group's setting.
+export const OrderAndSize: Story = {
+	render: (args) => (
+		<Row>
+			<Group label="group order=ascend, size=sm (both children inherit)">
+				<Statistic.Group { ...args as AnimatedGroupArgs } order="ascend" size="sm">
+					<Statistic animated={ false } caption="Inherits both" value={ 1 } />
+				</Statistic.Group>
+			</Group>
+			<Group label="child overrides its own order/size">
+				<Statistic.Group { ...args as AnimatedGroupArgs } order="ascend" size="sm">
+					<Statistic animated={ false } caption="Own order/size" order="descend" size="lg" value={ 2 } />
+				</Statistic.Group>
+			</Group>
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement)
+
+		const inherited = canvas.getByText('Inherits both').closest('.inkq-statistic') as HTMLElement,
+			overridden = canvas.getByText('Own order/size').closest('.inkq-statistic') as HTMLElement
+
+		// inherited: group's `order="ascend"`/`size="sm"` took effect on a
+		// child with no own value.
+		await expect(inherited).toHaveStyle({
+			'--statistic-align': 'flex-end',
+			'--statistic-direction': 'column-reverse',
+		})
+		expect(hasStatisticModuleClass(inherited, 'inkq-statistic--sm')).toBe(true)
+
+		// overridden: child's own explicit `order="descend"`/`size="lg"` wins
+		// over the group's `ascend`/`sm`.
+		await expect(overridden).toHaveStyle({
+			'--statistic-align': 'flex-start',
+			'--statistic-direction': 'column',
+		})
+		expect(hasStatisticModuleClass(overridden, 'inkq-statistic--lg')).toBe(true)
 	},
 }

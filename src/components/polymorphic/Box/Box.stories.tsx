@@ -40,7 +40,7 @@ const demoStyle = { border: '1px dashed currentColor', borderRadius: 4, padding:
 
 const meta: Meta<BoxComponentProps> = {
 	component: Box,
-	title: 'Core/Box',
+	title: 'Polymorphic/Box',
 	argTypes: {
 		as: {
 			control: 'text',
@@ -161,7 +161,9 @@ export const UnstyledDisableableTag: StoryObj<BoxButtonProps> = {
 		await expect(unstyledButton).toHaveAttribute('disabled')
 		await expect(styledButton).toHaveAttribute('disabled')
 
-		await expect(styledButton).toHaveAttribute('data-disabled', 'true')
+		// Reflected as a VALUELESS attribute (`data-disabled=""`), not `"true"`
+		// — matches `Box.test.tsx`'s own assertion.
+		await expect(styledButton).toHaveAttribute('data-disabled', '')
 		await expect(unstyledButton).not.toHaveAttribute('data-disabled')
 	},
 }

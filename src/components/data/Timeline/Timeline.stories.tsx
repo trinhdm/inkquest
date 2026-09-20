@@ -53,7 +53,7 @@ const meta: Meta<TimelineStoryProps> = {
 	argTypes: {
 		children: {
 			control: false,
-			description: 'Required. Rendered through `filterChildren(children, TimelineItem.displayName)` — only elements whose `displayName` is `\'TimelineItem\'` survive; everything else (including `Fragment`-wrapped content, which `filterChildren` recurses into and flattens) is dropped entirely before rendering, not merely hidden. See the `NonTimelineItemChildren` story.',
+			description: 'Required. Rendered through `filterChildren(children, TimelineItem.displayName)` — only elements whose `displayName` is `\'Timeline.Item\'` (the dotted `NAME` registered on `TimelineItem.tsx`) survive; everything else (including `Fragment`-wrapped content, which `filterChildren` recurses into and flattens) is dropped entirely before rendering, not merely hidden. See the `NonTimelineItemChildren` story.',
 		},
 		unstyled: {
 			control: 'boolean',

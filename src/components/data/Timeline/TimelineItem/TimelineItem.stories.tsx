@@ -51,7 +51,7 @@ const meta: Meta<TimelineItemStoryProps> = {
 		},
 		content: {
 			control: 'text',
-			description: 'Required. **Probable source bug, verified against the live `TimelineItem.tsx`**: the body paragraph renders `{ content ?? children }`, but `content` is a REQUIRED prop on the public type, so the `children` fallback is dead code, unreachable through any type-safe call site — identical pattern to `Quote`\'s `quote ?? children`. No story here exercises `children` as a substitute for `content`.',
+			description: 'Required. Rendered verbatim inside the `content` paragraph as `{ content }` — there is no `children` fallback in source.',
 		},
 		bullet: {
 			control: false,
@@ -81,7 +81,7 @@ export const Default: Story = {
 		const canvas = within(canvasElement)
 
 		await expect(canvas.getByText(args.title as string)).toBeInTheDocument()
-		await expect(canvas.getByText(args.content)).toBeInTheDocument()
+		await expect(canvas.getByText(args.content as string)).toBeInTheDocument()
 	},
 }
 
@@ -101,7 +101,7 @@ export const TitlePresence: Story = {
 	),
 	play: async ({ canvasElement, args }) => {
 		const canvas = within(canvasElement),
-			items = canvas.getAllByText(args.content)
+			items = canvas.getAllByText(args.content as string)
 
 		expect(items).toHaveLength(2)
 
@@ -131,7 +131,7 @@ export const Bullet: Story = {
 	),
 	play: async ({ canvasElement, args }) => {
 		const canvas = within(canvasElement),
-			items = canvas.getAllByText(args.content)
+			items = canvas.getAllByText(args.content as string)
 
 		expect(items).toHaveLength(2)
 
@@ -165,7 +165,7 @@ export const Unstyled: Story = {
 	),
 	play: async ({ canvasElement, args }) => {
 		const canvas = within(canvasElement),
-			items = canvas.getAllByText(args.content)
+			items = canvas.getAllByText(args.content as string)
 
 		expect(items).toHaveLength(2)
 

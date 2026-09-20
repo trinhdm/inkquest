@@ -64,11 +64,11 @@ const meta: Meta<GridStoryProps> = {
 	argTypes: {
 		children: {
 			control: false,
-			description: 'Rendered completely as-is — `Grid.tsx` spreads `{ children }` directly into its root `<Box>` with NO flattening or filtering applied. `filterChildren` is still imported but its call site is commented out (`Grid.tsx` line 42); it is dead code. Every child is preserved verbatim regardless of whether it\'s a `Grid.Item`, a plain element, a `Fragment`, or a bare string. See the `RawChildren` story.',
+			description: 'Rendered completely as-is — `Grid.tsx` spreads `{ children }` directly into its root `<Box>` with NO flattening or filtering applied. `filterChildren` is still imported but its call site is commented out (`Grid.tsx` line 55); it is dead code. Every child is preserved verbatim regardless of whether it\'s a `Grid.Item`, a plain element, a `Fragment`, or a bare string. See the `RawChildren` story.',
 		},
 		columns: {
 			control: 'number',
-			description: 'Adds an `inkq-grid--{n}-col` modifier class when set to a positive number — `Grid.tsx` builds a `module = { [\`${columns}-col\`]: !!(columns && columns > 0) }` object and passes it as `styles(\'root\', { module })`; falsy or non-positive values compute to `false` and add no modifier at all. Only `columns={3}` has a matching rule in `Grid.module.scss` (`&--3-col`, hardcoding `repeat(3, 1fr)`) — any other value still lands its own literal `inkq-grid--{n}-col` class on the root (verified against `getClassName.tsx`\'s `formatConfigClass`/`getStyleClass`, which fall back to the raw, unhashed class name whenever no matching CSS-module rule exists for it), it just has no accompanying `grid-template-columns` rule behind it. See the `Columns` story.',
+			description: 'Feeds a `--grid-cols` CSS custom property on the root via an inline style (`setThemeCSS`\'s `tokens`), NOT a class — `Grid.tsx` calls `styles(\'root\')` with no `module`/`global`/`selector` config at all, so `columns` never produces any `inkq-grid--*` modifier class. `--grid-cols` is only set inline when `columns` is a positive number (`!!(columns && columns > 0)`); otherwise it is absent from the inline style, and `Grid.module.scss`\'s own base rule (`--grid-cols: auto-fit`) applies instead. See the `Columns` story.',
 		},
 		unstyled: {
 			control: 'boolean',
@@ -82,15 +82,15 @@ const meta: Meta<GridStoryProps> = {
 
 export default meta
 
-// NOTE: `Grid`'s BASE rule — `grid-template-columns: repeat(auto-fit,
-// minmax(var(--inkq-breakpoint-min), 1fr))` in `Grid.module.scss`, which
-// applies whenever `columns` is unset/falsy/non-positive — references
-// `--inkq-breakpoint-min`, which is defined nowhere in the repo, so that
-// `minmax()` argument is invalid and the browser falls back to a single
-// column. This is a source-side gap: no COMPUTED-layout assertions (actual
-// column count/widths) are made anywhere in this file, for the base rule OR
-// the `columns` modifier below — only class-presence, which IS reliably
-// verifiable regardless of whether the underlying CSS value resolves.
+// NOTE: `Grid`'s BASE rule — `grid-template-columns: repeat(var(--grid-cols),
+// var(--grid-item-width))`, where `--grid-item-width: minmax(var(--inkq-breakpoint-min),
+// 1fr)` in `Grid.module.scss` — references `--inkq-breakpoint-min`, which is
+// defined nowhere in the repo, so that `minmax()` argument is invalid and the
+// browser falls back to a single column. This is a source-side gap: no
+// COMPUTED-layout assertions (actual column count/widths) are made anywhere
+// in this file, for the base rule OR the `columns` token below — only the
+// inline `--grid-cols` custom property IS reliably verifiable regardless of
+// whether the underlying CSS value resolves.
 export const Default: Story = {
 	args: {
 		children: (
@@ -112,15 +112,11 @@ export const Default: Story = {
 }
 
 /**
- * All three representative `columns` values, side by side. `Grid.tsx` only
- * ever adds an `inkq-grid--{n}-col` modifier class for a positive `columns`
- * — it never touches `filterChildren`'s own behavior. `columns={3}` is the
- * only value with a matching rule in `Grid.module.scss` (`&--3-col`), so it
- * resolves to a CSS-MODULE HASH rather than the literal class (per
- * `getClassName.tsx`'s `formatConfigClass`/`getStyleClass`), while `columns={2}`/`{4}` have
- * no matching rule and fall back to the raw, unhashed class name. Only class
- * presence is asserted below — see the `NOTE` above `Default` for why
- * computed `grid-template-columns` is out of scope.
+ * All three representative `columns` values, side by side. `Grid.tsx` (via
+ * `setThemeCSS`'s `tokens`) sets an inline `--grid-cols` custom property on
+ * the root whenever `columns` is a positive number — there is no
+ * `inkq-grid--{n}-col` modifier CLASS at all (`Grid.tsx` calls `styles('root')`
+ * with no `module` config), so only the inline style is asserted below.
  */
 export const Columns: Story = {
 	parameters: {
@@ -148,25 +144,15 @@ export const Columns: Story = {
 			root3 = rootFor(3),
 			root4 = rootFor(4)
 
-		// `columns={3}` matches `Grid.module.scss`'s `&--3-col` rule, so the
-		// module resolves it to a CSS-module HASH (not the literal class name)
-		// — assert via `className` substring matching rather than
-		// `toHaveClass`'s exact-token match, same pattern as `Section`'s
-		// `Layout` story.
-		await expect(root3.className).toMatch('inkq-grid--3-col')
+		await expect(root2.style.getPropertyValue('--grid-cols')).toBe('2')
+		await expect(root3.style.getPropertyValue('--grid-cols')).toBe('3')
+		await expect(root4.style.getPropertyValue('--grid-cols')).toBe('4')
 
-		// `columns={2}`/`columns={4}` have no matching rule in the stylesheet,
-		// so `getStyleClass` finds no compiled hash and `getClassName` falls
-		// back to emitting the literal, unhashed class name verbatim — a
-		// genuine, exact class token.
-		await expect(root2).toHaveClass('inkq-grid--2-col')
-		await expect(root4).toHaveClass('inkq-grid--4-col')
-
-		// A non-positive/absent `columns` never receives ANY `--{n}-col`
-		// modifier at all (`Grid.tsx`'s `!!(columns && columns > 0) && ...`).
+		// No `inkq-grid--*` modifier class exists for any value — `Grid` never
+		// passes a `module`/`global`/`selector` config to `styles('root')`.
 		for (const root of [root2, root3, root4]) {
-			const modifiers = Array.from(root.classList).filter(c => /--\d+-col/.test(c))
-			await expect(modifiers).toHaveLength(1)
+			const modifiers = Array.from(root.classList).filter(c => /--\d+/.test(c))
+			await expect(modifiers).toHaveLength(0)
 		}
 	},
 }
@@ -174,8 +160,8 @@ export const Columns: Story = {
 /**
  * **Re-verified against the LIVE `Grid.tsx`**: `Grid` no longer calls
  * `filterChildren` at all — the call is present in source but commented out
- * (`Grid.tsx` line 42, `{/* { filterChildren(children, 'GridItem').map(...) } *\/}`),
- * and the actual render is a bare `{ children }` spread (line 41). There is
+ * (`Grid.tsx` line 55, `{/* { filterChildren(children, 'GridItem').map(...) } *\/}`),
+ * and the actual render is a bare `{ children }` spread (line 54). There is
  * NO flattening and NO filtering anymore: `Fragment`s are not unwrapped (React
  * renders their contents natively either way, so this makes no visible
  * difference), and — the behavioral change that matters — a plain ELEMENT
