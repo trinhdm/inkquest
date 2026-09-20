@@ -7,7 +7,7 @@ const NAME = 'Timeline.Item' as const
 
 interface TimelineItemProps {
 	bullet?: ReactNode
-	content: string
+	content: ReactNode
 	title?: string
 }
 
@@ -22,7 +22,7 @@ export const TimelineItem = polymorphic<TimelineItemSpecs>(_props => {
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { classes, props })
 
-	const { bullet, children, content, title, ...rest } = props
+	const { bullet, content, title, ...rest } = props
 	const { others } = extractOtherProps(rest)
 
 	return (
@@ -38,7 +38,7 @@ export const TimelineItem = polymorphic<TimelineItemSpecs>(_props => {
 					</span>
 				) }
 				<p { ...styles('content') }>
-					{ content ?? children }
+					{ content }
 				</p>
 			</div>
 		</Box>

@@ -9,16 +9,15 @@
 }
 
 .inkq-table-row {
-	display: grid;
-	grid-template-columns: var(--rs-cols, 200px 1fr auto);
-	gap: var(--rs-gap, var(--space-6));
 	align-items: baseline;
+	border-top: 1px solid var(--inkq-border);
+	display: grid;
+	gap: var(--rs-gap, var(--space-6));
+	grid-template-columns: var(--rs-cols, 200px 1fr auto);
 	padding: var(--space-6) 0;
-	border-top: var(--rule-subtle);
-	border-bottom-width: medium;
-	border-bottom-style: none;
-	border-bottom-color: currentcolor;
-	opacity: 1;
-	transform: none;
-	transition: opacity 480ms var(--ease-out) 43ms, transform 480ms var(--ease-out) 43ms;
+	// transition: opacity 480ms var(--easing-out) 43ms, transform 480ms var(--easing-out) 43ms;
+
+	&:last-of-type {
+		border-bottom: 1px solid var(--inkq-border);
+	}
 }

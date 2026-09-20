@@ -38,21 +38,6 @@
 	}
 
 	&--hero,
-	&--split,
-	&--cta {
-		#{$name} {
-			&__body,
-			&__description {
-				&  > p {
-					color: var(--inkq-color-text-secondary);
-					font: var(--inkq-text-section-body);
-					text-wrap: pretty;
-				}
-			}
-		}
-	}
-
-	&--hero,
 	&--cta {
 		#{$name} {
 			&__inner {

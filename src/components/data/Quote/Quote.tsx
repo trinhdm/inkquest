@@ -11,7 +11,7 @@ const DEFAULT_PROPS = {
 
 interface QuoteProps {
 	author?: string
-	quote: string
+	content: string
 }
 
 interface QuoteSpecs {
@@ -26,14 +26,18 @@ export const Quote = polymorphic<QuoteSpecs>(_props => {
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { classes, props })
 
-	const { author, children, quote, ...rest } = props
+	const { author, content, ...rest } = props
 	const { as, others } = extractOtherProps(rest)
 
 	return (
-		<Box as={ as } { ...styles('root') } { ...others }>
-			<span { ...styles('rail') } />
-			<p { ...styles('content') }>
-				"{ quote ?? children }"
+		<Box
+			as={ as }
+			{ ...styles('root', { global: { 'item--block': true } }) }
+			{ ...others }
+		>
+			<span { ...styles('rail', true) } />
+			<p { ...styles('content', { global: { h4: true } }) }>
+				"{ content }"
 			</p>
 			<span { ...styles('caption', true) }>
 				{ author }

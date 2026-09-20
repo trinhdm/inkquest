@@ -60,7 +60,7 @@ const orderSection = ({
 		const key = `${id}-desc-${index}`
 
 		if (isValidElement(child) || typeof child === 'string') {
-			const desc = <p key={ key } { ...reveal.next() }>{ child }</p>
+			const desc = <p key={ key } className="inkq-prose" { ...reveal.next() }>{ child }</p>
 
 			if (typeof child === 'string')
 				items.push(desc)
@@ -94,7 +94,7 @@ const buildContent = ({ id, props, reveal, styles }: BuildSectionConfig): ReactN
 		}
 
 		const description = !!Tag ? <Tag { ...args }>{ items }</Tag> : items,
-			body = <div key={ `${id}-body` } { ...styles('body', clsx) }>{ description }</div>
+			body = <div key={ `${id}-body` } { ...styles('body') }>{ description }</div>
 
 		content.push(body)
 	}
