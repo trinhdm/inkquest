@@ -109,8 +109,8 @@ export const Group = polymorphic<GroupSpecs>(_props => {
 
 	// one context value per child — memoised on `total` so identities stay
 	// stable across renders even though each child gets its own object
-	const ctxValues = useMemo<GroupContext[]>(
-		() => Array.from({ length: total }, (_, index) => ({
+	const ctxValues = useMemo(
+		() => Array.from({ length: total }, (_, index): GroupContext => ({
 			animated, duration, index, stagger, unstyled, withinView,
 		})),
 		[animated, duration, stagger, total, unstyled, withinView]

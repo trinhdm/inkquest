@@ -1,8 +1,8 @@
 import { createRootCtx } from '@/lib/component'
-import type { Group } from '@/components/layout'
+import type { AnimationOptions } from '@/hooks'
 
 export interface StatisticGroupContext
-	extends Group.Context {}
+	extends AnimationOptions {}
 
 export const {
 	RootProvider: StatisticGroupProvider,

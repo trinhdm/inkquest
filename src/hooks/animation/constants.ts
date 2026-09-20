@@ -2,7 +2,7 @@ import type { UseInViewOptions } from 'framer-motion'
 
 export const DEFAULT_INVIEW = .75
 
-interface BaseAnimationOptions {
+export interface AnimationOptions {
 	animated?: boolean
 	duration?: number
 	index?: number
@@ -11,21 +11,25 @@ interface BaseAnimationOptions {
 	withinView?: boolean
 }
 
-export interface AnimationOptions
-	extends BaseAnimationOptions, UseInViewOptions {}
+export interface AnimationInViewOptions
+	extends AnimationOptions, UseInViewOptions {}
 
 interface AnimatedComponentProps
 	extends UseInViewOptions {
 	animated: true
 	duration: number
+	index?: number
 	stagger?: number
+	withinView?: boolean
 }
 
 interface StaticComponentProps
 	extends Partial<Record<keyof UseInViewOptions, never>> {
 	animated?: false | never
 	duration?: never
+	index?: never
 	stagger?: never
+	withinView?: never
 }
 
 export type MaybeAnimationProps =

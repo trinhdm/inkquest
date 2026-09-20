@@ -1,4 +1,5 @@
 import { createRootCtx } from '@/lib/component'
+import type { AnimationOptions } from '@/hooks'
 
 export type AccordionGroupLayout =
 	'default' | 'steps'
@@ -6,14 +7,12 @@ export type AccordionGroupLayout =
 export type AccordionGroupType =
 	'single' | 'multiple'
 
-export interface AccordionGroupContext {
+export interface AccordionGroupContext
+	extends Pick<AnimationOptions, 'index' | 'unstyled' | 'withinView'> {
 	disabled?: boolean
-	index?: number
 	layout?: AccordionGroupLayout
 	onItemToggle?: (index: number, open: boolean) => void
 	open?: boolean
-	unstyled?: boolean
-	withinView?: boolean
 }
 
 export const {

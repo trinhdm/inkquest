@@ -73,8 +73,8 @@ export const AccordionGroup = polymorphic<AccordionGroupSpecs>(_props => {
 	const items = filterChildren(children, 'Accordion'),
 		total = items.length
 
-	const ctxValues = useMemo<AccordionGroup.Context[]>(
-		() => Array.from({ length: total }, (_, index) => ({
+	const ctxValues = useMemo(
+		() => Array.from({ length: total }, (_, index): AccordionGroupContext => ({
 			disabled, index, layout,
 			onItemToggle: handleItemToggle,
 			open: openItems.includes(index),

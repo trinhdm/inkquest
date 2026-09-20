@@ -19,9 +19,7 @@ interface BaseStatisticProps {
 	caption?: string
 	highlight?: boolean
 	icon?: ReactNode
-	index?: number
 	value: number | string
-	withinView?: boolean
 }
 
 type StatisticProps =
@@ -31,7 +29,7 @@ type StatisticProps =
 interface StatisticSpecs {
 	defaults: {
 		as: typeof DEFAULT_TAG
-		props: 'animated' | 'duration'
+		props: 'animated' | 'duration' | 'index' | 'stagger'
 	}
 	props: StatisticProps
 	subcomponents: {
@@ -49,8 +47,8 @@ export const Statistic = polymorphic<StatisticSpecs>(_props => {
 		duration,
 		highlight,
 		icon,
-		index = 0,
-		stagger = 0,
+		index,
+		stagger,
 		value,
 		withinView,
 		...rest
@@ -94,6 +92,8 @@ Statistic.setDefaults({
 		animated: true,
 		as: DEFAULT_TAG,
 		duration: 3000,
+		index: 0,
+		stagger: 0,
 	}
 })
 

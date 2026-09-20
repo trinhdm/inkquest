@@ -69,14 +69,6 @@ export type OneKeyOf<E> =
 export type DistributiveOmit<T, K extends PropertyKey> =
 	T extends unknown ? Omit<T, K> : never
 
-
-// Resolves to a shape that rejects any key of V not present in T.
-// Apply as `V & NoExcessKeys<T, V>` so V still infers from the argument —
-// a mapped type over `keyof V` is not an inference site, so it constrains without blocking.
-export type NoExcessKeys<T, V> =
-	Record<Exclude<keyof V, keyof T>, never>
-
-
 export type WithDefaults<P, K extends PropertyKey> =
 	[K] extends [never]
 		? P

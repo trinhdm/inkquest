@@ -1,14 +1,13 @@
 import { createRootCtx } from '@/lib/component'
+import type { AnimationOptions, RevealItemProps } from '@/hooks'
 import type { Button } from '../Button'
-import type { RevealItemProps } from '@/hooks'
 
 export interface ButtonGroupContext
-	extends RevealItemProps {
+	extends Pick<AnimationOptions, 'unstyled'>, RevealItemProps {
 	disabled?: boolean
 	loading?: boolean
-	priority?: Button.Priority
-	size?: Button.Size
-	unstyled?: boolean
+	priority?: Button.Props['priority']
+	size?: Button.Props['size']
 }
 
 export const {

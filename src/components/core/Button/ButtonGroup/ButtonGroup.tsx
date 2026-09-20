@@ -61,8 +61,8 @@ export const ButtonGroup = polymorphic<ButtonGroupSpecs>(_props => {
 	const items = filterChildren(children, 'Button'),
 		total = items.length
 
-	const ctxValues = useMemo<ButtonGroup.Context[]>(
-		() => Array.from({ length: total }, (_, index) => ({
+	const ctxValues = useMemo(
+		() => Array.from({ length: total }, (_, index): ButtonGroupContext => ({
 			disabled, loading, size, unstyled,
 			priority: hasPriority ? derivePriority(index) : undefined,
 			...revealItemFrom(index, revealFrom),

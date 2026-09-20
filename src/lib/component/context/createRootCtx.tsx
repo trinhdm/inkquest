@@ -2,7 +2,7 @@ import {
 	createContext, use, useMemo,
 	type ReactElement, type ReactNode,
 } from 'react'
-import type { NoExcessKeys } from '@/types/utils'
+import type { NoExcessKeys } from './props.types'
 
 export interface RootProviderProps<T, V extends T = T> {
 	baseName?: string

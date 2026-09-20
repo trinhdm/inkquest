@@ -8,10 +8,10 @@ import {
 	revealItem, REVEAL_DATAKEYS, REVEAL_INVIEW,
 	type RevealCounter, type RevealItemProps, type RevealRootProps,
 } from './helpers'
-import type { AnimationOptions } from '../constants'
+import type { AnimationInViewOptions } from '../constants'
 
 interface UseRevealOptions
-	extends AnimationOptions {}
+	extends AnimationInViewOptions {}
 
 interface RevealValue<T> {
 	item: (index: number) => RevealItemProps

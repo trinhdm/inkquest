@@ -33,9 +33,8 @@ type SectionLayout =
 interface BaseSectionProps {
 	children: ReactNode
 	eyebrow?: string
-	title?: string
 	layout?: SectionLayout
-	withinView?: boolean
+	title?: string
 }
 
 type SectionProps =
