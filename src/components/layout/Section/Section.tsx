@@ -24,6 +24,7 @@ interface SectionProps {
 
 	animated?: boolean
 	duration?: number
+	once?: boolean
 	revealed?: boolean
 	stagger?: number
 	withinView?: boolean

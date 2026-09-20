@@ -73,7 +73,7 @@ export const useCountUp = <T extends HTMLElement = HTMLElement>({
 	delay,
 	duration = 3000,
 	enabled = true,
-	once = true,
+	once = false,
 	start = 0,
 	value,
 	withinView,

@@ -101,8 +101,8 @@ export const Group = polymorphic<GroupSpecs>(_props => {
 
 	// one observer for the whole group, so children stagger off a single t=0
 	// rather than each racing its own IntersectionObserver
-	const root = useRef<HTMLDivElement>(null)
-	const withinView = useReplayInView(root, { amount, once })
+	const ref = useRef<HTMLDivElement>(null)
+	const withinView = useReplayInView(ref, { amount, once })
 
 	// one context value per child — memoised on `total` so identities stay
 	// stable across renders even though each child gets its own object
@@ -119,7 +119,7 @@ export const Group = polymorphic<GroupSpecs>(_props => {
 			{ ...others }
 			as={ DEFAULT_TAG }
 			attributes={ { aria, data } }
-			ref={ root }
+			ref={ ref }
 			role="group"
 		>
 			{ withProvider(items, Provider, ctxValues) }

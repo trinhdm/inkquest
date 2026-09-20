@@ -1,8 +1,9 @@
 export const REVEAL_INVIEW = .15
 export const REVEAL_DATAKEYS = {
 	root: {
-		active: 'data-revealed',
+		active: 'data-revealing',
 		base: 'data-js-reveal',
+		settled: 'data-revealed',
 	},
 	child: 'data-reveal-item',
 } as const
@@ -10,6 +11,7 @@ export const REVEAL_DATAKEYS = {
 export interface RevealRootProps {
 	[REVEAL_DATAKEYS.root.base]?: ''
 	[REVEAL_DATAKEYS.root.active]?: ''
+	[REVEAL_DATAKEYS.root.settled]?: ''
 }
 
 export interface RevealItemProps {

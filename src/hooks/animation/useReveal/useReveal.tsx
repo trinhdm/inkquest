@@ -1,7 +1,8 @@
 'use client'
 
-import { useCallback, useRef, type RefObject } from 'react'
-import { useInView, useReducedMotion, type UseInViewOptions } from 'framer-motion'
+import { useCallback, useEffect, useRef, useState, type RefObject } from 'react'
+import { useReducedMotion } from 'framer-motion'
+import { useReplayInView } from '../useReplayInView'
 import { extractOtherProps } from '../../useProps'
 import {
 	revealItem, REVEAL_DATAKEYS, REVEAL_INVIEW,
@@ -23,35 +24,74 @@ interface RevealValue<T> {
 export const useReveal = <T extends HTMLElement = HTMLElement>({
 	amount = REVEAL_INVIEW,
 	animated = true,
-	once = true,
+	once = false,
 	revealed,
 	withinView,
 	...props
 }: UseRevealOptions = {}): RevealValue<T> => {
 	const { duration, stagger, ...rest } = props
+	const { others } = extractOtherProps(rest)
+
+	const {
+		child: dataChild,
+		root: dataRoot,
+	} = REVEAL_DATAKEYS
+
+	const [settled, setSettled] = useState(false)
 
 	const node = useRef<T>(null),
-		idle = useRef<T>(null)
+		idle = useRef<T>(null),
+		observer = typeof withinView === 'boolean' ? idle : node
 
-	// when a parent supplies the trigger, keep our own observer idle by handing
-	// `useInView` a ref that is never attached to anything (see `useCountUp`)
-	const observer = typeof withinView === 'boolean' ? idle : node,
-		inView = useInView(observer, { amount, once, ...rest })
+	const reducedMotion = useReducedMotion(),	// guard is primarily handled by `@media` block
+		inView = useReplayInView(observer, { amount, once, ...rest })
 
-	// belt-and-braces: the CSS `@media` block is the primary reduced-motion
-	// guard, since this returns `null` during SSR
-	const reducedMotion = useReducedMotion()
+	// pin the section hidden rather than deferring to the observer
+	const triggered = revealed ?? withinView ?? (!!reducedMotion || inView),
+		visible = !animated || triggered
 
-	const visible = revealed ?? withinView ?? (!!reducedMotion || inView),
-		isAnimated = animated && !rest.unstyled,
+	const isAnimated = animated && !rest.unstyled,
 		isVisible = !isAnimated || visible
+
+	useEffect(() => {
+		const el = node.current
+		let cancelled = false
+
+		if (!el) return
+		else if (!visible) return setSettled(false)   // only reachable when `once: false`
+
+		// the transitions start in the commit that adds `data-revealed`, so wait a
+		// frame — queried in the same tick, `getAnimations` returns an empty list
+		const frame = requestAnimationFrame(() => {
+			const running = el.getAnimations({ subtree: true }).filter(anim => {
+				const { effect } = anim,
+					{ target } = (effect ?? { target: null }) as KeyframeEffect
+
+				return effect instanceof KeyframeEffect
+					&& target instanceof Element
+					&& target.matches(`[${dataChild}]`)
+					&& target.closest(`[${dataRoot.base}]`) === el	// skip nested root's items
+			})
+
+			if (!running.length) return setSettled(true)
+
+			// `allSettled`, not `all` — `finished` REJECTS on an interrupted transition
+			Promise.allSettled(running.map(anim => anim.finished))
+				.then(() => { if (!cancelled) setSettled(true) })
+		})
+
+		return () => {
+			cancelled = true
+			cancelAnimationFrame(frame)
+		}
+	}, [visible])
 
 	const item = useCallback((index: number = 0): RevealItemProps => (
 		isAnimated ? revealItem(index) : {}
 	), [isAnimated])
 
-	// hands back a FRESH counter on every call — call it once per render. Never
-	// hold the counter itself in a ref or memo: its `index` would carry over into
+	// hands back a FRESH counter on every call — call it once per render
+	// neveer hold the counter itself in a ref or memo: its `index` would carry over into
 	// the next render (and StrictMode's double render), starting that pass at N
 	const orderReveal = useCallback((): RevealCounter => {
 		let index = 0
@@ -67,13 +107,11 @@ export const useReveal = <T extends HTMLElement = HTMLElement>({
 		}
 	}, [isAnimated, item])
 
-	const { root: dataRoot } = REVEAL_DATAKEYS
-	const { others } = extractOtherProps(rest)
-
 	const attributes: RevealRootProps = isAnimated
 		? {
 			[dataRoot.base]: '',
-			...(visible ? { [dataRoot.active]: '' } as const : {}),
+			...(visible && !settled ? { [dataRoot.active]: '' } as const : {}),
+			...(settled ? { [dataRoot.settled]: '' } as const : {}),
 		}
 		: {}
 
