@@ -1,6 +1,7 @@
 import {
 	useMemo,
 	useRef,
+	Children,
 	type CSSProperties,
 	type ReactNode,
 } from 'react'
@@ -24,9 +25,11 @@ const NAME = 'Group' as const,
 	TAG = 'div' as const
 
 const DEFAULT_PROPS = {
+	as: TAG,
 	childName: GroupItem.displayName,
-	divider: true,
+	divider: false,
 	provider: GroupProvider,
+	valuesCtx: {},
 } as const
 
 interface BaseGroupProps {
@@ -41,11 +44,13 @@ interface BaseGroupProps {
 interface CompoundGroupProps {
 	childName?: never
 	provider?: never
+	valuesCtx?: never
 }
 
 interface NamedGroupProps {
 	childName: string
 	provider?: RootProviderFn<GroupContext>
+	valuesCtx?: object
 }
 
 type NestedGroupProps =
@@ -58,7 +63,10 @@ type GroupProps =
 	& MaybeAnimationProps
 
 type GroupSpecs = {
-	defaults: { props: ListProps<typeof DEFAULT_PROPS> }
+	defaults: {
+		as: typeof TAG
+		props: ListProps<typeof DEFAULT_PROPS>
+	}
 	props: GroupProps
 	subcomponents: {
 		Item: typeof GroupItem
@@ -66,11 +74,18 @@ type GroupSpecs = {
 }
 
 const tokens = setThemeCSS<GroupSpecs>((theme, props) => {
-	const { columns } = props
+	const { columns, children, orientation } = props
+	const hasColumns = !!(columns && columns > 0)
+	let numCols: number | undefined = hasColumns ? columns : undefined
+
+	if (!!orientation && !hasColumns) {
+		const count = Children.count(children)
+		numCols = count > 1 ? count - 1 : count
+	}
 
 	return {
 		root: {
-			'--group-cols': !!(columns && columns > 0) ? columns : undefined,
+			'--group-item-count': numCols,
 		},
 	}
 })
@@ -93,17 +108,17 @@ export const Group = polymorphic<GroupSpecs>(_props => {
 		provider: Provider,
 		stagger,
 		unstyled,
+		valuesCtx,
 		...rest
 	} = props
 
-	const { others } = extractOtherProps(rest)
+	const { as, others } = extractOtherProps(rest)
 
-	const module = { [`${orientation}`]: !!orientation || null },
-		aria = { orientation },
-		data = {
-			block: !!fullWidth || null,
-			divide: !!divider || null,
-		}
+	const aria = { orientation }
+	const data = {
+		block: !!fullWidth || null,
+		divide: !!divider || null,
+	}
 
 	const items = filterChildren(children, childName),
 		total = items.length
@@ -118,15 +133,16 @@ export const Group = polymorphic<GroupSpecs>(_props => {
 	const ctxValues = useMemo(
 		() => Array.from({ length: total }, (_, index): GroupContext => ({
 			animated, duration, index, stagger, unstyled, withinView,
+			...valuesCtx,
 		})),
-		[animated, duration, stagger, total, unstyled, withinView]
+		[animated, duration, stagger, total, unstyled, valuesCtx, withinView]
 	)
 
 	return (
 		<Box
-			{ ...styles('root', { module }) }
+			{ ...styles('root') }
 			{ ...others }
-			as={ TAG }
+			as={ as }
 			attributes={ { aria, data } }
 			ref={ ref }
 			role="group"

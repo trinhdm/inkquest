@@ -13,18 +13,18 @@ export const shorthandTokens = {
 	motion: token.optPath<TransitionPresetTokens>(aliasVar, 'motion'),
 	// text: token.optPath<TextTokens>(aliasVar, 'text'),
 	text: {
-		h1: token.optPath<TextTokens>(aliasVar, 'text', 'h1'),
-		h2: token.optPath<TextTokens>(aliasVar, 'text', 'h2'),
-		h3: token.optPath<TextTokens>(aliasVar, 'text', 'h3'),
-		h4: token.optPath<TextTokens>(aliasVar, 'text', 'h4'),
+		h1: token.optPath<TextTokens['h1']>(aliasVar, 'text', 'h1'),
+		h2: token.optPath<TextTokens['h2']>(aliasVar, 'text', 'h2'),
+		h3: token.optPath<TextTokens['h3']>(aliasVar, 'text', 'h3'),
+		h4: token.optPath<TextTokens['h4']>(aliasVar, 'text', 'h4'),
 		body: token.endPath(aliasVar, 'text', 'body'),
 		label: token.endPath(aliasVar, 'text', 'label'),
 		control: token.endPath(aliasVar, 'text', 'control'),
 		navigation: token.endPath(aliasVar, 'text', 'navigation'),
 		prose: token.endPath(aliasVar, 'text', 'prose'),
 
-		section: token.optPath<TextTokens>(aliasVar, 'text', 'section'),
-		caption: token.optPath<TextTokens>(aliasVar, 'text', 'caption'),
+		section: token.optPath<TextTokens['section']>(aliasVar, 'text', 'section'),
+		caption: token.optPath<TextTokens['caption']>(aliasVar, 'text', 'caption'),
 	},
 }
 

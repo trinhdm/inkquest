@@ -14,13 +14,18 @@ export const aliasVar = (...path: string[]): TokenVar =>
 	getTokenVar(path, PREFIX_CSS_SELECTOR)
 
 
+/** A node the generator collapses into a single `font` shorthand var — see SHORTHAND_KEYS. */
+type ShorthandNode = Record<'fontFamily' | 'fontSize' | 'fontWeight' | 'lineHeight', string>
+
 type LeafPath<T> =
 	T extends readonly unknown[] ? [] :
-	T extends object
-		?
-			| ('base' extends keyof T ? [] : never)
-			| { [K in Exclude<keyof T & string, 'base'>]: [K, ...LeafPath<T[K]>] }[Exclude<keyof T & string, 'base'>]
-		: []
+	T extends ShorthandNode
+		? []
+		: T extends object
+			?
+				| ('base' extends keyof T ? [] : never)
+				| { [K in Exclude<keyof T & string, 'base'>]: [K, ...LeafPath<T[K]>] }[Exclude<keyof T & string, 'base'>]
+			: []
 
 type PathOf<K> = K extends object ? LeafPath<K> : [K]
 type StatePathOf<K> = K extends object ? LeafPath<K> : [K] | []

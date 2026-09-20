@@ -1,14 +1,23 @@
 .inkq-group {
 	$name: &;
 
-	--group-cols: auto-fit;
-	--group-item-width: minmax(0, 1fr);
+	--group-item-count: auto-fit;
+	--group-item-width: 1fr;
+	--group-cols: repeat(var(--group-item-count), var(--group-item-width)) auto;
 
 	display: grid;
-	grid-template-columns: repeat(var(--group-cols), var(--group-item-width));
+	gap: var(--space-5);
+	grid-template-columns: var(--group-cols);
 
 	&__item {
+		align-self: center;
+		position: relative;
 		row-gap: var(--space-2);
+	}
+
+	&:not([aria-orientation]) {
+		--group-item-width: minmax(0, 1fr);
+		--group-cols: repeat(var(--group-item-count), var(--group-item-width));
 	}
 
 	&:not([data-divide]) {

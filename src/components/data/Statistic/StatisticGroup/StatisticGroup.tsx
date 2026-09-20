@@ -8,13 +8,15 @@ const NAME = 'Statistic.Group' as const
 const DEFAULT_PROPS = {
 	animated: true,
 	columns: 4,
+	divider: true,
 	duration: 3000,
 	once: false,
 	stagger: 200,
 } as const
 
 interface StatisticGroupProps
-	extends Omit<Group.Props, 'childName' | 'provider'> {}
+	extends Omit<Group.Props, 'childName' | 'provider'>,
+		Pick<StatisticGroupContext, 'order' | 'size'> {}
 
 type StatisticGroupSpecs = {
 	defaults: { props: ListProps<typeof DEFAULT_PROPS> }
@@ -26,7 +28,7 @@ export const StatisticGroup = polymorphic<StatisticGroupSpecs>(_props => {
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { classes, props })
 
-	const { children, ...rest } = props
+	const { children, order, size, ...rest } = props
 	const { others } = extractOtherProps(rest)
 
 	return (
@@ -36,6 +38,7 @@ export const StatisticGroup = polymorphic<StatisticGroupSpecs>(_props => {
 			as={ Group }
 			childName="Statistic"
 			provider={ StatisticGroupProvider }
+			valuesCtx={ { order, size } }
 		>
 			{ children }
 		</Box>

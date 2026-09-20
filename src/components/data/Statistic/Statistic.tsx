@@ -8,6 +8,7 @@ import {
 
 import { useStatisticGroupProps } from './StatisticGroup'
 import { polymorphic, Box, type ListProps } from '@/components/polymorphic'
+import { setThemeCSS } from '@/lib/theme'
 import { StatisticGroup } from './StatisticGroup'
 import type { ReactNode } from 'react'
 import classes from './Statistic.module.scss'
@@ -20,6 +21,8 @@ const DEFAULT_PROPS = {
 	as: TAG,
 	duration: 3000,
 	index: 0,
+	order: 'descend',
+	size: 'lg',
 	stagger: 0,
 } as const
 
@@ -27,6 +30,8 @@ interface BaseStatisticProps {
 	caption?: string
 	highlight?: boolean
 	icon?: ReactNode
+	order?: StatisticGroup.Props['order']
+	size?: StatisticGroup.Props['size']
 	value: number | string
 }
 
@@ -45,9 +50,31 @@ interface StatisticSpecs {
 	}
 }
 
+const tokens = setThemeCSS<StatisticSpecs>((theme, props) => {
+	const { order, size } = props
+	const isDescend = order === 'descend'
+
+	const align = isDescend ? 'start' : 'end',
+		direction = isDescend ? '' : '-reverse',
+		titleTag = size === 'lg' ? 'h3' : 'h4'
+
+	const captionFont = size === 'lg'
+		? theme.presets.text.caption('item')
+		: theme.presets.text.section('eyebrow')
+
+	return {
+		root: {
+			'--statistic-align': `flex-${align}`,
+			'--statistic-direction': `column${direction}`,
+			'--statistic-font-caption': !!size ? captionFont : undefined,
+			'--statistic-font-value': !!size ? theme.presets.text[titleTag]() : undefined,
+		},
+	}
+})
+
 export const Statistic = polymorphic<StatisticSpecs>(_props => {
 	const props = useProps(NAME, useStatisticGroupProps(_props))
-	const styles = useStyles(NAME, { classes, props })
+	const styles = useStyles(NAME, { classes, props, tokens })
 
 	const {
 		animated,
@@ -56,6 +83,7 @@ export const Statistic = polymorphic<StatisticSpecs>(_props => {
 		highlight,
 		icon,
 		index,
+		size,
 		stagger,
 		value,
 		withinView,
@@ -71,24 +99,24 @@ export const Statistic = polymorphic<StatisticSpecs>(_props => {
 	})
 
 	const { as, others } = extractOtherProps(rest)
-	const global = { highlight, item: true }
+	const clsx = {
+		global: { highlight, item: true },
+		module: { [`${size}`]: !!size || null },
+	}
 
 	return (
 		<Box
-			{ ...styles('root', { global }) }
+			{ ...styles('root', clsx) }
 			{ ...others }
 			as={ as }
 			ref={ ref }
 		>
-			<div { ...styles('stat') }>
+			<div { ...styles('inner') }>
 				{ icon }
-				<span { ...styles('value') }>
-					{ display }
-				</span>
+				<span { ...styles('value') }>{ display }</span>
 			</div>
-			<span { ...styles('caption', true) }>
-				{ caption }
-			</span>
+
+			<span { ...styles('caption', true) }>{ caption }</span>
 		</Box>
 	)
 }, classes)
