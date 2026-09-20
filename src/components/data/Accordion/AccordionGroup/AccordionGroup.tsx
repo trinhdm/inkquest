@@ -1,5 +1,18 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
-import { useProps, useReplayInView, useStyles, extractOtherProps } from '@/hooks'
+import {
+	useCallback,
+	useMemo,
+	useRef,
+	useState,
+} from 'react'
+
+import {
+	useProps,
+	useReplayInView,
+	useStyles,
+	extractOtherProps,
+	REPLAY_REVEAL,
+} from '@/hooks'
+
 import { filterChildren, withProvider } from '@/lib/component'
 import { polymorphic, Box, type ListProps } from '@/components/polymorphic'
 import { AccordionGroupProvider } from './AccordionGroup.context'
@@ -56,7 +69,7 @@ export const AccordionGroup = polymorphic<AccordionGroupSpecs>(_props => {
 	const { others } = extractOtherProps(rest)
 
 	const root = useRef<HTMLDivElement>(null)
-	const withinView = useReplayInView(root)
+	const withinView = useReplayInView(root, REPLAY_REVEAL)
 
 	const [openItems, setOpenItems] = useState<number[]>(() => {
 		const indices = handleOpenItems(defaultOpen)

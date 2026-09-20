@@ -78,11 +78,12 @@ const orderSection = ({
 
 const buildContent = ({ id, props, reveal, styles }: BuildSectionConfig): ReactNode[] => {
 	const { buttons, items } = orderSection({ id, props, reveal })
+	const clsx = { global: { prose: true } }
 	const content: ReactNode[] = []
 
 	if (!!items?.length) {
 		const [first] = items
-		let args = { ...styles('description') },
+		let args = { ...styles('description', clsx) },
 			Tag: ElementType | undefined
 
 		if (items.length > 1) {
@@ -93,7 +94,7 @@ const buildContent = ({ id, props, reveal, styles }: BuildSectionConfig): ReactN
 		}
 
 		const description = !!Tag ? <Tag { ...args }>{ items }</Tag> : items,
-			body = <div key={ `${id}-body` } { ...styles('body') }>{ description }</div>
+			body = <div key={ `${id}-body` } { ...styles('body', clsx) }>{ description }</div>
 
 		content.push(body)
 	}

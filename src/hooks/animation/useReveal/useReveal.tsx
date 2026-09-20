@@ -1,14 +1,25 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState, type RefObject } from 'react'
+import {
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+	type RefObject,
+} from 'react'
+
+import {
+	revealItem,
+	REVEAL_DATAKEYS,
+	type RevealCounter,
+	type RevealItemProps,
+	type RevealRootProps,
+} from './helpers'
+
 import { useReducedMotion } from 'framer-motion'
 import { useReplayInView } from '../useReplayInView'
 import { extractOtherProps } from '../../useProps'
-import {
-	revealItem, REVEAL_DATAKEYS, REVEAL_INVIEW,
-	type RevealCounter, type RevealItemProps, type RevealRootProps,
-} from './helpers'
-import type { AnimationInViewOptions } from '../constants'
+import { REVEAL_MARGIN, type AnimationInViewOptions } from '../constants'
 
 interface UseRevealOptions
 	extends AnimationInViewOptions {}
@@ -22,9 +33,10 @@ interface RevealValue<T> {
 }
 
 export const useReveal = <T extends HTMLElement = HTMLElement>({
-	amount = REVEAL_INVIEW,
+	amount,
 	animated = true,
-	once = false,
+	margin,
+	once,
 	withinView,
 	...props
 }: UseRevealOptions = {}): RevealValue<T> => {
@@ -42,8 +54,13 @@ export const useReveal = <T extends HTMLElement = HTMLElement>({
 		idle = useRef<T>(null),
 		observer = typeof withinView === 'boolean' ? idle : node
 
+	const trigger = amount ?? 'some',
+		triggerMargin = margin ?? (amount === undefined ? REVEAL_MARGIN : undefined)
+
+	const viewOptions = { amount: trigger, margin: triggerMargin, once, ...rest }
+
 	const reducedMotion = useReducedMotion(),	// guard is primarily handled by `@media` block
-		inView = useReplayInView(observer, { amount, once, ...rest })
+		inView = useReplayInView(observer, viewOptions)
 
 	// `withinView={ false }` pins element hidden rather than deferring to the observer
 	const triggered = withinView ?? (!!reducedMotion || inView),

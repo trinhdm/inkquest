@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, type RefObject } from 'react'
+import { useState, type RefObject } from 'react'
 import { useInView, type UseInViewOptions } from 'framer-motion'
 import { DEFAULT_INVIEW } from './constants'
 
@@ -9,18 +9,27 @@ import { DEFAULT_INVIEW } from './constants'
 // rather than snapping while the element is still partially visible
 export const useReplayInView = <T extends Element = Element>(
 	ref: RefObject<T | null>,
-	{ amount = DEFAULT_INVIEW, once = false, ...rest }: UseInViewOptions = {}
+	options: UseInViewOptions = {}
 ): boolean => {
-	const armed = useInView(ref, { amount, once, ...rest }),
+	const {
+		amount = DEFAULT_INVIEW,
+		margin,
+		once = false,
+		...rest
+	} = options
+
+	// deliberately no `margin` — the reset must happen once the element
+	// is *truly* off screen, not at the shifted trigger line
+	const armed = useInView(ref, { amount, margin, once, ...rest }),
 		onScreen = useInView(ref, { amount: 'some', ...rest })
 
 	const [active, setActive] = useState(false)
 
-	useEffect(() => {
-		if (once) return
-		if (armed) setActive(true)
-		else if (!onScreen) setActive(false)
-	}, [armed, once, onScreen])
+	let next = active
+	if (armed) next = true
+	else if (!onScreen) next = false
 
-	return once ? armed : active
+	if (!once && next !== active) setActive(next)
+
+	return once ? armed : next
 }

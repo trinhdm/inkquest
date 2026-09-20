@@ -7,6 +7,7 @@ export {
 	useReplayInView,
 	useReveal,
 	revealItemFrom,
+	REPLAY_REVEAL,
 	type AnimationOptions,
 	type MaybeAnimationProps,
 	type RevealCounter,

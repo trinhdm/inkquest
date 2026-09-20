@@ -1,6 +1,11 @@
 import type { UseInViewOptions } from 'framer-motion'
 
 export const DEFAULT_INVIEW = .75
+export const REVEAL_MARGIN = '0px 0px -12% 0px'
+export const REPLAY_REVEAL = {
+	amount: 'some',
+	margin: REVEAL_MARGIN,
+} as const
 
 export interface AnimationOptions {
 	animated?: boolean

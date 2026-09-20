@@ -16,9 +16,9 @@ import classes from './Section.module.scss'
 const NAME = 'Section' as const
 const DEFAULT_PROPS = {
 	animated: true,
-	duration: 400,
+	duration: 600,
 	layout: 'default',
-	stagger: 200,
+	stagger: 150,
 } as const
 
 type SectionLayout =

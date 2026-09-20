@@ -8,4 +8,8 @@ export {
 	type RevealItemProps,
 } from './useReveal'
 
-export type { AnimationOptions, MaybeAnimationProps } from './constants'
+export {
+	REPLAY_REVEAL,
+	type AnimationOptions,
+	type MaybeAnimationProps,
+} from './constants'
