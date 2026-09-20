@@ -41,24 +41,27 @@ describe('Grid', () => {
 		expect(container.firstElementChild).toBeEmptyDOMElement()
 	})
 
-	// `columns` only ever affects the root's CSS-module `className` (an
-	// `{n}-col` modifier); it is never reflected as a `data-*` attribute or
-	// inline `style`. CSS-module hashes are unresolvable under `next/jest`
-	// (see the batch-1 note), so assert the *contract* — different `columns`
-	// values produce different `className`s — rather than any literal token.
-	it('changes the root className when columns is set, relative to when it is unset', () => {
-		const { container: withColumns } = render(<Grid columns={ 3 }>content</Grid>)
-		const { container: withoutColumns } = render(<Grid>content</Grid>)
+	// `columns` is published as the `--grid-cols` custom property on the root's
+	// inline `style`, via `setThemeCSS`'s `tokens` (see `Grid.tsx`) — NOT as a
+	// className modifier or a `data-*` attribute. `Grid.module.scss` reads it
+	// back through `repeat(var(--group-cols), ...)`.
+	it('publishes columns as the --grid-cols custom property on the root', () => {
+		const { container } = render(<Grid columns={ 3 }>content</Grid>)
+		const root = container.firstElementChild as HTMLElement
 
-		expect(withColumns.firstElementChild?.className)
-			.not.toBe(withoutColumns.firstElementChild?.className)
+		expect(root.style.getPropertyValue('--grid-cols')).toBe('3')
 	})
 
-	it('does not modify the root className for a non-positive columns value', () => {
+	it('leaves --grid-cols unset for a non-positive columns value, so the stylesheet default applies', () => {
 		const { container: zero } = render(<Grid columns={ 0 }>content</Grid>)
 		const { container: unset } = render(<Grid>content</Grid>)
 
-		expect(zero.firstElementChild?.className).toBe(unset.firstElementChild?.className)
+		const zeroRoot = zero.firstElementChild as HTMLElement,
+			unsetRoot = unset.firstElementChild as HTMLElement
+
+		expect(zeroRoot.style.getPropertyValue('--grid-cols')).toBe('')
+		expect(unsetRoot.style.getPropertyValue('--grid-cols')).toBe('')
+		expect(zeroRoot.className).toBe(unsetRoot.className)
 	})
 
 	describe('Grid.Item', () => {

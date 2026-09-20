@@ -1,5 +1,6 @@
 import { useProps, useStyles, extractOtherProps } from '@/hooks'
 import { polymorphic, Box } from '@/components/polymorphic'
+import { setThemeCSS } from '@/lib/theme'
 import { GridItem } from './GridItem'
 import type { ReactNode } from 'react'
 import classes from './Grid.module.scss'
@@ -20,24 +21,31 @@ interface GridSpecs {
 	}
 }
 
+const tokens = setThemeCSS<GridSpecs>((theme, props) => {
+	const { columns } = props
+
+	return {
+		root: {
+			'--grid-cols': !!(columns && columns > 0) ? columns : undefined,
+		},
+	}
+})
+
 export const Grid = polymorphic<GridSpecs>(_props => {
 	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props })
+	const styles = useStyles(NAME, { classes, props, tokens })
 
 	const { children, columns, ...rest } = props
 	const { as, others } = extractOtherProps(rest)
 
-	const module = {
-		[`${columns}-col`]: !!(columns && columns > 0)
-	}
-
 	return (
 		<Box
-			{ ...styles('root', { module }) }
+			{ ...styles('root') }
 			{ ...others }
 			as={ as }
 		>
 			{ children }
+			{/* { filterChildren(children, 'GridItem').map(child => child) } */}
 		</Box>
 	)
 }, classes)

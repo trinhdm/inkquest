@@ -2,14 +2,13 @@
 .inkq-grid {
 	$name: &;
 
+	--grid-cols: auto-fit;
+	--grid-item-width: minmax(var(--inkq-breakpoint-min), 1fr);
+
 	align-items: start;
 	display: grid;
 	gap: var(--inkq-space-grid);
-	grid-template-columns: repeat(auto-fit, minmax(var(--inkq-breakpoint-min), 1fr));
-
-	&--3-col {
-		grid-template-columns: repeat(3, 1fr);
-	}
+	grid-template-columns: repeat(var(--grid-cols), var(--grid-item-width));
 }
 
 .inkq-grid-item {
