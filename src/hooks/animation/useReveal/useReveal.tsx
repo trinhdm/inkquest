@@ -25,7 +25,6 @@ export const useReveal = <T extends HTMLElement = HTMLElement>({
 	amount = REVEAL_INVIEW,
 	animated = true,
 	once = false,
-	revealed,
 	withinView,
 	...props
 }: UseRevealOptions = {}): RevealValue<T> => {
@@ -46,8 +45,8 @@ export const useReveal = <T extends HTMLElement = HTMLElement>({
 	const reducedMotion = useReducedMotion(),	// guard is primarily handled by `@media` block
 		inView = useReplayInView(observer, { amount, once, ...rest })
 
-	// pin the section hidden rather than deferring to the observer
-	const triggered = revealed ?? withinView ?? (!!reducedMotion || inView),
+	// `withinView={ false }` pins element hidden rather than deferring to the observer
+	const triggered = withinView ?? (!!reducedMotion || inView),
 		visible = !animated || triggered
 
 	const isAnimated = animated && !rest.unstyled,

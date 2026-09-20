@@ -79,7 +79,7 @@ const meta: Meta<StatisticGroupStoryProps> = {
 		},
 		divider: {
 			control: 'boolean',
-			description: 'A `module`-scope config class (`module = { divider, ... }`) — `Group.module.scss` DOES declare `&--divider`, so this resolves to a real CSS-module hash when styled (not a literal class). See the `Divider` story.',
+			description: 'A `module`-scope config class (`module = { divider, ... }`) — but `Group.module.scss` no longer declares an `&--divider` rule (divider styling now lives on the self-referencing `&:where([data-divide])` selector instead), so this stays a literal, unhashed `inkq-group--divider` class; the real toggle to key off is the `data-divide` attribute (`attributes.data.divide`). See the `Divider` story.',
 		},
 		fullWidth: {
 			control: 'boolean',
@@ -94,13 +94,9 @@ const meta: Meta<StatisticGroupStoryProps> = {
 			control: 'text',
 			description: '**Probable source bug, verified against the live `Group.tsx`**: declared on `BaseGroupProps` but NOT destructured anywhere in `Group`\'s own render — it falls through `...rest` and is spread onto the root element as a literal, unrecognized `justify="..."` DOM attribute, with no effect on actual `justify-content`. Identical pattern to `Button.Group`\'s own `justify` bug. See the `Justify` story.',
 		},
-		revealed: {
-			control: 'boolean',
-			description: '**Probable source bug, verified against the live `StatisticGroup.tsx`**: `StatisticGroup` only destructures `children` before calling `extractOtherProps(rest)` on everything else — and `extractOtherProps` (`hooks/useProps/helpers.ts`) unconditionally strips `revealed` (along with `animated`/`loading`/`displayName`/the style aliases) out of the `others` it returns, INSTEAD of forwarding it. Since `revealed` never makes it into `others`, it never reaches the inner `<Group>` element `StatisticGroup` renders as (`<Box as={Group} {...others} .../>`) at all — `Group` always sees `revealed` as `undefined`, regardless of what\'s passed to `Statistic.Group`, so its otherwise-correct publish-to-context logic never has a real value to publish. Contrast with `columns`/`divider`/`duration`/`fullWidth`/`justify`/`orientation`/`stagger`/`unstyled`, none of which are in `extractOtherProps`\'s strip list, and which all DO reach `Group` correctly (see their own stories in this file). No story exercises `revealed` beyond this doc note, since there is no reachable runtime value to demonstrate.',
-		},
 		animated: {
 			control: 'boolean',
-			description: '**Same wiring bug as `revealed`, verified against the live `StatisticGroup.tsx`**: `animated` is also unconditionally stripped by `extractOtherProps` before `others` is spread onto the inner `<Group>` — so `Statistic.Group`\'s own `animated` prop NEVER reaches `Group`, and therefore never reaches `StatisticGroupProvider`\'s context, no matter what\'s passed here. Every child `Statistic` ends up using its OWN registered default (`animated: true`) or its own explicit prop — never the group\'s. (Separately, `animated` is also part of a discriminated union with `duration`: TypeScript only allows `true` or entirely-absent, never an explicit `false`, on `Group`/`Statistic.Group` — but that\'s moot here since the value never reaches its destination either way.) See `ContextPrecedence`, which demonstrates the cascade that DOES work (`duration`/`stagger`, unaffected by this bug) rather than asserting a false positive on `animated` itself.',
+			description: '**wiring bug, verified against the live `StatisticGroup.tsx`**: `animated` is also unconditionally stripped by `extractOtherProps` before `others` is spread onto the inner `<Group>` — so `Statistic.Group`\'s own `animated` prop NEVER reaches `Group`, and therefore never reaches `StatisticGroupProvider`\'s context, no matter what\'s passed here. Every child `Statistic` ends up using its OWN registered default (`animated: true`) or its own explicit prop — never the group\'s. (Separately, `animated` is also part of a discriminated union with `duration`: TypeScript only allows `true` or entirely-absent, never an explicit `false`, on `Group`/`Statistic.Group` — but that\'s moot here since the value never reaches its destination either way.) See `ContextPrecedence`, which demonstrates the cascade that DOES work (`duration`/`stagger`, unaffected by this bug) rather than asserting a false positive on `animated` itself.',
 		},
 		duration: {
 			control: 'number',
@@ -160,11 +156,12 @@ export const Columns: Story = {
 	},
 }
 
-// `divider` is a `module`-scope config, and `Group.module.scss` DOES declare
-// a matching `&--divider` rule — so, unlike a boolean-config selector with no
-// own rule, this resolves to a real CSS-module hash when present, not a
-// literal class. Looked up against the real compiled `Group.module.scss`
-// export map rather than guessed.
+// `divider` is a `module`-scope config, but `Group.module.scss` no longer
+// declares an `&--divider` rule (divider styling now lives on the
+// self-referencing `&:where([data-divide])` selector instead) — so
+// `inkq-group--divider` stays a literal, unhashed class, with no compiled
+// export to look up. The real, observable toggle is the `data-divide`
+// attribute `Group` sets via `attributes.data.divide`.
 export const Divider: Story = {
 	parameters: { controls: { exclude: ['divider'] } },
 	render: (args) => (
@@ -186,8 +183,10 @@ export const Divider: Story = {
 
 		const [withDivider, withoutDivider] = groups
 
-		expect(hasModuleClass(withDivider, 'inkq-group--divider')).toBe(true)
-		expect(hasModuleClass(withoutDivider, 'inkq-group--divider')).toBe(false)
+		await expect(withDivider).toHaveAttribute('data-divide')
+		await expect(withDivider).toHaveClass('inkq-group--divider')
+		await expect(withoutDivider).not.toHaveAttribute('data-divide')
+		await expect(withoutDivider).not.toHaveClass('inkq-group--divider')
 	},
 }
 
@@ -308,14 +307,14 @@ export const NonStatisticChildren: Story = {
 	},
 }
 
-// `duration`/`stagger` (unlike `animated`/`revealed` — see their own
+// `duration`/`stagger` (unlike `animated` — see their own
 // argType doc notes above) reach the inner `<Group>` element correctly, and
 // DO cascade to children with no own `duration`/`stagger` via
 // `StatisticGroupProvider`. This is demonstrated here by pinning the
 // group's own `duration` to something far shorter than `Statistic`'s
 // registered default (`3000`ms) and asserting the inherited child settles
 // well BEFORE that default would have allowed — if the cascade were broken
-// the same way `animated`/`revealed` are, this child would still be
+// the same way `animated` are, this child would still be
 // mid-animation (or not yet started) at the 2s mark. A second child's own
 // EXPLICIT `duration`/`stagger` still wins over the group's, per
 // `useStatisticGroupProps`' `Object.hasOwn` guard on that child's raw,

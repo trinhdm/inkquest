@@ -73,17 +73,13 @@ const meta: Meta<StatisticStoryProps> = {
 			control: 'number',
 			description: 'See `index` above — defaults to `0` locally when absent (`Statistic.tsx`\'s `stagger = 0` destructuring default).',
 		},
-		revealed: {
-			control: 'boolean',
-			description: '**Probable source bug, verified against the live `Statistic.tsx`**: declared on `StatisticProps` and even destructured out of `props` in the render body — but the destructured value is never read again afterward (not passed to `useCountUp`, not spread onto the DOM via `others`, not used in any `styles(...)` config). It has no observable effect of any kind. No story exercises it beyond this doc note, since there is no real behavior to demonstrate. This mirrors `Container`\'s own `revealed`, which is the identical dead-prop pattern one level up the tree.',
-		},
 		withinView: {
 			control: 'boolean',
 			description: 'Overrides `useCountUp`\'s internal `IntersectionObserver`-driven visibility check entirely (`viewable = withinView ?? inView`) — when explicitly a boolean, the real observer is never consulted (`observer = typeof withinView === \'boolean\' ? idle : node`, where `idle` is a ref that\'s never attached to anything). `true` forces the animation to run regardless of actual on-screen visibility; `false` permanently blocks it. See the `WithinView` story, which uses this to keep the assertions deterministic instead of depending on real viewport visibility timing.',
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps`, not `Statistic`\'s own `StatisticProps`. The semantic base class is ALWAYS emitted for `root`/`stat`/`value` (`inkq-statistic`, `inkq-statistic__stat`, `inkq-statistic__value`) regardless of this prop — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it, for those three selectors (each has a real declaration in `Statistic.module.scss`). `caption` has no own declaration at all — see the `caption` description above. See the `Unstyled` story.',
+			description: 'Part of `PolymorphicProps`, not `Statistic`\'s own `StatisticProps`. The semantic base class is ALWAYS emitted for `root`/`stat`/`value`/`caption` (`inkq-statistic`, `inkq-statistic__stat`, `inkq-statistic__value`, `inkq-statistic__caption`) regardless of this prop — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it, and only for `stat`/`value`, which each have a real declaration in `Statistic.module.scss`. `root` (`.inkq-statistic`) has no declaration of its own — just `$name: &;` plus the nested `&__stat`/`&__value` rules — so it never carries a hash at all, styled or unstyled alike (same quirk `Container.stories.tsx` documents for `Container`\'s own root). `caption` (`&__caption`) also has no own declaration — see the `caption` description above. See the `Unstyled` story.',
 		},
 	},
 	args: {
@@ -284,13 +280,18 @@ export const WithinView: Story = {
 // `unstyled` does NOT remove any of `Statistic`'s semantic base classes — per
 // `getClassName.tsx`, the base class is now ALWAYS emitted. It only
 // suppresses the CSS-module-hashed class normally appended alongside it, and
-// only where a hash exists to suppress in the first place: `root`, `stat`,
-// and `value` each have a real declaration in `Statistic.module.scss`, but
-// `caption` (`&__caption`) has NONE — so `caption` never carries a
-// CSS-module hash, styled or unstyled alike, and ALSO always carries the
-// literal `inkq-caption` utility class from its `true` boolean-shorthand
-// config (unaffected by `unstyled`, since only `getStyleClass` checks
-// `check.isUnstyled` — never the boolean-config branch of `getConfigClasses`).
+// only where a hash exists to suppress in the first place: `stat` and
+// `value` each have a real declaration in `Statistic.module.scss`, so their
+// hash is genuinely suppressed when unstyled. `root` (`.inkq-statistic`) has
+// NO declaration of its own — only `$name: &;` plus the nested `&__stat`/
+// `&__value` rules — so CSS Modules compiles no hash for it at all, the same
+// quirk `Container.stories.tsx` already documents for `Container`'s own
+// root: it never carries a module-hashed class, styled or unstyled alike.
+// `caption` (`&__caption`) also has no own declaration — see the `caption`
+// description above — and ALSO always carries the literal `inkq-caption`
+// utility class from its `true` boolean-shorthand config (unaffected by
+// `unstyled`, since only `getStyleClass` checks `check.isUnstyled` — never
+// the boolean-config branch of `getConfigClasses`).
 export const Unstyled: Story = {
 	parameters: { controls: { exclude: ['unstyled'] } },
 	render: (args) => (
@@ -312,10 +313,14 @@ export const Unstyled: Story = {
 			caption => caption.closest('.inkq-statistic') as HTMLElement
 		)
 
-		// root
+		// root — `.inkq-statistic` has no own SCSS declaration (only
+		// `$name: &;` plus the nested `&__stat`/`&__value` rules), so CSS
+		// Modules compiles no hash for it at all; it never carries a
+		// module-hashed class, styled or unstyled alike (same quirk as
+		// `Container`'s own root).
 		await expect(styledRoot).toHaveClass('inkq-statistic')
 		await expect(unstyledRoot).toHaveClass('inkq-statistic')
-		expect(hasModuleClass(styledRoot, 'inkq-statistic')).toBe(true)
+		expect(hasModuleClass(styledRoot, 'inkq-statistic')).toBe(false)
 		expect(hasModuleClass(unstyledRoot, 'inkq-statistic')).toBe(false)
 
 		// stat

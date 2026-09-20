@@ -17,7 +17,7 @@ OtherItem.displayName = 'OtherItem'
 // Stands in for a real `RootProviderFn` consumer (e.g. `StatisticGroup`'s
 // own provider) — exposes each child's published context value back out as
 // inspectable `data-*` attributes, since none of `animated`/`duration`/
-// `revealed`/`stagger`/`unstyled` have any DOM effect of Group's own.
+// `stagger`/`unstyled` have any DOM effect of Group's own.
 const DebugContext = createContext<Group.Context | null>(null)
 
 const DebugProvider: RootProviderFn<Group.Context> = ({ children, value }) => (
@@ -33,7 +33,6 @@ const DebugItem = ({ label }: { label: string }) => {
 			data-animated={ String(!!ctx?.animated) }
 			data-duration={ ctx?.duration }
 			data-stagger={ ctx?.stagger }
-			data-revealed={ String(!!ctx?.revealed) }
 		>
 			{ label }
 		</div>
@@ -150,14 +149,5 @@ describe('Group', () => {
 		expect(item1).toHaveAttribute('data-duration', '600')
 		expect(item2).toHaveAttribute('data-index', '1')
 		expect(item2).toHaveAttribute('data-stagger', '100')
-	})
-
-	it('publishes the group-level revealed prop unchanged into each child\'s context, though Group itself never reads it', () => {
-		render(
-			<Group childName="DebugItem" provider={ DebugProvider } revealed>
-				<DebugItem label="Item" />
-			</Group>
-		)
-		expect(screen.getByText('Item')).toHaveAttribute('data-revealed', 'true')
 	})
 })

@@ -7,7 +7,6 @@ const NAME = 'Container' as const,
 
 interface ContainerProps {
 	fullWidth?: boolean
-	revealed?: boolean
 }
 
 interface ContainerSpecs {

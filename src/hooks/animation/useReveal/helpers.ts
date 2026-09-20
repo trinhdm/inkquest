@@ -1,4 +1,6 @@
-export const REVEAL_INVIEW = .15
+import { DEFAULT_INVIEW } from '../constants'
+
+export const REVEAL_INVIEW = .75 * DEFAULT_INVIEW
 export const REVEAL_DATAKEYS = {
 	root: {
 		active: 'data-revealing',

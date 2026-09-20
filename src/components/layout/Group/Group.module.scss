@@ -1,6 +1,12 @@
 .inkq-group {
 	$name: &;
 
+	--group-cols: auto-fit;
+	--group-item-width: minmax(0, 1fr);
+
+	display: grid;
+	grid-template-columns: repeat(var(--group-cols), var(--group-item-width));
+
 	&__item {
 		row-gap: var(--space-2);
 	}
@@ -17,12 +23,5 @@
 		& > * {
 			box-shadow: 1px 0 0 var(--inkq-border);
 		}
-	}
-
-	&--grid {
-		--group-cols: auto-fit;
-
-		display: grid;
-		grid-template-columns: repeat(var(--group-cols), minmax(0, 1fr));
 	}
 }

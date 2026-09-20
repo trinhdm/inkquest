@@ -1,5 +1,19 @@
-import { isValidElement, Children, type ReactNode, Fragment, type ElementType } from 'react'
-import { useProps, useReveal, useStyles, type RevealCounter } from '@/hooks'
+import {
+	isValidElement,
+	Children,
+	Fragment,
+	type ElementType,
+	type ReactNode,
+} from 'react'
+
+import {
+	useProps,
+	useReveal,
+	useStyles,
+	type MaybeAnimationProps,
+	type RevealCounter,
+} from '@/hooks'
+
 import { polymorphic, Box } from '@/components/polymorphic'
 import { setThemeCSS } from '@/lib/theme'
 import { Button } from '@/components/core'
@@ -16,19 +30,17 @@ type SectionLayout =
 	| 'hero'
 	| 'split'
 
-interface SectionProps {
+interface BaseSectionProps {
 	children: ReactNode
 	eyebrow?: string
 	title?: string
 	layout?: SectionLayout
-
-	animated?: boolean
-	duration?: number
-	once?: boolean
-	revealed?: boolean
-	stagger?: number
 	withinView?: boolean
 }
+
+type SectionProps =
+	& BaseSectionProps
+	& MaybeAnimationProps
 
 interface SectionSpecs {
 	defaults: { props: 'animated' | 'duration' | 'layout' | 'stagger' }

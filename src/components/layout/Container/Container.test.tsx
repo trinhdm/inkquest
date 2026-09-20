@@ -32,17 +32,4 @@ describe('Container', () => {
 		render(<Container>content</Container>)
 		expect(screen.getByText('content').closest('section')).not.toHaveAttribute('data-block')
 	})
-
-	// `ContainerProps` declares `revealed`, but `Container.tsx` never reads it —
-	// it flows into `extractOtherProps(rest)`, whose own destructuring (see
-	// `hooks/useProps/helpers.ts`) explicitly pulls `revealed` out of `rest`
-	// and never re-attaches it to the returned `others` bag. So, verified
-	// against the live source (not the `revealed` argType doc in
-	// `Container.stories.tsx`, which claims it "falls straight through...
-	// and lands as a raw DOM attribute" — that is NOT what happens here),
-	// `revealed` is silently swallowed and never reaches the DOM at all.
-	it('silently drops the (unused) revealed prop instead of forwarding it to the DOM', () => {
-		const { container } = render(<Container revealed>content</Container>)
-		expect(container.firstElementChild).not.toHaveAttribute('revealed')
-	})
 })

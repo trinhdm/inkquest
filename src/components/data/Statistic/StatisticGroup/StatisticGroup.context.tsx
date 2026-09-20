@@ -1,17 +1,8 @@
 import { createRootCtx } from '@/lib/component'
 import type { Group } from '@/components/layout'
 
-type SharedGroupCtx =
-	| 'animated'
-	| 'duration'
-	| 'index'
-	| 'revealed'
-	| 'stagger'
-	| 'unstyled'
-	| 'withinView'
-
 export interface StatisticGroupContext
-	extends Pick<Group.Context, SharedGroupCtx> {}
+	extends Group.Context {}
 
 export const {
 	RootProvider: StatisticGroupProvider,

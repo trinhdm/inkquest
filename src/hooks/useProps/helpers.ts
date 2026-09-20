@@ -71,7 +71,6 @@ type OtherPropsList<E extends ElementType> = {
 	displayName?: string
 	loading?: boolean
 	once?: boolean
-	revealed?: boolean
 	revealFrom?: number
 	withinView?: boolean
 }
@@ -101,7 +100,6 @@ function extractOthers(rest: OtherProps<ElementType>) {
 		displayName,
 		loading,
 		once,
-		revealed,
 		revealFrom,
 		style,
 		styles,

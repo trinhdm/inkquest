@@ -85,13 +85,6 @@ describe('extractOtherProps', () => {
 		expect(others).toEqual({ id: 'x', 'data-testid': 'y' })
 	})
 
-	it('strips `revealed` out entirely - it is neither returned at the top level nor kept in `others`', () => {
-		const result = extractOtherProps({ revealed: true, id: 'x' })
-		expect(result.others).toEqual({ id: 'x' })
-		expect(result).not.toHaveProperty('revealed')
-		expect((result.others as any).revealed).toBeUndefined()
-	})
-
 	it('strips `animated` out entirely', () => {
 		const result = extractOtherProps({ animated: true, id: 'x' })
 		expect(result.others).toEqual({ id: 'x' })
@@ -128,7 +121,6 @@ describe('extractOtherProps', () => {
 		const { others, as, withinView } = extractOtherProps({
 			animated: true,
 			loading: true,
-			revealed: true,
 			displayName: 'X',
 		})
 

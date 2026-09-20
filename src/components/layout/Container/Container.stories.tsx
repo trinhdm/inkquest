@@ -60,10 +60,6 @@ const meta: Meta<ContainerStoryProps> = {
 			control: 'boolean',
 			description: 'Stretches the container to fill its parent\'s width (adds `data-block`/`display: block; width: 100%`).',
 		},
-		revealed: {
-			control: 'boolean',
-			description: '**Probable source bug, verified against the live `Container.tsx`**: declared on `ContainerProps` but never destructured or read anywhere in the component body — it falls straight through `extractOtherProps(rest)`\'s `others` and lands as a raw, unrecognized DOM attribute on the rendered root element. It has no visual or behavioral effect of any kind (no class, no style, no `data-*` attribute), so no story exercises it beyond this doc note — asserting "meaningful" `revealed` behavior here would document something the component doesn\'t actually do.',
-		},
 		unstyled: {
 			control: 'boolean',
 			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Container`\'s own `ContainerProps`. The semantic base class (`inkq-container` on the root, `inkq-container__wrapper` on the inner `<div>`) is ALWAYS emitted regardless of this prop. **Source quirk, verified against `Container.module.scss`**: `.inkq-container` (the root selector) has NO declarations of its own — only a nested `&__wrapper` rule — so CSS Modules exports no hashed class for the root at all; `getStyleClass()` (`getClassName.tsx`) finds no matching key in the compiled `classes` map and returns `undefined` regardless of `unstyled`. The root therefore NEVER carries a module hash, styled or unstyled — only the semantic base class. The inner `<div>` (`&__wrapper`) DOES have its own declaration, so it behaves as originally documented: a real CSS-module hash is appended when styled and suppressed when `unstyled`. See the `Unstyled` story.',

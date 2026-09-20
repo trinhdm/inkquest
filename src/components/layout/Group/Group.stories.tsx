@@ -84,7 +84,6 @@ const DebugItem = ({ label }: { label: string }) => {
 			data-animated={ String(!!ctx?.animated) }
 			data-duration={ ctx?.duration }
 			data-stagger={ ctx?.stagger }
-			data-revealed={ String(!!ctx?.revealed) }
 			data-unstyled={ String(!!ctx?.unstyled) }
 			style={ { padding: 16, border: '1px dashed currentColor', borderRadius: 8, minWidth: 96, textAlign: 'center' } }
 		>
@@ -130,7 +129,7 @@ const meta: Meta<GroupStoryProps> = {
 		},
 		divider: {
 			control: 'boolean',
-			description: 'Adds the `--divider` modifier class (a `box-shadow` divider between children). See the `Divider` story.',
+			description: 'Adds the (literal, unhashed — `Group.module.scss` has no `&--divider` rule) `inkq-group--divider` class and a `data-divide` attribute; the actual `box-shadow` divider styling lives on the self-referencing `&:where([data-divide])` selector. See the `Divider` story.',
 		},
 		fullWidth: {
 			control: 'boolean',
@@ -144,13 +143,9 @@ const meta: Meta<GroupStoryProps> = {
 			control: 'text',
 			description: '**Probable source bug, verified against the live `Group.tsx`**: declared on `BaseGroupProps` (typed as `CSSProperties[\'justifyContent\']`) but never destructured or applied to any inline style — `extractOtherProps` only pulls out `as`/`withinView` plus the style-alias fields (`className`/`classNames`/`style`/`styles`); `justify` falls straight through into `others` and lands as a raw, invalid `justify="..."` DOM attribute instead of `justifyContent` in the root\'s `style`. No story exercises it beyond this doc note.',
 		},
-		revealed: {
-			control: 'boolean',
-			description: 'Not used by `Group`\'s own rendering at all — passed straight through into each child\'s context value (`GroupContext.revealed`) via the optional `provider`. See the `Revealed` story.',
-		},
 		provider: {
 			control: false,
-			description: 'A `RootProviderFn<GroupContext>` that receives a per-child context value (`{ animated, duration, index, revealed, stagger, unstyled, withinView }`) via `renderWithProvider`. Without it, filtered children render unwrapped (plain `Fragment`s) — no context is published at all. See the `AnimatedState`/`Revealed` stories.',
+			description: 'A `RootProviderFn<GroupContext>` that receives a per-child context value (`{ animated, duration, index, stagger, unstyled, withinView }`) via `renderWithProvider`. Without it, filtered children render unwrapped (plain `Fragment`s) — no context is published at all. See the `AnimatedState` stories.',
 		},
 		animated: {
 			control: 'boolean',
@@ -246,11 +241,16 @@ export const Divider: Story = {
 
 		const [withDivider, withoutDivider] = groups
 
-		// `.inkq-group--divider` has a real declaration in `Group.module.scss`,
-		// so the DOM class is the compiled HASH, not the literal token here —
-		// assert via the real compiled export map, not `toHaveClass`.
-		expect(hasModuleClass(withDivider, 'inkq-group--divider')).toBe(true)
-		expect(hasModuleClass(withoutDivider, 'inkq-group--divider')).toBe(false)
+		// `Group.module.scss` has no `&--divider` rule at all anymore (divider
+		// styling now lives on the self-referencing `&:where([data-divide])`
+		// selector instead) — so `inkq-group--divider` is ALWAYS a literal,
+		// unhashed token, with no compiled export to look up. The real,
+		// observable toggle is the `data-divide` attribute Group sets via
+		// `attributes.data.divide`.
+		await expect(withDivider).toHaveAttribute('data-divide')
+		await expect(withDivider).toHaveClass('inkq-group--divider')
+		await expect(withoutDivider).not.toHaveAttribute('data-divide')
+		await expect(withoutDivider).not.toHaveClass('inkq-group--divider')
 	},
 }
 
@@ -390,47 +390,22 @@ export const AnimatedState: Story = {
 	},
 }
 
-// `revealed` has no rendering effect on `Group` itself — it's only readable
-// by children through the `provider`-published context value.
-export const Revealed: Story = {
-	parameters: { layout: 'padded', controls: { exclude: ['revealed'] } },
-	render: () => (
-		<Row>
-			{ BOOLEAN_OPTIONS.map(revealed => (
-				<Labeled key={ String(revealed) } label={ String(revealed) }>
-					<Group childName="DebugItem" provider={ DebugProvider } revealed={ revealed }>
-						<DebugItem label="Item" />
-					</Group>
-				</Labeled>
-			)) }
-		</Row>
-	),
-	play: async ({ canvasElement }) => {
-		const canvas = within(canvasElement),
-			items = canvas.getAllByText('Item')
-
-		await expect(items).toHaveLength(2)
-
-		const [isRevealed, isNotRevealed] = items
-
-		await expect(isRevealed).toHaveAttribute('data-revealed', 'true')
-		await expect(isNotRevealed).toHaveAttribute('data-revealed', 'false')
-	},
-}
-
 // `unstyled` does NOT remove `Group`'s own semantic base class (`inkq-group`)
-// — it's always emitted, though `.inkq-group { $name: &; }` in
-// `Group.module.scss` has NO declarations of its own (only nested
-// `&--divider`/`&--grid` rules), so CSS Modules compiles no hash for the root
-// AT ALL — same shape as `Container`'s root. The root therefore never carries
-// a module hash, styled or unstyled alike. Config/modifier classes (here, the
-// default `grid` modifier, since `orientation` is unset) ARE independently
-// hashed, since `.inkq-group--grid` DOES have its own declaration — emitted
-// by `getConfigClasses` regardless of `unstyled` (`check.isUnstyled` only
-// gates the base-class hash lookup, not modifier classes), falling back from
-// a hash to the literal `inkq-group--grid` token specifically in the
-// unstyled case (see `getStyleClass`'s own `check.isUnstyled` guard, reused
-// by `formatConfigClass`).
+// — it's always emitted. Unlike `Container`'s root, `.inkq-group`'s SCSS
+// block DOES compile its own hash: `&:not([data-divide])`/
+// `&:where([data-divide])` are self-referencing rules (not just nested
+// descendant selectors like `&__item`), so CSS Modules generates a real hash
+// for the base class itself — suppressed when `unstyled`, present when
+// styled, same as every other hashed selector. The `grid` modifier
+// (`.inkq-group--grid`, the default here since `orientation` is unset) is
+// independently hashed too, via its own `&--grid` declaration, emitted by
+// `getConfigClasses` regardless of `unstyled` (`check.isUnstyled` only gates
+// the base-class hash lookup, not modifier classes) and falling back to the
+// literal `inkq-group--grid` token specifically when unstyled (see
+// `getStyleClass`'s own `check.isUnstyled` guard, reused by
+// `formatConfigClass`). NOTE: `Group.module.scss` no longer has an
+// `&--divider` rule at all — see the `Divider` story for that one's own,
+// now-literal-only, behavior.
 export const Unstyled: Story = {
 	parameters: { controls: { exclude: ['unstyled'] } },
 	render: (args) => (
@@ -454,11 +429,11 @@ export const Unstyled: Story = {
 
 		await expect(styled).toHaveClass('inkq-group')
 		await expect(unstyledGroup).toHaveClass('inkq-group')
-		// `.inkq-group` has no own SCSS declaration — only the nested
-		// `&--divider`/`&--grid` rules — so CSS Modules compiles no hash for it
-		// at all. The root NEVER carries a module-hashed class, styled or
-		// unstyled.
-		expect(hasModuleClass(styled, 'inkq-group')).toBe(false)
+		// The root DOES compile its own hash — `&:not([data-divide])`/
+		// `&:where([data-divide])` are self-referencing rules, not just nested
+		// descendant selectors — so it behaves like every other hashed
+		// selector: present when styled, suppressed when unstyled.
+		expect(hasModuleClass(styled, 'inkq-group')).toBe(true)
 		expect(hasModuleClass(unstyledGroup, 'inkq-group')).toBe(false)
 
 		expect(hasModuleClass(styled, 'inkq-group--grid')).toBe(true)

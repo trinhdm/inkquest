@@ -1,14 +1,15 @@
 import { createRootCtx } from '@/lib/component'
+import type { AnimationOptions } from '@/hooks'
 
-export interface GroupContext {
-	animated?: boolean
-	duration?: number
+type BaseGroupContext = {
 	index?: number
-	revealed?: boolean
-	stagger?: number
 	unstyled?: boolean
 	withinView?: boolean
 }
+
+export type GroupContext =
+	& BaseGroupContext
+	& Pick<AnimationOptions, 'animated' | 'duration' | 'stagger'>
 
 export const {
 	RootProvider: GroupProvider,

@@ -388,7 +388,7 @@ export const AsPropIgnored: Story = {
  * **Real, verified behavior (re-checked against the live `Box.tsx`)**:
  * `unstyled` now ALSO reaches `Container`. `Section` never destructures
  * `unstyled` out of `rest` — neither `useReveal`'s own destructure
- * (`amount`/`animated`/`once`/`revealed`/`withinView`) nor
+ * (`amount`/`animated`/`once`/`withinView`) nor
  * `extractOtherProps`'s reserved-key list names it — so it survives into
  * `others` and is spread onto `<Box as={Container} {...others}>`. `Box.tsx`
  * itself forwards its own `unstyled` prop straight through to the `as` target

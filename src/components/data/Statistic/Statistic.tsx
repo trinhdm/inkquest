@@ -1,4 +1,11 @@
-import { useCountUp, useProps, useStyles, extractOtherProps } from '@/hooks'
+import {
+	useCountUp,
+	useProps,
+	useStyles,
+	extractOtherProps,
+	type MaybeAnimationProps,
+} from '@/hooks'
+
 import { useStatisticGroupProps } from './StatisticGroup'
 import { polymorphic, Box } from '@/components/polymorphic'
 import { StatisticGroup } from './StatisticGroup'
@@ -8,18 +15,18 @@ import classes from './Statistic.module.scss'
 const NAME = 'Statistic' as const,
 	DEFAULT_TAG = 'div' as const
 
-interface StatisticProps {
-	animated?: boolean
+interface BaseStatisticProps {
 	caption?: string
-	duration?: number
 	highlight?: boolean
 	icon?: ReactNode
 	index?: number
-	revealed?: boolean
-	stagger?: number
 	value: number | string
 	withinView?: boolean
 }
+
+type StatisticProps =
+	& BaseStatisticProps
+	& MaybeAnimationProps
 
 interface StatisticSpecs {
 	defaults: {
@@ -43,7 +50,6 @@ export const Statistic = polymorphic<StatisticSpecs>(_props => {
 		highlight,
 		icon,
 		index = 0,
-		revealed,
 		stagger = 0,
 		value,
 		withinView,

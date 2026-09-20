@@ -1,48 +1,55 @@
-import { useMemo, useRef, type CSSProperties, type ReactNode } from 'react'
-import { useProps, useReplayInView, useStyles, extractOtherProps } from '@/hooks'
+import {
+	useMemo,
+	useRef,
+	type CSSProperties,
+	type ReactNode,
+} from 'react'
+
+import {
+	useProps,
+	useReplayInView,
+	useStyles,
+	extractOtherProps,
+	type MaybeAnimationProps,
+} from '@/hooks'
+
 import { filterChildren, withProvider, type RootProviderFn } from '@/lib/component'
 import { polymorphic, Box } from '@/components/polymorphic'
 import { setThemeCSS } from '@/lib/theme'
 import { GroupItem } from './GroupItem'
 import { GroupProvider, type GroupContext } from './Group.context'
-import type { UseInViewOptions } from 'framer-motion'
 import classes from './Group.module.scss'
 
 const NAME = 'Group' as const,
 	DEFAULT_TAG = 'div' as const
 
-interface BaseGroupProps
-	extends Pick<UseInViewOptions, 'amount' | 'once'> {
-	childName?: string
+interface BaseGroupProps {
 	children: ReactNode
 	columns?: number
 	divider?: boolean
 	fullWidth?: boolean
 	justify?: CSSProperties['justifyContent']
 	orientation?: 'horizontal' | 'vertical'
+}
+
+interface CompoundGroupProps {
+	childName?: never
+	provider?: never
+}
+
+interface NamedGroupProps {
+	childName: string
 	provider?: RootProviderFn<GroupContext>
 }
 
-interface AnimatedGroupProps {
-	animated: true
-	duration: number
-	once?: boolean
-	revealed?: boolean
-	stagger?: number
-}
+type NestedGroupProps =
+	| CompoundGroupProps
+	| NamedGroupProps
 
-interface StaticGroupProps {
-	animated?: never
-	duration?: never
-	once?: never
-	revealed?: never
-	stagger?: never
-}
-
-type GroupProps = BaseGroupProps & (
-	| AnimatedGroupProps
-	| StaticGroupProps
-)
+type GroupProps =
+	& BaseGroupProps
+	& NestedGroupProps
+	& MaybeAnimationProps
 
 type GroupSpecs = {
 	defaults: { props: 'childName' | 'divider' | 'provider' }
@@ -52,10 +59,12 @@ type GroupSpecs = {
 	}
 }
 
-const tokens = setThemeCSS<GroupSpecs>((theme, _props) => {
+const tokens = setThemeCSS<GroupSpecs>((theme, props) => {
+	const { columns } = props
+
 	return {
 		root: {
-			'--group-cols': _props.columns,
+			'--group-cols': !!(columns && columns > 0) ? columns : undefined,
 		},
 	}
 })
@@ -76,7 +85,6 @@ export const Group = polymorphic<GroupSpecs>(_props => {
 		once,
 		orientation,
 		provider: Provider,
-		revealed,
 		stagger,
 		unstyled,
 		...rest
@@ -84,17 +92,12 @@ export const Group = polymorphic<GroupSpecs>(_props => {
 
 	const { others } = extractOtherProps(rest)
 
-	const module = {
-		divider,
-		grid: !orientation,
-		[`${orientation}`]: !!orientation,
-	}
-
-	const aria = { orientation }
-	const data = {
-		block: !!fullWidth || null,
-		divide: !!divider || null,
-	}
+	const module = { [`${orientation}`]: !!orientation || null },
+		aria = { orientation },
+		data = {
+			block: !!fullWidth || null,
+			divide: !!divider || null,
+		}
 
 	const items = filterChildren(children, childName),
 		total = items.length
@@ -108,9 +111,9 @@ export const Group = polymorphic<GroupSpecs>(_props => {
 	// stable across renders even though each child gets its own object
 	const ctxValues = useMemo<GroupContext[]>(
 		() => Array.from({ length: total }, (_, index) => ({
-			animated, duration, index, revealed, stagger, unstyled, withinView,
+			animated, duration, index, stagger, unstyled, withinView,
 		})),
-		[animated, duration, revealed, stagger, total, unstyled, withinView]
+		[animated, duration, stagger, total, unstyled, withinView]
 	)
 
 	return (
