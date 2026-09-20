@@ -1,3 +1,4 @@
+import { SITE_URL } from '@/utils/constants'
 
 export const hasValue = <V,>(
 	value: V
@@ -15,3 +16,22 @@ export const hasValue = <V,>(
 	return true
 }
 
+const URL_SCHEME = /^[a-z][a-z0-9+.-]*:/i,
+	HTTP_SCHEME = /^https?:/i
+
+export const isExternalLink = (href?: string) => {
+	if (!href) return false
+
+	const isHttp = HTTP_SCHEME.test(href),
+		isUrlScheme = URL_SCHEME.test(href),
+		sameProtocol = href.startsWith('//')
+
+	if (!isUrlScheme && !sameProtocol) return false		//	same-origin relative paths, hashes, etc.
+	if (isUrlScheme && !isHttp) return false			//	external schemes - e.g. mailto:, tel:
+	if (!SITE_URL) return true							//	fallback
+
+	try {
+		const url = new URL(href, SITE_URL).hostname
+		return url !== new URL(SITE_URL).hostname
+	} catch { return true }
+}

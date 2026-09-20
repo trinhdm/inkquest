@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { LoaderCircle } from 'lucide-react'
 import { isValidElement, useMemo, Children } from 'react'
+import { isExternalLink } from '@/utils/helpers'
 import { useProps, useStyles, useVariants, extractOtherProps } from '@/hooks'
 import { extractChildrenText } from '@/lib/component'
 import { polymorphic, Box, type ListProps } from '@/components/polymorphic'
@@ -17,7 +18,7 @@ const NAME = 'Button' as const,
 
 const DEFAULT_PROPS = {
 	as: TAG,
-	size: 'sm',
+	size: 'md',
 	variant: 'solid',
 } as const
 
@@ -158,15 +159,19 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 		// by excluding `NativeButtonProps` from `rest`
 		// this allows `rest` to be properly typed
 
-		return (
-			<Box
-				{ ...sharedProps }
-				{ ...others as Extract<typeof others, LinkButtonProps> }
-				as={ Link }
-			>
-				{ inner }
-			</Box>
-		)
+		let linkProps: LinkButtonProps = {
+			...sharedProps,
+			...others as Extract<typeof others, LinkButtonProps>,
+		}
+
+		// console.log({ href: others.href, external: isExternalLink(others.href) })
+
+		if (isExternalLink(others.href)) {
+			const external = { target: '_blank', rel: 'noopener noreferrer' }
+			linkProps = { ...linkProps, ...external }
+		}
+
+		return <Box { ...linkProps } as={ Link }>{ inner }</Box>
 	}
 
 	return (
