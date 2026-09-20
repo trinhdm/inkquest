@@ -13,38 +13,51 @@ import type { RevealCounter, useStyles } from '@/hooks'
 import type { Section } from './Section'
 
 interface BuildSectionConfig {
-	props: Section.Props
+	id: string
+	props: Section.Props & { id?: string }
 	reveal: RevealCounter
 	styles: ReturnType<typeof useStyles>
 }
 
-const buildHeader = ({ props, reveal, styles }: BuildSectionConfig): ReactNode[] => {
+const buildHeader = ({ id, props, reveal, styles }: BuildSectionConfig): ReactNode[] => {
 	const { eyebrow, layout, title } = props
 	const header: ReactNode[] = []
 
+	if (layout === 'blocks')
+		return header
+
 	if (!!eyebrow) {
-		const tagline = <span { ...styles('eyebrow', true) } { ...reveal.next() }>{ eyebrow }</span>
+		const tagline = (
+			<span key={ `${id}-eyebrow` } { ...styles('eyebrow', true) } { ...reveal.next() }>
+				{ eyebrow }
+			</span>
+		)
 		header.push(tagline)
 	}
 
 	if (!!title) {
-		const Tag = layout === 'hero' ? 'h1' : 'h2',
-			heading = <Tag { ...styles('title') } { ...reveal.next() }>{ title }</Tag>
-		header.push(heading)
+		const Tag = layout === 'hero' ? 'h1' : 'h2'
+		const headline = (
+				<Tag key={ `${id}-title` } { ...styles('title') } { ...reveal.next() }>
+					{ title }
+				</Tag>
+			)
+		header.push(headline)
 	}
 
 	return header
 }
 
-const orderSection = (
-	children: BuildSectionConfig['props']['children'],
-	reveal: BuildSectionConfig['reveal']
-) => {
+const orderSection = ({
+	id,
+	props: { children },
+	reveal,
+}: Omit<BuildSectionConfig, 'styles'>) => {
 	const buttons: ReactNode[] = [],
 		items: ReactNode[] = []
 
 	Children.toArray(children).forEach((child, index) => {
-		const key = `section-${index}-desc`
+		const key = `${id}-desc-${index}`
 
 		if (isValidElement(child) || typeof child === 'string') {
 			const desc = <p key={ key } { ...reveal.next() }>{ child }</p>
@@ -63,9 +76,8 @@ const orderSection = (
 	return { buttons, items }
 }
 
-const buildContent = ({ props, reveal, styles }: BuildSectionConfig): ReactNode[] => {
-	const { children, layout } = props
-	const { buttons, items } = orderSection(children, reveal)
+const buildContent = ({ id, props, reveal, styles }: BuildSectionConfig): ReactNode[] => {
+	const { buttons, items } = orderSection({ id, props, reveal })
 	const content: ReactNode[] = []
 
 	if (!!items?.length) {
@@ -81,7 +93,7 @@ const buildContent = ({ props, reveal, styles }: BuildSectionConfig): ReactNode[
 		}
 
 		const description = !!Tag ? <Tag { ...args }>{ items }</Tag> : items,
-			body = <div key="section-body" { ...styles('body') }>{ description }</div>
+			body = <div key={ `${id}-body` } { ...styles('body') }>{ description }</div>
 
 		content.push(body)
 	}
@@ -89,11 +101,11 @@ const buildContent = ({ props, reveal, styles }: BuildSectionConfig): ReactNode[
 	if (!!buttons?.length) {
 		const cta = (
 			<Button.Group
-				key="section-cta"
+				key={ `${id}-cta` }
 				{ ...styles('cta') }
 				hasPriority={ buttons.length > 1 }
 				revealFrom={ reveal.reserve(buttons.length) }
-				size={ layout === 'hero' ? 'lg' : 'md' }
+				size={ props.layout === 'hero' ? 'lg' : 'md' }
 			>
 				{ buttons }
 			</Button.Group>
@@ -105,11 +117,12 @@ const buildContent = ({ props, reveal, styles }: BuildSectionConfig): ReactNode[
 	return content
 }
 
-export const buildSection = (config: BuildSectionConfig) => {
-	const { props: { layout }, styles } = config
+export const buildSection = (config: Omit<BuildSectionConfig, 'id'>) => {
+	const { props: { id, layout }, styles } = config,
+		args = { ...config, id: id ?? `section` }
 
-	const header = buildHeader(config),
-		content = buildContent(config),
+	const header = buildHeader(args),
+		content = buildContent(args),
 		inner = <>{ header }{ content }</>
 
 	switch (layout) {

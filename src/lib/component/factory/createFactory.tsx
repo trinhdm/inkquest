@@ -14,6 +14,7 @@ import type { DistributiveOmit, WithDefaults } from '@/types/utils'
 type _CommonProps = {
 	children?: ReactNode
 	className?: string
+	id?: string
 	style?: CSSProperties
 	unstyled?: boolean
 }

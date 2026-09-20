@@ -30,13 +30,27 @@ type SectionLayout =
 
 interface BaseSectionProps {
 	children: ReactNode
+}
+
+interface SectionBlocksProps {
+	eyebrow?: never
+	layout: Extract<SectionLayout, 'blocks'>
+	title?: never
+}
+
+interface SectionContentProps {
 	eyebrow?: string
-	layout?: SectionLayout
+	layout?: Exclude<SectionLayout, 'blocks'>
 	title?: string
 }
 
+type LayoutSectionProps =
+	| SectionBlocksProps
+	| SectionContentProps
+
 type SectionProps =
 	& BaseSectionProps
+	& LayoutSectionProps
 	& MaybeAnimationProps
 
 interface SectionSpecs {
