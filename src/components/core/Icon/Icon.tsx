@@ -1,11 +1,16 @@
 import { useProps, useStyles, extractOtherProps } from '@/hooks'
-import { polymorphic, Box } from '@/components/polymorphic'
+import { polymorphic, Box, type ListProps } from '@/components/polymorphic'
 import { ICON_MAP, type IconType } from './IconMap'
 import type { LucideProps } from 'lucide-react'
 import classes from './Icon.module.scss'
 
 const NAME = 'Icon' as const,
 	TAG = 'svg' as const
+
+const DEFAULT_PROPS = {
+	as: TAG,
+	size: 16,
+} as const
 
 interface IconProps {
 	color?: LucideProps['color']
@@ -18,7 +23,7 @@ interface IconProps {
 interface IconSpecs {
 	defaults: {
 		as: typeof TAG
-		props: 'size'
+		props: ListProps<typeof DEFAULT_PROPS>
 	}
 	props: IconProps
 }
@@ -44,12 +49,7 @@ export const Icon = polymorphic<IconSpecs>(_props => {
 }, classes)
 
 Icon.displayName = NAME
-Icon.setDefaults({
-	props: {
-		as: TAG,
-		size: 16,
-	}
-})
+Icon.setDefaults({ props: DEFAULT_PROPS })
 
 export declare namespace Icon {
 	export type Props = IconProps

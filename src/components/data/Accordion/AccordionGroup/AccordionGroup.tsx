@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { useProps, useReplayInView, useStyles, extractOtherProps } from '@/hooks'
 import { filterChildren, withProvider } from '@/lib/component'
-import { polymorphic, Box } from '@/components/polymorphic'
+import { polymorphic, Box, type ListProps } from '@/components/polymorphic'
 import { AccordionGroupProvider } from './AccordionGroup.context'
 import classes from '../Accordion.module.scss'
 
@@ -12,6 +12,11 @@ import type {
 } from './AccordionGroup.context'
 
 const NAME = 'Accordion.Group' as const
+const DEFAULT_PROPS = {
+	collapsible: true,
+	defaultOpen: 0,
+	type: 'single',
+} as const
 
 interface AccordionGroupProps {
 	collapsible?: boolean
@@ -22,6 +27,7 @@ interface AccordionGroupProps {
 }
 
 type AccordionGroupSpecs = {
+	defaults: { props: ListProps<typeof DEFAULT_PROPS> }
 	isCompound: true
 	props: AccordionGroupProps
 }
@@ -97,13 +103,7 @@ export const AccordionGroup = polymorphic<AccordionGroupSpecs>(_props => {
 }, classes)
 
 AccordionGroup.displayName = NAME
-AccordionGroup.setDefaults({
-	props: {
-		collapsible: true,
-		defaultOpen: 0,
-		type: 'single',
-	}
-})
+AccordionGroup.setDefaults({ props: DEFAULT_PROPS })
 
 export declare namespace AccordionGroup {
 	export type Context = AccordionGroupContext

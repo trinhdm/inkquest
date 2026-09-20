@@ -1,14 +1,20 @@
 import Image from 'next/image'
 import { useProps, useStyles, extractOtherProps } from '@/hooks'
-import { polymorphic, Box } from '@/components/polymorphic'
+import { polymorphic, Box, type ListProps } from '@/components/polymorphic'
 import type { ComponentProps } from 'react'
 import classes from './Card.module.scss'
 
 const NAME = 'Card' as const,
-	DEFAULT_TAG = 'div' as const
+	TAG = 'div' as const
+
+const DEFAULT_PROPS = {
+	as: TAG,
+	hasTitleAlt: false,
+} as const
 
 interface CardProps {
 	caption?: string
+	elevated?: boolean
 	hasTitleAlt?: boolean
 	image?: ComponentProps<typeof Image>
 	title: string
@@ -16,8 +22,8 @@ interface CardProps {
 
 interface CardSpecs {
 	defaults: {
-		as: typeof DEFAULT_TAG
-		props: 'hasTitleAlt'
+		as: typeof TAG
+		props: ListProps<typeof DEFAULT_PROPS>
 	}
 	props: CardProps
 }
@@ -59,10 +65,7 @@ export const Card = polymorphic<CardSpecs>(_props => {
 }, classes)
 
 Card.displayName = NAME
-Card.setDefaults({ props: {
-	as: DEFAULT_TAG,
-	hasTitleAlt: false,
-} })
+Card.setDefaults({ props: DEFAULT_PROPS })
 
 export declare namespace Card {
 	export type Props = CardProps

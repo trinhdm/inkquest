@@ -2,7 +2,7 @@ import { useCallback, useId, useMemo, useState, Children, type ReactNode } from 
 import { useProps, useStyles, extractOtherProps } from '@/hooks'
 import { useAccordionGroupProps, AccordionGroup } from './AccordionGroup'
 import { filterChildren } from '@/lib/component'
-import { polymorphic, Box } from '@/components/polymorphic'
+import { polymorphic, Box, type ListProps } from '@/components/polymorphic'
 import { AccordionContent } from './AccordionContent'
 import { AccordionProvider } from './Accordion.context'
 import { AccordionTitle } from './AccordionTitle'
@@ -10,7 +10,14 @@ import type { AccordionContext, AccordionIndicator } from './Accordion.context'
 import classes from './Accordion.module.scss'
 
 const NAME = 'Accordion' as const,
-	DEFAULT_TAG = 'div' as const
+	TAG = 'div' as const
+
+const DEFAULT_PROPS = {
+	as: TAG,
+	defaultOpen: false,
+	index: 0,
+	indicator: 'plus',
+} as const
 
 interface AccordionProps {
 	children: ReactNode
@@ -29,8 +36,8 @@ interface AccordionProps {
 
 interface AccordionSpecs {
 	defaults: {
-		as: typeof DEFAULT_TAG
-		props: 'defaultOpen' | 'index' | 'indicator'
+		as: typeof TAG
+		props: ListProps<typeof DEFAULT_PROPS>
 	}
 	props: AccordionProps
 	subcomponents: {
@@ -147,15 +154,7 @@ Accordion.displayName = NAME
 Accordion.Group = AccordionGroup
 Accordion.Title = AccordionTitle
 Accordion.Content = AccordionContent
-
-Accordion.setDefaults({
-	props: {
-		as: DEFAULT_TAG,
-		defaultOpen: false,
-		index: 0,
-		indicator: 'plus',
-	}
-})
+Accordion.setDefaults({ props: DEFAULT_PROPS })
 
 export declare namespace Accordion {
 	export type Context = AccordionContext

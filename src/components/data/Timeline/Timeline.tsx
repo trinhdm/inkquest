@@ -1,19 +1,26 @@
 import { useProps, useStyles, extractOtherProps } from '@/hooks'
 import { filterChildren } from '@/lib/component'
-import { polymorphic, Box } from '@/components/polymorphic'
+import { polymorphic, Box, type ListProps } from '@/components/polymorphic'
 import { TimelineItem } from './TimelineItem'
 import type { ReactNode } from 'react'
 import classes from './Timeline.module.scss'
 
 const NAME = 'Timeline' as const,
-	DEFAULT_TAG = 'div' as const
+	TAG = 'div' as const
+
+const DEFAULT_PROPS = {
+	as: TAG,
+} as const
 
 interface TimelineProps {
 	children: ReactNode
 }
 
 interface TimelineSpecs {
-	defaults: { as: typeof DEFAULT_TAG }
+	defaults: {
+		as: typeof TAG
+		props: ListProps<typeof DEFAULT_PROPS>
+	}
 	props: TimelineProps
 	subcomponents: {
 		Item: typeof TimelineItem
@@ -41,7 +48,7 @@ export const Timeline = polymorphic<TimelineSpecs>(_props => {
 
 Timeline.displayName = NAME
 Timeline.Item = TimelineItem
-Timeline.setDefaults({ props: { as: DEFAULT_TAG } })
+Timeline.setDefaults({ props: DEFAULT_PROPS })
 
 export declare namespace Timeline {
 	export type Props = TimelineProps

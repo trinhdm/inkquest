@@ -1,9 +1,13 @@
 import { useProps, useStyles, extractOtherProps } from '@/hooks'
-import { polymorphic, Box } from '@/components/polymorphic'
+import { polymorphic, Box, type ListProps } from '@/components/polymorphic'
 import classes from './Quote.module.scss'
 
 const NAME = 'Quote' as const,
-	DEFAULT_TAG = 'div' as const
+	TAG = 'div' as const
+
+const DEFAULT_PROPS = {
+	as: TAG,
+} as const
 
 interface QuoteProps {
 	author?: string
@@ -11,7 +15,10 @@ interface QuoteProps {
 }
 
 interface QuoteSpecs {
-	defaults: { as: typeof DEFAULT_TAG }
+	defaults: {
+		as: typeof TAG
+		props: ListProps<typeof DEFAULT_PROPS>
+	}
 	props: QuoteProps
 }
 
@@ -36,7 +43,7 @@ export const Quote = polymorphic<QuoteSpecs>(_props => {
 }, classes)
 
 Quote.displayName = NAME
-Quote.setDefaults({ props: { as: DEFAULT_TAG } })
+Quote.setDefaults({ props: DEFAULT_PROPS })
 
 export declare namespace Quote {
 	export type Props = QuoteProps

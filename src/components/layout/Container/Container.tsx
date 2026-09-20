@@ -1,16 +1,23 @@
 import { useProps, useStyles, extractOtherProps } from '@/hooks'
-import { polymorphic, Box } from '@/components/polymorphic'
+import { polymorphic, Box, type ListProps } from '@/components/polymorphic'
 import classes from './Container.module.scss'
 
 const NAME = 'Container' as const,
-	DEFAULT_TAG = 'section' as const
+	TAG = 'section' as const
+
+const DEFAULT_PROPS = {
+	as: TAG,
+} as const
 
 interface ContainerProps {
 	fullWidth?: boolean
 }
 
 interface ContainerSpecs {
-	defaults: { as: typeof DEFAULT_TAG }
+	defaults: {
+		as: typeof TAG
+		props: ListProps<typeof DEFAULT_PROPS>
+	}
 	props: ContainerProps
 }
 
@@ -39,7 +46,7 @@ export const Container = polymorphic<ContainerSpecs>(_props => {
 }, classes)
 
 Container.displayName = NAME
-Container.setDefaults({ props: { as: DEFAULT_TAG } })
+Container.setDefaults({ props: DEFAULT_PROPS })
 
 export declare namespace Container {
 	export type Props = ContainerProps

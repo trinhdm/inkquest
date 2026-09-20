@@ -1,16 +1,23 @@
 'use client'
 
 import { useProps, useStyles, extractOtherProps } from '@/hooks'
-import { polymorphic, Box } from '@/components/polymorphic'
+import { polymorphic, Box, type ListProps } from '@/components/polymorphic'
 import classes from './Footer.module.scss'
 
 const NAME = 'Footer' as const,
-	DEFAULT_TAG = 'footer' as const
+	TAG = 'footer' as const
+
+const DEFAULT_PROPS = {
+	as: TAG,
+} as const
 
 interface FooterProps {}
 
 interface FooterSpecs {
-	defaults: { as: typeof DEFAULT_TAG }
+	defaults: {
+		as: typeof TAG
+		props: ListProps<typeof DEFAULT_PROPS>
+	}
 	props: FooterProps
 }
 
@@ -50,7 +57,7 @@ export const Footer = polymorphic<FooterSpecs>(_props => {
 }, classes)
 
 Footer.displayName = NAME
-Footer.setDefaults({ props: { as: DEFAULT_TAG } })
+Footer.setDefaults({ props: DEFAULT_PROPS })
 
 export declare namespace Footer {
 	export type Props = FooterProps

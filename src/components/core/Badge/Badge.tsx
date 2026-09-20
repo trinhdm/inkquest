@@ -1,10 +1,16 @@
 import { useProps, useStyles, useVariants, extractOtherProps } from '@/hooks'
-import { polymorphic, Box } from '@/components/polymorphic'
+import { polymorphic, Box, type ListProps } from '@/components/polymorphic'
 import type { ReactNode } from 'react'
 import classes from './Badge.module.scss'
 
 const NAME = 'Badge' as const,
 	TAG = 'div' as const
+
+const DEFAULT_PROPS = {
+	as: TAG,
+	shape: 'pill',
+	variant: 'light',
+} as const
 
 type BadgeVariant =
 	| 'dark'
@@ -27,7 +33,7 @@ interface BadgeProps {
 interface BadgeSpecs {
 	defaults: {
 		as: typeof TAG
-		props: 'shape' | 'variant'
+		props: ListProps<typeof DEFAULT_PROPS>
 	}
 	props: BadgeProps
 }
@@ -65,13 +71,7 @@ export const Badge = polymorphic<BadgeSpecs>(_props => {
 }, classes)
 
 Badge.displayName = NAME
-Badge.setDefaults({
-	props: {
-		as: TAG,
-		shape: 'pill',
-		variant: 'light',
-	}
-})
+Badge.setDefaults({ props: DEFAULT_PROPS })
 
 export declare namespace Badge {
 	export type Props = BadgeProps

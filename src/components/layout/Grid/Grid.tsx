@@ -1,12 +1,16 @@
 import { useProps, useStyles, extractOtherProps } from '@/hooks'
-import { polymorphic, Box } from '@/components/polymorphic'
+import { polymorphic, Box, type ListProps } from '@/components/polymorphic'
 import { setThemeCSS } from '@/lib/theme'
 import { GridItem } from './GridItem'
 import type { ReactNode } from 'react'
 import classes from './Grid.module.scss'
 
 const NAME = 'Grid' as const,
-	DEFAULT_TAG = 'div' as const
+	TAG = 'div' as const
+
+const DEFAULT_PROPS = {
+	as: TAG,
+} as const
 
 interface GridProps {
 	children: ReactNode
@@ -14,7 +18,10 @@ interface GridProps {
 }
 
 interface GridSpecs {
-	defaults: { as: typeof DEFAULT_TAG }
+	defaults: {
+		as: typeof TAG
+		props: ListProps<typeof DEFAULT_PROPS>
+	}
 	props: GridProps
 	subcomponents: {
 		Item: typeof GridItem
@@ -52,7 +59,7 @@ export const Grid = polymorphic<GridSpecs>(_props => {
 
 Grid.displayName = NAME
 Grid.Item = GridItem
-Grid.setDefaults({ props: { as: DEFAULT_TAG } })
+Grid.setDefaults({ props: DEFAULT_PROPS })
 
 export declare namespace Grid {
 	export type Props = GridProps

@@ -3,7 +3,7 @@ import { LoaderCircle } from 'lucide-react'
 import { isValidElement, useMemo, Children } from 'react'
 import { useProps, useStyles, useVariants, extractOtherProps } from '@/hooks'
 import { extractChildrenText } from '@/lib/component'
-import { polymorphic, Box } from '@/components/polymorphic'
+import { polymorphic, Box, type ListProps } from '@/components/polymorphic'
 import { ButtonGroup, useButtonGroupProps } from './ButtonGroup'
 import { ButtonProvider, type ButtonContext } from './Button.context'
 import { ButtonSection } from './ButtonSection'
@@ -13,12 +13,29 @@ import type { Priority as ThemePriority, Variant as ThemeVariant } from '@/lib/t
 import classes from './Button.module.scss'
 
 const NAME = 'Button' as const,
-	DEFAULT_TAG = 'button' as const
+	TAG = 'button' as const
+
+const DEFAULT_PROPS = {
+	as: TAG,
+	size: 'sm',
+	variant: 'solid',
+} as const
 
 type ButtonSize =
 	| 'sm'
 	| 'md'
 	| 'lg'
+
+interface BaseButtonProps {
+	children: ReactNode
+	disabled?: boolean
+	fullWidth?: boolean
+	loading?: boolean
+	priority?: ThemePriority
+	size?: ButtonSize
+	showLabel?: boolean
+	variant?: ThemeVariant
+}
 
 interface LinkButtonProps<T extends string = string>
 	extends ComponentPropsWithoutRef<'a'> {
@@ -34,17 +51,6 @@ interface NativeButtonProps
 	ref?: Ref<HTMLButtonElement>
 }
 
-interface BaseButtonProps {
-	children: ReactNode
-	disabled?: boolean
-	fullWidth?: boolean
-	loading?: boolean
-	priority?: ThemePriority
-	size?: ButtonSize
-	showLabel?: boolean
-	variant?: ThemeVariant
-}
-
 type ButtonProps = BaseButtonProps & (
 	| LinkButtonProps
 	| NativeButtonProps
@@ -52,8 +58,8 @@ type ButtonProps = BaseButtonProps & (
 
 interface ButtonSpecs {
 	defaults: {
-		as: typeof DEFAULT_TAG
-		props: 'size' | 'variant'
+		as: typeof TAG
+		props: ListProps<typeof DEFAULT_PROPS>
 	}
 	props: ButtonProps
 	subcomponents: {
@@ -177,14 +183,7 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 Button.displayName = NAME
 Button.Group = ButtonGroup
 Button.Section = ButtonSection
-
-Button.setDefaults({
-	props: {
-		as: DEFAULT_TAG,
-		size: 'sm',
-		variant: 'solid',
-	}
-})
+Button.setDefaults({ props: DEFAULT_PROPS })
 
 export declare namespace Button {
 	export type Context = ButtonContext

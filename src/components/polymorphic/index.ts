@@ -1,2 +1,3 @@
 export { Box } from './Box'
-export { polymorphic, type SpecsContract } from '@/lib/component'
+export { polymorphic } from '@/lib/component'
+export type { ListProps, SpecsContract } from '@/lib/component/factory/types'

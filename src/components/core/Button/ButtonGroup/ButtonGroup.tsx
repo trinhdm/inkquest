@@ -1,29 +1,35 @@
 import { useMemo, type CSSProperties, type ReactNode } from 'react'
 import { useProps, useStyles, extractOtherProps, revealItemFrom } from '@/hooks'
 import { filterChildren, withProvider } from '@/lib/component'
-import { polymorphic, Box } from '@/components/polymorphic'
+import { polymorphic, Box, type ListProps } from '@/components/polymorphic'
 import { ButtonGroupProvider, type ButtonGroupContext } from './ButtonGroup.context'
 import type { Button } from '../Button'
 import classes from '../Button.module.scss'
 
 const NAME = 'Button.Group' as const
-const PRIORITY_ROLES: Button.Priority[] = ['primary', 'secondary', 'tertiary'] as const
+const DEFAULT_PROPS = {
+	hasPriority: true,
+	orientation: 'horizontal',
+} as const
 
-interface ButtonGroupProps {
+const PRIORITY_ROLES: Button.Priority[] = [
+	'primary',
+	'secondary',
+	'tertiary',
+] as const
+
+interface ButtonGroupProps
+	extends Pick<Button.Props, 'disabled' | 'loading' | 'size'> {
 	children?: ReactNode
 	fullWidth?: boolean
+	hasPriority?: boolean
 	justify?: CSSProperties['justifyContent']
 	orientation?: 'horizontal' | 'vertical'
 	revealFrom?: number
-
-	disabled?: boolean
-	hasPriority?: boolean
-	loading?: boolean
-	size?: Button.Props['size']
 }
 
 type ButtonGroupSpecs = {
-	defaults: { props: 'hasPriority' | 'orientation' }
+	defaults: { props: ListProps<typeof DEFAULT_PROPS> }
 	isCompound: true
 	props: ButtonGroupProps
 }
@@ -87,12 +93,7 @@ export const ButtonGroup = polymorphic<ButtonGroupSpecs>(_props => {
 }, classes)
 
 ButtonGroup.displayName = NAME
-ButtonGroup.setDefaults({
-	props: {
-		hasPriority: true,
-		orientation: 'horizontal',
-	}
-})
+ButtonGroup.setDefaults({ props: DEFAULT_PROPS })
 
 export declare namespace ButtonGroup {
 	export type Context = ButtonGroupContext

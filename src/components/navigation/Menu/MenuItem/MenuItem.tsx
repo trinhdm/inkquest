@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 // import { usePathname } from 'next/navigation'
 import { useProps, useStyles, useOutsideClick, extractOtherProps } from '@/hooks'
-import { polymorphic, Box } from '@/components/polymorphic'
+import { polymorphic, Box, type ListProps } from '@/components/polymorphic'
 import { toKebabCase } from '@/utils/helpers'
 import { Button, Icon } from '@/components/core'
 import { Menu } from '../Menu'
@@ -10,15 +10,23 @@ import type { NavigationItem } from '@/utils/navigation'
 import classes from '../Menu.module.scss'
 
 const NAME = 'MenuItem' as const,
-	DEFAULT_TAG = 'li' as const,
+	TAG = 'li' as const,
 	MENUITEM_SELECTOR = ':scope > [role="none"] > [role="menuitem"]'
+
+const DEFAULT_PROPS = {
+	as: TAG,
+	hasDropdowns: true,
+} as const
 
 interface MenuItemProps extends NavigationItem {
 	hasDropdowns?: boolean
 }
 
 interface MenuItemSpecs {
-	defaults: { as: typeof DEFAULT_TAG }
+	defaults: {
+		as: typeof TAG
+		props: ListProps<typeof DEFAULT_PROPS>
+	}
 	props: MenuItemProps
 }
 
@@ -159,7 +167,7 @@ export const MenuItem = polymorphic<MenuItemSpecs>(_props => {
 	if (!hasDropdowns) {
 		return menu?.map(item => (
 			<Box
-				as={ DEFAULT_TAG }
+				as={ TAG }
 				key={ item.label }
 				{ ...sharedProps }
 			>
@@ -212,7 +220,7 @@ export const MenuItem = polymorphic<MenuItemSpecs>(_props => {
 }, classes)
 
 MenuItem.displayName = NAME
-MenuItem.setDefaults({ props: { as: DEFAULT_TAG } })
+MenuItem.setDefaults({ props: DEFAULT_PROPS })
 
 export declare namespace MenuItem {
 	export type Props = MenuItemProps

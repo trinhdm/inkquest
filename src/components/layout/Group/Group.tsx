@@ -14,14 +14,20 @@ import {
 } from '@/hooks'
 
 import { filterChildren, withProvider, type RootProviderFn } from '@/lib/component'
-import { polymorphic, Box } from '@/components/polymorphic'
+import { polymorphic, Box, type ListProps } from '@/components/polymorphic'
 import { setThemeCSS } from '@/lib/theme'
 import { GroupItem } from './GroupItem'
 import { GroupProvider, type GroupContext } from './Group.context'
 import classes from './Group.module.scss'
 
 const NAME = 'Group' as const,
-	DEFAULT_TAG = 'div' as const
+	TAG = 'div' as const
+
+const DEFAULT_PROPS = {
+	childName: GroupItem.displayName,
+	divider: true,
+	provider: GroupProvider,
+} as const
 
 interface BaseGroupProps {
 	children: ReactNode
@@ -52,7 +58,7 @@ type GroupProps =
 	& MaybeAnimationProps
 
 type GroupSpecs = {
-	defaults: { props: 'childName' | 'divider' | 'provider' }
+	defaults: { props: ListProps<typeof DEFAULT_PROPS> }
 	props: GroupProps
 	subcomponents: {
 		Item: typeof GroupItem
@@ -120,7 +126,7 @@ export const Group = polymorphic<GroupSpecs>(_props => {
 		<Box
 			{ ...styles('root', { module }) }
 			{ ...others }
-			as={ DEFAULT_TAG }
+			as={ TAG }
 			attributes={ { aria, data } }
 			ref={ ref }
 			role="group"
@@ -132,13 +138,7 @@ export const Group = polymorphic<GroupSpecs>(_props => {
 
 Group.displayName = NAME
 Group.Item = GroupItem
-Group.setDefaults({
-	props: {
-		childName: GroupItem.displayName,
-		divider: true,
-		provider: GroupProvider,
-	}
-})
+Group.setDefaults({ props: DEFAULT_PROPS })
 
 export declare namespace Group {
 	export type Context = GroupContext

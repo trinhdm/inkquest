@@ -7,13 +7,21 @@ import {
 } from '@/hooks'
 
 import { useStatisticGroupProps } from './StatisticGroup'
-import { polymorphic, Box } from '@/components/polymorphic'
+import { polymorphic, Box, type ListProps } from '@/components/polymorphic'
 import { StatisticGroup } from './StatisticGroup'
 import type { ReactNode } from 'react'
 import classes from './Statistic.module.scss'
 
 const NAME = 'Statistic' as const,
-	DEFAULT_TAG = 'div' as const
+	TAG = 'div' as const
+
+const DEFAULT_PROPS = {
+	animated: true,
+	as: TAG,
+	duration: 3000,
+	index: 0,
+	stagger: 0,
+} as const
 
 interface BaseStatisticProps {
 	caption?: string
@@ -28,8 +36,8 @@ type StatisticProps =
 
 interface StatisticSpecs {
 	defaults: {
-		as: typeof DEFAULT_TAG
-		props: 'animated' | 'duration' | 'index' | 'stagger'
+		as: typeof TAG
+		props: ListProps<typeof DEFAULT_PROPS>
 	}
 	props: StatisticProps
 	subcomponents: {
@@ -87,15 +95,7 @@ export const Statistic = polymorphic<StatisticSpecs>(_props => {
 
 Statistic.displayName = NAME
 Statistic.Group = StatisticGroup
-Statistic.setDefaults({
-	props: {
-		animated: true,
-		as: DEFAULT_TAG,
-		duration: 3000,
-		index: 0,
-		stagger: 0,
-	}
-})
+Statistic.setDefaults({ props: DEFAULT_PROPS })
 
 export declare namespace Statistic {
 	export type Props = StatisticProps

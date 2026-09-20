@@ -1,11 +1,16 @@
 import { useProps, useStyles, extractOtherProps } from '@/hooks'
-import { polymorphic, Box } from '@/components/polymorphic'
+import { polymorphic, Box, type ListProps } from '@/components/polymorphic'
 import { MenuItem } from './MenuItem'
 import type { NavigationItem } from '@/utils/navigation'
 import classes from './Menu.module.scss'
 
 const NAME = 'Menu' as const,
-	DEFAULT_TAG = 'ul' as const
+	TAG = 'ul' as const
+
+const DEFAULT_PROPS = {
+	as: TAG,
+	hasDropdowns: true,
+} as const
 
 interface MenuProps {
 	hasDropdowns?: boolean
@@ -14,8 +19,8 @@ interface MenuProps {
 
 interface MenuSpecs {
 	defaults: {
-		as: typeof DEFAULT_TAG
-		props: 'hasDropdowns'
+		as: typeof TAG
+		props: ListProps<typeof DEFAULT_PROPS>
 	}
 	props: MenuProps
 }
@@ -36,7 +41,7 @@ export const Menu = polymorphic<MenuSpecs>(_props => {
 
 	return (
 		<Box
-			as={ DEFAULT_TAG }
+			as={ TAG }
 			role="menubar"
 			{ ...styles('root') }
 			{ ...others }
@@ -54,12 +59,7 @@ export const Menu = polymorphic<MenuSpecs>(_props => {
 }, classes)
 
 Menu.displayName = NAME
-Menu.setDefaults({
-	props: {
-		as: DEFAULT_TAG,
-		hasDropdowns: true,
-	}
-})
+Menu.setDefaults({ props: DEFAULT_PROPS })
 
 export declare namespace Menu {
 	export type Props = MenuProps

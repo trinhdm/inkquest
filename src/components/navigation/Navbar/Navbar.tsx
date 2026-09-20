@@ -3,20 +3,27 @@
 import Link from 'next/link'
 import { useProps, useStyles, extractOtherProps } from '@/hooks'
 import { filterNavigation, NavRoute } from '@/utils/navigation'
-import { polymorphic, Box } from '@/components/polymorphic'
+import { polymorphic, Box, type ListProps } from '@/components/polymorphic'
 import { Button } from '@/components/core'
 import { Menu } from '../Menu'
 import classes from './Navbar.module.scss'
 
 const NAME = 'Navbar' as const,
-	DEFAULT_TAG = 'nav' as const
+	TAG = 'nav' as const
+
+const DEFAULT_PROPS = {
+	as: TAG,
+} as const
 
 interface NavbarProps {
 	routes?: NavRoute[]
 }
 
 interface NavbarSpecs {
-	defaults: { as: typeof DEFAULT_TAG }
+	defaults: {
+		as: typeof TAG
+		props: ListProps<typeof DEFAULT_PROPS>
+	}
 	props: NavbarProps
 }
 
@@ -64,7 +71,7 @@ export const Navbar = polymorphic<NavbarSpecs>(_props => {
 }, classes)
 
 Navbar.displayName = NAME
-Navbar.setDefaults({ props: { as: DEFAULT_TAG } })
+Navbar.setDefaults({ props: DEFAULT_PROPS })
 
 export declare namespace Navbar {
 	export type Props = NavbarProps

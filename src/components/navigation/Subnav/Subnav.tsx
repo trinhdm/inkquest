@@ -2,19 +2,26 @@
 
 import { useProps, useStyles, extractOtherProps } from '@/hooks'
 import { filterNavigation, NavRoute } from '@/utils/navigation'
-import { polymorphic, Box } from '@/components/polymorphic'
+import { polymorphic, Box, type ListProps } from '@/components/polymorphic'
 import { Menu } from '../Menu'
 import classes from './Subnav.module.scss'
 
 const NAME = 'Subnav' as const,
 	TAG = 'div' as const
 
+const DEFAULT_PROPS = {
+	as: TAG,
+} as const
+
 interface SubnavProps {
 	routes: NavRoute[]
 }
 
 interface SubnavSpecs {
-	defaults: { as: typeof TAG }
+	defaults: {
+		as: typeof TAG
+		props: ListProps<typeof DEFAULT_PROPS>
+	}
 	props: SubnavProps
 }
 
@@ -54,7 +61,7 @@ export const Subnav = polymorphic<SubnavSpecs>(_props => {
 }, classes)
 
 Subnav.displayName = NAME
-Subnav.setDefaults({ props: { as: TAG } })
+Subnav.setDefaults({ props: DEFAULT_PROPS })
 
 export declare namespace Subnav {
 	export type Props = SubnavProps

@@ -22,6 +22,12 @@ import { Grid } from '../Grid'
 import classes from './Section.module.scss'
 
 const NAME = 'Section' as const
+const DEFAULT_PROPS = {
+	animated: true,
+	duration: 400,
+	layout: 'default',
+	stagger: 200,
+} as const
 
 type SectionLayout =
 	| 'blocks'
@@ -42,7 +48,7 @@ type SectionProps =
 	& MaybeAnimationProps
 
 interface SectionSpecs {
-	defaults: { props: 'animated' | 'duration' | 'layout' | 'stagger' }
+	defaults: { props: keyof typeof DEFAULT_PROPS }
 	props: SectionProps
 	subcomponents: {
 		Button: typeof Button
@@ -189,14 +195,7 @@ export const Section = polymorphic<SectionSpecs>(_props => {
 
 Section.displayName = NAME
 Section.Button = Button
-Section.setDefaults({
-	props: {
-		animated: true,
-		duration: 400,
-		layout: 'default',
-		stagger: 200,
-	}
-})
+Section.setDefaults({ props: DEFAULT_PROPS })
 
 export declare namespace Section {
 	export type Props = SectionProps
