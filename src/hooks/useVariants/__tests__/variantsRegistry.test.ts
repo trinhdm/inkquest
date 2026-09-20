@@ -64,19 +64,15 @@ describe('variant styles registry', () => {
 	})
 
 	it('returns false without probing the DOM when `document` is undefined (SSR guard)', () => {
-		const originalDocument = global.document
-		const querySpy = jest.spyOn(originalDocument, 'querySelector')
-		// eslint-disable-next-line no-console
-		console.log('DEBUG descriptor', Object.getOwnPropertyDescriptor(global, 'document'))
-		;(global as { document: Document | undefined }).document = undefined
+		const originalDescriptor = Object.getOwnPropertyDescriptor(global, 'document')!
+		const querySpy = jest.spyOn(document, 'querySelector')
+		Object.defineProperty(global, 'document', { value: undefined, configurable: true })
 
 		try {
-			// eslint-disable-next-line no-console
-			console.log('DEBUG typeof document', typeof document)
 			expect(hasInjectVariant('Registry.SSR')).toBe(false)
 			expect(querySpy).not.toHaveBeenCalled()
 		} finally {
-			global.document = originalDocument
+			Object.defineProperty(global, 'document', originalDescriptor)
 		}
 	})
 

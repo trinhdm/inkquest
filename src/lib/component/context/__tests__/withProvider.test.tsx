@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { createRootCtx } from '../createRootCtx'
-import { renderWithProvider } from '../renderWithProvider'
+import { withProvider } from '../withProvider'
 
 interface TestCtxValue {
 	label: string
@@ -11,7 +11,7 @@ const Consumer = ({ useRootCtx }: { useRootCtx: (name: string) => TestCtxValue &
 	return <span>{ ctx.label }</span>
 }
 
-describe('renderWithProvider', () => {
+describe('withProvider', () => {
 	const { RootProvider, useRootCtx } = createRootCtx<TestCtxValue>('TestRoot')
 
 	it('wraps each item with its own Provider instance, matched to it by index', () => {
@@ -21,7 +21,7 @@ describe('renderWithProvider', () => {
 		]
 		const values = [{ label: 'first' }, { label: 'second' }]
 
-		render(<>{ renderWithProvider<TestCtxValue, TestCtxValue>(items, RootProvider, values) }</>)
+		render(<>{ withProvider<TestCtxValue, TestCtxValue>(items, RootProvider, values) }</>)
 
 		expect(screen.getByText('first')).toBeInTheDocument()
 		expect(screen.getByText('second')).toBeInTheDocument()
@@ -30,7 +30,7 @@ describe('renderWithProvider', () => {
 	it('renders items in a plain Fragment (no context) when no Provider is given', () => {
 		const items = [<span key="a">plain</span>]
 
-		render(<>{ renderWithProvider<TestCtxValue, TestCtxValue>(items, undefined, [{ label: 'unused' }]) }</>)
+		render(<>{ withProvider<TestCtxValue, TestCtxValue>(items, undefined, [{ label: 'unused' }]) }</>)
 
 		expect(screen.getByText('plain')).toBeInTheDocument()
 	})
@@ -40,12 +40,12 @@ describe('renderWithProvider', () => {
 			<span key="explicit-key">keyed</span>,
 		]
 
-		const result = renderWithProvider<TestCtxValue, TestCtxValue>(items, undefined, [{ label: 'unused' }])
+		const result = withProvider<TestCtxValue, TestCtxValue>(items, undefined, [{ label: 'unused' }])
 
-		// `renderWithProvider` re-keys the Fragment wrapper with `getChildKey`,
+		// `withProvider` re-keys the Fragment wrapper with `getChildKey`,
 		// which prefers the child's own `key` — assert the wrapper renders
 		// without a "missing key" warning by rendering a list of more than one.
-		const multi = renderWithProvider<TestCtxValue, TestCtxValue>(
+		const multi = withProvider<TestCtxValue, TestCtxValue>(
 			[<span key="a">A</span>, <span key="b">B</span>],
 			undefined,
 			[{ label: 'a' }, { label: 'b' }]

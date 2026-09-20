@@ -1,8 +1,7 @@
 import { useMemo, type CSSProperties, type ReactNode } from 'react'
 import { useProps, useStyles, extractOtherProps, revealItemFrom } from '@/hooks'
-import { filterChildren } from '@/utils/helpers'
+import { filterChildren, withProvider } from '@/lib/component'
 import { polymorphic, Box } from '@/components/polymorphic'
-import { renderWithProvider } from '@/lib/component'
 import { ButtonGroupProvider, type ButtonGroupContext } from './ButtonGroup.context'
 import type { Button } from '../Button'
 import classes from '../Button.module.scss'
@@ -24,6 +23,7 @@ interface ButtonGroupProps {
 }
 
 type ButtonGroupSpecs = {
+	defaults: { props: 'hasPriority' | 'orientation' }
 	isCompound: true
 	props: ButtonGroupProps
 }
@@ -81,7 +81,7 @@ export const ButtonGroup = polymorphic<ButtonGroupSpecs>(_props => {
 			} }
 			role="group"
 		>
-			{ renderWithProvider(items, ButtonGroupProvider, ctxValues) }
+			{ withProvider(items, ButtonGroupProvider, ctxValues) }
 		</Box>
 	)
 }, classes)

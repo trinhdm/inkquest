@@ -1,6 +1,5 @@
-import { Fragment } from 'react'
-import type { FC, ReactNode } from 'react'
 import { extractChildrenText, filterChildren, getChildKey } from '../children'
+import type { FC, ReactNode } from 'react'
 
 const Named: FC<{ children?: ReactNode }> = ({ children }) => <>{ children }</>
 Named.displayName = 'Named'

@@ -142,6 +142,49 @@ describe('Section', () => {
 		expect(screen.getByRole('button', { name: 'Second' })).toHaveAttribute('data-priority', 'secondary')
 	})
 
+	describe('unstyled forwarding to Container', () => {
+		// Regression coverage: `Box.tsx` now re-attaches `unstyled` onto an
+		// `as` target that carries `POLYMORPHIC_MARKER` (see `Box.test.tsx`'s
+		// "unstyled forwarding" block). Section's root is always
+		// `<Box as={Container}>` (see "always renders the root through
+		// Container" above), and any prop Section itself doesn't declare
+		// passes straight through `rest`/`others` — including `unstyled` and
+		// `fullWidth`, which Container's own `useProps` reads directly.
+		// Container computes its root data attributes as
+		// `{ block: !!fullWidth || null }`; `block` isn't one of
+		// `buildAttributes`'s `STATE_KEYS`, so it's now correctly dropped once
+		// `unstyled` reaches Container — previously it never did. This is a
+		// data-attribute effect, not a CSS-module className one: `next/jest`'s
+		// module mock is an `object-proxy` with only a `get` trap, so
+		// `Object.hasOwn(classes, baseName)` in `getClassName.tsx` is always
+		// false there and `unstyled` can't be observed via className under Jest.
+		it('drops data-block on Container\'s root once unstyled reaches it through Section', () => {
+			const props = {
+				children: 'content',
+				fullWidth: true,
+				title: 'Unstyled section',
+				unstyled: true,
+			} as Section.Props & { fullWidth?: boolean }
+
+			const { container } = render(<Section { ...props } />)
+			const root = container.firstElementChild
+
+			expect(root?.tagName).toBe('SECTION')
+			expect(root).not.toHaveAttribute('data-block')
+		})
+
+		it('keeps data-block on Container\'s root when Section is not unstyled, for contrast', () => {
+			const props = {
+				children: 'content',
+				fullWidth: true,
+				title: 'Styled section',
+			} as Section.Props & { fullWidth?: boolean }
+
+			const { container } = render(<Section { ...props } />)
+			expect(container.firstElementChild).toHaveAttribute('data-block', 'true')
+		})
+	})
+
 	it('wraps header and content in two separate Grid.Items for the split layout', () => {
 		render(
 			<Section layout="split" title="Split title">

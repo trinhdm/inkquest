@@ -1,8 +1,7 @@
 import { useMemo, useRef, type CSSProperties, type ReactNode } from 'react'
 import { useProps, useReplayInView, useStyles, extractOtherProps } from '@/hooks'
-import { filterChildren } from '@/utils/helpers'
+import { filterChildren, withProvider, type RootProviderFn } from '@/lib/component'
 import { polymorphic, Box } from '@/components/polymorphic'
-import { renderWithProvider, type RootProviderFn } from '@/lib/component'
 import { setThemeCSS } from '@/lib/theme'
 import type { UseInViewOptions } from 'framer-motion'
 import classes from './Group.module.scss'
@@ -122,7 +121,7 @@ export const Group = polymorphic<GroupSpecs>(_props => {
 			role="group"
 			ref={ root }
 		>
-			{ renderWithProvider(items, Provider, ctxValues) }
+			{ withProvider(items, Provider, ctxValues) }
 		</Box>
 	)
 }, classes)

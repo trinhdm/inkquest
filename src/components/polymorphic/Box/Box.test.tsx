@@ -1,11 +1,17 @@
-import { render, screen } from '@/tests/test-utils'
+import { render, reset, screen } from '@/tests/test-utils'
+import { polymorphic } from '@/lib/component'
 import { Box } from './Box'
+import type { ReactNode } from 'react'
 
-// `Box` (`toPolymorphic`, not `polymorphic`/`factory`) doesn't call
-// `useVariants`/`setDefaults`, so there's no variant-style or
-// component-defaults registry state to reset here — unlike the `factory()`
-// components (`Button`, `Badge`, `Card`, `Icon`).
+// `Box` itself (`definePolymorphic`, not `polymorphic`/`factory`) doesn't
+// call `useVariants`/`setDefaults`, so there's no variant-style or
+// component-defaults registry state of its own to reset — unlike the
+// `factory()` components (`Button`, `Badge`, `Card`, `Icon`). The
+// "unstyled forwarding" block below does render one minimal `polymorphic()`
+// component (`Marked`) as an `as` target, so it names that in `reset(...)`.
 describe('Box', () => {
+	reset('Marked')
+
 	describe('attribute prefixing (aria-*/data-*) and kebab-casing', () => {
 		it('prefixes aria keys with "aria-"', () => {
 			// `SpecAttributes['aria']` is typed as `AriaAttributes` with the
@@ -160,6 +166,50 @@ describe('Box', () => {
 		it('renders the provided element via "as"', () => {
 			const { container } = render(<Box as="span">Content</Box>)
 			expect(container.firstElementChild?.tagName).toBe('SPAN')
+		})
+	})
+
+	describe('unstyled forwarding', () => {
+		// `Box.tsx`'s `isPolymorphic` check gates this on `POLYMORPHIC_MARKER`
+		// being present on the `as` target — anything created via
+		// `polymorphic()`/`createFactory()` carries it, a plain function or
+		// string tag doesn't.
+		interface MarkedProps {
+			children?: ReactNode
+		}
+
+		const Marked = polymorphic<{ props: MarkedProps }>(({ children, unstyled }) => (
+			<div data-testid="marked" data-received-unstyled={ String(!!unstyled) }>
+				{ children }
+			</div>
+		))
+		Marked.displayName = 'Marked'
+
+		it('forwards unstyled to an "as" target marked with POLYMORPHIC_MARKER', () => {
+			render(<Box as={ Marked } unstyled>Content</Box>)
+			expect(screen.getByTestId('marked')).toHaveAttribute('data-received-unstyled', 'true')
+		})
+
+		it('does not forward unstyled when it is unset, even to a marked target', () => {
+			render(<Box as={ Marked }>Content</Box>)
+			expect(screen.getByTestId('marked')).toHaveAttribute('data-received-unstyled', 'false')
+		})
+
+		it('does not forward unstyled to an unmarked function component', () => {
+			const Unmarked = jest.fn(({ children }: { children?: ReactNode }) => (
+				<div data-testid="unmarked">{ children }</div>
+			))
+
+			render(<Box as={ Unmarked } unstyled>Content</Box>)
+
+			expect(Unmarked).toHaveBeenCalled()
+			const props = Unmarked.mock.calls[0][0]
+			expect(props).not.toHaveProperty('unstyled')
+		})
+
+		it('does not render an "unstyled" DOM attribute on a plain tag', () => {
+			render(<Box as="div" unstyled>Content</Box>)
+			expect(screen.getByText('Content')).not.toHaveAttribute('unstyled')
 		})
 	})
 })

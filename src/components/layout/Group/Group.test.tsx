@@ -44,8 +44,16 @@ DebugItem.displayName = 'DebugItem'
 describe('Group', () => {
 	reset('Group')
 
-	it('registers no defaults of its own (Group.setDefaults({}))', () => {
-		expect(getDefaultProps<Group.Props>('Group')).toEqual({})
+	it('registers childName, divider, and provider as its own defaults', () => {
+		// Read from `Group.tsx`'s own `Group.setDefaults({...})` call, rather
+		// than hand-typing a guess at what it registers.
+		const defaults = getDefaultProps<Group.Props & { provider?: RootProviderFn<Group.Context> }>('Group')
+
+		expect(defaults).toEqual({
+			childName: 'Group.Item',
+			divider: true,
+			provider: expect.any(Function),
+		})
 	})
 
 	it('renders as an accessible group', () => {

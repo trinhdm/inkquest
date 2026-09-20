@@ -1,8 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { useProps, useReplayInView, useStyles, extractOtherProps } from '@/hooks'
-import { filterChildren } from '@/utils/helpers'
+import { filterChildren, withProvider } from '@/lib/component'
 import { polymorphic, Box } from '@/components/polymorphic'
-import { renderWithProvider } from '@/lib/component'
 import { AccordionGroupProvider } from './AccordionGroup.context'
 import classes from '../Accordion.module.scss'
 
@@ -92,7 +91,7 @@ export const AccordionGroup = polymorphic<AccordionGroupSpecs>(_props => {
 			attributes={ { data: { group: true } } }
 			ref={ root }
 		>
-			{ renderWithProvider(items, AccordionGroupProvider, ctxValues) }
+			{ withProvider(items, AccordionGroupProvider, ctxValues) }
 		</Box>
 	)
 }, classes)

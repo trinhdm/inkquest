@@ -27,12 +27,43 @@ describe('createRootCtx', () => {
 			consoleErrorSpy.mockRestore()
 		})
 
-		it('returns the provided context value plus a `rootName` defaulted from the creator name', () => {
-			const { result } = renderHook(() => useRootCtx('Consumer'), {
+		it('returns the provided context value plus a `rootName` defaulted from the creator name, plus a derived `baseName`', () => {
+			// `baseName` strips `rootName` off `componentName`, then drops one
+			// leading `.` separator ONLY if the remainder actually starts with
+			// one (`compoundName.startsWith('.') ? 1 : 0`) — so a dotted compound
+			// name like `TestRoot.Consumer` correctly yields `consumer`, not a
+			// mangled slice of it.
+			const { result } = renderHook(() => useRootCtx('TestRoot.Consumer'), {
 				wrapper: wrapperWith({ color: 'red', size: 12 }),
 			})
 
-			expect(result.current).toEqual({ color: 'red', size: 12, rootName: 'TestRoot' })
+			expect(result.current).toEqual({
+				color: 'red',
+				size: 12,
+				rootName: 'TestRoot',
+				baseName: 'consumer',
+			})
+		})
+
+		it('derives baseName as the lowercased rootName when componentName equals rootName', () => {
+			const { result } = renderHook(() => useRootCtx('TestRoot'), {
+				wrapper: wrapperWith({ color: 'red' }),
+			})
+
+			expect(result.current.baseName).toBe('testroot')
+		})
+
+		it('lowercases a plain, undotted consumer name that does not contain rootName, without corrupting it', () => {
+			// `componentName.replace(rootName, '')` is a no-op here since
+			// `rootName` ('TestRoot') isn't a substring of 'Consumer', leaving
+			// the whole name intact; the `startsWith('.')` guard means the
+			// `.slice(1)` used for the dotted case above is correctly skipped,
+			// so nothing gets eaten off the front.
+			const { result } = renderHook(() => useRootCtx('Consumer'), {
+				wrapper: wrapperWith({ color: 'red' }),
+			})
+
+			expect(result.current.baseName).toBe('consumer')
 		})
 
 		it('lets the provider override `rootName`', () => {

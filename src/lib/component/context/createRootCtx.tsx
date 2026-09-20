@@ -5,6 +5,7 @@ import {
 import type { NoExcessKeys } from '@/types/utils'
 
 export interface RootProviderProps<T, V extends T = T> {
+	baseName?: string
     children: ReactNode
     rootName?: string
     unstyled?: boolean
@@ -15,7 +16,8 @@ export type RootProviderFn<T> =
 	<V extends T>(props: RootProviderProps<T, V>) => ReactElement
 
 export const createRootCtx = <T extends object>(name: string) => {
-	type RootCtxValue = T & { rootName: string }
+	type RootCtxProps = RootProviderProps<T>
+	type RootCtxValue = T & Required<Pick<RootCtxProps, 'rootName'>>
 	type RootCtxOptions = RootCtxValue | null
 
 	const RootCtx = createContext<RootCtxOptions>(null)
@@ -34,13 +36,24 @@ export const createRootCtx = <T extends object>(name: string) => {
 		return <RootCtx value={ ctxValue }>{ children }</RootCtx>
 	}
 
-	const useRootCtx = (componentName: string): RootCtxValue => {
+	const useRootCtx = (componentName: string): RootCtxValue & Required<Pick<RootCtxProps, 'baseName'>> => {
 		const ctx = use(RootCtx)
 
 		if (ctx === null)
 			throw new Error(`<${componentName} /> must be rendered inside <${name}>`)
 
-		return ctx
+		const { rootName } = ctx
+		let baseName = rootName
+
+		if (rootName !== componentName) {
+			const compoundName = componentName.replace(rootName, ''),
+				index = compoundName.startsWith('.') ? 1 : 0
+			baseName = compoundName.slice(index)
+		}
+
+		baseName = baseName.toLowerCase()
+
+		return { ...ctx, baseName }
 	}
 
 	const useSafeRootCtx = (): RootCtxOptions =>
