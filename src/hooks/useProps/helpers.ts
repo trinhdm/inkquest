@@ -70,7 +70,6 @@ type OtherPropsList<E extends ElementType> = {
 	children?: ReactNode
 	displayName?: string
 	loading?: boolean
-	once?: boolean
 	revealFrom?: number
 	withinView?: boolean
 }
@@ -100,7 +99,6 @@ function extractOthers(rest: OtherProps<ElementType>) {
 		classNames,
 		displayName,
 		loading,
-		once,
 		revealFrom,
 		style,
 		styles,

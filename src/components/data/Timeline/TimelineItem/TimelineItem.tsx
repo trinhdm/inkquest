@@ -26,7 +26,12 @@ export const TimelineItem = polymorphic<TimelineItemSpecs>(_props => {
 	const { others } = extractOtherProps(rest)
 
 	return (
-		<Box ref={ itemRef } { ...styles('root') } { ...others }>
+		<Box
+			{ ...styles('root') }
+			{ ...others }
+			as="div"
+			ref={ itemRef }
+		>
 			<div { ...styles('marker') }>
 				<span { ...styles('bullet') }>{ bullet }</span>
 				<span { ...styles('rail') } />

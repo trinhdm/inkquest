@@ -24,7 +24,7 @@ export const GroupItem = polymorphic<GroupItemSpecs>(_props => {
 	const { others } = extractOtherProps(rest)
 
 	return (
-		<Box { ...styles(baseName, true) } { ...others }>
+		<Box { ...styles(baseName, true) } { ...others } as="div">
 			{ children }
 		</Box>
 	)

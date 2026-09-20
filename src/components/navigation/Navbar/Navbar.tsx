@@ -59,7 +59,7 @@ export const Navbar = polymorphic<NavbarSpecs>(_props => {
 					) }
 
 					<div { ...styles('col') }>
-						<Button.Group hasPriority={ false }>
+						<Button.Group hasPriority={ false } size="sm">
 							<Button variant="ghost">Log in</Button>
 							<Button>Sign up</Button>
 						</Button.Group>

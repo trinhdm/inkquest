@@ -6,7 +6,7 @@ import type { ReactNode } from 'react'
 import classes from './Table.module.scss'
 
 const NAME = 'Table' as const,
-	TAG = 'div' as const
+	TAG = 'table' as const
 
 const DEFAULT_PROPS = {
 	as: TAG,
@@ -41,7 +41,7 @@ export const Table = polymorphic<TableSpecs>(_props => {
 			{ ...styles('root') }
 			{ ...others }
 		>
-			{ children }
+			<tbody>{ children }</tbody>
 		</Box>
 	)
 }, classes)

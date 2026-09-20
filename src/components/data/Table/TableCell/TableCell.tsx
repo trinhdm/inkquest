@@ -1,6 +1,6 @@
 import { useProps, useStyles, extractOtherProps } from '@/hooks'
 import { polymorphic, Box } from '@/components/polymorphic'
-import { useRef, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import classes from '../Table.module.scss'
 
 const NAME = 'Table.Cell' as const
@@ -15,8 +15,6 @@ interface TableCellSpecs {
 }
 
 export const TableCell = polymorphic<TableCellSpecs>(_props => {
-	const itemRef = useRef<HTMLDivElement>(null)
-
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { classes, props })
 
@@ -24,7 +22,11 @@ export const TableCell = polymorphic<TableCellSpecs>(_props => {
 	const { others } = extractOtherProps(rest)
 
 	return (
-		<Box ref={ itemRef } { ...styles('root') } { ...others }>
+		<Box
+			{ ...styles('root') }
+			{ ...others }
+			as="td"
+		>
 			{ children }
 		</Box>
 	)

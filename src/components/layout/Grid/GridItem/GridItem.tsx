@@ -22,7 +22,7 @@ export const GridItem = polymorphic<GridItemSpecs>(_props => {
 	const { others } = extractOtherProps(rest)
 
 	return (
-		<Box { ...styles('root') } { ...others }>
+		<Box { ...styles('root') } { ...others } as="div">
 			{ children }
 		</Box>
 	)
