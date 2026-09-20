@@ -1,24 +1,16 @@
 import {
-	isValidElement,
-	Children,
-	Fragment,
-	type ElementType,
-	type ReactNode,
-} from 'react'
-
-import {
 	useProps,
 	useReveal,
 	useStyles,
 	type MaybeAnimationProps,
-	type RevealCounter,
 } from '@/hooks'
 
-import { polymorphic, Box } from '@/components/polymorphic'
+import { polymorphic, Box, type ListProps } from '@/components/polymorphic'
 import { setThemeCSS } from '@/lib/theme'
+import { buildSection } from './builder'
 import { Button } from '@/components/core'
 import { Container } from '../Container'
-import { Grid } from '../Grid'
+import type { ReactNode } from 'react'
 import classes from './Section.module.scss'
 
 const NAME = 'Section' as const
@@ -48,107 +40,10 @@ type SectionProps =
 	& MaybeAnimationProps
 
 interface SectionSpecs {
-	defaults: { props: keyof typeof DEFAULT_PROPS }
+	defaults: { props: ListProps<typeof DEFAULT_PROPS> }
 	props: SectionProps
 	subcomponents: {
 		Button: typeof Button
-	}
-}
-
-const orderSection = (
-	props: SectionProps,
-	styles: ReturnType<typeof useStyles>,
-	reveal: RevealCounter
-) => {
-	const { children, layout } = props
-	const buttons: ReactNode[] = [],
-		items: ReactNode[] = []
-
-	Children.toArray(children).forEach((child, index) => {
-		const key = `section-${index}-desc`
-
-		if (isValidElement<SectionProps>(child) || typeof child === 'string') {
-			const desc = <p key={ key } { ...reveal.next() }>{ child }</p>
-
-			if (typeof child === 'string')
-				items.push(desc)
-
-			if (isValidElement<SectionProps>(child)) {
-				if (child.type === Fragment) items.push(desc)
-				else if (child.type !== Button) items.push(child)
-				else if (buttons.length < 2) buttons.push(child)
-			}
-		}
-	})
-
-	const content: ReactNode[] = [],
-		isHero = layout === 'hero'
-
-	if (!!items.length) {
-		const [first] = items
-		let args = { ...styles('description') },
-			Tag: ElementType | undefined
-
-		if (items.length > 1) {
-			Tag = 'div'
-		} else if (isValidElement(first) && first.type === Fragment) {
-			args = { ...args, ...reveal.next() }
-			Tag = 'p'
-		}
-
-		const description = !!Tag?.length ? <Tag { ...args }>{ items }</Tag> : items,
-			body = <div key="section-body" { ...styles('body') }>{ description }</div>
-
-		content.push(body)
-	}
-
-	if (!!buttons.length) {
-		const cta = (
-			<Button.Group
-				key="section-cta"
-				{ ...styles('cta') }
-				hasPriority={ buttons.length > 1 }
-				revealFrom={ reveal.reserve(buttons.length) }
-				size={ isHero ? 'lg' : 'md' }
-			>
-				{ buttons }
-			</Button.Group>
-		)
-
-		content.push(cta)
-	}
-
-	return <>{ content }</>
-}
-
-const buildSection = (
-	props: SectionProps,
-	styles: ReturnType<typeof useStyles>,
-	reveal: RevealCounter
-) => {
-	const { eyebrow, layout, title } = props,
-		HTag = layout === 'hero' ? 'h1' : 'h2'
-
-	const tagline = !!eyebrow && <span { ...styles('eyebrow', true) } { ...reveal.next() }>{ eyebrow }</span>,
-		heading = !!title && <Box as={ HTag } { ...styles('title') } { ...reveal.next() }>{ title }</Box>
-
-	const content = orderSection(props, styles, reveal),
-		header = <>{ tagline }{ heading }</>,
-		inner = <>{ header }{ content }</>
-
-	switch (layout) {
-		case 'hero':
-		case 'cta':
-			return <div { ...styles('inner') }>{ inner }</div>
-		case 'split':
-			return (
-				<Grid { ...styles('inner') }>
-					<Grid.Item>{ header }</Grid.Item>
-					<Grid.Item>{ content }</Grid.Item>
-				</Grid>
-			)
-		default:
-			return inner
 	}
 }
 
@@ -188,7 +83,7 @@ export const Section = polymorphic<SectionSpecs>(_props => {
 			as={ Container }
 			ref={ ref }
 		>
-			{ buildSection(props, styles, reveal()) }
+			{ buildSection({ props, reveal: reveal(), styles }) }
 		</Box>
 	)
 }, classes)
