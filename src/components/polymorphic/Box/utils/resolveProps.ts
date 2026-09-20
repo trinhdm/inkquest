@@ -7,5 +7,5 @@ export const resolveProps = <T extends AttrSource>(_props: T) => {
 	const { attributes: oldAttrs, ...rest } = props,
 		attributes = buildAttributes(props)
 
-	return { ...attributes, ...rest }
+	return { ...rest, ...attributes }
 }
