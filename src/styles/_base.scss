@@ -137,6 +137,7 @@ ul {
 @media (prefers-reduced-motion: no-preference) {
 	[data-js-animate] {
 		[data-js-reveal] {
+			--reveal-duration: .4s;
 			--reveal-stagger: .2s;
 			--reveal-state: 0;
 

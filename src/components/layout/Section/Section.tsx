@@ -1,5 +1,5 @@
-import { isValidElement, Children, type ReactNode } from 'react'
-import { useProps, useReveal, useStyles, extractOtherProps, type RevealCounter } from '@/hooks'
+import { isValidElement, Children, type ReactNode, Fragment, type ElementType } from 'react'
+import { useProps, useReveal, useStyles, type RevealCounter } from '@/hooks'
 import { polymorphic, Box } from '@/components/polymorphic'
 import { setThemeCSS } from '@/lib/theme'
 import { Button } from '@/components/core'
@@ -30,6 +30,7 @@ interface SectionProps {
 }
 
 interface SectionSpecs {
+	defaults: { props: 'animated' | 'duration' | 'layout' | 'stagger' }
 	props: SectionProps
 	subcomponents: {
 		Button: typeof Button
@@ -37,38 +38,48 @@ interface SectionSpecs {
 }
 
 const orderSection = (
-	children: SectionProps['children'],
+	props: SectionProps,
 	styles: ReturnType<typeof useStyles>,
 	reveal: RevealCounter
 ) => {
+	const { children, layout } = props
 	const buttons: ReactNode[] = [],
 		items: ReactNode[] = []
 
 	Children.toArray(children).forEach((child, index) => {
-		const key = `section-${ index }`
+		const key = `section-${index}-desc`
 
-		if (typeof child === 'string') {
-			const desc = <p key={ `${key}-desc` } { ...styles('description') }>{ child }</p>
-			items.push(desc)
-		}
+		if (isValidElement<SectionProps>(child) || typeof child === 'string') {
+			const desc = <p key={ key } { ...reveal.next() }>{ child }</p>
 
-		if (isValidElement<SectionProps>(child)) {
-			if (child.type !== Button) items.push(child)
-			else if (buttons.length < 2) buttons.push(child)
+			if (typeof child === 'string')
+				items.push(desc)
+
+			if (isValidElement<SectionProps>(child)) {
+				if (child.type === Fragment) items.push(desc)
+				else if (child.type !== Button) items.push(child)
+				else if (buttons.length < 2) buttons.push(child)
+			}
 		}
 	})
 
-	const content: ReactNode[] = []
+	const content: ReactNode[] = [],
+		isHero = layout === 'hero'
 
 	if (!!items.length) {
-		const description = items.length > 1
-			? <div { ...styles('description') }>{ items }</div>
-			: items
-		const body = (
-			<div key="section-body" { ...styles('body') } { ...reveal.next() }>
-				{ description }
-			</div>
-		)
+		const [first] = items
+		let args = { ...styles('description') },
+			Tag: ElementType | undefined
+
+		if (items.length > 1) {
+			Tag = 'div'
+		} else if (isValidElement(first) && first.type === Fragment) {
+			args = { ...args, ...reveal.next() }
+			Tag = 'p'
+		}
+
+		const description = !!Tag?.length ? <Tag { ...args }>{ items }</Tag> : items,
+			body = <div key="section-body" { ...styles('body') }>{ description }</div>
 
 		content.push(body)
 	}
@@ -80,7 +91,7 @@ const orderSection = (
 				{ ...styles('cta') }
 				hasPriority={ buttons.length > 1 }
 				revealFrom={ reveal.reserve(buttons.length) }
-				size="lg"
+				size={ isHero ? 'lg' : 'md' }
 			>
 				{ buttons }
 			</Button.Group>
@@ -97,13 +108,13 @@ const buildSection = (
 	styles: ReturnType<typeof useStyles>,
 	reveal: RevealCounter
 ) => {
-	const { children, eyebrow, layout, title } = props,
+	const { eyebrow, layout, title } = props,
 		HTag = layout === 'hero' ? 'h1' : 'h2'
 
 	const tagline = !!eyebrow && <span { ...styles('eyebrow', true) } { ...reveal.next() }>{ eyebrow }</span>,
 		heading = !!title && <Box as={ HTag } { ...styles('title') } { ...reveal.next() }>{ title }</Box>
 
-	const content = orderSection(children, styles, reveal),
+	const content = orderSection(props, styles, reveal),
 		header = <>{ tagline }{ heading }</>,
 		inner = <>{ header }{ content }</>
 
@@ -123,24 +134,22 @@ const buildSection = (
 	}
 }
 
-const tokens = setThemeCSS<SectionSpecs>((theme, _props) => ({
-	root: {
-		'--reveal-duration': _props.duration ? `${_props.duration}ms` : undefined,
-		'--reveal-stagger': _props.stagger ? `${_props.stagger}ms` : undefined,
-	},
-}))
+const tokens = setThemeCSS<SectionSpecs>((theme, props) => {
+	const { duration, stagger } = props
+
+	return {
+		root: {
+			'--reveal-duration': duration ? `${duration}ms` : undefined,
+			'--reveal-stagger': stagger ? `${stagger}ms` : undefined,
+		},
+	}
+})
 
 export const Section = polymorphic<SectionSpecs>(_props => {
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { classes, props, tokens })
 
 	const {
-		animated,
-		duration,
-		revealed,
-		stagger,
-		withinView,
-		//
 		children,
 		eyebrow,
 		layout,
@@ -148,13 +157,7 @@ export const Section = polymorphic<SectionSpecs>(_props => {
 		...rest
 	} = props
 
-	const { others } = extractOtherProps(rest)
-
-	const { orderReveal, ref, root } = useReveal<HTMLElement>({
-		animated: animated && !props.unstyled,
-		revealed,
-		withinView,
-	})
+	const { others, ref, reveal } = useReveal<HTMLElement>(rest)
 
 	const module = {
 		[`${layout}`]: !!(layout && layout !== 'default')
@@ -164,11 +167,10 @@ export const Section = polymorphic<SectionSpecs>(_props => {
 		<Box
 			{ ...styles('root', { module }) }
 			{ ...others }
-			{ ...root }
 			as={ Container }
 			ref={ ref }
 		>
-			{ buildSection(props, styles, orderReveal()) }
+			{ buildSection(props, styles, reveal()) }
 		</Box>
 	)
 }, classes)
@@ -178,6 +180,7 @@ Section.Button = Button
 Section.setDefaults({
 	props: {
 		animated: true,
+		duration: 400,
 		layout: 'default',
 		stagger: 200,
 	}

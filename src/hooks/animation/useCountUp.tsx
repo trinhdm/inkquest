@@ -106,12 +106,10 @@ export const useCountUp = <T extends HTMLElement = HTMLElement>({
 	}, [count, enabled, parsed, reducedMotion, start])
 
 	useEffect(() => {
-		if (reducedMotion || !enabled || !parsed) return
-
-		if (!viewable) {
-			setDisplay(parsed.format(start))
+		if (!enabled || !parsed || reducedMotion)
 			return
-		}
+		else if (!viewable)
+			return setDisplay(parsed.format(start))
 
 		const options: ValueAnimationTransition<number> = {
 			...!!delay ? { delay: delay / 1000 } : {},

@@ -2,22 +2,21 @@
 
 import { useCallback, useRef, type RefObject } from 'react'
 import { useInView, useReducedMotion, type UseInViewOptions } from 'framer-motion'
+import { extractOtherProps } from '../../useProps'
 import {
 	revealItem, REVEAL_DATAKEYS, REVEAL_INVIEW,
 	type RevealCounter, type RevealItemProps, type RevealRootProps,
 } from './helpers'
+import type { AnimationOptions } from '../constants'
 
-interface UseRevealOptions extends UseInViewOptions {
-	animated?: boolean
-	revealed?: boolean
-	withinView?: boolean
-}
+interface UseRevealOptions
+	extends AnimationOptions {}
 
 interface RevealValue<T> {
 	item: (index: number) => RevealItemProps
-	orderReveal: () => RevealCounter
+	others: ReturnType<typeof extractOtherProps>['others'] & RevealRootProps
 	ref: RefObject<T | null>
-	root: RevealRootProps
+	reveal: () => RevealCounter
 	visible: boolean
 }
 
@@ -27,8 +26,10 @@ export const useReveal = <T extends HTMLElement = HTMLElement>({
 	once = true,
 	revealed,
 	withinView,
-	...rest
+	...props
 }: UseRevealOptions = {}): RevealValue<T> => {
+	const { duration, stagger, ...rest } = props
+
 	const node = useRef<T>(null),
 		idle = useRef<T>(null)
 
@@ -41,36 +42,35 @@ export const useReveal = <T extends HTMLElement = HTMLElement>({
 	// guard, since this returns `null` during SSR
 	const reducedMotion = useReducedMotion()
 
-	const visible = revealed ?? withinView ?? (!!reducedMotion || inView)
-	const { root: dataRoot } = REVEAL_DATAKEYS
+	const visible = revealed ?? withinView ?? (!!reducedMotion || inView),
+		isAnimated = animated && !rest.unstyled,
+		isVisible = !isAnimated || visible
 
-	// index is caller-assigned, never derived from the DOM — heterogeneous
-	// slots are built in visual order, so the caller is the only thing that
-	// knows the order (see `orderReveal` in Section.tsx)
 	const item = useCallback((index: number = 0): RevealItemProps => (
-		animated ? revealItem(index) : {}
-	), [animated])
+		isAnimated ? revealItem(index) : {}
+	), [isAnimated])
 
 	// hands back a FRESH counter on every call — call it once per render. Never
-	// hold the counter itself in a ref or memo: its cursor would carry over into
+	// hold the counter itself in a ref or memo: its `index` would carry over into
 	// the next render (and StrictMode's double render), starting that pass at N
 	const orderReveal = useCallback((): RevealCounter => {
-		let cursor = 0
+		let index = 0
 
 		return {
-			next: () => item(cursor++),
-			// `undefined` when not animated, so `ButtonGroup`'s `deriveReveal` emits nothing
+			next: () => item(index++),
 			reserve: total => {
-				if (!animated) return
-				const from = cursor
-				cursor += total
+				if (!isAnimated) return
+				const from = index
+				index += total
 				return from
 			},
 		}
-	}, [animated, item])
+	}, [isAnimated, item])
 
+	const { root: dataRoot } = REVEAL_DATAKEYS
+	const { others } = extractOtherProps(rest)
 
-	const attributes: RevealRootProps = animated
+	const attributes: RevealRootProps = isAnimated
 		? {
 			[dataRoot.base]: '',
 			...(visible ? { [dataRoot.active]: '' } as const : {}),
@@ -79,9 +79,9 @@ export const useReveal = <T extends HTMLElement = HTMLElement>({
 
 	return {
 		item,
-		orderReveal,
+		others: { ...others, ...attributes },
 		ref: node,
-		root: attributes,
-		visible: !animated || visible,
+		reveal: orderReveal,
+		visible: isVisible,
 	}
 }
