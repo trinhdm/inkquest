@@ -19,7 +19,7 @@ import {
 import { useReducedMotion } from 'framer-motion'
 import { useReplayInView } from '../useReplayInView'
 import { extractOtherProps } from '../../useProps'
-import { REVEAL_MARGIN, type AnimationInViewOptions } from '../constants'
+import type { AnimationInViewOptions } from '../constants'
 
 interface UseRevealOptions
 	extends AnimationInViewOptions {}
@@ -35,6 +35,7 @@ interface RevealValue<T> {
 export const useReveal = <T extends HTMLElement = HTMLElement>({
 	amount,
 	animated = true,
+	lead,
 	margin,
 	once,
 	withinView,
@@ -54,10 +55,9 @@ export const useReveal = <T extends HTMLElement = HTMLElement>({
 		idle = useRef<T>(null),
 		observer = typeof withinView === 'boolean' ? idle : node
 
-	const trigger = amount ?? 'some',
-		triggerMargin = margin ?? (amount === undefined ? REVEAL_MARGIN : undefined)
-
-	const viewOptions = { amount: trigger, margin: triggerMargin, once, ...rest }
+	// the trigger line itself is `useReplayInView`'s policy — pass the knobs
+	// through rather than resolving them here, so every observer agrees
+	const viewOptions = { amount, lead, margin, once, ...rest }
 
 	const reducedMotion = useReducedMotion(),	// guard is primarily handled by `@media` block
 		inView = useReplayInView(observer, viewOptions)

@@ -182,6 +182,8 @@ ul {
   *  selectors mirror `REVEAL_DATAKEYS` (src/hooks/animation/helpers.ts)
   */
 
+$animate-max: 99;
+
 @media (prefers-reduced-motion: no-preference) {
 	[data-js-animate] {
 		[data-js-reveal] {
@@ -190,7 +192,7 @@ ul {
 			--reveal-stagger: .2s;
 			--reveal-state: 0;
 
-			@for $i from 0 through 99 {
+			@for $i from 0 through $animate-max {
 				[data-reveal-item='#{$i}'] {
 					--reveal-index: #{$i};
 				}
@@ -199,6 +201,12 @@ ul {
 			[data-reveal-item] {
 				--reveal-delay: calc(var(--reveal-index, 0) * var(--reveal-stagger, 90ms));
 				--reveal-motion: var(--reveal-duration, var(--duration-gradual)) var(--easing-out) var(--reveal-delay);
+			}
+
+			[data-reveal-item='0'] {
+				--reveal-motion:
+					var(--reveal-duration-lead, calc(var(--reveal-duration, var(--duration-gradual)) * .7))
+					var(--easing-out) var(--reveal-delay);
 			}
 
 			&:not([data-revealed]) {

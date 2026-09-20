@@ -9,7 +9,9 @@ export {
 } from './useReveal'
 
 export {
-	REPLAY_REVEAL,
+	revealMargin,
+	REVEAL_LEAD,
 	type AnimationOptions,
 	type MaybeAnimationProps,
+	type ReplayInViewOptions,
 } from './constants'

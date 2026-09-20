@@ -5,6 +5,10 @@
 	padding-block: var(--inkq-section-padding);
 	position: relative;
 
+	&__eyebrow {
+		--reveal-duration-lead: .3s;
+	}
+
 	&__title {
 		letter-spacing: var(--inkq-font-tracking-display);
 		margin-top: var(--inkq-stack-gap-kicker);

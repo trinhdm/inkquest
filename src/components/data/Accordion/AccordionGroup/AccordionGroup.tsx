@@ -10,7 +10,6 @@ import {
 	useReplayInView,
 	useStyles,
 	extractOtherProps,
-	REPLAY_REVEAL,
 } from '@/hooks'
 
 import { filterChildren, withProvider } from '@/lib/component'
@@ -69,7 +68,7 @@ export const AccordionGroup = polymorphic<AccordionGroupSpecs>(_props => {
 	const { others } = extractOtherProps(rest)
 
 	const root = useRef<HTMLDivElement>(null)
-	const withinView = useReplayInView(root, REPLAY_REVEAL)
+	const withinView = useReplayInView(root)
 
 	const [openItems, setOpenItems] = useState<number[]>(() => {
 		const indices = handleOpenItems(defaultOpen)

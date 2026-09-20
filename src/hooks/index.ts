@@ -7,9 +7,11 @@ export {
 	useReplayInView,
 	useReveal,
 	revealItemFrom,
-	REPLAY_REVEAL,
+	revealMargin,
+	REVEAL_LEAD,
 	type AnimationOptions,
 	type MaybeAnimationProps,
+	type ReplayInViewOptions,
 	type RevealCounter,
 	type RevealItemProps,
 } from './animation'
