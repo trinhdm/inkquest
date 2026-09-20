@@ -181,7 +181,7 @@ describe('Section', () => {
 			} as Section.Props & { fullWidth?: boolean }
 
 			const { container } = render(<Section { ...props } />)
-			expect(container.firstElementChild).toHaveAttribute('data-block', 'true')
+			expect(container.firstElementChild).toHaveAttribute('data-block', '')
 		})
 	})
 

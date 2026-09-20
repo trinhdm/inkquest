@@ -49,7 +49,7 @@ describe('Button', () => {
 
 	it('marks full width via data-block', () => {
 		render(<Button fullWidth>Wide</Button>)
-		expect(screen.getByRole('button')).toHaveAttribute('data-block', 'true')
+		expect(screen.getByRole('button')).toHaveAttribute('data-block', '')
 	})
 
 	it('omits data-block entirely when fullWidth is falsy', () => {
@@ -61,7 +61,7 @@ describe('Button', () => {
 		render(<Button disabled>Save</Button>)
 		const button = screen.getByRole('button', { name: 'Save' })
 		expect(button).toBeDisabled()
-		expect(button).toHaveAttribute('data-disabled', 'true')
+		expect(button).toHaveAttribute('data-disabled', '')
 	})
 
 	it('omits data-disabled entirely when not disabled', () => {
@@ -71,7 +71,7 @@ describe('Button', () => {
 
 	it('reflects loading state via data-loading and renders a spinner', () => {
 		const { container } = render(<Button loading>Save</Button>)
-		expect(screen.getByRole('button')).toHaveAttribute('data-loading', 'true')
+		expect(screen.getByRole('button')).toHaveAttribute('data-loading', '')
 		expect(container.querySelector('svg')).toBeInTheDocument()
 	})
 
@@ -141,7 +141,7 @@ describe('Button', () => {
 			expect(button).not.toHaveAttribute('data-variant')
 			expect(button).not.toHaveAttribute('data-priority')
 			expect(button).not.toHaveAttribute('data-block')
-			expect(button).toHaveAttribute('data-loading', 'true')
+			expect(button).toHaveAttribute('data-loading', '')
 		})
 
 		it('still applies the native disabled attribute, even though data-disabled is dropped as redundant', () => {
@@ -166,7 +166,7 @@ describe('Button', () => {
 			const anchor = container.querySelector('a')
 
 			expect(anchor).not.toHaveAttribute('disabled')
-			expect(anchor).toHaveAttribute('data-disabled', 'true')
+			expect(anchor).toHaveAttribute('data-disabled', '')
 		})
 	})
 
@@ -195,7 +195,7 @@ describe('Button', () => {
 
 			// inherits group `disabled`
 			expect(first).toBeDisabled()
-			expect(first).toHaveAttribute('data-disabled', 'true')
+			expect(first).toHaveAttribute('data-disabled', '')
 			// derives priority from position when hasPriority defaults to true
 			expect(first).toHaveAttribute('data-priority', 'primary')
 

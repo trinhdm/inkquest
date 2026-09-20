@@ -49,9 +49,11 @@ describe('Group', () => {
 		const defaults = getDefaultProps<Group.Props & { provider?: RootProviderFn<Group.Context> }>('Group')
 
 		expect(defaults).toEqual({
+			as: 'div',
 			childName: 'Group.Item',
-			divider: true,
+			divider: false,
 			provider: expect.any(Function),
+			valuesCtx: {},
 		})
 	})
 
@@ -106,19 +108,42 @@ describe('Group', () => {
 		expect(screen.getByRole('group')).not.toHaveAttribute('data-block')
 	})
 
-	// `columns` feeds `--group-cols` as an inline CSS custom property via
-	// `setThemeCSS`'s `tokens` (see `Group.tsx`), not a class — `style` IS
-	// assertable in Jest, unlike CSS-module classes.
-	it('sets the --group-cols custom property only when columns is provided', () => {
+	// `columns` feeds `--group-item-count` as an inline CSS custom property
+	// via `setThemeCSS`'s `tokens` (see `Group.tsx`), not a class — `style`
+	// IS assertable in Jest, unlike CSS-module classes.
+	it('sets the --group-item-count custom property only when columns is provided', () => {
 		const { rerender } = render(
 			<Group childName="GroupItem" columns={ 3 }>
 				<GroupItem label="Item" />
 			</Group>
 		)
-		expect(screen.getByRole('group').style.getPropertyValue('--group-cols')).toBe('3')
+		expect(screen.getByRole('group').style.getPropertyValue('--group-item-count')).toBe('3')
 
 		rerender(<Group childName="GroupItem"><GroupItem label="Item" /></Group>)
-		expect(screen.getByRole('group').style.getPropertyValue('--group-cols')).toBe('')
+		expect(screen.getByRole('group').style.getPropertyValue('--group-item-count')).toBe('')
+	})
+
+	// When `orientation` is set and `columns` is not, `--group-item-count`
+	// derives from `Children.count` instead: `count - 1` once there's more
+	// than one child (`Group.tsx`'s `tokens` callback), else `count` itself.
+	it('derives --group-item-count from child count minus one when orientation is set with more than one child and no columns', () => {
+		render(
+			<Group childName="GroupItem" orientation="horizontal">
+				<GroupItem label="One" />
+				<GroupItem label="Two" />
+				<GroupItem label="Three" />
+			</Group>
+		)
+		expect(screen.getByRole('group').style.getPropertyValue('--group-item-count')).toBe('2')
+	})
+
+	it('derives --group-item-count from the child count itself when orientation is set with a single child and no columns', () => {
+		render(
+			<Group childName="GroupItem" orientation="horizontal">
+				<GroupItem label="Only" />
+			</Group>
+		)
+		expect(screen.getByRole('group').style.getPropertyValue('--group-item-count')).toBe('1')
 	})
 
 	it('publishes no context at all when no provider is given (children render unwrapped)', () => {

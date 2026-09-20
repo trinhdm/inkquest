@@ -35,7 +35,7 @@ describe('Accordion', () => {
 		await user.click(title)
 
 		expect(title).toHaveAttribute('aria-expanded', 'true')
-		expect(title).toHaveAttribute('data-open', 'true')
+		expect(title).toHaveAttribute('data-open', '')
 	})
 
 	it('toggles closed again on a second click when uncontrolled', async () => {
@@ -143,5 +143,46 @@ describe('Accordion', () => {
 		expect(spy).toHaveBeenCalled()
 		expect(screen.queryByRole('button')).not.toBeInTheDocument()
 		spy.mockRestore()
+	})
+
+	it('warns about a missing Accordion.Title when there are no matching children at all', () => {
+		const spy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+		render(<Accordion>{ null }</Accordion>)
+
+		expect(spy).toHaveBeenCalledWith(expect.stringContaining('no Accordion.Title found'))
+		spy.mockRestore()
+	})
+
+	it('warns about multiple Accordion.Title/Accordion.Content found when more than one of each is given', () => {
+		const spy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+		render(
+			<Accordion>
+				<Accordion.Title>One</Accordion.Title>
+				<Accordion.Title>Two</Accordion.Title>
+				<Accordion.Content>Body</Accordion.Content>
+			</Accordion>
+		)
+
+		expect(spy).toHaveBeenCalledWith(expect.stringContaining('multiple Accordion.Title, Accordion.Content found'))
+		spy.mockRestore()
+	})
+
+	it('warns about children outside of Title/Content when an unrelated element is also passed', () => {
+		const spy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+		render(
+			<Accordion>
+				<Accordion.Title>Section title</Accordion.Title>
+				<Accordion.Content>Section body</Accordion.Content>
+				<div>Extra child</div>
+			</Accordion>
+		)
+
+		expect(spy).toHaveBeenCalledWith(expect.stringContaining('children outside of Accordion.Title, Accordion.Content detected'))
+		spy.mockRestore()
+	})
+
+	it('renders an unpadded step number (no leading zero) once the index reaches double digits', () => {
+		render(buildAccordion({ layout: 'steps', index: 9 }))
+		expect(screen.getByText('10')).toBeInTheDocument()
 	})
 })

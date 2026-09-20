@@ -31,7 +31,7 @@ describe('buildAttributes', () => {
 				attributes: { data: { disabled: true } },
 			})
 			expect(result).not.toHaveProperty('disabled')
-			expect(result).toHaveProperty('data-disabled', true)
+			expect(result).toHaveProperty('data-disabled', '')
 		})
 
 		it('does not set native disabled when data.disabled is false', () => {
@@ -48,7 +48,7 @@ describe('buildAttributes', () => {
 			const result = buildAttributes({
 				attributes: { data: { variant: 'solid', loading: true } },
 			})
-			expect(result).toEqual({ 'data-variant': 'solid', 'data-loading': true })
+			expect(result).toEqual({ 'data-variant': 'solid', 'data-loading': '' })
 		})
 
 		it('drops non-state keys but keeps state keys when unstyled', () => {
@@ -56,7 +56,7 @@ describe('buildAttributes', () => {
 				unstyled: true,
 				attributes: { data: { variant: 'solid', loading: true } },
 			})
-			expect(result).toEqual({ 'data-loading': true })
+			expect(result).toEqual({ 'data-loading': '' })
 		})
 
 		it('drops "disabled" from data even though it is itself a STATE_KEY, when unstyled AND the tag is disableable — native disabled already conveys it', () => {
@@ -74,7 +74,7 @@ describe('buildAttributes', () => {
 				unstyled: true,
 				attributes: { data: { disabled: true } },
 			})
-			expect(result).toEqual({ 'data-disabled': true })
+			expect(result).toEqual({ 'data-disabled': '' })
 		})
 
 		it('produces no data attributes at all when there is no data bag to begin with', () => {

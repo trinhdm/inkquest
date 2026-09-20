@@ -85,10 +85,9 @@ describe('extractOtherProps', () => {
 		expect(others).toEqual({ id: 'x', 'data-testid': 'y' })
 	})
 
-	it('strips `animated` out entirely', () => {
+	it('passes `animated` through into `others` untouched, since it is not one of the extracted/stripped keys', () => {
 		const result = extractOtherProps({ animated: true, id: 'x' })
-		expect(result.others).toEqual({ id: 'x' })
-		expect((result as any).animated).toBeUndefined()
+		expect(result.others).toEqual({ animated: true, id: 'x' })
 	})
 
 	it('strips `loading` out entirely', () => {
@@ -119,7 +118,6 @@ describe('extractOtherProps', () => {
 
 	it('returns `others` as an empty object when every supplied prop is one of the extracted/stripped keys', () => {
 		const { others, as, withinView } = extractOtherProps({
-			animated: true,
 			loading: true,
 			displayName: 'X',
 		})

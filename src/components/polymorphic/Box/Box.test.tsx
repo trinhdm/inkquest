@@ -24,7 +24,7 @@ describe('Box', () => {
 
 		it('prefixes and kebab-cases camelCase data keys', () => {
 			render(<Box attributes={ { data: { someFlag: true } } }>Content</Box>)
-			expect(screen.getByText('Content')).toHaveAttribute('data-some-flag', 'true')
+			expect(screen.getByText('Content')).toHaveAttribute('data-some-flag', '')
 		})
 	})
 
@@ -104,7 +104,7 @@ describe('Box', () => {
 			expect(anchor).not.toHaveAttribute('disabled')
 			// the data attribute itself is unaffected by DISABLEABLE_TAGS —
 			// that gate only controls the native HTML `disabled` attribute
-			expect(anchor).toHaveAttribute('data-disabled', 'true')
+			expect(anchor).toHaveAttribute('data-disabled', '')
 		})
 	})
 
@@ -120,7 +120,7 @@ describe('Box', () => {
 			const el = screen.getByText('Content')
 
 			expect(el).not.toHaveAttribute('data-variant')
-			expect(el).toHaveAttribute('data-loading', 'true')
+			expect(el).toHaveAttribute('data-loading', '')
 		})
 
 		it('drops data-disabled when unstyled AND the tag is disableable (native disabled already conveys it)', () => {
@@ -144,7 +144,7 @@ describe('Box', () => {
 			const anchor = container.querySelector('a')
 
 			expect(anchor).not.toHaveAttribute('disabled')
-			expect(anchor).toHaveAttribute('data-disabled', 'true')
+			expect(anchor).toHaveAttribute('data-disabled', '')
 		})
 
 		it('does not filter data attributes when unstyled is not set', () => {

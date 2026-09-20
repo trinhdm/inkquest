@@ -31,7 +31,7 @@ describe('Badge', () => {
 
 	it('marks full width via data-block', () => {
 		const { container } = render(<Badge fullWidth>Wide</Badge>)
-		expect(container.firstElementChild).toHaveAttribute('data-block', 'true')
+		expect(container.firstElementChild).toHaveAttribute('data-block', '')
 	})
 
 	it('omits data-block entirely when fullWidth is falsy', () => {

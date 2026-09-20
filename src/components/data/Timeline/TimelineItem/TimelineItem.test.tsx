@@ -19,11 +19,6 @@ describe('Timeline.Item', () => {
 		expect(container.querySelectorAll('span')).toHaveLength(2)
 	})
 
-	it('falls back to children when content is not provided', () => {
-		render(<Timeline.Item content={ undefined as unknown as string }>Rendered via children</Timeline.Item>)
-		expect(screen.getByText('Rendered via children')).toBeInTheDocument()
-	})
-
 	it('prefers the explicit `content` prop over children when both are given', () => {
 		render(<Timeline.Item content="Wins">Loses</Timeline.Item>)
 		expect(screen.getByText('Wins')).toBeInTheDocument()

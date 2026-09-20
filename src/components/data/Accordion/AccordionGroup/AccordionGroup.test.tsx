@@ -137,6 +137,26 @@ describe('Accordion.Group', () => {
 		expect(first).toHaveFocus()
 	})
 
+	it('closes an item in type="multiple" mode when it is clicked again (removes it from openItems)', async () => {
+		const user = userEvent.setup()
+		render(
+			<Accordion.Group defaultOpen={ [] } type="multiple">
+				{ item('One', 'First body') }
+				{ item('Two', 'Second body') }
+			</Accordion.Group>
+		)
+
+		const [first, second] = screen.getAllByRole('button')
+		await user.click(first)
+		await user.click(second)
+		expect(first).toHaveAttribute('aria-expanded', 'true')
+		expect(second).toHaveAttribute('aria-expanded', 'true')
+
+		await user.click(first)
+		expect(first).toHaveAttribute('aria-expanded', 'false')
+		expect(second).toHaveAttribute('aria-expanded', 'true')
+	})
+
 	it('drops children that are not Accordion instances', () => {
 		render(
 			<Accordion.Group>

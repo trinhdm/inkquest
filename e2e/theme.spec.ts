@@ -23,10 +23,33 @@ const SCHEME_STORAGE_KEY = 'inkq-scheme'
 const JS_ANIMATE_ATTR = 'data-js-animate'
 
 test.describe('color scheme persistence', () => {
-	test('defaults to the dark color scheme when nothing is stored yet', async ({ page }) => {
-		await page.goto('/')
+	// TEST BUG FIX, verified against the live `buildScript.ts`: the injected
+	// script does NOT hardcode `DEFAULT_COLOR_SCHEME` ('dark') when nothing is
+	// stored — it falls back to `window.matchMedia('(prefers-color-scheme:
+	// dark)')`. Playwright's default browser context emulates a `light`
+	// system preference (Chromium's own default), so against an unstored
+	// scheme this assertion previously observed `data-inkq-scheme="light"`,
+	// not `"dark"` — a wrong assumption in the test, not a product bug.
+	// `test.use({ colorScheme: 'dark' })` makes the scenario this test name
+	// actually describes ("nothing stored, OS prefers dark") deterministic.
+	test.describe('with the OS/browser color-scheme preference set to dark', () => {
+		test.use({ colorScheme: 'dark' })
 
-		await expect(page.locator('html')).toHaveAttribute(SCHEME_ATTR, 'dark')
+		test('follows the system dark preference when nothing is stored yet', async ({ page }) => {
+			await page.goto('/')
+
+			await expect(page.locator('html')).toHaveAttribute(SCHEME_ATTR, 'dark')
+		})
+	})
+
+	test.describe('with the OS/browser color-scheme preference set to light', () => {
+		test.use({ colorScheme: 'light' })
+
+		test('follows the system light preference when nothing is stored yet', async ({ page }) => {
+			await page.goto('/')
+
+			await expect(page.locator('html')).toHaveAttribute(SCHEME_ATTR, 'light')
+		})
 	})
 
 	test('stamps data-js-animate on the document element once the injected script has run', async ({ page }) => {
