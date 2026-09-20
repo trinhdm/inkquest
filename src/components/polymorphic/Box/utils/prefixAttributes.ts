@@ -28,9 +28,13 @@ export const prefixAttributes = <T extends Record<string, any>, S extends string
 	if (!attributes) return {}
 	const attrs = Object.entries(attributes)
 
-	return attrs.reduce<PrefixedAttributes<T, S>>((acc, [key, value]) => {
-		const k = toAttributeName(`${prefix}-${key}`) as keyof PrefixedAttributes<T, S>
-		if (hasValue(value)) acc[k] = value
+	return attrs.reduce<PrefixedAttributes<T, S>>((acc, [k, v]) => {
+		if (hasValue(v)) {
+			const key = toAttributeName(`${prefix}-${k}`) as keyof PrefixedAttributes<T, S>,
+				value = prefix.includes('data') && typeof v === 'boolean' && v ? '' : v
+			acc[key] = value
+		}
+
 		return acc
 	}, {} as PrefixedAttributes<T, S>)
 }
