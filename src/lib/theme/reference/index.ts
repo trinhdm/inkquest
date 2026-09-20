@@ -5,3 +5,5 @@ export {
 	semanticTokens,
 	type SemanticTokens,
 } from './semantic'
+
+export { shorthandTokens, type ShorthandTokens } from './shorthand'

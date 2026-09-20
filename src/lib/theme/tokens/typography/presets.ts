@@ -20,8 +20,8 @@ interface LayoutFontGroup {
 export interface FontPresetTokens {
 	h1: FluidFontGroup
 	h2: FluidFontGroup
-	h3: FontProperties
-	h4: FontProperties
+	h3: FluidFontGroup
+	h4: FluidFontGroup
 	body: FontProperties
 	section: LayoutFontGroup
 	label: FontProperties
@@ -91,14 +91,28 @@ export const getFontPresetTokens = (): FontPresetTokens => {
 			},
 		},
 		h3: {
-			...headingSharedProps,
-			fontSize: 	alias.fontSize('heading', 'h3'),
+			base: {
+				...headingSharedProps,
+				fontSize: 	alias.fontSize('heading', 'h3'),
+			},
+			fluid: {
+				...displaySharedProps,
+				fontSize: 	`clamp(${alias.fontSize('heading', 'h3')}, 3vw, ${alias.fontSize('heading', 'h2')})`,
+			},
 		},
 		h4: {
-			...headingSharedProps,
-			fontSize: 	alias.fontSize('heading', 'h4'),
-			fontWeight: base.fontWeight('700'),
-			lineHeight: alias.lineHeight('label'),
+			base: {
+				...headingSharedProps,
+				fontSize: 	alias.fontSize('heading', 'h4'),
+				fontWeight: base.fontWeight('700'),
+				lineHeight: alias.lineHeight('label'),
+			},
+			fluid: {
+				...displaySharedProps,
+				fontSize: 	`clamp(${alias.fontSize('heading', 'h4')}, 3vw, ${alias.fontSize('heading', 'h3')})`,
+				fontWeight: base.fontWeight('700'),
+				lineHeight: alias.lineHeight('label'),
+			},
 		},
 		body: {
 			...contentSharedProps,

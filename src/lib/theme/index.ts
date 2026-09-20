@@ -6,7 +6,7 @@ export {
 } from './scales'
 
 export { buildSchemes } from './buildSchemes'
-export { semanticTokens as tokens } from './reference'
+export { semanticTokens as tokens, shorthandTokens as presets } from './reference'
 export { setThemeCSS, type ThemeCSSConfig } from './setThemeCSS'
 
 export type {

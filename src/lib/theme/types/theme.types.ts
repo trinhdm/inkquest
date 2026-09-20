@@ -2,7 +2,7 @@ import { COLOR_TOKENS, THEME_SCHEMES } from '../scales'
 import type { CSSProperties } from 'react'
 import type { AtLeastOneKeyOf } from '@/types/utils'
 import type { CSSVars, HexCode, Unit } from '@/types/shared'
-import type { SemanticTokens } from '../reference'
+import type { SemanticTokens, ShorthandTokens } from '../reference'
 
 export type ThemeName =
 	typeof THEME_SCHEMES[number]
@@ -50,12 +50,15 @@ export interface SiteTheme {
 
 export interface SiteThemeConfig
 	extends SemanticTokens {
+	// css: SemanticTokens
+	prefix?: string
+	presets: ShorthandTokens
+
 	prefixSelector: (name: string) => string
 
-	prefix?: string
-	subcomponents?: Record<string, {
-		cssVars?: (theme: SiteTheme, props: unknown, ctx: unknown) => Partial<Record<string, CSSVars>>
-	}>
+	// subcomponents?: Record<string, {
+	// 	cssVars?: (theme: SiteTheme, props: unknown, ctx: unknown) => Partial<Record<string, CSSVars>>
+	// }>
 }
 
 type ThemeSizeScale =

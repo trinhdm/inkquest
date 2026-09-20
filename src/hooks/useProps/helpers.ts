@@ -1,5 +1,5 @@
 import cx from 'clsx'
-import type { CSSProperties, ElementType } from 'react'
+import type { CSSProperties, ElementType, ReactNode } from 'react'
 import type { DistributiveOmit } from '@/types/utils'
 import type { SpecsContract } from '@/components/polymorphic'
 
@@ -65,9 +65,9 @@ export const styleProps = <T extends object>(
 }
 
 type OtherPropsList<E extends ElementType> = {
-	animated?: boolean
 	as?: E
 	childName?: string
+	children?: ReactNode
 	displayName?: string
 	loading?: boolean
 	once?: boolean
@@ -80,6 +80,7 @@ type OtherProps<E extends ElementType> =
 
 type ExtractOtherPropNames =
 	| 'as'
+	| 'children'
 	| 'withinView'
 
 type OtherExtractedProps<E extends ElementType> =
@@ -92,9 +93,9 @@ function extractOthers<T extends object, E extends ElementType = ElementType>(
 }
 function extractOthers(rest: OtherProps<ElementType>) {
 	const {
-		animated,
 		as,
 		childName,
+		children,
 		className,
 		classNames,
 		displayName,

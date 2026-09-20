@@ -1,5 +1,5 @@
 import { deepMerge } from '@/utils/helpers/objects'
-import { tokens, type SiteThemeConfig } from '@/lib/theme'
+import { presets, tokens, type SiteThemeConfig } from '@/lib/theme'
 import { toKebabCase } from '@/utils/helpers'
 
 // interface ThemeValidator<T,> {
@@ -42,7 +42,13 @@ export const handleTheme = <T extends object>(
 	prefix?: string
 ): SiteThemeConfig & { config: T } => {
 	const prefixSelector = (name: string) => getPrefixSelector(name, prefix)
-	const options: SiteThemeConfig & { config: T }= { ...tokens, config: theme, prefix, prefixSelector }
+	const options: SiteThemeConfig & { config: T }= {
+		...tokens,
+		config: theme,
+		prefix,
+		prefixSelector,
+		presets,
+	}
 
 	return options
 }
