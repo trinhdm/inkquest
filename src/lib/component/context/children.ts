@@ -1,7 +1,15 @@
 import {
-	isValidElement, Children, Fragment,
-	type ComponentType, type Key, type ReactNode,
+	isValidElement,
+	Children,
+	Fragment,
+	type ComponentType,
+	type Key,
+	type ReactNode,
 } from 'react'
+
+interface WithChildren {
+	children?: ReactNode
+}
 
 export const getChildKey = (child: ReactNode, index: number): Key =>
 	isValidElement(child) && child.key !== null ? child.key : index
@@ -11,7 +19,7 @@ export const filterChildren = (
 	displayName: string | string[]
 ): ReactNode[] => (
 	Children.toArray(children).flatMap<ReactNode>(child => {
-		if (isValidElement<{ children?: ReactNode }>(child)) {
+		if (isValidElement<WithChildren>(child)) {
 			if (child.type === Fragment)
 				return filterChildren(child.props.children, displayName)
 
@@ -35,9 +43,26 @@ export const extractChildrenText = (children: ReactNode): string => {
 	Children.toArray(children).forEach(child => {
 		if (typeof child === 'string' || typeof child === 'number')
 			text += `${child}`
-		else if (isValidElement<{ children?: ReactNode }>(child) && 'children' in child.props)
+		else if (isValidElement<WithChildren>(child) && 'children' in child.props)
 			text += extractChildrenText(child.props?.children as ReactNode)
 	})
 
 	return text.trim()
+}
+
+export const countChildren = (
+	children: ReactNode,
+	childName?: string,
+): number => {
+	if (!childName) return Children.count(children)
+	const arrChildren = Children.toArray(children)
+
+	return arrChildren.reduce<number>((count, child) => {
+		if (isValidElement<WithChildren>(child)) {
+			if (childName === (child.type as ComponentType).displayName)
+				return count + 1
+		}
+
+		return count
+	}, 0)
 }
