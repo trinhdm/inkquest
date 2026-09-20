@@ -59,7 +59,7 @@ export const Statistic = polymorphic<StatisticSpecs>(_props => {
 	})
 
 	const { as, others } = extractOtherProps(rest)
-	const global = { highlight }
+	const global = { highlight, item: true }
 
 	return (
 		<Box

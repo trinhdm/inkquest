@@ -25,7 +25,7 @@ type ButtonSectionSpecs = {
 }
 
 export const ButtonSection = polymorphic<ButtonSectionSpecs>(_props => {
-	const { rootName } = useButtonCtx(NAME)
+	const { baseName, rootName } = useButtonCtx(NAME)
 	const props = useProps(NAME, _props)
 	const styles = useStyles(rootName, { classes, props })
 
@@ -36,7 +36,7 @@ export const ButtonSection = polymorphic<ButtonSectionSpecs>(_props => {
 
 	return (
 		<Box
-			{ ...styles('section') }
+			{ ...styles(baseName) }
 			{ ...others }
 			as="span"
 			attributes={ { data } }

@@ -78,7 +78,7 @@ export const getGridTokens = (): GridTokens => ({
 		padding: base.space('15'),
 
 		gap: {
-			kicker: base.space('6'),
+			kicker: base.space('5'),
 			head: base.space('11'),
 			lede: base.space('7'),
 			cta: base.space('9'),

@@ -71,6 +71,14 @@ ul {
 	width: 100%;
 }
 
+.inkq-item {
+	align-items: flex-start;
+	display: flex;
+	flex-direction: column;
+	padding: var(--space-10) var(--space-8);
+	row-gap: var(--space-1);
+}
+
 .inkq-block {
 	&,
 	&:where([data-block]) {

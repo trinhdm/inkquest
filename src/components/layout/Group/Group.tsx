@@ -3,6 +3,8 @@ import { useProps, useReplayInView, useStyles, extractOtherProps } from '@/hooks
 import { filterChildren, withProvider, type RootProviderFn } from '@/lib/component'
 import { polymorphic, Box } from '@/components/polymorphic'
 import { setThemeCSS } from '@/lib/theme'
+import { GroupItem } from './GroupItem'
+import { GroupProvider, type GroupContext } from './Group.context'
 import type { UseInViewOptions } from 'framer-motion'
 import classes from './Group.module.scss'
 
@@ -11,7 +13,7 @@ const NAME = 'Group' as const,
 
 interface BaseGroupProps
 	extends Pick<UseInViewOptions, 'amount' | 'once'> {
-	childName: string
+	childName?: string
 	children: ReactNode
 	columns?: number
 	divider?: boolean
@@ -19,18 +21,21 @@ interface BaseGroupProps
 	justify?: CSSProperties['justifyContent']
 	orientation?: 'horizontal' | 'vertical'
 	provider?: RootProviderFn<GroupContext>
-	revealed?: boolean
 }
 
 interface AnimatedGroupProps {
 	animated: true
 	duration: number
+	once?: boolean
+	revealed?: boolean
 	stagger?: number
 }
 
 interface StaticGroupProps {
 	animated?: never
 	duration?: never
+	once?: never
+	revealed?: never
 	stagger?: never
 }
 
@@ -40,18 +45,11 @@ type GroupProps = BaseGroupProps & (
 )
 
 type GroupSpecs = {
-	isCompound: true
+	defaults: { props: 'childName' | 'divider' | 'provider' }
 	props: GroupProps
-}
-
-interface GroupContext {
-	animated?: boolean
-	duration?: number
-	index?: number
-	revealed?: boolean
-	stagger?: number
-	unstyled?: boolean
-	withinView?: boolean
+	subcomponents: {
+		Item: typeof GroupItem
+	}
 }
 
 const tokens = setThemeCSS<GroupSpecs>((theme, _props) => {
@@ -92,6 +90,12 @@ export const Group = polymorphic<GroupSpecs>(_props => {
 		[`${orientation}`]: !!orientation,
 	}
 
+	const aria = { orientation }
+	const data = {
+		block: !!fullWidth || null,
+		divide: !!divider || null,
+	}
+
 	const items = filterChildren(children, childName),
 		total = items.length
 
@@ -114,12 +118,9 @@ export const Group = polymorphic<GroupSpecs>(_props => {
 			{ ...styles('root', { module }) }
 			{ ...others }
 			as={ DEFAULT_TAG }
-			attributes={ {
-				aria: { orientation },
-				data: { block: !!fullWidth || null },
-			} }
-			role="group"
+			attributes={ { aria, data } }
 			ref={ root }
+			role="group"
 		>
 			{ withProvider(items, Provider, ctxValues) }
 		</Box>
@@ -127,10 +128,22 @@ export const Group = polymorphic<GroupSpecs>(_props => {
 }, classes)
 
 Group.displayName = NAME
-Group.setDefaults({})
+Group.Item = GroupItem
+Group.setDefaults({
+	props: {
+		childName: GroupItem.displayName,
+		divider: true,
+		provider: GroupProvider,
+	}
+})
 
 export declare namespace Group {
 	export type Context = GroupContext
 	export type Props = GroupProps
 	export type Specs = GroupSpecs
+
+	export namespace Item {
+		export type Props = GroupItem.Props
+		export type Specs = GroupItem.Specs
+	}
 }
