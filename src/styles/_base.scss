@@ -5,16 +5,42 @@ body {
 	font-smooth: antialiased;
 }
 
-h1 {
+h1,
+.inkq-h1 {
 	font: var(--inkq-text-h1-fluid);
+	text-wrap: pretty;
 }
 
-h2 {
+h2,
+.inkq-h2 {
 	font: var(--inkq-text-h2-fluid);
+	text-wrap: pretty;
 }
 
-h3 {
-	font: var(--inkq-text-h3-fluid);
+h3,
+.inkq-h3 {
+	// font: var(--inkq-text-h3-fluid);
+	font: var(--inkq-text-h3);
+	text-wrap: pretty;
+}
+
+h4,
+.inkq-h4 {
+	font: var(--inkq-text-h4);
+	letter-spacing: var(--inkq-font-tracking-display);
+	text-wrap: pretty;
+}
+
+h5,
+.inkq-h5 {
+	font: var(--inkq-text-h5);
+	text-wrap: pretty;
+}
+
+h6,
+.inkq-h6 {
+	font: var(--inkq-text-h6);
+	text-wrap: pretty;
 }
 
 a:where(:not([class])) {
@@ -52,6 +78,18 @@ ul {
 	background: var(--inkq-color-action-select, var(--inkq-color-action));
 	color: var(--inkq-color-text-on-accent);
 }
+
+:focus-visible {
+	border-radius: var(--inkq-border-radius-chip);
+	outline: 2px solid var(--inkq-color-action);
+	outline-offset: .125rem;
+}
+
+// button:focus-visible {
+// 	border: none;
+// 	border-color: transparent;
+// 	border-image-width: 0;
+// }
 
 :disabled,
 [aria-disabled="true"],
@@ -95,7 +133,9 @@ ul {
 }
 
 .inkq-eyebrow {
+	display: inline-block;
 	font: var(--inkq-text-section-eyebrow);
+	text-wrap: pretty;
 }
 
 .inkq-caption {
@@ -109,8 +149,8 @@ ul {
 
 
 /**
- *	hard-coded token backups
- *	in case stylesheets fail to inject
+  *	 hard-coded token backups
+  *	 in case stylesheets fail to inject
  */
 
 [data-variant^="danger"] {

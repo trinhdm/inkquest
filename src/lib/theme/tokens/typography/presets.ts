@@ -77,7 +77,7 @@ export const getFontPresetTokens = (): FontPresetTokens => {
 			},
 			fluid: {
 				...displaySharedProps,
-				fontSize: 	`clamp(${alias.fontSize('heading', 'h1')}, 5vw, ${alias.fontSize('display')})`,
+				fontSize: 	`clamp(${alias.fontSize('heading', 'h1')}, 4vw, ${alias.fontSize('display')})`,
 			},
 		},
 		h2: {
@@ -87,7 +87,7 @@ export const getFontPresetTokens = (): FontPresetTokens => {
 			},
 			fluid: {
 				...displaySharedProps,
-				fontSize: 	`clamp(${alias.fontSize('heading', 'h2')}, 2.5vw, ${alias.fontSize('heading', 'h1')})`,
+				fontSize: 	`clamp(${alias.fontSize('heading', 'h2')}, 3vw, ${alias.fontSize('heading', 'h1')})`,
 			},
 		},
 		h3: {
@@ -97,6 +97,7 @@ export const getFontPresetTokens = (): FontPresetTokens => {
 		h4: {
 			...headingSharedProps,
 			fontSize: 	alias.fontSize('heading', 'h4'),
+			fontWeight: base.fontWeight('700'),
 			lineHeight: alias.lineHeight('label'),
 		},
 		body: {

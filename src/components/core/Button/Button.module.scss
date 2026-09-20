@@ -17,7 +17,6 @@
 	letter-spacing: var(--inkq-font-tracking-stat);
 	max-height: var(--button-height, 'none');
 	overflow: hidden;
-	padding: var(--button-padding);
 	position: relative;
 	text-decoration: none;
 	touch-action: manipulation;
@@ -31,6 +30,7 @@
 		display: flex;
 		gap: var(--inkq-space-chip);
 		justify-content: center;
+		padding: var(--button-padding);
 		position: relative;
 	}
 
@@ -102,17 +102,17 @@
 	}
 
 	&--md {
-		--button-height: 3rem;
-		--button-padding: var(--inkq-pad-chip);
+		--button-height: 2.875rem;
+		--button-padding: var(--space-3) var(--space-5);
 
-		font-size: var(--inkq-text-size-body);
+		font-size: var(--inkq-font-size-body);
 	}
 
 	&--lg {
 		--button-height: 3.375rem;
 		--button-padding: var(--inkq-pad-block);
 
-		font-size: var(--inkq-text-size-body);
+		font-size: var(--inkq-font-size-body);
 	}
 }
 
