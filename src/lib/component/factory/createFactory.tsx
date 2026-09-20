@@ -7,41 +7,44 @@ import {
 } from 'react'
 
 import { setDefaultProps } from '@/hooks/useProps'
-import type { AsPolymorphic, IsPolymorphic, SpecDefaultProps, Specs } from './specs.types'
+import { POLYMORPHIC_MARKER } from './constants'
+import type { AsPolymorphic, SpecDefaultProps, Specs } from './types'
 import type { DistributiveOmit, WithDefaults } from '@/types/utils'
 
-type _FactoryProps<S extends Specs> =
+type _CommonProps = {
+	children?: ReactNode
+	className?: string
+	style?: CSSProperties
+	unstyled?: boolean
+}
+
+type _ComponentProps<S extends Specs> =
 	S['props']
 	& AsPolymorphic<S>
-	& {
-		children?: ReactNode
-		className?: string
-		style?: CSSProperties
-		unstyled?: boolean
-	}
+	& _CommonProps
 
-type _Component<S extends Specs> =
-	NamedExoticComponent<_FactoryProps<S>>
-
-type _BodyProps<S extends Specs> =
-	WithDefaults<_FactoryProps<S>, SpecDefaultProps<S>>
+type _AsDefaultProps<S extends Specs> =
+	AsPolymorphic<S> extends { as?: never }
+		? { as?: never }
+		: Required<AsPolymorphic<S>>
 
 type _DefaultProps<S extends Specs> =
 	Partial<DistributiveOmit<S['props'], 'as'>>
 	& Required<Pick<S['props'], SpecDefaultProps<S> & keyof S['props']>>
-	& (IsPolymorphic<S> extends true
-		? Required<AsPolymorphic<S>>
-		: { as?: never })
+	& _AsDefaultProps<S>
 
 type _MethodSetDefault<S extends Specs> =
 	[SpecDefaultProps<S>] extends [never]
 		? { props?: _DefaultProps<S> }
 		: { props: _DefaultProps<S> }
 
+type _Component<S extends Specs> =
+	NamedExoticComponent<_ComponentProps<S>>
+
 export interface MethodsBase<
 	S extends Specs,
 	C = _Component<S>,
-	P = _FactoryProps<S>,
+	P = _ComponentProps<S>,
 	D = _MethodSetDefault<S>
 > {
 	classes?: Record<string, string>
@@ -61,19 +64,20 @@ type _FactoryComponent<S extends Specs> =
 	& SubcomponentsBase<S>
 	& MethodsBase<S>
 
-export const POLYMORPHIC = Symbol.for('inkq.polymorphic')
+type _FactoryProps<S extends Specs> =
+	WithDefaults<_ComponentProps<S>, SpecDefaultProps<S>>
 
-export const factory = <
+export const createFactory = <
 	T extends Specs,
 	C extends object = _FactoryComponent<T>
 >(
-	target: (props: _BodyProps<T>) => ReactNode,
+	target: (props: _FactoryProps<T>) => ReactNode,
 	classes?: Record<string, string>
 ) => {
 	type FC = _FactoryComponent<T>
 
 	const BaseComponent = memo(target) as unknown as FC
-	Object.defineProperty(BaseComponent, POLYMORPHIC, { value: true })
+	Object.defineProperty(BaseComponent, POLYMORPHIC_MARKER, { value: true })
 
 	if (classes) BaseComponent.classes = classes
 

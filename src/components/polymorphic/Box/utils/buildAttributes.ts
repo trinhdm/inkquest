@@ -1,4 +1,5 @@
-import { hasValue, keyHasValue, toKebabCase } from '@/utils/helpers'
+import { keyHasValue } from '@/utils/helpers'
+import { prefixAttributes } from './prefixAttributes'
 import type { ElementType } from 'react'
 import type { SpecAttributes } from '@/types/shared'
 
@@ -7,43 +8,6 @@ export interface AttrSource {
 	as?: ElementType
 	attributes?: SpecAttributes
 	unstyled?: boolean
-}
-
-type DataSpecs = SpecAttributes['data']
-
-type PrefixedAttributes<T extends Record<string, any>, S extends string> = {
-	[K in keyof T as `${S}-${string & K}`]?: T[K]
-}
-
-const formatAttribute = (key: string) => {
-	let attribute = key,
-		parts = [] as string[],
-		prefix = ''
-
-	if (key.startsWith('aria-') || key.startsWith('data-')) {
-		([prefix, ...parts] = key.split('-'))
-		attribute = parts.join('-')
-		parts = [prefix]
-	}
-
-	attribute = toKebabCase(attribute)
-	parts.push(attribute)
-
-	return parts.join('-')
-}
-
-const prefixAttributes = <T extends Record<string, any>, S extends string>(
-	attributes: T | undefined,
-	prefix: S
-): PrefixedAttributes<T, S> => {
-	if (!attributes) return {}
-	const attrs = Object.entries(attributes)
-
-	return attrs.reduce<PrefixedAttributes<T, S>>((acc, [key, value]) => {
-		const k = formatAttribute(`${prefix}-${key}`) as keyof PrefixedAttributes<T, S>
-		if (hasValue(value)) acc[k] = value
-		return acc
-	}, {} as PrefixedAttributes<T, S>)
 }
 
 // attributes that reflect functional/interaction state, not visual styling —
@@ -64,8 +28,8 @@ interface CheckOptions {
 }
 
 // unstyled attributes only
-const filterDecorative = <P, E>(
-	data: DataSpecs,
+const keepStateAttrs = (
+	data: SpecAttributes['data'],
 	check: CheckOptions
 ) => {
 	if (!check.isUnstyled || !data) return data
@@ -79,15 +43,15 @@ const filterDecorative = <P, E>(
 	)
 }
 
-const getDataAttrs = <P, E>(
-	data: DataSpecs,
+const getDataAttrs = (
+	data: SpecAttributes['data'],
 	check: CheckOptions
 ) => {
-	const dataList = filterDecorative(data, check)
+	const dataList = keepStateAttrs(data, check)
 	return prefixAttributes(dataList, 'data')
 }
 
-const getHtmlAttrs = (
+const getNativeAttrs = (
 	_props: AttrSource,
 	check: CheckOptions
 ) => {
@@ -102,7 +66,7 @@ const getHtmlAttrs = (
 	return Object.fromEntries(attrs)
 }
 
-export const getAttributes = (_props: AttrSource) => {
+export const buildAttributes = (_props: AttrSource) => {
 	const { as, attributes } = _props
 	const { aria, data } = attributes ?? {}
 
@@ -113,11 +77,11 @@ export const getAttributes = (_props: AttrSource) => {
 
 	const ariaAttrs = prefixAttributes(aria, 'aria'),
 		dataAttrs = getDataAttrs(data, check),
-		htmlAttrs = getHtmlAttrs(_props, check)
+		nativeAttrs = getNativeAttrs(_props, check)
 
 	return {
 		...dataAttrs,
 		...ariaAttrs,
-		...htmlAttrs,
+		...nativeAttrs,
 	}
 }

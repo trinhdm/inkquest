@@ -214,7 +214,7 @@ export const Unstyled: Story = {
 
 		// Anchor on the base `.inkq-button__section` class, not `[data-side]` —
 		// `ButtonSection.tsx` sets `side` via `attributes.data.side`, and
-		// `get-attributes.ts`'s `filterDecorative` strips non-state `data-*`
+		// `Box/utils/buildAttributes.ts`'s `keepStateAttrs` strips non-state `data-*`
 		// keys (like `side`) exactly when `unstyled` is set, so `data-side` is
 		// present on the styled section but absent on the unstyled one. The
 		// base class, by contrast, is always emitted regardless of `unstyled`

@@ -1,4 +1,4 @@
-export { polymorphic } from './config'
-export { toPolymorphic } from './polymorphic'
-export { POLYMORPHIC } from './factory'
-export type { SpecsContract } from './specs.types'
+export { polymorphic } from './polymorphic'
+export { definePolymorphic } from './definePolymorphic'
+export { DEFAULT_TAG, POLYMORPHIC_MARKER } from './constants'
+export type { SpecsContract } from './types/specs.types'

@@ -3,6 +3,7 @@ import { getDefaultProps } from '@/hooks/useProps'
 import { Section } from './Section'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+import containerClasses from '../Container/Container.module.scss'
 
 // `layout` is the only genuine enum among `Grid`/`GridItem`/`Section`/`MenuItem`
 // and has exactly one consumer (this file), so — per the Button/Badge/Container
@@ -76,7 +77,7 @@ const meta: Meta<SectionStoryProps> = {
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Section`\'s own `SectionProps`. The semantic base class (`inkq-section`) is ALWAYS emitted regardless of this prop — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it.',
+			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Section`\'s own `SectionProps`. The semantic base class (`inkq-section`) is ALWAYS emitted regardless of this prop — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it. It also flows on through to `Container` itself: `Section` never destructures `unstyled` out of `rest`, so it survives into `others` and reaches `<Box as={Container} {...others}>`, and `Box.tsx` forwards its own `unstyled` prop to the `as` target whenever that target carries `POLYMORPHIC_MARKER` — which `Container` does, being built via `polymorphic()`. See the `Unstyled` story for the resulting effect on `Container`\'s own wrapper hash.',
 		},
 	},
 	args: {
@@ -384,19 +385,29 @@ export const AsPropIgnored: Story = {
  * suppresses the CSS-module-hashed class SECTION'S OWN `styles('root')` call
  * would otherwise add.
  *
- * **Real, verified quirk**: `unstyled` can only ever suppress `Section`'s OWN
- * hash — it can never suppress `Container`'s. `Section` never destructures
- * `unstyled` out of `rest`, so it flows through `others` and IS forwarded as
- * a prop to `<Box as={Container} ...{others}>`. But `Box.tsx` itself
- * destructures AND DISCARDS `unstyled` before spreading the remaining props
- * onto whatever `as` element/component it renders (`const {as, unstyled,
- * ...props} = handleProps(_props); return <Element {...props} />`) — so
- * `Container` never actually receives an `unstyled` prop at all, and always
- * computes `check.isUnstyled = false` for its own `styles('root')` call.
- * Its hashed root class is therefore unsuppressible via `Section`, in both
- * the styled AND unstyled cases — the only observable difference `unstyled`
- * makes is whether SECTION'S OWN extra hash is also present, i.e. a genuine
- * class-COUNT difference (3 vs 2 classes), not "has a hash" vs "has none".
+ * **Real, verified behavior (re-checked against the live `Box.tsx`)**:
+ * `unstyled` now ALSO reaches `Container`. `Section` never destructures
+ * `unstyled` out of `rest` — neither `useReveal`'s own destructure
+ * (`amount`/`animated`/`once`/`revealed`/`withinView`) nor
+ * `extractOtherProps`'s reserved-key list names it — so it survives into
+ * `others` and is spread onto `<Box as={Container} {...others}>`. `Box.tsx`
+ * itself forwards its own `unstyled` prop straight through to the `as` target
+ * whenever that target carries `POLYMORPHIC_MARKER` (`isPolymorphic`'s
+ * `typeof target !== 'string' && POLYMORPHIC_MARKER in target`) — and
+ * `Container` is built via `polymorphic()` (`createFactory` marks every
+ * component it produces), so it genuinely receives `unstyled` and computes
+ * its own `check.isUnstyled` from it.
+ *
+ * `Container`'s ROOT selector (`.inkq-container`) still never carries a
+ * CSS-module hash either way — see `Container.stories.tsx`'s own `Unstyled`
+ * story: `Container.module.scss`'s `.inkq-container` block has no
+ * declarations of its own, only a nested `&__wrapper` rule, so CSS Modules
+ * compiles no hash for the root at all, regardless of `unstyled`. But
+ * `Container`'s inner wrapper `<div>` (`&__wrapper`, `styles('wrapper', true)`
+ * in `Container.tsx`) DOES have its own declaration — and now that `unstyled`
+ * genuinely reaches `Container`, that wrapper's hash IS suppressed on the
+ * unstyled instance and present on the styled one, exactly as it is when
+ * driving `Container` directly.
  */
 export const Unstyled: Story = {
 	parameters: {
@@ -426,9 +437,26 @@ export const Unstyled: Story = {
 		await expect(styledRoot).toHaveClass('inkq-section')
 		await expect(unstyledRoot).toHaveClass('inkq-section')
 
-		// Both retain a module-hashed class (`Container`'s own, which `Section`'s
-		// `unstyled` can never reach) — the real difference is SECTION's own
-		// extra hash, so compare class COUNTS rather than "has any hash at all".
-		await expect(styledRoot.classList.length).toBeGreaterThan(unstyledRoot.classList.length)
+		// `Container`'s wrapper div now genuinely receives `unstyled` (forwarded
+		// through `Box`'s `POLYMORPHIC_MARKER` check), so its own CSS-module
+		// hash is suppressed on the unstyled instance and present on the styled
+		// one — detected against the real compiled `Container.module.scss`
+		// export map, not a naive "any extra class" heuristic (same pattern as
+		// `Container.stories.tsx`'s own `Unstyled` story).
+		const hasModuleClass = (el: Element, base: string) => {
+			const moduleClass = (containerClasses as Record<string, string>)[base]
+			return !!moduleClass && el.classList.contains(moduleClass)
+		}
+
+		// The wrapper's SEMANTIC class takes `Section`'s namespace
+		// (`inkq-section__wrapper`), not `inkq-container__wrapper` — only its
+		// module hash comes from `Container.module.scss`.
+		const unstyledWrapper = unstyledRoot.querySelector('.inkq-section__wrapper'),
+			styledWrapper = styledRoot.querySelector('.inkq-section__wrapper')
+
+		await expect(unstyledWrapper).toBeInTheDocument()
+		await expect(styledWrapper).toBeInTheDocument()
+		expect(hasModuleClass(styledWrapper!, 'inkq-container__wrapper')).toBe(true)
+		expect(hasModuleClass(unstyledWrapper!, 'inkq-container__wrapper')).toBe(false)
 	},
 }

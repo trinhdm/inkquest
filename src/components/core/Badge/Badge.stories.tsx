@@ -213,7 +213,7 @@ export const Unstyled: Story = {
 		// `badges` here ARE the inner `<Box as="span">` elements (`children`
 		// renders directly inside them). Unlike `FullWidth`/`AsElement` above,
 		// this can't walk up via `[data-variant]` — `unstyled` makes
-		// `get-attributes.ts`'s `filterDecorative` strip the (non-state)
+		// `Box/utils/buildAttributes.ts`'s `keepStateAttrs` strip the (non-state)
 		// `variant` data key entirely from the unstyled instance's `attributes`.
 		// The base `.inkq-badge` class is a safe anchor instead, since it's
 		// never stripped by `unstyled`.

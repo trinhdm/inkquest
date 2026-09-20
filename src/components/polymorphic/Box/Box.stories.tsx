@@ -1,6 +1,8 @@
 import { expect, fn, userEvent, within } from 'storybook/test'
+import { Badge } from '@/components/core'
 import { Box } from './Box'
-import type { ReactNode } from 'react'
+import { DEFAULT_TAG } from '@/lib/component'
+import type { ElementType, ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
 const Row = ({ children }: { children: ReactNode }) => (
@@ -20,31 +22,23 @@ const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 	</div>
 )
 
-// `Box` is built via the raw `toPolymorphic()` helper (not the higher-level
-// `polymorphic()` factory that `Button`/etc. use): `export const Box =
-// toPolymorphic<BoxProps, 'div'>(...)`. `BoxProps` itself isn't exported from
-// `Box.tsx` (`interface BoxProps` has no `export`), so it can't be imported
-// directly — and `ComponentProps<typeof Box>` can't capture it either, since
-// `toPolymorphic`'s returned type is a generic call signature (`<C extends
-// ElementType | undefined = 'div'>(props: PolymorphicProps<BoxProps, C>) =>
-// ...`), not a concrete component type. `Parameters<typeof Box>[0]` reads
-// that real, wrapped prop type straight off the component itself instead —
-// the generic parameter's default (`= 'div'`) resolves it to
-// `PolymorphicProps<BoxProps, 'div'>`, the same shape `Box.tsx` itself
-// renders as by default via `as || 'div'`.
-type BoxDivProps = Parameters<typeof Box>[0]
+//	`BoxComponentProps` reads the real, wrapped prop type straight off `Box`
+//  itself - for a given tag `C`, defaulting to `div` (`DEFAULT_TAG`)
+//	this is because `Box` is built via the `definePolymorphic()` helper
+//	(and not the higher-level `polymorphic()` factory that `Button`/etc. use)
+type BoxComponentProps<C extends ElementType | undefined = typeof DEFAULT_TAG> =
+	Parameters<typeof Box<C>>[0]
 
-// Only needed for the two native-`<button>` interaction stories below, where
-// `as="button"` is fixed for real native click/keyboard semantics — an
-// explicit instantiation expression (`Box<'button'>`) picks the `'button'`
-// branch of the same generic call signature instead of the `'div'` default.
-type BoxButtonProps = Parameters<typeof Box<'button'>>[0]
+// for the two native-`<button>` interaction stories below,
+// where `as="button"` is fixed for real native click/keyboard semantics
+type BoxButtonProps =
+	BoxComponentProps<'button'>
 
 const BOOLEAN_OPTIONS = [true, false] as const
 
 const demoStyle = { border: '1px dashed currentColor', borderRadius: 4, padding: '12px 16px' }
 
-const meta: Meta<BoxDivProps> = {
+const meta: Meta<BoxComponentProps> = {
 	component: Box,
 	title: 'Core/Box',
 	argTypes: {
@@ -54,7 +48,7 @@ const meta: Meta<BoxDivProps> = {
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Declared on the shared `SpecsContract` type and destructured out of `Box`\'s render (so it never lands on the DOM as a literal attribute), but its value IS read — inside `handleProps`/`getAttributes`, before that destructure ever runs — to decide whether `attributes.data` entries get filtered down to only interaction-state keys (`busy`, `checked`, `disabled`, etc; see `getAttributes.ts`\'s `filterDecorative`). See the `Unstyled` story, which demonstrates that filtering with a non-state `data` key.',
+			description: 'Declared on `Box`\'s own `BoxProps` (and the shared `SpecsContract` type) and destructured out of `Box`\'s render, so it never lands on the DOM as a literal attribute. Its value IS read before that destructure, inside `resolveProps` -> `buildAttributes` (`Box/utils/buildAttributes.ts`): `keepStateAttrs` uses it, together with `STATE_KEYS`/`DISABLEABLE_TAGS`, to decide whether `attributes.data` entries survive — when `true`, only interaction-state keys (`busy`, `checked`, `disabled`, etc.) are kept. See the `Unstyled` and `UnstyledDisableableTag` stories. It\'s also forwarded straight through to the `as` target itself, but only when that target carries `POLYMORPHIC_MARKER` (i.e. was built via `createFactory`/`polymorphic()`, like `Badge`) — a plain tag or an unmarked component never receives it. See the `UnstyledForwarding` story.',
 		},
 		attributes: {
 			control: 'object',
@@ -62,11 +56,11 @@ const meta: Meta<BoxDivProps> = {
 		},
 		classNames: {
 			control: 'text',
-			description: 'Plain `string`, merged with the native `className` prop via `clsx(className, classNames)` onto the rendered element (`clsx` accepts a bare string fine — it isn\'t doing any conditional/array composition here). See the `ClassNames` story.',
+			description: 'Plain `string`, merged with the native `className` prop via `clsx(className, classNames)` inside `resolveProps` (`styleProps`\'s `mergeStyleAliases`) before the result is spread onto the rendered element (`clsx` accepts a bare string fine — it isn\'t doing any conditional/array composition here). See the `ClassNames` story.',
 		},
 		styles: {
 			control: 'object',
-			description: 'Merged with the native `style` prop (`{ ...style, ...styles }`) onto the rendered element.',
+			description: 'Merged with the native `style` prop (`{ ...style, ...styles }`) inside `resolveProps` (`styleProps`\'s `mergeStyleAliases`) before the result is spread onto the rendered element.',
 		},
 		id: {
 			control: 'text',
@@ -84,19 +78,20 @@ const meta: Meta<BoxDivProps> = {
 }
 
 export default meta
-type Story = StoryObj<BoxDivProps>
+type Story = StoryObj<BoxComponentProps>
 
 export const Default: Story = {}
 
 // `unstyled` is declared on `BoxProps`/`SpecsContract` and destructured out
 // of `Box`'s render, so it never lands on the DOM as a literal attribute —
-// but its raw value IS read earlier, inside `handleProps`/`getAttributes`
-// (`Box/utils/get-attributes.ts`'s `filterDecorative`), to decide whether
+// but its raw value IS read earlier, inside `resolveProps` -> `buildAttributes`
+// (`Box/utils/buildAttributes.ts`)'s `keepStateAttrs`, to decide whether
 // `attributes.data` entries survive: when `unstyled` is true, only
-// interaction-state keys (`busy`, `checked`, `disabled`, `expanded`,
-// `invalid`, `loading`, `pressed`, `readonly`, `required`, `selected`)
-// are kept — any other `data-*` key (like the non-state `demo` key used
-// below) is stripped entirely.
+// interaction-state keys (`STATE_KEYS`: `busy`, `checked`, `disabled`,
+// `expanded`, `invalid`, `loading`, `pressed`, `readonly`, `required`,
+// `selected`) are kept — any other `data-*` key (like the non-state `demo`
+// key used below) is stripped entirely. See `UnstyledDisableableTag` for the
+// `disabled`-specific carve-out within that same filter.
 export const Unstyled: Story = {
 	parameters: { controls: { exclude: ['unstyled'] } },
 	render: (args) => (
@@ -125,6 +120,102 @@ export const Unstyled: Story = {
 
 		await expect(styledBox).toHaveAttribute('data-demo', 'value')
 		await expect(unstyledBox).not.toHaveAttribute('data-demo')
+	},
+}
+
+// `keepStateAttrs` keeps `disabled` inside `attributes.data` even when
+// `unstyled` is true (it's a `STATE_KEYS` member) — UNLESS the rendered tag
+// is itself disableable (`DISABLEABLE_TAGS`, e.g. `"button"`) and that data
+// value is truthy, in which case it's dropped specifically (`buildAttributes`'s
+// `if (key === 'disabled' && check.isDisabled) return false`), because
+// `getNativeAttrs` already adds a real native `disabled` attribute for that
+// case regardless of `unstyled`. So: native `disabled` is present on BOTH
+// instances below, but `data-disabled` only survives on the styled one.
+export const UnstyledDisableableTag: StoryObj<BoxButtonProps> = {
+	parameters: { controls: { exclude: ['unstyled'] } },
+	args: {
+		as: 'button',
+		children: 'Disableable',
+		attributes: { data: { disabled: true } },
+	},
+	render: (args) => (
+		<Row>
+			{ BOOLEAN_OPTIONS.map(unstyled => (
+				<Group key={ String(unstyled) } label={ String(unstyled) }>
+					<Box
+						{ ...args }
+						unstyled={ unstyled }
+						id={ `unstyled-disableable-${ unstyled }` }
+					/>
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const unstyledButton = canvasElement.querySelector('#unstyled-disableable-true'),
+			styledButton = canvasElement.querySelector('#unstyled-disableable-false')
+
+		await expect(unstyledButton).toBeInTheDocument()
+		await expect(styledButton).toBeInTheDocument()
+
+		await expect(unstyledButton).toHaveAttribute('disabled')
+		await expect(styledButton).toHaveAttribute('disabled')
+
+		await expect(styledButton).toHaveAttribute('data-disabled', 'true')
+		await expect(unstyledButton).not.toHaveAttribute('data-disabled')
+	},
+}
+
+// `Box.tsx` forwards its own `unstyled` prop straight through to the `as`
+// target, but ONLY when that target carries `POLYMORPHIC_MARKER`
+// (`isPolymorphic`'s `typeof target !== 'string' && POLYMORPHIC_MARKER in
+// target`) — i.e. it was built via `createFactory`/`polymorphic()`, like
+// `Badge`. A plain intrinsic tag (`"span"` here) is a string, so
+// `isPolymorphic` is false and `unstyled` is never passed to it at all.
+export const UnstyledForwarding: Story = {
+	parameters: { layout: 'padded' },
+	render: () => (
+		<Row>
+			<Group label="as={Badge} (marked target)">
+				<Box as={ Badge } unstyled id="unstyled-forwarding-badge">
+					Badge content
+				</Box>
+			</Group>
+			<Group label='as="span" (plain tag)'>
+				<Box as="span" unstyled id="unstyled-forwarding-span" style={ demoStyle }>
+					span content
+				</Box>
+			</Group>
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const badgeRoot = canvasElement.querySelector('#unstyled-forwarding-badge'),
+			span = canvasElement.querySelector('#unstyled-forwarding-span')
+
+		await expect(badgeRoot).toBeInTheDocument()
+		await expect(span).toBeInTheDocument()
+
+		// Badge's own base class (`inkq-badge`) is always emitted regardless of
+		// `unstyled` (`getClassName.tsx`); only the CSS-module-hashed class
+		// alongside it is suppressed, and only because `unstyled` actually
+		// reached Badge's own `useStyles` call here. `getConfigClasses` still
+		// runs regardless of `unstyled`, but Badge's default args (`fullWidth:
+		// false`) produce no `global`/`module` modifier class to confuse this
+		// check with, unlike `Button`'s default `size` — see `Button.stories.tsx`'s
+		// `Unstyled` story for that caveat.
+		const hasModuleClass = (el: Element, base: string) =>
+			Array.from(el.classList).some(c => c !== base && !c.startsWith(`${ base }--`))
+
+		await expect(badgeRoot).toHaveClass('inkq-badge')
+		expect(hasModuleClass(badgeRoot!, 'inkq-badge')).toBe(false)
+
+		// `span` never receives `unstyled` at all (it's a plain tag, not a
+		// POLYMORPHIC_MARKER-carrying component), so there's no styling system
+		// on it for `unstyled` to affect either way. The only thing verifiable
+		// here is that `Box` doesn't leak its own internal `unstyled` prop onto
+		// the DOM as a stray literal attribute (true for any `as` target, since
+		// `Box` always destructures it out of its own render before spreading).
+		await expect(span).not.toHaveAttribute('unstyled')
 	},
 }
 

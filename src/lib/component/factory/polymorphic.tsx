@@ -1,53 +1,40 @@
-import type {
-	ComponentProps,
-	ElementType,
-	FunctionComponent,
-	JSX,
-	JSXElementConstructor,
-	ReactElement,
-	ReactNode,
-} from 'react'
+import {
+	createFactory,
+	type MethodsBase,
+	type SubcomponentsBase,
+} from './createFactory'
 
-import type { SpecsContract } from './specs.types'
+import type { ElementType, ReactElement } from 'react'
+import type { BaseProps, PolymorphicProps } from './definePolymorphic'
+import type { IsPolymorphic, SpecDefaultAs, SpecsConstraint } from './types'
 
-type _BaseProps<C> =
-	C extends keyof JSX.IntrinsicElements
-		? JSX.IntrinsicElements[C]
-		: C extends JSXElementConstructor<infer P>
-			? P
-			: object
-
-type _Tag<C> =
-	[C] extends [undefined]
-		? 'div'
-		: NonNullable<C>
-
-export type PropertiesBase<P = object> =
-	Required<Pick<FunctionComponent<P>, 'displayName'>>
-
-export type PolymorphicProps<P, C> =
-	& Omit<SpecsContract, 'props'>
-	& {
-		as?: 'as' extends keyof P ? P['as'] : C
-		children?: ReactNode
-		unstyled?: boolean
-	}
-	& Omit<P, 'as'>
-	& Omit<_BaseProps<_Tag<C>>, 'as' | keyof P>
-
-export const toPolymorphic = <
-	P0 extends object,
-	C0 extends ElementType,
->(
-	target: (props: PolymorphicProps<P0, C0>) => ReactElement | null
+const polymorphicFactory = <T extends SpecsConstraint<T>>(
+	target: Parameters<typeof createFactory<T>>[0],
+	classes?: Record<string, string>
 ) => {
-	interface _Component {
-		<C extends ElementType | undefined = 'div'>(props: PolymorphicProps<P0, C>): ReactElement | null
-	}
+	type C = SpecDefaultAs<T, ElementType>
+	type P<U> = PolymorphicProps<T['props'], U>
 
-	type PolymorphicBase =
+	type _Component = IsPolymorphic<T> extends true
+		? <U extends ElementType = C>(props: P<U>) => ReactElement
+		: (props: P<never>) => ReactElement
+
+	type _Subcomponents = SubcomponentsBase<T>
+	type _Methods = MethodsBase<T, _Component, P<C>>
+	type _Properties = BaseProps<P<unknown>>
+
+	type PolymorphicComponent =
 		& _Component
-		& PropertiesBase<ComponentProps<C0>>
+		& _Subcomponents
+		& _Methods
+		& _Properties
 
-	return target as unknown as PolymorphicBase
+	return createFactory<T, PolymorphicComponent>(target, classes)
 }
+
+export const polymorphic = <
+	T extends SpecsConstraint<T>,
+	U extends typeof polymorphicFactory<T> = typeof polymorphicFactory<T>,
+	P extends Parameters<U>[0] = Parameters<U>[0],
+>(target: P, classes?: Record<string, string>) =>
+	polymorphicFactory<T>(target as P, classes)

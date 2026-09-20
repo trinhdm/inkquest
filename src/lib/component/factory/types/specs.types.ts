@@ -12,7 +12,7 @@ export interface SpecsContract {
 	unstyled?: boolean
 }
 
-interface SpecsBase<T = unknown, P extends object = object> {
+interface _BaseSpecs<T = unknown, P extends object = object> {
 	attributes?: SpecAttributes
 	ctx?: unknown
 	id?: string
@@ -21,7 +21,7 @@ interface SpecsBase<T = unknown, P extends object = object> {
 }
 
 interface _CompoundSpecs<P extends object = object>
-	extends SpecsBase<unknown, P> {
+	extends _BaseSpecs<unknown, P> {
 	classNames?: never
 	defaults?: {
 		as?: never
@@ -34,7 +34,7 @@ interface _CompoundSpecs<P extends object = object>
 }
 
 interface _RootSpecs<T = unknown, P extends object = object>
-	extends SpecsBase<T, P> {
+	extends _BaseSpecs<T, P> {
 	classNames?: SpecsContract['classNames']
 	defaults?: {
 		as?: any
@@ -63,6 +63,9 @@ export type AsPolymorphic<S> =
 		? { as?: SpecDefaultAs<S> }
 		: { as?: never }
 
+export type SpecsConstraint<T extends { props: object }> =
+	Specs & { defaults?: { props?: keyof T['props'] } }
+
 export type SpecDefaultAs<S, Fallback = never> =
 	S extends { defaults: { as: infer C extends ElementType } }
 		? C
@@ -75,10 +78,6 @@ export type SpecDefaultProps<S> =
 	}
 		? Extract<K, keyof P>
 		: never
-
-export type ValidSpecs<T extends { props: object }> = {
-	defaults?: { props?: keyof T['props'] }
-}
 
 type _CommonTag =
 	| 'a' | 'button' | 'div' | 'nav' | 'span' | 'svg'
@@ -105,7 +104,7 @@ type TagElement<T> =
 			: unknown
 
 
-export type NonSemanticAttrs =
-	| 'about' | 'content' | 'datatype' | 'inlist' | 'prefix' | 'property'
-	| 'resource' | 'rev' | 'typeof' | 'vocab'
-	| 'color' | 'results' | 'security' | 'unselectable'
+// type NonSemanticAttrs =
+// 	| 'about' | 'content' | 'datatype' | 'inlist' | 'prefix' | 'property'
+// 	| 'resource' | 'rev' | 'typeof' | 'vocab'
+// 	| 'color' | 'results' | 'security' | 'unselectable'

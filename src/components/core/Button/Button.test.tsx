@@ -124,17 +124,12 @@ describe('Button', () => {
 	})
 
 	describe('unstyled', () => {
-		// SOURCE BUG: `Button.tsx` destructures `unstyled` out of `props` and only
-		// ever forwards it into `ButtonProvider`'s context (for `Button.Section`)
-		// — it never re-attaches `unstyled` to `sharedProps`/`others`, so the root
-		// `<Box>` that carries `attributes.data` never receives `unstyled` itself.
-		// `getAttributes` (`Box/utils/get-attributes.ts`) reads `_props.unstyled`
-		// straight off that Box's own incoming props, so `filterDecorative` never
-		// fires for Button's root element — contrast with `Badge.tsx`, which does
-		// NOT destructure `unstyled` out (it flows through `...rest` into
-		// `others`), so the same filtering correctly applies there (see
-		// `Badge.test.tsx`). Left as a failing test on purpose — do not "fix" by
-		// weakening the assertion; the fix belongs in `Button.tsx`.
+		// `Button.tsx` destructures `unstyled` out of `props` but re-includes it
+		// on `sharedProps`, which is spread onto the root `<Box>` alongside
+		// `attributes.data` — so `buildAttributes` (`Box/utils/buildAttributes.ts`)
+		// sees `unstyled` on that Box's own incoming props and its `keepStateAttrs`
+		// filtering correctly applies to Button's root element, the same as
+		// `Badge.tsx` (see `Badge.test.tsx`).
 		it('drops decorative data attributes (variant, priority, block) but keeps loading, a state attribute', () => {
 			render(
 				<Button unstyled variant="danger" priority="primary" fullWidth loading>
