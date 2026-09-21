@@ -1,7 +1,6 @@
 import { useProps, extractOtherProps } from '@/hooks/useProps'
 import { useStyles } from '@/hooks/useStyles'
 import { polymorphic } from '@/lib/component'
-import { Box } from '@/components/polymorphic/Box'
 import { Group } from '@/components/layout'
 import { StatisticGroupProvider, type StatisticGroupContext } from './StatisticGroup.context'
 import type { ListProps } from '@/lib/component/factory/types'
@@ -18,7 +17,7 @@ const DEFAULT_PROPS = {
 } as const
 
 interface StatisticGroupProps
-	extends Omit<Group.Props, 'childName' | 'provider'>,
+	extends Omit<Group.Props, 'childName' | 'provider' | 'valuesCtx'>,
 		Pick<StatisticGroupContext, 'order' | 'size'> {}
 
 type StatisticGroupSpecs = {
@@ -35,16 +34,15 @@ export const StatisticGroup = polymorphic<StatisticGroupSpecs>(_props => {
 	const { others } = extractOtherProps(rest)
 
 	return (
-		<Box
+		<Group
 			{ ...styles('root') }
 			{ ...others }
-			as={ Group }
 			childName="Statistic"
 			provider={ StatisticGroupProvider }
 			valuesCtx={ { order, size } }
 		>
 			{ children }
-		</Box>
+		</Group>
 	)
 }, classes)
 

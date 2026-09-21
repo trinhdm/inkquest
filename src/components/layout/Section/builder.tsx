@@ -1,4 +1,3 @@
-
 import {
 	isValidElement,
 	Children,
@@ -9,7 +8,8 @@ import {
 
 import { Button } from '@/components/core'
 import { Grid } from '../Grid'
-import type { RevealCounter, useStyles } from '@/hooks'
+import type { useStyles } from '@/hooks/useStyles'
+import type { RevealCounter } from '@/hooks/animation'
 import type { Section } from './Section'
 
 interface BuildSectionConfig {
@@ -38,10 +38,10 @@ const buildHeader = ({ id, props, reveal, styles }: BuildSectionConfig): ReactNo
 	if (!!title) {
 		const Tag = layout === 'hero' ? 'h1' : 'h2'
 		const headline = (
-				<Tag key={ `${id}-title` } { ...styles('title') } { ...reveal.next() }>
-					{ title }
-				</Tag>
-			)
+			<Tag key={ `${id}-title` } { ...styles('title') } { ...reveal.next() }>
+				{ title }
+			</Tag>
+		)
 		header.push(headline)
 	}
 

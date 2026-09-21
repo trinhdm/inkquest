@@ -63,11 +63,6 @@ export type AsPolymorphic<S> =
 		? { as?: SpecDefaultAs<S> }
 		: { as?: never }
 
-export type ListProps<S> =
-	AsPolymorphic<S> extends { as?: SpecDefaultAs<S> }
-		? Exclude<keyof S, 'as'>
-		: keyof S
-
 export type SpecsConstraint<T extends { props: object }> =
 	Specs & { defaults?: { props?: keyof T['props'] } }
 

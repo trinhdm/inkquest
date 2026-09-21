@@ -3,6 +3,8 @@ import {
 	useRef,
 	Children,
 	type CSSProperties,
+	type ElementType,
+	type ReactElement,
 	type ReactNode,
 } from 'react'
 
@@ -15,7 +17,7 @@ import { setThemeCSS } from '@/lib/theme'
 import { Box } from '@/components/polymorphic/Box'
 import { GroupItem } from './GroupItem'
 import { GroupProvider, type GroupContext } from './Group.context'
-import type { ListProps } from '@/lib/component/factory/types'
+import type { ListProps, PolymorphicProps } from '@/lib/component/factory/types'
 import classes from './Group.module.scss'
 
 const NAME = 'Group' as const,
@@ -44,19 +46,19 @@ interface CompoundGroupProps {
 	valuesCtx?: never
 }
 
-interface NamedGroupProps {
+interface NamedGroupProps<Ctx extends GroupContext = GroupContext>  {
 	childName: string
-	provider?: RootProviderFn<GroupContext>
-	valuesCtx?: object
+	provider?: RootProviderFn<Ctx>
+	valuesCtx?: Partial<Ctx>
 }
 
-type NestedGroupProps =
+type NestedGroupProps<Ctx extends GroupContext = GroupContext> =
 	| CompoundGroupProps
-	| NamedGroupProps
+	| NamedGroupProps<Ctx>
 
-type GroupProps =
+type GroupProps<Ctx extends GroupContext = GroupContext> =
 	& BaseGroupProps
-	& NestedGroupProps
+	& NestedGroupProps<Ctx>
 	& MaybeAnimationProps
 
 type GroupSpecs = {
@@ -87,7 +89,7 @@ const tokens = setThemeCSS<GroupSpecs>((theme, props) => {
 	}
 })
 
-export const Group = polymorphic<GroupSpecs>(_props => {
+export const GroupBase = polymorphic<GroupSpecs>(_props => {
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { classes, props, tokens })
 
@@ -128,7 +130,7 @@ export const Group = polymorphic<GroupSpecs>(_props => {
 	// one context value per child — memoised on `total` so identities stay
 	// stable across renders even though each child gets its own object
 	const ctxValues = useMemo(
-		() => Array.from({ length: total }, (_, index): GroupContext => ({
+		() => Array.from({ length: total }, (_, index) => ({
 			animated, duration, index, stagger, unstyled, withinView,
 			...valuesCtx,
 		})),
@@ -149,13 +151,21 @@ export const Group = polymorphic<GroupSpecs>(_props => {
 	)
 }, classes)
 
+type GroupComponent =
+	& (<Ctx extends GroupContext, U extends ElementType = typeof TAG>(
+		props: PolymorphicProps<GroupProps<Ctx>, U>
+	) => ReactElement)
+	& typeof GroupBase
+
+export const Group = GroupBase as unknown as GroupComponent
+
 Group.displayName = NAME
 Group.Item = GroupItem
 Group.setDefaults({ props: DEFAULT_PROPS })
 
 export declare namespace Group {
 	export type Context = GroupContext
-	export type Props = GroupProps
+	export type Props<Ctx extends GroupContext = GroupContext> = GroupProps<Ctx>
 	export type Specs = GroupSpecs
 
 	export namespace Item {
