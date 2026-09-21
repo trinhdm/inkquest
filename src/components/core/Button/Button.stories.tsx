@@ -61,6 +61,7 @@ const meta: Meta<ButtonStoryProps> = {
 		size: {
 			control: 'select',
 			options: SIZE_OPTIONS,
+			description: '`Button.module.scss` only declares `&--md` and `&--lg` modifier rules — there is NO `&--sm` rule, even though `\'sm\'` is a valid `SIZE_OPTIONS` value (exercised by the `Sizes` story). `size="sm"` still emits a literal `inkq-button--sm` class (via `clsx.module`), it just carries no styling of its own.',
 		},
 		disabled: {
 			control: 'boolean',
@@ -357,8 +358,10 @@ export const Unstyled: Story = {
 		// `getConfigClasses` (`getClassName.tsx`) runs regardless of `unstyled`
 		// (only `getStyleClass` — the base/selector hash — checks
 		// `check.isUnstyled`), so a `module`/`global` modifier class (here,
-		// `inkq-button--sm` from `clsx.module`, present via this story's default
-		// `size: 'sm'` arg) survives on BOTH the styled and unstyled instance —
+		// `inkq-button--md` from `clsx.module`, present via `Button`'s registered
+		// default `size: 'md'` (`DEFAULT_PROPS` in `Button.tsx`, read through
+			// `getDefaultProps` — NOT a hand-typed story default) survives on BOTH
+					// the styled and unstyled instance —
 		// exclude the base itself AND any `${base}--*` modifier class before
 		// treating a leftover class as evidence the CSS-module hash survived.
 		const hasModuleClass = (el: Element, base: string) =>

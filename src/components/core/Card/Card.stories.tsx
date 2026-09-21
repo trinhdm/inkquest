@@ -37,8 +37,8 @@ const IMAGE_CAPTION_SELECTOR = '.inkq-card__image-caption'
 // C>`. `Parameters<typeof Card>[0]` reads that real, wrapped type straight
 // off the component itself — the generic call signature's default `C`
 // resolves to `'div'` here, since `CardSpecs`'s `defaults.as` is `'div'`
-// (`Card.tsx`'s `DEFAULT_TAG`), matching `Card.setDefaults({ props: { as:
-// DEFAULT_TAG, hasTitleAlt: false } })`.
+// (`Card.tsx`'s local `TAG` constant), matching `const DEFAULT_PROPS = { as:
+// TAG, hasTitleAlt: false }` and `Card.setDefaults({ props: DEFAULT_PROPS })`.
 type CardStoryProps = Parameters<typeof Card>[0]
 type Story = StoryObj<CardStoryProps>
 
@@ -64,7 +64,7 @@ const meta: Meta<CardStoryProps> = {
 		},
 		elevated: {
 			control: 'boolean',
-			description: '**Probable source bug, verified against the live `Card.tsx`**: declared on `CardProps` but never destructured or read anywhere in the component body — it falls straight through `extractOtherProps(rest)`\'s `others` and lands as a raw, unrecognized DOM attribute on the rendered root element. It has no visual or behavioral effect of any kind (no class, no style, no `data-*` attribute), so no story exercises it beyond this doc note — asserting "elevated" behavior here would document something the component doesn\'t actually do.',
+			description: '**Probable source bug, verified against the live `Card.tsx`**: declared on `CardProps` but never destructured or read anywhere in the component body — it falls straight through `extractOtherProps(rest)`\'s `others` and gets spread onto the rendered root element as `elevated={true}`/`elevated={false}`. Since `elevated` isn\'t a recognized DOM/ARIA attribute, React silently DROPS it (booleans on unknown attributes are not rendered) and logs a dev-mode warning instead — it never actually reaches the DOM as `elevated=""` or similar. It has no visual or behavioral effect of any kind (no class, no style, no `data-*` attribute, no rendered DOM attribute), so no story exercises it beyond this doc note — asserting "elevated" behavior here would document something the component doesn\'t actually do.',
 		},
 	},
 	args: {

@@ -4,6 +4,7 @@ import { Navbar } from './Navbar'
 import { NAV_ROUTES } from '@/utils/navigation'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+import moduleClasses from './Navbar.module.scss'
 
 const Row = ({ children }: { children: ReactNode }) => (
 	<div style={ { display: 'flex', flexDirection: 'column', gap: 32 } }>
@@ -43,11 +44,11 @@ const meta: Meta<NavbarStoryProps> = {
 		},
 		as: {
 			control: false,
-			description: '`Navbar` forwards `as` to its root `<Box>` via `extractOtherProps`, so the rendered tag genuinely changes — see `AsElement`.',
+			description: '`Navbar` forwards `as` to its root `<Box>` via `extractOtherProps`, so the rendered tag genuinely changes — see `AsElement`. Note `Navbar` also hardcodes `role="navigation"` on that same root `<Box>`, independent of `as` — that\'s the only reason `getAllByRole(\'navigation\')` still resolves the `as="div"`/`as="section"` cases in `AsElement`, which otherwise carry no implicit navigation landmark role.',
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Navbar`\'s own `NavbarProps`. The semantic base class (`inkq-navbar`, `inkq-navbar__inner`, …) is ALWAYS emitted regardless — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it.',
+			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Navbar`\'s own `NavbarProps`. The semantic base class (`inkq-navbar`, `inkq-navbar__wrapper`, `inkq-navbar__inner`, `inkq-navbar__col`, `inkq-navbar__menu`) is ALWAYS emitted regardless — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it, and only where `Navbar.module.scss` actually declares a hash to suppress. The render tree is root → wrapper (`styles(\'wrapper\', true)`, which ALSO unconditionally emits a global `inkq-wrapper` class) → inner → col ×3 → menu (`styles(\'menu\')`, no config). `Navbar.module.scss` declares only `.inkq-navbar`, `&__inner`, and `&__col` — `&__wrapper`/`&__menu` have no SCSS rule at all, so those two never carry a module hash, styled or unstyled. See the `Unstyled` story.',
 		},
 	},
 	args: {
@@ -82,9 +83,14 @@ export const Default: Story = {
 		const menubar = within(nav).getByRole('menubar')
 		await expect(within(menubar).getAllByRole('menuitem')).toHaveLength(7)
 
-		// The two `Button.Group` auth buttons. `Button` derives its `aria-label`
-		// from its text children, so they're addressable by name — unlike the 3
-		// dropdown triggers, which have no accessible name at all.
+		// The two `Button.Group` auth buttons. `Button.tsx` only sets an
+		// `aria-label` when `showLabel && ariaLabel.length` (`aria = { label:
+		// !!(showLabel && ariaLabel.length) ? ariaLabel : undefined }`), and
+		// `Navbar` renders these with no `showLabel` at all — so NO `aria-label`
+		// is emitted here. The `getByRole('button', { name })` queries below
+		// still pass because Testing Library's accessible-name computation
+		// falls back to the button's own text content when there's no explicit
+		// `aria-label`.
 		await expect(canvas.getByRole('button', { name: 'Log in' })).toBeInTheDocument()
 		await expect(canvas.getByRole('button', { name: 'Sign up' })).toBeInTheDocument()
 		await expect(canvas.getAllByRole('button')).toHaveLength(5)
@@ -93,8 +99,14 @@ export const Default: Story = {
 
 /**
  * The exact `routes` allow-list used by the app shell (`src/app/layout.tsx`).
- * Every child route is excluded, so `filterNavigation` sets each kept item's
- * `menu` to `undefined` — no dropdown triggers survive.
+ * Every child route is excluded, so no kept item retains a non-empty `menu` —
+ * no dropdown triggers survive. `filterNavigation` computes each kept item's
+ * `menu` as `item.menu && filterNavigation(routes, item.menu)`: `Discover`
+ * and `Community` both HAD a `menu` array, so they get filtered down to `[]`
+ * (all their children's routes are excluded); `Marketplace` had no `menu` at
+ * all, so it alone gets `undefined`. Either way `MenuItem.tsx` gates its
+ * dropdown trigger on `isDropdown = !!menu?.length`, so both `[]` and
+ * `undefined` render as a plain link — the assertions below hold regardless.
  */
 export const FilteredRoutes: Story = {
 	args: {
@@ -149,7 +161,10 @@ export const NoMatchingRoutes: Story = {
 
 /**
  * `Navbar` forwards `as` to its root `<Box>` (via `extractOtherProps`), so the
- * rendered tag genuinely changes.
+ * rendered tag genuinely changes. `Navbar` also hardcodes `role="navigation"`
+ * on that same root `<Box>`, independent of `as` — that's the ONLY reason
+ * `getAllByRole('navigation')` resolves the `as="div"`/`as="section"` cases
+ * below, since neither tag carries an implicit navigation landmark role.
  */
 export const AsElement: Story = {
 	render: (args) => (
@@ -176,5 +191,83 @@ export const AsElement: Story = {
 		await expect(asNav.tagName).toBe('NAV')
 		await expect(asDiv.tagName).toBe('DIV')
 		await expect(asSection.tagName).toBe('SECTION')
+	},
+}
+
+/**
+ * `unstyled` never removes the semantic base classes (`inkq-navbar`,
+ * `inkq-navbar__wrapper`, `inkq-navbar__inner`, `inkq-navbar__col`) — it only
+ * suppresses the CSS-module hash normally appended alongside them, and only
+ * where `Navbar.module.scss` actually declares a rule to hash. Render tree:
+ * root → wrapper (`styles('wrapper', true)`) → inner → col ×3. The wrapper's
+ * `&__wrapper` selector has no SCSS declaration at all, so it never carries a
+ * module hash, styled or unstyled alike — but the boolean `styles('wrapper',
+ * true)` config ALSO unconditionally emits a literal, unhashed global
+ * `inkq-wrapper` class (identical mechanism to `Container`/`Footer`'s own
+ * wrapper), present regardless of `unstyled`. `&__inner`/`&__col` DO have
+ * their own SCSS declarations, so they behave as expected: a real
+ * CSS-module hash is appended when styled and suppressed when `unstyled`.
+ */
+export const Unstyled: Story = {
+	parameters: { controls: { exclude: ['unstyled'] } },
+	render: (args) => (
+		<Row>
+			<Group label="true">
+				<Navbar { ...args } unstyled />
+			</Group>
+			<Group label="false">
+				<Navbar { ...args } unstyled={ false } />
+			</Group>
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			[unstyledRoot, styledRoot] = canvas.getAllByRole('navigation')
+
+		await expect(unstyledRoot).toBeInTheDocument()
+		await expect(styledRoot).toBeInTheDocument()
+
+		const hasModuleClass = (el: Element, base: string) => {
+			const moduleClass = (moduleClasses as Record<string, string>)[base]
+			return !!moduleClass && el.classList.contains(moduleClass)
+		}
+
+		// Root (`inkq-navbar`): base class always present; module hash only
+		// when styled.
+		await expect(unstyledRoot).toHaveClass('inkq-navbar')
+		await expect(styledRoot).toHaveClass('inkq-navbar')
+		expect(hasModuleClass(unstyledRoot, 'inkq-navbar')).toBe(false)
+		expect(hasModuleClass(styledRoot, 'inkq-navbar')).toBe(true)
+
+		const unstyledWrapper = unstyledRoot.querySelector('.inkq-navbar__wrapper') as HTMLElement,
+			styledWrapper = styledRoot.querySelector('.inkq-navbar__wrapper') as HTMLElement
+
+		// Wrapper (`inkq-navbar__wrapper`): base class always present; NO
+		// module hash ever exists to suppress (`&__wrapper` has no SCSS rule).
+		// The boolean-config global `inkq-wrapper` class is unconditional.
+		await expect(unstyledWrapper).toHaveClass('inkq-navbar__wrapper', 'inkq-wrapper')
+		await expect(styledWrapper).toHaveClass('inkq-navbar__wrapper', 'inkq-wrapper')
+		expect(hasModuleClass(unstyledWrapper, 'inkq-navbar__wrapper')).toBe(false)
+		expect(hasModuleClass(styledWrapper, 'inkq-navbar__wrapper')).toBe(false)
+
+		const unstyledInner = unstyledWrapper.querySelector('.inkq-navbar__inner') as HTMLElement,
+			styledInner = styledWrapper.querySelector('.inkq-navbar__inner') as HTMLElement
+
+		// Inner (`inkq-navbar__inner`): base class always present; module hash
+		// only when styled.
+		await expect(unstyledInner).toHaveClass('inkq-navbar__inner')
+		await expect(styledInner).toHaveClass('inkq-navbar__inner')
+		expect(hasModuleClass(unstyledInner, 'inkq-navbar__inner')).toBe(false)
+		expect(hasModuleClass(styledInner, 'inkq-navbar__inner')).toBe(true)
+
+		const unstyledCols = unstyledInner.querySelectorAll('.inkq-navbar__col'),
+			styledCols = styledInner.querySelectorAll('.inkq-navbar__col')
+
+		// Col (`inkq-navbar__col`): base class always present, 3 per bar;
+		// module hash only when styled.
+		await expect(unstyledCols).toHaveLength(3)
+		await expect(styledCols).toHaveLength(3)
+		expect(hasModuleClass(unstyledCols[0], 'inkq-navbar__col')).toBe(false)
+		expect(hasModuleClass(styledCols[0], 'inkq-navbar__col')).toBe(true)
 	},
 }

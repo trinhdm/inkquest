@@ -29,8 +29,8 @@ const ROOT_SELECTOR = '.inkq-footer'
 // `Parameters<typeof Footer>[0]` reads that real, wrapped type straight off
 // the component itself — the generic call signature's default `C` resolves
 // to `'footer'` here, since `FooterSpecs`'s `defaults.as` is `'footer'`
-// (`Footer.tsx`'s `DEFAULT_TAG`), matching `Footer.setDefaults({ props: {
-// as: DEFAULT_TAG } })`.
+// (`Footer.tsx`'s local `TAG` constant), matching `const DEFAULT_PROPS = {
+// as: TAG }` and `Footer.setDefaults({ props: DEFAULT_PROPS })`.
 type FooterStoryProps = Parameters<typeof Footer>[0]
 type Story = StoryObj<FooterStoryProps>
 
@@ -143,12 +143,17 @@ export const Unstyled: Story = {
 		// on its own) — but CSS Modules still exports a hash for the literal
 		// class token `inkq-footer__wrapper` wherever it's referenced, so this
 		// selector behaves exactly like the others: real hash when styled,
-		// suppressed when unstyled.
+		// suppressed when unstyled. `Footer.tsx` also calls `styles('wrapper',
+		// true)` (the boolean-config shorthand, reused via the shared
+		// `wrapperStyles` value for BOTH wrapper divs), which ADDITIONALLY
+		// emits a literal, unhashed global `inkq-wrapper` class — present on
+		// both wrapper `<div>`s regardless of `unstyled` (same mechanism as
+		// `Container`/`Navbar`'s own `styles('wrapper', true)` wrappers).
 		const styledWrapper = styledMain.querySelector('.inkq-footer__wrapper') as HTMLElement,
 			unstyledWrapper = unstyledMain.querySelector('.inkq-footer__wrapper') as HTMLElement
 
-		await expect(styledWrapper).toHaveClass('inkq-footer__wrapper')
-		await expect(unstyledWrapper).toHaveClass('inkq-footer__wrapper')
+		await expect(styledWrapper).toHaveClass('inkq-footer__wrapper', 'inkq-wrapper')
+		await expect(unstyledWrapper).toHaveClass('inkq-footer__wrapper', 'inkq-wrapper')
 		expect(hasModuleClass(styledWrapper, 'inkq-footer__wrapper')).toBe(true)
 		expect(hasModuleClass(unstyledWrapper, 'inkq-footer__wrapper')).toBe(false)
 
