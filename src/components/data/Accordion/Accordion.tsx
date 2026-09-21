@@ -3,6 +3,7 @@ import { useProps, useStyles, extractOtherProps } from '@/hooks'
 import { useAccordionGroupProps, AccordionGroup } from './AccordionGroup'
 import { filterChildren } from '@/lib/component'
 import { polymorphic, Box, type ListProps } from '@/components/polymorphic'
+import { toKebabCase } from '@/utils/helpers'
 import { AccordionContent } from './AccordionContent'
 import { AccordionProvider } from './Accordion.context'
 import { AccordionTitle } from './AccordionTitle'
@@ -14,6 +15,7 @@ const NAME = 'Accordion' as const,
 
 const DEFAULT_PROPS = {
 	as: TAG,
+	collapsible: true,
 	defaultOpen: false,
 	index: 0,
 	indicator: 'plus',
@@ -98,11 +100,13 @@ export const Accordion = polymorphic<AccordionSpecs>(_props => {
 
 	const [uncontrolled, setUncontrolled] = useState(() => !!defaultOpen)
 	const isControlled = typeof open === 'boolean',
-		isOpen = isControlled ? !!open : uncontrolled
+		isOpen = collapsible
+			? isControlled ? !!open : uncontrolled
+			: true
 
 	const uid = useId()
 	const idx = useMemo(() => {
-		const root = `acc-${id ?? uid}`,
+		const root = toKebabCase(`acc-${id ?? uid}`),
 			content = `${root}-content`,
 			title = `${root}-title`
 		return { content, root, title }
@@ -115,29 +119,34 @@ export const Accordion = polymorphic<AccordionSpecs>(_props => {
 	}, [index, layout])
 
 	const handleToggle = useCallback(() => {
-		if (disabled) return
+		if (disabled || !collapsible) return
 		const next = !isOpen
 		if (!isControlled) setUncontrolled(next)
 		onItemToggle?.(index, next)
 		onToggle?.(next)
 	}, [
-		disabled, index,
+		collapsible, disabled, index,
 		isControlled, isOpen,
 		onItemToggle, onToggle,
 	])
 
 	const ctxValues = useMemo(() => ({
-		disabled, handleToggle, idx, indicator, isOpen, step, unstyled,
-	}), [disabled, handleToggle, idx, indicator, isOpen, step, unstyled])
+		collapsible, disabled,
+		handleToggle,
+		idx, indicator,
+		isOpen, step, unstyled,
+	}), [
+		collapsible, disabled,
+		handleToggle, idx, indicator,
+		isOpen, step, unstyled,
+	])
 
 	return (
 		<Box
 			{ ...styles('root') }
 			{ ...others }
 			as={ as }
-			attributes={ {
-				data: { open: isOpen || null, step }
-			} }
+			attributes={ { data: { open: isOpen || null, step } } }
 			id={ idx.root }
 		>
 			<AccordionProvider value={ ctxValues }>

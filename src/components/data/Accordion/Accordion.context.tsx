@@ -14,6 +14,7 @@ export interface AccordionIds {
 
 export interface AccordionContext
 	extends Pick<AnimationOptions, 'unstyled'> {
+	collapsible?: boolean
 	disabled?: boolean
 	handleToggle: () => void
 	idx: AccordionIds

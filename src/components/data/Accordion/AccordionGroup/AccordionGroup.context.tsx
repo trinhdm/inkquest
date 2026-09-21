@@ -9,6 +9,7 @@ export type AccordionGroupType =
 
 export interface AccordionGroupContext
 	extends Pick<AnimationOptions, 'index' | 'unstyled' | 'withinView'> {
+	collapsible?: boolean
 	disabled?: boolean
 	layout?: AccordionGroupLayout
 	onItemToggle?: (index: number, open: boolean) => void

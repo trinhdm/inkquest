@@ -2,8 +2,11 @@ import userEvent from '@testing-library/user-event'
 import { render, reset, screen } from '@/tests/test-utils'
 import { Accordion } from '../Accordion'
 
-const item = (title: string, content: string) => (
-	<Accordion key={ title }>
+type ItemProps =
+	Omit<Accordion.Props, 'children'>
+
+const item = (title: string, content: string, props?: ItemProps) => (
+	<Accordion key={ title } { ...props }>
 		<Accordion.Title>{ title }</Accordion.Title>
 		<Accordion.Content>{ content }</Accordion.Content>
 	</Accordion>
@@ -94,5 +97,26 @@ describe('Accordion.Title', () => {
 		// bails out early rather than throwing on a null querySelector result
 		await user.keyboard('{ArrowDown}')
 		expect(title).toHaveFocus()
+	})
+
+	it('arrow-key nav skips a non-collapsible title in a mixed group', async () => {
+		const user = userEvent.setup()
+		render(
+			<Accordion.Group>
+				{ item('One', 'First body') }
+				{ item('Two', 'Second body', { collapsible: false }) }
+				{ item('Three', 'Third body') }
+			</Accordion.Group>
+		)
+
+		const buttons = screen.getAllByRole('button')
+		expect(buttons).toHaveLength(2)   // the middle title is a div
+
+		buttons[0].focus()
+		await user.keyboard('{ArrowDown}')
+		expect(buttons[1]).toHaveFocus()  // fails today: focus stays on buttons[0]
+
+		await user.keyboard('{ArrowDown}')
+		expect(buttons[0]).toHaveFocus()  // wraps across the skipped div
 	})
 })

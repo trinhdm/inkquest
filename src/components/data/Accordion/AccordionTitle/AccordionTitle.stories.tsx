@@ -1,9 +1,10 @@
 import { Component } from 'react'
 import { expect, userEvent, within } from 'storybook/test'
 import { Accordion } from '../Accordion'
-import { INDICATOR_OPTIONS } from '../options.story'
+import { BOOLEAN_OPTIONS, INDICATOR_OPTIONS } from '../options.story'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+import classes from '../Accordion.module.scss'
 
 const Row = ({ children }: { children: ReactNode }) => (
 	<div style={ { display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'flex-start' } }>
@@ -85,6 +86,10 @@ const meta: Meta<AccordionTitleStoryProps> = {
 		children: {
 			control: 'text',
 			description: 'Required. Rendered inside a `styles(\'text\')` `<span>`, alongside the optional `step` label and indicator icon.',
+		},
+		unstyled: {
+			control: 'boolean',
+			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `AccordionTitle`\'s own `AccordionTitleProps`. Read purely off `AccordionTitle`\'s OWN props (`useProps(NAME, _props)`) — `useAccordionCtx(NAME)` only ever destructures `collapsible`/`disabled`/`handleToggle`/`idx`/`indicator`/`isOpen`/`step` here, never `unstyled`, so it does NOT inherit from the wrapping `Accordion`\'s context and must be set directly on `Accordion.Title` itself. The semantic base classes (`inkq-accordion-title`, `inkq-accordion-title__step`, `inkq-accordion-title__text`, `inkq-accordion-title__indicator`) are ALWAYS emitted regardless of this prop — all four have real declarations in `Accordion.module.scss`, so it only suppresses the CSS-module-hashed class normally appended alongside each. See the `Unstyled` story.',
 		},
 	},
 	args: {
@@ -275,6 +280,85 @@ export const DisabledParent: Story = {
 
 		await userEvent.click(title)
 		await expect(title).toHaveAttribute('aria-expanded', 'false')
+	},
+}
+
+// `unstyled` is `AccordionTitle`'s OWN prop, read straight off its own
+// `_props` via `useProps` — `useAccordionCtx(NAME)` only ever destructures
+// `collapsible`/`disabled`/`handleToggle`/`idx`/`indicator`/`isOpen`/`step`
+// off `Accordion.context`, never `unstyled`, so it must be set directly on
+// `Accordion.Title` itself here, NOT on the wrapping `Accordion` (which has
+// no effect on it at all).
+//
+// It does NOT remove `AccordionTitle`'s own semantic base classes
+// (`inkq-accordion-title`, `inkq-accordion-title__step`,
+// `inkq-accordion-title__text`, `inkq-accordion-title__indicator`) — per
+// `getClassName.tsx`, the base class is now ALWAYS emitted. It only
+// suppresses the CSS-module hashed class normally appended alongside it, for
+// every selector this component styles — asserted here against the REAL
+// compiled export map (`Accordion.module.scss`), not a literal hash or an
+// "any extra class" heuristic. The wrapping `Accordion` is given `layout:
+// 'steps'` (so the `step` `<span>` renders) and keeps its registered default
+// `indicator: 'plus'` (so the indicator `<span>` renders too) — both
+// selectors have real SCSS declarations, so suppression is genuinely
+// observable on all four selectors.
+export const Unstyled: Story = {
+	parameters: {
+		layout: 'padded',
+		controls: { exclude: ['unstyled'] },
+	},
+	render: args => (
+		<Row>
+			{ BOOLEAN_OPTIONS.map(unstyled => (
+				<Group key={ String(unstyled) } label={ String(unstyled) }>
+					{ titleTemplate({ ...args, unstyled }, { children: null, layout: 'steps', index: 0 }) }
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			titles = canvas.getAllByRole('button')
+
+		expect(titles).toHaveLength(2)
+		const [unstyledRoot, styledRoot] = titles as HTMLElement[]
+
+		await expect(styledRoot).toHaveClass('inkq-accordion-title')
+		await expect(unstyledRoot).toHaveClass('inkq-accordion-title')
+
+		const rootHash = classes['inkq-accordion-title']!
+		expect(styledRoot.classList.contains(rootHash)).toBe(true)
+		expect(unstyledRoot.classList.contains(rootHash)).toBe(false)
+
+		const styledStep = styledRoot.querySelector('.inkq-accordion-title__step') as HTMLElement,
+			unstyledStep = unstyledRoot.querySelector('.inkq-accordion-title__step') as HTMLElement
+
+		await expect(styledStep).toHaveClass('inkq-accordion-title__step')
+		await expect(unstyledStep).toHaveClass('inkq-accordion-title__step')
+
+		const stepHash = classes['inkq-accordion-title__step']!
+		expect(styledStep.classList.contains(stepHash)).toBe(true)
+		expect(unstyledStep.classList.contains(stepHash)).toBe(false)
+
+		const styledText = styledRoot.querySelector('.inkq-accordion-title__text') as HTMLElement,
+			unstyledText = unstyledRoot.querySelector('.inkq-accordion-title__text') as HTMLElement
+
+		await expect(styledText).toHaveClass('inkq-accordion-title__text')
+		await expect(unstyledText).toHaveClass('inkq-accordion-title__text')
+
+		const textHash = classes['inkq-accordion-title__text']!
+		expect(styledText.classList.contains(textHash)).toBe(true)
+		expect(unstyledText.classList.contains(textHash)).toBe(false)
+
+		const styledIndicator = styledRoot.querySelector('.inkq-accordion-title__indicator') as HTMLElement,
+			unstyledIndicator = unstyledRoot.querySelector('.inkq-accordion-title__indicator') as HTMLElement
+
+		await expect(styledIndicator).toHaveClass('inkq-accordion-title__indicator')
+		await expect(unstyledIndicator).toHaveClass('inkq-accordion-title__indicator')
+
+		const indicatorHash = classes['inkq-accordion-title__indicator']!
+		expect(styledIndicator.classList.contains(indicatorHash)).toBe(true)
+		expect(unstyledIndicator.classList.contains(indicatorHash)).toBe(false)
 	},
 }
 

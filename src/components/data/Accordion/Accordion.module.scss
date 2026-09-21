@@ -33,16 +33,22 @@
 
 	&__wrapper {
 		transition: background-color var(--duration-fast) ease;
+
+		#{$name}:has([aria-controls]:enabled) & {
+			&:hover {
+				background-color: color-mix(in srgb, var(--inkq-background-card-hover) 45%, transparent);
+			}
+		}
 	}
 
 	&:last-of-type {
 		border-bottom: 1px solid var(--accordion-border-color);
 	}
 
-	&:hover #{$name} {
-		&__wrapper {
-			background-color: color-mix(in srgb, var(--inkq-background-card-hover) 45%, transparent);
-		}
+	&:has([aria-controls]:disabled) {
+		cursor: not-allowed;
+		opacity: var(--inkq-opacity-disabled);
+		user-select: none;
 	}
 }
 
@@ -51,18 +57,17 @@
 
 	--accordion-title-indent: var(--accordion-indent);
 
+	.inkq-accordion:where([data-step]) & {
+		--accordion-title-indent: 0;
+	}
+
 	align-items: center;
-	// border-color: currentColor;
-	// border-style: none;
-	// border-width: medium;
 	color: var(--inkq-color-text);
-	cursor: pointer;
 	display: flex;
 	font: inherit;
 	gap: var(--accordion-gap);
 	justify-content: space-between;
-	opacity: 1;
-	padding: var(--space-6) 0;
+	padding-block: var(--space-6);
 	text-align: left;
 	width: 100%;
 
@@ -112,10 +117,14 @@
 			transform: none;
 			transition: transform var(--icon-rotate-duration) var(--easing-out);
 
-			.inkq-accordion[data-open] & {
+			.inkq-accordion:where([data-open]) & {
 				transform: rotate(var(--icon-rotate));
 			}
 		}
+	}
+
+	&:is([aria-controls]:enabled) {
+		cursor: pointer;
 	}
 }
 
@@ -123,6 +132,10 @@
 	$name: &;
 
 	--accordion-content-indent: var(--accordion-indent);
+
+	.inkq-accordion:where([data-step]) & {
+		--accordion-content-indent: calc(var(--accordion-column-width) + var(--accordion-gap));
+	}
 
 	color: var(--inkq-color-text-secondary);
 	display: grid;
@@ -133,12 +146,12 @@
 	transition: grid-template-rows 340ms var(--easing),
 		opacity 340ms var(--easing);
 
-	&__inner {
+	&__wrapper {
 		min-height: 0;
 		overflow: hidden;
 	}
 
-	&__wrapper {
+	&__inner {
 		margin-left: var(--accordion-content-indent);
 		max-width: var(--inkq-container-block);
 		padding: 0 0 var(--space-6) 0;
@@ -148,18 +161,4 @@
 		grid-template-rows: 0fr;
 		opacity: 0;
 	}
-}
-
-.inkq-accordion:where([data-step]) {
-	.inkq-accordion-title {
-		--accordion-title-indent: 0;
-	}
-
-	.inkq-accordion-content {
-		--accordion-content-indent: calc(var(--accordion-column-width) + var(--accordion-gap));
-	}
-}
-
-.inkq-accordion-group {
-	$name: &;
 }

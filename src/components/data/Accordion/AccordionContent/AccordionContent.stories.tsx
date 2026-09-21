@@ -202,18 +202,11 @@ export const Unstyled: Story = {
 		expect(styledRoot.classList.contains(rootHash)).toBe(true)
 		expect(unstyledRoot.classList.contains(rootHash)).toBe(false)
 
-		const styledInner = styledRoot.firstElementChild as HTMLElement,
-			unstyledInner = unstyledRoot.firstElementChild as HTMLElement
-
-		await expect(styledInner).toHaveClass('inkq-accordion-content__inner')
-		await expect(unstyledInner).toHaveClass('inkq-accordion-content__inner')
-
-		const innerHash = classes['inkq-accordion-content__inner']!
-		expect(styledInner.classList.contains(innerHash)).toBe(true)
-		expect(unstyledInner.classList.contains(innerHash)).toBe(false)
-
-		const styledWrapper = styledInner.firstElementChild as HTMLElement,
-			unstyledWrapper = unstyledInner.firstElementChild as HTMLElement
+		// Nesting is root > wrapper > inner. The `wrapper` is the element
+		// `AccordionContent.tsx` puts `inert` on while closed; `inner` holds
+		// the actual content.
+		const styledWrapper = styledRoot.firstElementChild as HTMLElement,
+			unstyledWrapper = unstyledRoot.firstElementChild as HTMLElement
 
 		await expect(styledWrapper).toHaveClass('inkq-accordion-content__wrapper')
 		await expect(unstyledWrapper).toHaveClass('inkq-accordion-content__wrapper')
@@ -221,6 +214,16 @@ export const Unstyled: Story = {
 		const wrapperHash = classes['inkq-accordion-content__wrapper']!
 		expect(styledWrapper.classList.contains(wrapperHash)).toBe(true)
 		expect(unstyledWrapper.classList.contains(wrapperHash)).toBe(false)
+
+		const styledInner = styledWrapper.firstElementChild as HTMLElement,
+			unstyledInner = unstyledWrapper.firstElementChild as HTMLElement
+
+		await expect(styledInner).toHaveClass('inkq-accordion-content__inner')
+		await expect(unstyledInner).toHaveClass('inkq-accordion-content__inner')
+
+		const innerHash = classes['inkq-accordion-content__inner']!
+		expect(styledInner.classList.contains(innerHash)).toBe(true)
+		expect(unstyledInner.classList.contains(innerHash)).toBe(false)
 	},
 }
 

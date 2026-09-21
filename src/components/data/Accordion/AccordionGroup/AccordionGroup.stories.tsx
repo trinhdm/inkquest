@@ -51,7 +51,7 @@ const meta: Meta<AccordionGroupStoryProps> = {
 	argTypes: {
 		collapsible: {
 			control: 'boolean',
-			description: 'Only consulted in `type: \'single\'` mode: gates whether closing the CURRENTLY open item is allowed at all (`handleItemToggle`\'s `!next` branch: `collapsible ? [] : prev`). Has no effect in `\'multiple\'` mode, where each item toggles independently regardless. See the `Collapsible` story.',
+			description: 'Defaults to `true`. The group never acts on this itself — `handleItemToggle` does not read it — it only PUBLISHES it to every child `Accordion` through `ctxValues`, where each item enforces it (own `collapsible` on a child still wins). Setting it `false` makes EVERY item in the group permanently open and untogglable, with a non-interactive `<div>` title carrying no `aria-expanded` and no indicator. Applies in BOTH `type` modes, not just `\'single\'`, and makes `defaultOpen` moot — nothing can close, so nothing needs seeding. See the `Collapsible` story.',
 		},
 		defaultOpen: {
 			control: 'object',
@@ -136,9 +136,17 @@ export const Types: Story = {
 	},
 }
 
-// Only meaningful in `type: 'single'` mode — `handleItemToggle`'s `!next`
-// branch returns `prev` unchanged (a no-op) when `collapsible` is false,
-// instead of clearing the open item.
+// `collapsible={false}` makes the group's items permanently open and
+// untogglable, and that is enforced in TWO places:
+//
+//  1. `Accordion.tsx` computes `isOpen = collapsible ? (...) : true`, so the
+//     item is always open, and its `handleToggle` returns early.
+//  2. `AccordionTitle.tsx` branches on `interactive = collapsible !== false`.
+//     When NOT interactive it renders a plain `<div>` (with `data-title`, no
+//     `aria`) instead of a `<button>` — so there is no button role and no
+//     `aria-expanded` at all, rather than a button that lies about being
+//     expandable. That is why the non-collapsible group below is queried by
+//     `[data-title]`, not by role.
 export const Collapsible: Story = {
 	parameters: { controls: { exclude: ['collapsible'] } },
 	render: args => (
@@ -156,17 +164,40 @@ export const Collapsible: Story = {
 		const groups = canvasElement.querySelectorAll('[data-group]')
 		expect(groups).toHaveLength(2)
 
-		const [collapsibleGroup, nonCollapsibleGroup] = groups,
-			collapsibleTitle = within(collapsibleGroup as HTMLElement).getAllByRole('button')[0],
-			nonCollapsibleTitle = within(nonCollapsibleGroup as HTMLElement).getAllByRole('button')[0]
+		const [collapsibleGroup, nonCollapsibleGroup] = groups as unknown as [HTMLElement, HTMLElement]
 
+		// collapsible: a real <button> that toggles.
+		const collapsibleTitle = within(collapsibleGroup).getAllByRole('button')[0]!
+
+		await expect(collapsibleTitle.tagName).toBe('BUTTON')
 		await expect(collapsibleTitle).toHaveAttribute('aria-expanded', 'true')
 		await userEvent.click(collapsibleTitle)
 		await expect(collapsibleTitle).toHaveAttribute('aria-expanded', 'false')
 
-		await expect(nonCollapsibleTitle).toHaveAttribute('aria-expanded', 'true')
-		await userEvent.click(nonCollapsibleTitle)
-		await expect(nonCollapsibleTitle).toHaveAttribute('aria-expanded', 'true')
+		// non-collapsible: no button role anywhere in the group, and the title
+		// is a plain <div> carrying no aria-expanded.
+		await expect(within(nonCollapsibleGroup).queryAllByRole('button')).toHaveLength(0)
+
+		// ALL THREE, not just the first: "every item forced open" is precisely
+		// what separates these semantics from the older "one item is always
+		// open, but you can switch which one" reading — and that older reading
+		// satisfies every assertion below if only item 0 is inspected.
+		const nonCollapsibleTitles = [...nonCollapsibleGroup.querySelectorAll<HTMLElement>('[data-title]')]
+
+		await expect(nonCollapsibleTitles).toHaveLength(3)
+
+		for (const title of nonCollapsibleTitles) {
+			await expect(title.tagName).toBe('DIV')
+			await expect(title).not.toHaveAttribute('aria-expanded')
+
+			// its item stays open, and clicking changes nothing.
+			const item = title.closest('[data-open]')
+
+			await expect(item).toBeInTheDocument()
+			await userEvent.click(title)
+			await expect(item).toHaveAttribute('data-open')
+			await expect(title).not.toHaveAttribute('aria-expanded')
+		}
 	},
 }
 

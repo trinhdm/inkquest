@@ -56,7 +56,7 @@ const meta: Meta<AccordionStoryProps> = {
 	argTypes: {
 		collapsible: {
 			control: 'boolean',
-			description: 'Also inheritable from an enclosing `Accordion.Group`, via `AccordionGroupProvider` / `useAccordionGroupProps`: the group publishes its own `collapsible` through context, filled onto this `Accordion`\'s own raw props ONLY when the key is absent from them (own prop always wins). `Accordion` itself never reads `collapsible` directly — it\'s destructured out of `props` and otherwise unused; only `Accordion.Group`\'s own `handleItemToggle` consults it. See `Accordion.Group`\'s stories for the actual branch coverage.',
+			description: 'Defaults to `true`. Setting it `false` makes the item PERMANENTLY open and untogglable, enforced in two places: `Accordion` pins `isOpen` to `true` outright (skipping `open`/`defaultOpen` entirely, controlled or not), and `handleToggle` returns immediately — so neither `onToggle` nor `onItemToggle` ever fires. `AccordionTitle` then branches on `interactive = collapsible !== false` and renders a plain `<div>` instead of a `<button>`, with no `aria-expanded`, no `aria-controls` and no indicator — nothing focusable that lies about being expandable. Contrast `disabled`, which KEEPS the `<button>`: a disabled item is still a disclosure, merely unavailable, whereas `collapsible={false}` means it was never a disclosure at all. Also inheritable from an enclosing `Accordion.Group`, via `AccordionGroupProvider` / `useAccordionGroupProps`: the group publishes its own `collapsible` through context, filled onto this `Accordion`\'s own raw props ONLY when the key is absent from them (own prop always wins). See `Accordion.Group`\'s `Collapsible` story.',
 		},
 		defaultOpen: {
 			control: 'boolean',
@@ -93,7 +93,7 @@ const meta: Meta<AccordionStoryProps> = {
 		type: {
 			control: 'select',
 			options: TYPE_OPTIONS,
-			description: 'Also inheritable from an enclosing `Accordion.Group`. Not read by `Accordion` itself — destructured out of `props` and otherwise unused; only `Accordion.Group`\'s own state logic consults it.',
+			description: 'NOT inheritable from an enclosing `Accordion.Group` — `type` is absent from both `AccordionGroup.tsx`\'s own `ctxValues` and the `AccordionGroupContext` interface it publishes, unlike `collapsible`/`disabled`/`layout`. On `Accordion` itself it\'s a dead prop: destructured out of `props` and otherwise unused. Only `Accordion.Group`\'s own internal state logic (`handleItemToggle`) reads its OWN `type`, entirely independent of any per-`Accordion` `type` prop.',
 		},
 		unstyled: {
 			control: 'boolean',

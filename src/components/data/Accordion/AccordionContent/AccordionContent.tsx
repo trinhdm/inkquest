@@ -1,5 +1,4 @@
 import { useProps, useStyles, extractOtherProps } from '@/hooks'
-import { useReducedMotion } from 'framer-motion'
 import { useAccordionCtx } from '../Accordion.context'
 import { polymorphic, Box } from '@/components/polymorphic'
 import type { ReactNode } from 'react'
@@ -24,8 +23,6 @@ export const AccordionContent = polymorphic<AccordionContentSpecs>(_props => {
 	const { children, ...rest } = props
 	const { others } = extractOtherProps(rest)
 
-	const reduced = useReducedMotion()
-
 	return (
 		<Box
 			{ ...styles('root') }
@@ -35,9 +32,9 @@ export const AccordionContent = polymorphic<AccordionContentSpecs>(_props => {
 			id={ idx.content }
 			role="region"
 		>
-			<div { ...styles('inner') } inert={ !isOpen || undefined }>
-				<div { ...styles('wrapper') }>
-					{ children }
+			<div { ...styles('wrapper') } inert={ !isOpen || undefined }>
+				<div { ...styles('inner') }>
+					{ typeof children === 'string' ? <p>{ children }</p> : children }
 				</div>
 			</div>
 		</Box>

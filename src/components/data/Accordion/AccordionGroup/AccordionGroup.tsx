@@ -80,25 +80,26 @@ export const AccordionGroup = polymorphic<AccordionGroupSpecs>(_props => {
 		next: boolean
 	) => {
 		setOpenItems(prev => {
-			if (type === 'multiple')
-				return next ? [...prev, index] : prev.filter(i => i !== index)
-			else if (!next)
-				return collapsible ? [] : prev
-			return [index]
+			if (type === 'single') return next ? [index] : []
+			return next ? [...prev, index] : prev.filter(i => i !== index)
 		})
-	}, [collapsible, type])
+	}, [type])
 
 	const items = filterChildren(children, 'Accordion'),
 		total = items.length
 
 	const ctxValues = useMemo(
 		() => Array.from({ length: total }, (_, index): AccordionGroupContext => ({
-			disabled, index, layout,
+			collapsible, disabled, index, layout,
 			onItemToggle: handleItemToggle,
 			open: openItems.includes(index),
 			unstyled, withinView,
 		})),
-		[disabled, handleItemToggle, layout, openItems, total, unstyled, withinView]
+		[
+			collapsible, disabled, handleItemToggle,
+			layout, openItems, total,
+			unstyled, withinView,
+		]
 	)
 
 	return (

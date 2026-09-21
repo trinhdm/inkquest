@@ -18,6 +18,7 @@ interface AccordionTitleSpecs {
 
 export const AccordionTitle = polymorphic<AccordionTitleSpecs>(_props => {
 	const {
+		collapsible,
 		disabled,
 		handleToggle,
 		idx,
@@ -32,15 +33,18 @@ export const AccordionTitle = polymorphic<AccordionTitleSpecs>(_props => {
 	const { children, ...rest } = props
 	const { others } = extractOtherProps(rest)
 
-	const indicatorClasses = {
-		[`${indicator}`]: indicator !== 'none',
-	}
+	const sharedProps = { ...styles('root'), ...others, id: idx.title },
+		indicateClass = { [`${indicator}`]: indicator !== 'none' },
+		interactive = collapsible !== false
+
+	const aria = { controls: idx.content, expanded: isOpen },
+		data = { open: isOpen || null, title: true }
 
 	const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
 		const group = event.currentTarget.closest('[data-group]')
 		if (!group) return
 
-		const titles = [...group.querySelectorAll<HTMLButtonElement>('[data-title]')],
+		const titles = [...group.querySelectorAll<HTMLButtonElement>('button[data-title]')],
 			current = titles.indexOf(event.currentTarget)
 
 		let next = -1
@@ -56,42 +60,38 @@ export const AccordionTitle = polymorphic<AccordionTitleSpecs>(_props => {
 		titles[next]?.focus()
 	}
 
+	const stepEl = !!step && <span { ...styles('step') }>{ step }</span>,
+		textEl = <span { ...styles('text') }>{ children }</span>,
+		titleItems = <>{ stepEl }{ textEl }</>
+
+	if (interactive) {
+		return (
+			<Box
+				{ ...sharedProps }
+				as="button"
+				attributes={ { aria, data } }
+				disabled={ disabled }
+				onClick={ handleToggle }
+				onKeyDown={ handleKeyDown }
+			>
+				{ titleItems }
+
+				{ (indicator !== 'none') && (
+					<span { ...styles('indicator', { selector: indicateClass }) }>
+						<Icon type={ indicator === 'plus' ? 'add' : 'caret-down' } />
+					</span>
+				) }
+			</Box>
+		)
+	}
+
 	return (
 		<Box
-			{ ...styles('root') }
-			{ ...others }
-			as="button"
-			attributes={ {
-				aria: {
-					controls: idx.content,
-					expanded: isOpen,
-				},
-				data: {
-					open: isOpen || null,
-					title: true,
-				},
-			} }
-			disabled={ disabled }
-			id={ idx.title }
-			onClick={ handleToggle }
-			onKeyDown={ handleKeyDown }
-			type="button"
+			{ ...sharedProps }
+			as="div"
+			attributes={ { data } }
 		>
-			{ !!step && (
-				<span { ...styles('step') }>
-					{ step }
-				</span>
-			) }
-
-			<span { ...styles('text') }>
-				{ children }
-			</span>
-
-			{ indicator !== 'none' && (
-				<span { ...styles('indicator', { selector: indicatorClasses }) }>
-					<Icon type={ indicator === 'plus' ? 'add' : 'caret-down' } />
-				</span>
-			) }
+			{ titleItems }
 		</Box>
 	)
 }, classes)
