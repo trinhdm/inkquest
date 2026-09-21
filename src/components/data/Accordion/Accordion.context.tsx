@@ -1,5 +1,5 @@
 import { createRootCtx } from '@/lib/component'
-import type { AnimationOptions } from '@/hooks'
+import type { AnimationOptions } from '@/hooks/animation'
 
 export type AccordionIndicator =
 	| 'chevron'

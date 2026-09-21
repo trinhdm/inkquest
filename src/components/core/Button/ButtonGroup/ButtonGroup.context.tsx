@@ -1,5 +1,5 @@
 import { createRootCtx } from '@/lib/component'
-import type { AnimationOptions, RevealItemProps } from '@/hooks'
+import type { AnimationOptions, RevealItemProps } from '@/hooks/animation'
 import type { Button } from '../Button'
 
 export interface ButtonGroupContext

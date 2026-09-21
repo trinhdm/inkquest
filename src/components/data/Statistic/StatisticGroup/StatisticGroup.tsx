@@ -1,7 +1,10 @@
-import { useProps, useStyles, extractOtherProps } from '@/hooks'
-import { polymorphic, Box, type ListProps } from '@/components/polymorphic'
+import { useProps, extractOtherProps } from '@/hooks/useProps'
+import { useStyles } from '@/hooks/useStyles'
+import { polymorphic } from '@/lib/component'
+import { Box } from '@/components/polymorphic/Box'
 import { Group } from '@/components/layout'
 import { StatisticGroupProvider, type StatisticGroupContext } from './StatisticGroup.context'
+import type { ListProps } from '@/lib/component/factory/types'
 import classes from '../Statistic.module.scss'
 
 const NAME = 'Statistic.Group' as const

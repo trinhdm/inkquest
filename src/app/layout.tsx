@@ -1,7 +1,7 @@
 import { Archivo, Archivo_Black, Space_Mono } from 'next/font/google'
 import { AppProvider } from '@/providers/AppProvider'
 import { Footer, Navbar, Subnav } from '@/components/navigation'
-import { ScriptInjector } from '@/components/document'
+import { ScriptInjector } from '@/components/document/ScriptInjector'
 import type { Metadata } from 'next'
 import '@/styles/_global.scss'
 

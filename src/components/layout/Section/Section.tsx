@@ -1,16 +1,14 @@
-import {
-	useProps,
-	useReveal,
-	useStyles,
-	type MaybeAnimationProps,
-} from '@/hooks'
-
-import { polymorphic, Box, type ListProps } from '@/components/polymorphic'
-import { setThemeCSS } from '@/lib/theme'
+import { useProps } from '@/hooks/useProps'
+import { useReveal, type MaybeAnimationProps } from '@/hooks/animation'
+import { useStyles } from '@/hooks/useStyles'
 import { buildSection } from './builder'
+import { polymorphic } from '@/lib/component'
+import { setThemeCSS } from '@/lib/theme'
+import { Box } from '@/components/polymorphic/Box'
 import { Button } from '@/components/core'
 import { Container } from '../Container'
 import type { ReactNode } from 'react'
+import type { ListProps } from '@/lib/component/factory/types'
 import classes from './Section.module.scss'
 
 const NAME = 'Section' as const

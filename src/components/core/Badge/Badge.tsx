@@ -1,6 +1,10 @@
-import { useProps, useStyles, useVariants, extractOtherProps } from '@/hooks'
-import { polymorphic, Box, type ListProps } from '@/components/polymorphic'
+import { useProps, extractOtherProps } from '@/hooks/useProps'
+import { useStyles } from '@/hooks/useStyles'
+import { useVariants } from '@/hooks/useVariants'
+import { polymorphic } from '@/lib/component'
+import { Box } from '@/components/polymorphic/Box'
 import type { ReactNode } from 'react'
+import type { ListProps } from '@/lib/component/factory/types'
 import classes from './Badge.module.scss'
 
 const NAME = 'Badge' as const,

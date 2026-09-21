@@ -1,16 +1,13 @@
-import {
-	useCountUp,
-	useProps,
-	useStyles,
-	extractOtherProps,
-	type MaybeAnimationProps,
-} from '@/hooks'
-
+import { useCountUp, type MaybeAnimationProps } from '@/hooks/animation'
+import { useProps, extractOtherProps } from '@/hooks/useProps'
 import { useStatisticGroupProps } from './StatisticGroup'
-import { polymorphic, Box, type ListProps } from '@/components/polymorphic'
+import { useStyles } from '@/hooks/useStyles'
+import { polymorphic } from '@/lib/component'
 import { setThemeCSS } from '@/lib/theme'
+import { Box } from '@/components/polymorphic/Box'
 import { StatisticGroup } from './StatisticGroup'
 import type { ReactNode } from 'react'
+import type { ListProps } from '@/lib/component/factory/types'
 import classes from './Statistic.module.scss'
 
 const NAME = 'Statistic' as const,

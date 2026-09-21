@@ -1,9 +1,12 @@
 'use client'
 
-import { useProps, useStyles, extractOtherProps } from '@/hooks'
+import { useProps, extractOtherProps } from '@/hooks/useProps'
+import { useStyles } from '@/hooks/useStyles'
 import { filterNavigation, NavRoute } from '@/utils/navigation'
-import { polymorphic, Box, type ListProps } from '@/components/polymorphic'
+import { polymorphic } from '@/lib/component'
+import { Box } from '@/components/polymorphic/Box'
 import { Menu } from '../Menu'
+import type { ListProps } from '@/lib/component/factory/types'
 import classes from './Subnav.module.scss'
 
 const NAME = 'Subnav' as const,

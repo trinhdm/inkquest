@@ -1,13 +1,16 @@
 import { useCallback, useId, useMemo, useState, Children, type ReactNode } from 'react'
-import { useProps, useStyles, extractOtherProps } from '@/hooks'
 import { useAccordionGroupProps, AccordionGroup } from './AccordionGroup'
+import { useProps, extractOtherProps } from '@/hooks/useProps'
+import { useStyles } from '@/hooks/useStyles'
 import { filterChildren } from '@/lib/component'
-import { polymorphic, Box, type ListProps } from '@/components/polymorphic'
+import { polymorphic } from '@/lib/component'
 import { toKebabCase } from '@/utils/helpers'
 import { AccordionContent } from './AccordionContent'
 import { AccordionProvider } from './Accordion.context'
 import { AccordionTitle } from './AccordionTitle'
+import { Box } from '@/components/polymorphic/Box'
 import type { AccordionContext, AccordionIndicator } from './Accordion.context'
+import type { ListProps } from '@/lib/component/factory/types'
 import classes from './Accordion.module.scss'
 
 const NAME = 'Accordion' as const,

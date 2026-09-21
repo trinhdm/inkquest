@@ -1,8 +1,11 @@
-import { useProps, useStyles, extractOtherProps } from '@/hooks'
-import { polymorphic, Box, type ListProps } from '@/components/polymorphic'
+import { useProps, extractOtherProps } from '@/hooks/useProps'
+import { useStyles } from '@/hooks/useStyles'
+import { polymorphic } from '@/lib/component'
 import { setThemeCSS } from '@/lib/theme'
+import { Box } from '@/components/polymorphic/Box'
 import { GridItem } from './GridItem'
 import type { ReactNode } from 'react'
+import type { ListProps } from '@/lib/component/factory/types'
 import classes from './Grid.module.scss'
 
 const NAME = 'Grid' as const,

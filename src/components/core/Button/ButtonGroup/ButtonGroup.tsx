@@ -1,9 +1,13 @@
 import { useMemo, type CSSProperties, type ReactNode } from 'react'
-import { useProps, useStyles, extractOtherProps, revealItemFrom } from '@/hooks'
+import { useProps, extractOtherProps } from '@/hooks/useProps'
+import { useStyles } from '@/hooks/useStyles'
 import { filterChildren, withProvider } from '@/lib/component'
-import { polymorphic, Box, type ListProps } from '@/components/polymorphic'
+import { polymorphic } from '@/lib/component'
+import { revealItemFrom } from '@/hooks/animation'
+import { Box } from '@/components/polymorphic/Box'
 import { ButtonGroupProvider, type ButtonGroupContext } from './ButtonGroup.context'
 import type { Button } from '../Button'
+import type { ListProps } from '@/lib/component/factory/types'
 import classes from '../Button.module.scss'
 
 const NAME = 'Button.Group' as const

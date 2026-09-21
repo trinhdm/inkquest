@@ -1,6 +1,9 @@
-import { useProps, useStyles, extractOtherProps } from '@/hooks'
-import { polymorphic, Box, type ListProps } from '@/components/polymorphic'
+import { useProps, extractOtherProps } from '@/hooks/useProps'
+import { useStyles } from '@/hooks/useStyles'
+import { polymorphic } from '@/lib/component'
+import { Box } from '@/components/polymorphic/Box'
 import { MenuItem } from './MenuItem'
+import type { ListProps } from '@/lib/component/factory/types'
 import type { NavigationItem } from '@/utils/navigation'
 import classes from './Menu.module.scss'
 

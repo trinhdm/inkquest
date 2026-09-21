@@ -1,12 +1,8 @@
-import {
-	DEFAULT_COLOR_SCHEME,
-	JS_ANIMATE_KEY,
-	schemeControls,
-} from '../src/components/document'
 import { useEffect } from 'react'
 import { inkqDark } from './theme'
+import { schemeControls } from '../src/components/document/ScriptInjector'
 import { AppProvider } from '../src/providers/AppProvider'
-// import { DocsContainer } from '@storybook/addon-docs/blocks'
+import { DEFAULT_COLOR_SCHEME, JS_ANIMATE_KEY } from '../src/components/document/constants'
 import type { Addon_StorySortComparatorV7 } from 'storybook/internal/types'
 import type { Preview } from '@storybook/nextjs-vite'
 import '../src/styles/_global.scss'
@@ -99,6 +95,7 @@ const preview: Preview = {
 					'Layout',
 					'Navigation',
 					'Data',
+					'Polymorphic',
 					'Document',
 				]
 

@@ -1,8 +1,11 @@
-import { useProps, useStyles, extractOtherProps } from '@/hooks'
+import { useProps, extractOtherProps } from '@/hooks/useProps'
+import { useStyles } from '@/hooks/useStyles'
 import { filterChildren } from '@/lib/component'
-import { polymorphic, Box, type ListProps } from '@/components/polymorphic'
+import { polymorphic } from '@/lib/component'
+import { Box } from '@/components/polymorphic/Box'
 import { TimelineItem } from './TimelineItem'
 import type { ReactNode } from 'react'
+import type { ListProps } from '@/lib/component/factory/types'
 import classes from './Timeline.module.scss'
 
 const NAME = 'Timeline' as const,

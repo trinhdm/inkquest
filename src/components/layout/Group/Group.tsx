@@ -6,19 +6,16 @@ import {
 	type ReactNode,
 } from 'react'
 
-import {
-	useProps,
-	useReplayInView,
-	useStyles,
-	extractOtherProps,
-	type MaybeAnimationProps,
-} from '@/hooks'
-
+import { useProps, extractOtherProps } from '@/hooks/useProps'
+import { useReplayInView, type MaybeAnimationProps, } from '@/hooks/animation'
+import { useStyles } from '@/hooks/useStyles'
 import { filterChildren, withProvider, type RootProviderFn } from '@/lib/component'
-import { polymorphic, Box, type ListProps } from '@/components/polymorphic'
+import { polymorphic } from '@/lib/component'
 import { setThemeCSS } from '@/lib/theme'
+import { Box } from '@/components/polymorphic/Box'
 import { GroupItem } from './GroupItem'
 import { GroupProvider, type GroupContext } from './Group.context'
+import type { ListProps } from '@/lib/component/factory/types'
 import classes from './Group.module.scss'
 
 const NAME = 'Group' as const,

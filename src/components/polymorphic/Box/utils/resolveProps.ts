@@ -1,5 +1,5 @@
 import { buildAttributes, type AttrSource } from './buildAttributes'
-import { styleProps } from '@/hooks'
+import { styleProps } from '@/hooks/useProps'
 
 export const resolveProps = <T extends AttrSource>(_props: T) => {
 	const props = styleProps(_props)

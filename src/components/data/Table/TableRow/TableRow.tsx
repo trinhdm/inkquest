@@ -1,5 +1,7 @@
-import { useProps, useStyles, extractOtherProps } from '@/hooks'
-import { polymorphic, Box } from '@/components/polymorphic'
+import { useProps, extractOtherProps } from '@/hooks/useProps'
+import { useStyles } from '@/hooks/useStyles'
+import { polymorphic } from '@/lib/component'
+import { Box } from '@/components/polymorphic/Box'
 import type { ReactNode } from 'react'
 import classes from '../Table.module.scss'
 

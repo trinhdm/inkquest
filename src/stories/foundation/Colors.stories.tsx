@@ -24,7 +24,7 @@
 // them to at paint time.
 import { base } from '@/lib/theme/reference'
 import { COLOR_TOKENS } from '@/lib/theme'
-import { schemeControls } from '@/components/document'
+import { schemeControls } from '@/components/document/ScriptInjector'
 import { tokens } from '@/lib/theme'
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { expect, waitFor } from 'storybook/test'

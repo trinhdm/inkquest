@@ -1,7 +1,10 @@
 import Image from 'next/image'
-import { useProps, useStyles, extractOtherProps } from '@/hooks'
-import { polymorphic, Box, type ListProps } from '@/components/polymorphic'
+import { useProps, extractOtherProps } from '@/hooks/useProps'
+import { useStyles } from '@/hooks/useStyles'
+import { polymorphic } from '@/lib/component'
+import { Box } from '@/components/polymorphic/Box'
 import type { ComponentProps } from 'react'
+import type { ListProps } from '@/lib/component/factory/types'
 import classes from './Card.module.scss'
 
 const NAME = 'Card' as const,

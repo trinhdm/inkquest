@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, type ReactNode } from 'react'
-import { StyleInliner, VariantStyleInliner } from '@/components/document'
+import { StyleInliner, VariantStyleInliner } from '@/components/document/StyleInliner'
 import { ThemeProvider } from '../ThemeProvider'
 import { DEFAULT_THEME } from '@/providers/ThemeProvider/constants'
 import { PREFIX_CSS_SELECTOR } from '@/utils/constants'

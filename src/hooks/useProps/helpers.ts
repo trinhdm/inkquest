@@ -1,7 +1,7 @@
 import cx from 'clsx'
 import type { CSSProperties, ElementType, ReactNode } from 'react'
 import type { DistributiveOmit } from '@/types/utils'
-import type { SpecsContract } from '@/components/polymorphic'
+import type { SpecsContract } from '@/lib/component/factory/types'
 
 interface DOMStyleProps {
 	className?: string
