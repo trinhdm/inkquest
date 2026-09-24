@@ -1,0 +1,11 @@
+
+.inkq-quote {
+	$name: &;
+
+	display: flex;
+	flex-direction: column;
+
+	&__content {
+		margin: 0;
+	}
+}

@@ -1,0 +1,38 @@
+{
+  "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "_comment": "Mutation testing asks a question coverage cannot: do the assertions actually catch a change, or do they merely execute the line? Scoped on purpose — mutating all of src/ runs for hours. These are the pure, branch-heavy modules with the strongest suites, so a surviving mutant here is a genuine gap rather than noise.",
+  "packageManager": "npm",
+  "testRunner": "jest",
+  "jest": {
+    "projectType": "custom",
+    "configFile": "jest.config.ts",
+    "enableFindRelatedTests": true
+  },
+  "coverageAnalysis": "perTest",
+  "_scope": "Default scope is the leaf modules — pure, branch-heavy, and NOT imported by half the tree. Breadth is cheap to add on the command line (`npm run test:mutation -- --mutate 'src/utils/helpers/objects.ts'`) and expensive to make the default: `objects.ts`, `hooks/useProps/helpers.ts` and `children.ts` are imported almost everywhere, so with perTest analysis nearly all 763 tests cover each of their mutants, which pushed a full run past four hours. Widen deliberately, on a nightly job.",
+  "mutate": [
+    "src/utils/helpers/checks.ts",
+    "src/utils/helpers/strings.ts",
+    "src/utils/navigation.ts",
+    "src/hooks/useProps/defaultsRegistry.ts",
+    "src/hooks/useVariants/variantsRegistry.ts",
+    "src/lib/general/*.ts",
+    "src/lib/theme/format/*.ts",
+    "!src/**/*.test.{ts,tsx}",
+    "!src/**/index.ts"
+  ],
+  "reporters": ["html", "clear-text", "progress"],
+  "htmlReporter": { "fileName": "reports/mutation/index.html" },
+  "thresholds": {
+    "high": 85,
+    "low": 70,
+    "break": 60
+  },
+  "timeoutMS": 20000,
+  "concurrency": 4,
+  "tempDirName": ".stryker-tmp",
+  "cleanTempDir": true,
+  "_runtime": "A full scoped run is minutes, not seconds — every mutant re-runs the tests that cover it. Treat this as an on-demand or nightly job, not a per-commit gate. `incremental` caches results keyed by mutant, so a rerun only re-tests what changed; delete reports/mutation/stryker-incremental.json to force a cold run.",
+  "incremental": true,
+  "incrementalFile": "reports/mutation/stryker-incremental.json"
+}

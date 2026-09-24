@@ -1,0 +1,41 @@
+
+.inkq-navbar {
+	$name: &;
+
+	align-items: center;
+	border-bottom: 1px solid var(--inkq-border);
+	display: flex;
+	min-height: var(--inkq-navbar-size);
+	padding-block: var(--inkq-pad-menu);
+	position: relative;
+	z-index: 20;
+
+	&__inner {
+		align-items: center;
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(var(--screen-size-320), 1fr));
+		justify-content: space-between;
+
+		&:has(#{$name}__col:nth-child(3):last-child) {
+			grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+		}
+	}
+
+	&__col {
+		justify-self: center;
+
+		&:not(:only-child) {
+			&:first-of-type {
+				justify-self: start;
+			}
+
+			&:nth-child(2):nth-last-child(2) {
+				justify-self: center;
+			}
+
+			&:last-of-type {
+				justify-self: end;
+			}
+		}
+	}
+}

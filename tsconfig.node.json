@@ -1,0 +1,14 @@
+{
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"module": "esnext",
+		"moduleResolution": "bundler",
+		"types": ["node"]
+	},
+	"include": [
+		"next.config.ts",
+		"jest.config.ts",
+		"vitest.config.ts",
+		"vitest.shims.d.ts"
+	]
+}

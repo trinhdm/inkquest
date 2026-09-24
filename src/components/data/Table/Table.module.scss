@@ -1,0 +1,23 @@
+
+.inkq-table {
+	$name: &;
+
+	display: flex;
+	flex-direction: column;
+
+	// &__cell {}
+}
+
+.inkq-table-row {
+	align-items: baseline;
+	border-top: 1px solid var(--inkq-border);
+	display: grid;
+	gap: var(--rs-gap, var(--space-6));
+	grid-template-columns: var(--rs-cols, 200px 1fr auto);
+	padding: var(--space-6) 0;
+	// transition: opacity 480ms var(--easing-out) 43ms, transform 480ms var(--easing-out) 43ms;
+
+	&:last-of-type {
+		border-bottom: 1px solid var(--inkq-border);
+	}
+}

@@ -1,0 +1,44 @@
+.inkq-menu {
+	$name: &;
+
+	align-items: center;
+	display: flex;
+	gap: var(--inkq-space-menu);
+	position: relative;
+}
+
+.inkq-menu-item {
+	$name: &;
+
+	align-items: center;
+	display: flex;
+	gap: var(--inkq-space-icon);
+	position: relative;
+
+	&__label {
+		color: var(--inkq-color-link);
+		font: var(--inkq-text-navigation);
+		text-decoration: none;
+		white-space: nowrap;
+
+		&:hover {
+			color: var(--inkq-color-link-hover);
+		}
+	}
+
+	&:where([data-current]) {
+		#{$name}__label {
+			font-weight: var(--inkq-font-weight-bold);
+		}
+	}
+
+	& > .inkq-menu {
+		align-items: flex-start;
+		background-color: var(--inkq-background-page);
+		flex-direction: column;
+		padding-top: var(--inkq-pad-menu);
+		position: absolute;
+		top: 100%;
+		z-index: 2;
+	}
+}
