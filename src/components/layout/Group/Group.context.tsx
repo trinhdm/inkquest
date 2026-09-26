@@ -1,8 +1,8 @@
 import { createRootCtx } from '@/lib/component'
-import type { AnimationOptions } from '@/hooks/animation'
+import type { AnimateInViewConfig } from '@/hooks/animation'
 
 export interface GroupContext
-	extends AnimationOptions {}
+	extends AnimateInViewConfig {}
 
 export const {
 	RootProvider: GroupProvider,

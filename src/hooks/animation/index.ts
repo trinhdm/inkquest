@@ -11,7 +11,7 @@ export {
 export {
 	revealMargin,
 	REVEAL_LEAD,
+	type AnimateInViewConfig,
 	type AnimationOptions,
 	type MaybeAnimationProps,
-	type ReplayInViewOptions,
 } from './constants'

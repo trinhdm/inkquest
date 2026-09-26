@@ -1,5 +1,5 @@
 import { createRootCtx } from '@/lib/component'
-import type { AnimationOptions } from '@/hooks/animation'
+import type { AnimateInViewConfig } from '@/hooks/animation'
 
 export type AccordionGroupLayout =
 	'default' | 'steps'
@@ -8,7 +8,7 @@ export type AccordionGroupType =
 	'single' | 'multiple'
 
 export interface AccordionGroupContext
-	extends Pick<AnimationOptions, 'index' | 'unstyled' | 'withinView'> {
+	extends Pick<AnimateInViewConfig, 'index' | 'unstyled' | 'withinView'> {
 	collapsible?: boolean
 	disabled?: boolean
 	layout?: AccordionGroupLayout

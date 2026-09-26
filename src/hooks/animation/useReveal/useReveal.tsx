@@ -19,10 +19,10 @@ import {
 import { useReducedMotion } from 'framer-motion'
 import { useReplayInView } from '../useReplayInView'
 import { extractOtherProps } from '../../useProps'
-import type { AnimationInViewOptions } from '../constants'
+import type { ReplayAnimateInViewConfig } from '../constants'
 
 interface UseRevealOptions
-	extends AnimationInViewOptions {}
+	extends ReplayAnimateInViewConfig {}
 
 interface RevealValue<T> {
 	item: (index: number) => RevealItemProps
