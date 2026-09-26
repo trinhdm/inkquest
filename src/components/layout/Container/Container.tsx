@@ -2,7 +2,7 @@ import { useProps, extractOtherProps } from '@/hooks/useProps'
 import { useStyles } from '@/hooks/useStyles'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
-import type { ListProps } from '@/lib/component/factory/types'
+import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Container.module.scss'
 
 const NAME = 'Container' as const,
@@ -19,7 +19,7 @@ interface ContainerProps {
 interface ContainerSpecs {
 	defaults: {
 		as: typeof TAG
-		props: ListProps<typeof DEFAULT_PROPS>
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: ContainerProps
 }

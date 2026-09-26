@@ -2,7 +2,7 @@ import { useProps, extractOtherProps } from '@/hooks/useProps'
 import { useStyles } from '@/hooks/useStyles'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
-import type { ListProps } from '@/lib/component/factory/types'
+import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Quote.module.scss'
 
 const NAME = 'Quote' as const,
@@ -20,7 +20,7 @@ interface QuoteProps {
 interface QuoteSpecs {
 	defaults: {
 		as: typeof TAG
-		props: ListProps<typeof DEFAULT_PROPS>
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: QuoteProps
 }

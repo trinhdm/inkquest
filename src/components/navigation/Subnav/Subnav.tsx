@@ -6,7 +6,7 @@ import { filterNavigation, NavRoute } from '@/utils/navigation'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import { Menu } from '../Menu'
-import type { ListProps } from '@/lib/component/factory/types'
+import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Subnav.module.scss'
 
 const NAME = 'Subnav' as const,
@@ -23,7 +23,7 @@ interface SubnavProps {
 interface SubnavSpecs {
 	defaults: {
 		as: typeof TAG
-		props: ListProps<typeof DEFAULT_PROPS>
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: SubnavProps
 }

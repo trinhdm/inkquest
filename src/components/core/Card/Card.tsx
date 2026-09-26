@@ -4,7 +4,7 @@ import { useStyles } from '@/hooks/useStyles'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import type { ComponentProps } from 'react'
-import type { ListProps } from '@/lib/component/factory/types'
+import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Card.module.scss'
 
 const NAME = 'Card' as const,
@@ -26,7 +26,7 @@ interface CardProps {
 interface CardSpecs {
 	defaults: {
 		as: typeof TAG
-		props: ListProps<typeof DEFAULT_PROPS>
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: CardProps
 }

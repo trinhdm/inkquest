@@ -10,7 +10,7 @@ import { AccordionProvider } from './Accordion.context'
 import { AccordionTitle } from './AccordionTitle'
 import { Box } from '@/components/polymorphic/Box'
 import type { AccordionContext, AccordionIndicator } from './Accordion.context'
-import type { ListProps } from '@/lib/component/factory/types'
+import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Accordion.module.scss'
 
 const NAME = 'Accordion' as const,
@@ -42,7 +42,7 @@ interface AccordionProps {
 interface AccordionSpecs {
 	defaults: {
 		as: typeof TAG
-		props: ListProps<typeof DEFAULT_PROPS>
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: AccordionProps
 	subcomponents: {

@@ -4,7 +4,7 @@ import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import { ICON_MAP, type IconType } from './IconMap'
 import type { LucideProps } from 'lucide-react'
-import type { ListProps } from '@/lib/component/factory/types'
+import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Icon.module.scss'
 
 const NAME = 'Icon' as const,
@@ -26,7 +26,7 @@ interface IconProps {
 interface IconSpecs {
 	defaults: {
 		as: typeof TAG
-		props: ListProps<typeof DEFAULT_PROPS>
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: IconProps
 }

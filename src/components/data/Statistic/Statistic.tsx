@@ -7,7 +7,7 @@ import { setThemeCSS } from '@/lib/theme'
 import { Box } from '@/components/polymorphic/Box'
 import { StatisticGroup } from './StatisticGroup'
 import type { ReactNode } from 'react'
-import type { ListProps } from '@/lib/component/factory/types'
+import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Statistic.module.scss'
 
 const NAME = 'Statistic' as const,
@@ -39,7 +39,7 @@ type StatisticProps =
 interface StatisticSpecs {
 	defaults: {
 		as: typeof TAG
-		props: ListProps<typeof DEFAULT_PROPS>
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: StatisticProps
 	subcomponents: {

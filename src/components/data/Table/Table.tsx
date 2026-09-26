@@ -5,7 +5,7 @@ import { Box } from '@/components/polymorphic/Box'
 import { TableCell } from './TableCell'
 import { TableRow } from './TableRow'
 import type { ReactNode } from 'react'
-import type { ListProps } from '@/lib/component/factory/types'
+import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Table.module.scss'
 
 const NAME = 'Table' as const,
@@ -22,7 +22,7 @@ interface TableProps {
 interface TableSpecs {
 	defaults: {
 		as: typeof TAG
-		props: ListProps<typeof DEFAULT_PROPS>
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: TableProps
 	subcomponents: {

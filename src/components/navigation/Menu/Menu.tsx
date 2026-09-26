@@ -3,8 +3,8 @@ import { useStyles } from '@/hooks/useStyles'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import { MenuItem } from './MenuItem'
-import type { ListProps } from '@/lib/component/factory/types'
 import type { NavigationItem } from '@/utils/navigation'
+import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Menu.module.scss'
 
 const NAME = 'Menu' as const,
@@ -23,7 +23,7 @@ interface MenuProps {
 interface MenuSpecs {
 	defaults: {
 		as: typeof TAG
-		props: ListProps<typeof DEFAULT_PROPS>
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: MenuProps
 }

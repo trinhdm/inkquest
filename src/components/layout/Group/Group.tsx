@@ -17,7 +17,7 @@ import { setThemeCSS } from '@/lib/theme'
 import { Box } from '@/components/polymorphic/Box'
 import { GroupItem } from './GroupItem'
 import { GroupProvider, type GroupContext } from './Group.context'
-import type { ListProps, PolymorphicProps } from '@/lib/component/factory/types'
+import type { PolymorphicProps, PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Group.module.scss'
 
 const NAME = 'Group' as const,
@@ -64,7 +64,7 @@ type GroupProps<Ctx extends GroupContext = GroupContext> =
 type GroupSpecs = {
 	defaults: {
 		as: typeof TAG
-		props: ListProps<typeof DEFAULT_PROPS>
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: GroupProps
 	subcomponents: {

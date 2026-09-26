@@ -24,7 +24,7 @@ export type PolymorphicProps<P, C> =
 	& Omit<P, 'as'>
 	& Omit<_ElementProps<_TagName<C>>, 'as' | keyof P>
 
-export type ListProps<S> =
+export type PropsDefaultList<S> =
 	AsPolymorphic<S> extends { as?: SpecDefaultAs<S> }
 		? Exclude<keyof S, 'as'>
 		: keyof S

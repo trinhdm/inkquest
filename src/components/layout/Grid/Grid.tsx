@@ -5,7 +5,7 @@ import { setThemeCSS } from '@/lib/theme'
 import { Box } from '@/components/polymorphic/Box'
 import { GridItem } from './GridItem'
 import type { ReactNode } from 'react'
-import type { ListProps } from '@/lib/component/factory/types'
+import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Grid.module.scss'
 
 const NAME = 'Grid' as const,
@@ -23,7 +23,7 @@ interface GridProps {
 interface GridSpecs {
 	defaults: {
 		as: typeof TAG
-		props: ListProps<typeof DEFAULT_PROPS>
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: GridProps
 	subcomponents: {

@@ -13,8 +13,8 @@ import { ButtonProvider, type ButtonContext } from './Button.context'
 import { ButtonSection } from './ButtonSection'
 import type { ComponentPropsWithoutRef, MouseEventHandler, ReactNode, Ref } from 'react'
 import type { Route } from 'next'
-import type { ListProps } from '@/lib/component/factory/types'
 import type { Priority as ThemePriority, Variant as ThemeVariant } from '@/lib/theme'
+import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Button.module.scss'
 
 const NAME = 'Button' as const,
@@ -64,7 +64,7 @@ type ButtonProps = BaseButtonProps & (
 interface ButtonSpecs {
 	defaults: {
 		as: typeof TAG
-		props: ListProps<typeof DEFAULT_PROPS>
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: ButtonProps
 	subcomponents: {
@@ -167,8 +167,6 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 			...sharedProps,
 			...others as Extract<typeof others, LinkButtonProps>,
 		}
-
-		// console.log({ href: others.href, external: isExternalLink(others.href) })
 
 		if (isExternalLink(others.href)) {
 			const external = { target: '_blank', rel: 'noopener noreferrer' }

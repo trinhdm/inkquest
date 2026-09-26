@@ -4,7 +4,7 @@ import { useVariants } from '@/hooks/useVariants'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import type { ReactNode } from 'react'
-import type { ListProps } from '@/lib/component/factory/types'
+import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Badge.module.scss'
 
 const NAME = 'Badge' as const,
@@ -37,7 +37,7 @@ interface BadgeProps {
 interface BadgeSpecs {
 	defaults: {
 		as: typeof TAG
-		props: ListProps<typeof DEFAULT_PROPS>
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: BadgeProps
 }

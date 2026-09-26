@@ -3,7 +3,7 @@ import { useStyles } from '@/hooks/useStyles'
 import { polymorphic } from '@/lib/component'
 import { Group } from '@/components/layout'
 import { StatisticGroupProvider, type StatisticGroupContext } from './StatisticGroup.context'
-import type { ListProps } from '@/lib/component/factory/types'
+import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from '../Statistic.module.scss'
 
 const NAME = 'Statistic.Group' as const
@@ -21,7 +21,7 @@ interface StatisticGroupProps
 		Pick<StatisticGroupContext, 'order' | 'size'> {}
 
 type StatisticGroupSpecs = {
-	defaults: { props: ListProps<typeof DEFAULT_PROPS> }
+	defaults: { props: PropsDefaultList<typeof DEFAULT_PROPS> }
 	isCompound: true
 	props: StatisticGroupProps
 }

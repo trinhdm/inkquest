@@ -8,7 +8,7 @@ import { Box } from '@/components/polymorphic/Box'
 import { Button } from '@/components/core'
 import { Container } from '../Container'
 import type { ReactNode } from 'react'
-import type { ListProps } from '@/lib/component/factory/types'
+import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Section.module.scss'
 
 const NAME = 'Section' as const
@@ -52,7 +52,7 @@ type SectionProps =
 	& MaybeAnimationProps
 
 interface SectionSpecs {
-	defaults: { props: ListProps<typeof DEFAULT_PROPS> }
+	defaults: { props: PropsDefaultList<typeof DEFAULT_PROPS> }
 	props: SectionProps
 	subcomponents: {
 		Button: typeof Button

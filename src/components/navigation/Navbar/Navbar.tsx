@@ -8,7 +8,7 @@ import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import { Button } from '@/components/core'
 import { Menu } from '../Menu'
-import type { ListProps } from '@/lib/component/factory/types'
+import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Navbar.module.scss'
 
 const NAME = 'Navbar' as const,
@@ -25,7 +25,7 @@ interface NavbarProps {
 interface NavbarSpecs {
 	defaults: {
 		as: typeof TAG
-		props: ListProps<typeof DEFAULT_PROPS>
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: NavbarProps
 }

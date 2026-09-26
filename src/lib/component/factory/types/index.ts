@@ -4,4 +4,4 @@ export type {
 	Specs, SpecsConstraint, SpecsContract,
 } from './specs.types'
 
-export type { ListProps, PolymorphicProps } from './props.types'
+export type { PolymorphicProps, PropsDefaultList } from './props.types'

@@ -7,7 +7,7 @@ import { revealItemFrom } from '@/hooks/animation'
 import { Box } from '@/components/polymorphic/Box'
 import { ButtonGroupProvider, type ButtonGroupContext } from './ButtonGroup.context'
 import type { Button } from '../Button'
-import type { ListProps } from '@/lib/component/factory/types'
+import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from '../Button.module.scss'
 
 const NAME = 'Button.Group' as const
@@ -33,7 +33,7 @@ interface ButtonGroupProps
 }
 
 type ButtonGroupSpecs = {
-	defaults: { props: ListProps<typeof DEFAULT_PROPS> }
+	defaults: { props: PropsDefaultList<typeof DEFAULT_PROPS> }
 	isCompound: true
 	props: ButtonGroupProps
 }

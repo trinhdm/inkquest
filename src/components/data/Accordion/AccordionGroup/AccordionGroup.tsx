@@ -6,7 +6,7 @@ import { filterChildren, withProvider } from '@/lib/component'
 import { polymorphic } from '@/lib/component'
 import { AccordionGroupProvider } from './AccordionGroup.context'
 import { Box } from '@/components/polymorphic/Box'
-import type { ListProps } from '@/lib/component/factory/types'
+import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from '../Accordion.module.scss'
 
 import type {
@@ -31,7 +31,7 @@ interface AccordionGroupProps {
 }
 
 type AccordionGroupSpecs = {
-	defaults: { props: ListProps<typeof DEFAULT_PROPS> }
+	defaults: { props: PropsDefaultList<typeof DEFAULT_PROPS> }
 	isCompound: true
 	props: AccordionGroupProps
 }

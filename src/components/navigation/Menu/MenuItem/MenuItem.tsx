@@ -8,8 +8,8 @@ import { toKebabCase } from '@/utils/helpers'
 import { Box } from '@/components/polymorphic/Box'
 import { Button, Icon } from '@/components/core'
 import { Menu } from '../Menu'
-import type { ListProps } from '@/lib/component/factory/types'
 import type { NavigationItem } from '@/utils/navigation'
+import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from '../Menu.module.scss'
 
 const NAME = 'MenuItem' as const,
@@ -28,7 +28,7 @@ interface MenuItemProps extends NavigationItem {
 interface MenuItemSpecs {
 	defaults: {
 		as: typeof TAG
-		props: ListProps<typeof DEFAULT_PROPS>
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: MenuItemProps
 }

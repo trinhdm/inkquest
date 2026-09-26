@@ -5,7 +5,7 @@ import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import { TimelineItem } from './TimelineItem'
 import type { ReactNode } from 'react'
-import type { ListProps } from '@/lib/component/factory/types'
+import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Timeline.module.scss'
 
 const NAME = 'Timeline' as const,
@@ -22,7 +22,7 @@ interface TimelineProps {
 interface TimelineSpecs {
 	defaults: {
 		as: typeof TAG
-		props: ListProps<typeof DEFAULT_PROPS>
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: TimelineProps
 	subcomponents: {
