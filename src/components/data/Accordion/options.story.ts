@@ -18,7 +18,7 @@ export const LAYOUT_OPTIONS: readonly NonNullable<Accordion.Props['layout']>[] =
 	'default', 'steps',
 ]
 
-export const TYPE_OPTIONS: readonly NonNullable<Accordion.Group.Props['type']>[] = [
+export const TYPE_OPTIONS: readonly NonNullable<Accordion.Type>[] = [
 	'single', 'multiple',
 ]
 

@@ -1,6 +1,6 @@
 import userEvent from '@testing-library/user-event'
 import { render, reset, screen } from '@/tests/test-utils'
-import { Accordion } from '../Accordion'
+import { Accordion } from '@/components/data/Accordion'
 
 const item = (title: string, content: string) => (
 	<Accordion key={ title }>
@@ -88,7 +88,7 @@ describe('Accordion.Group', () => {
 		expect(first).toHaveAttribute('aria-expanded', 'false')
 	})
 
-	it('when collapsible=false, clicking the only open item in "single" mode leaves it open', async () => {
+	it('when collapsible=false, the only open item in "single" mode stays open and is non-interactive', async () => {
 		const user = userEvent.setup()
 		render(
 			<Accordion.Group collapsible={ false } defaultOpen={ 0 }>
@@ -97,11 +97,18 @@ describe('Accordion.Group', () => {
 			</Accordion.Group>
 		)
 
-		const [first] = screen.getAllByRole('button')
-		expect(first).toHaveAttribute('aria-expanded', 'true')
+		expect(screen.queryAllByRole('button')).toHaveLength(0)
 
-		await user.click(first)
-		expect(first).toHaveAttribute('aria-expanded', 'true')
+		const [first] = screen.getAllByRole('region')
+		expect(first).toBeVisible()
+
+		const title = document.querySelector('[data-title]') as HTMLElement
+		expect(title.tagName).toBe('DIV')
+		expect(title).not.toHaveAttribute('aria-expanded')
+
+		await user.click(title)
+		expect(first).toBeVisible()
+		expect(title).not.toHaveAttribute('aria-expanded')
 	})
 
 	it('honours defaultOpen as an array of indices when type="multiple"', () => {

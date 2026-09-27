@@ -8,8 +8,8 @@
 .inkq-accordion {
 	$name: &;
 
-	--accordion-column-width: var(--space-11);
-	--accordion-gap: var(--space-9);
+	// --accordion-column-width: var(--space-11);
+	// --accordion-gap: var(--space-9);
 	--accordion-indent: calc(var(--accordion-column-width) / 1.5);
 
 	position: relative;
@@ -84,7 +84,8 @@
 	&__text {
 		color: var(--inkq-color-text);
 		flex: 1 1 100%;
-		font-size: var(--inkq-font-size-heading-h3);
+		// font-size: var(--inkq-font-size-heading-h3);
+		font-size: var(--accordion-text-size);
 		font-weight: var(--inkq-font-weight-semibold);
 		letter-spacing: -0.01em;
 		line-height: var(--inkq-font-leading-label);

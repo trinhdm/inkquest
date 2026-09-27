@@ -3,7 +3,9 @@ import { useAccordionGroupProps, AccordionGroup } from './AccordionGroup'
 import { useProps, extractOtherProps } from '@/hooks/useProps'
 import { useStyles } from '@/hooks/useStyles'
 import { filterChildren } from '@/lib/component'
+import { getSharedTokens } from './utils'
 import { polymorphic } from '@/lib/component'
+import { setThemeCSS } from '@/lib/theme'
 import { toKebabCase } from '@/utils/helpers'
 import { AccordionContent } from './AccordionContent'
 import { AccordionProvider } from './Accordion.context'
@@ -22,21 +24,22 @@ const DEFAULT_PROPS = {
 	defaultOpen: false,
 	index: 0,
 	indicator: 'plus',
+	size: 'md',
 } as const
 
-interface AccordionProps {
+interface AccordionProps
+	extends Omit<AccordionGroup.Context, 'withinView'> {
 	children: ReactNode
-	collapsible?: boolean
+	// collapsible?: AccordionGroup.Context['collapsible']
 	defaultOpen?: boolean
-	disabled?: boolean
+	// disabled?: boolean
 	id?: string
-	index?: number
+	// index?: number
 	indicator?: AccordionIndicator
-	layout?: AccordionGroup.Context['layout']
-	onItemToggle?: (index: number, open: boolean) => void
+	// layout?: AccordionGroup.Context['layout']
+	// onItemToggle?: (index: number, open: boolean) => void
 	onToggle?: (open: boolean) => void
-	open?: boolean
-	type?: AccordionGroup.Props['type']
+	// open?: boolean
 }
 
 interface AccordionSpecs {
@@ -78,9 +81,16 @@ const buildAccordion = (children: AccordionProps['children']) => {
 	return <>{ title }{ content }</>
 }
 
+const tokens = setThemeCSS<AccordionSpecs>((theme, props) => {
+	const { onItemToggle } = props
+
+	if (typeof onItemToggle === 'function') return {}
+	return getSharedTokens(props)
+})
+
 export const Accordion = polymorphic<AccordionSpecs>(_props => {
 	const props = useProps(NAME, useAccordionGroupProps(_props))
-	const styles = useStyles(NAME, { classes, props })
+	const styles = useStyles(NAME, { classes, props, tokens })
 
 	const {
 		children,
@@ -94,7 +104,6 @@ export const Accordion = polymorphic<AccordionSpecs>(_props => {
 		onItemToggle,
 		onToggle,
 		open,
-		type,
 		unstyled,
 		...rest
 	} = props
@@ -172,6 +181,9 @@ export declare namespace Accordion {
 	export type Context = AccordionContext
 	export type Props = AccordionProps
 	export type Specs = AccordionSpecs
+
+	export type Size = AccordionGroup.Size
+	export type Type = AccordionGroup.Type
 
 	export namespace Group {
 		export type Context = AccordionGroup.Context
