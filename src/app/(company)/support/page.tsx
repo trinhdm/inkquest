@@ -1,19 +1,20 @@
 'use client'
 
+import Link from 'next/link'
 import { Section } from '@/components/layout'
 
 export default function Support() {
-	const pageID = 'careers'
+	const pageID = 'support'
 
 	return (
 		<>
 			<Section
-				eyebrow="Support · Brooklyn + remote"
+				eyebrow="Contact"
 				id={ `${pageID}-hero` }
 				layout="hero"
-				title="Small crew, sharp needles."
+				title="Talk to a human."
 			>
-				We're a team of fourteen building the place where tattoo work gets found, priced, and booked on the artist's terms. Half of us are tattooed. All of us ship.
+				Pick who you are and what it's about — we'll route it to the right person. Quick question? The <Link href="/faqs">FAQs</Link> might already have it.
 			</Section>
 		</>
 	)

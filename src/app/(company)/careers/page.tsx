@@ -1,31 +1,7 @@
 'use client'
 
 import { Grid, Section } from '@/components/layout'
-import type { ReactNode } from 'react'
-
-interface ComponentItem {
-	id: string
-	title: string
-	content: ReactNode
-}
-
-const CULTURE_PILLARS: ComponentItem[] = [
-	{
-		id: 'goals',
-		title: 'Craft over volume',
-		content: 'We ship less, better. Nobody is measured on output theater.',
-	},
-	{
-		id: 'expectations',
-		title: 'Skin in the game',
-		content: 'Everyone talks to artists and clients — support shifts included, founders too.',
-	},
-	{
-		id: 'benefits',
-		title: 'Honest terms',
-		content: 'Salary bands published internally. Equity for every role. No surprise re-orgs.',
-	},
-]
+import { CULTURE_PILLARS } from './careers.data'
 
 export default function Careers() {
 	const pageID = 'careers'
