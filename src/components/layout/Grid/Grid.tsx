@@ -5,7 +5,9 @@ import { setThemeCSS } from '@/lib/theme'
 import { Box } from '@/components/polymorphic/Box'
 import { GridItem } from './GridItem'
 import type { ReactNode } from 'react'
+import type { ConfigOptions } from '@/lib/theme/types/theme.types'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
+import type { UnpackArray } from '@/types/utils'
 import classes from './Grid.module.scss'
 
 const NAME = 'Grid' as const,
@@ -18,7 +20,11 @@ const DEFAULT_PROPS = {
 interface GridProps {
 	children: ReactNode
 	columns?: number
+	gap?: Exclude<UnpackArray<GridGapOptions>, Lowercase<typeof NAME>>
 }
+
+type GridGapOptions =
+	ConfigOptions<'space', Lowercase<typeof NAME>>
 
 interface GridSpecs {
 	defaults: {
@@ -32,11 +38,15 @@ interface GridSpecs {
 }
 
 const tokens = setThemeCSS<GridSpecs>((theme, props) => {
-	const { columns } = props
+	const { columns, gap } = props
+
+	const gridGap = ['grid']
+	if (gap) gridGap.push(gap)
 
 	return {
 		root: {
 			'--grid-cols': !!(columns && columns > 0) ? columns : undefined,
+			'--grid-gap': theme.space(...gridGap as GridGapOptions),
 		},
 	}
 })
@@ -55,7 +65,6 @@ export const Grid = polymorphic<GridSpecs>(_props => {
 			as={ as }
 		>
 			{ children }
-			{/* { filterChildren(children, 'GridItem').map(child => child) } */}
 		</Box>
 	)
 }, classes)

@@ -23,6 +23,22 @@ export type RemoveSubstr<S extends string, Sub extends string> =
 		: S
 
 
+//	arrays
+
+export type ExtractFrom<
+	T extends any[],
+	ExtractVal extends boolean | number | string
+> =
+	T extends any
+		? ExtractVal extends T[number]
+			? T
+			: never
+	: never
+
+export type UnpackArray<T> =
+	T extends (infer U)[] ? U : T
+
+
 //	objects
 
 export type PluralizeKeys<T> = {

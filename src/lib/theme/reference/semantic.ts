@@ -33,12 +33,14 @@ const propertyTokens = {
 
 // limit component usage to only semantic tokens
 export const semanticTokens = {
+	breakpoint: token.path<ReturnType<LayoutTokens['breakpoint']>>(aliasVar, 'breakpoint'),
+	container: token.path<ReturnType<LayoutTokens['container']>>(aliasVar, 'container'),
+	space: token.path<ReturnType<LayoutTokens['space']>>(aliasVar, 'space'),
+
 	background: {
 		page: token.endPath(aliasVar, 'background', 'page'),
 		card: token.optPath<BackgroundTokens['card']>(aliasVar, 'background', 'card'),
 	},
-	breakpoint: token.path<ReturnType<LayoutTokens['breakpoint']>>(aliasVar, 'breakpoint'),
-	container: token.path<ReturnType<LayoutTokens['container']>>(aliasVar, 'container'),
 	color: {
 		text: token.optPath<ColorTokens['text']>(aliasVar, 'color', 'text'),
 		link: token.optPath<ColorTokens['link']>(aliasVar, 'color', 'link'),

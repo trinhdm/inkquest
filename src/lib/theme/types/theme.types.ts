@@ -1,6 +1,6 @@
 import { COLOR_TOKENS, THEME_SCHEMES } from '../scales'
 import type { CSSProperties } from 'react'
-import type { AtLeastOneKeyOf } from '@/types/utils'
+import type { AtLeastOneKeyOf, ExtractFrom } from '@/types/utils'
 import type { CSSVars, HexCode, Unit } from '@/types/shared'
 import type { SemanticTokens, ShorthandTokens } from '../reference'
 
@@ -61,14 +61,10 @@ export interface SiteThemeConfig
 	// }>
 }
 
-type ThemeSizeScale =
-	| 'xxs'
-	| 'xs'
-	| 'sm'
-	| 'md'
-	| 'lg'
-	| 'xl'
-	| 'xxl'
+export type ConfigOptions<K extends keyof SiteThemeConfig, T extends string> =
+	SiteThemeConfig[K] extends (...args: any) => any
+		? ExtractFrom<Parameters<SiteThemeConfig[K]>, T>
+		: never
 
 type ThemeLineHeight =
 	| 'exact'

@@ -2,11 +2,13 @@ import type { AriaAttributes } from 'react'
 import type { SOCIAL_BRANDS } from '@/utils/constants'
 
 export type Size =
+	| 'xxs'
 	| 'xs'
 	| 'sm'
 	| 'md'
 	| 'lg'
 	| 'xl'
+	| 'xxl'
 
 type DimensionUnit =
 	| '%'

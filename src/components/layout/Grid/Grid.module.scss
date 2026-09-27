@@ -3,11 +3,12 @@
 	$name: &;
 
 	--grid-cols: auto-fit;
+	--grid-gap: var(--inkq-space-grid);
 	--grid-item-width: minmax(var(--inkq-breakpoint-min), 1fr);
 
 	align-items: start;
 	display: grid;
-	gap: var(--inkq-space-grid);
+	gap: var(--grid-gap);
 	grid-template-columns: repeat(var(--grid-cols), var(--grid-item-width));
 }
 
