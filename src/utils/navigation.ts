@@ -121,7 +121,7 @@ export const NAVIGATION_DATA: NavigationItem[] = [
 	{
 		label: 'Legal',
 		menu: [
-			{ label: 'Privacy Policy', route: NavRoutes.LEGAL_PRIVACY },
+			{ label: 'Privacy', route: NavRoutes.LEGAL_PRIVACY },
 			{ label: 'Terms', route: NavRoutes.LEGAL_TERMS },
 			{ label: 'Cookies', route: NavRoutes.LEGAL_COOKIES },
 		],
