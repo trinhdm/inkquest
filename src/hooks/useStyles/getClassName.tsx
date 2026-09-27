@@ -102,9 +102,11 @@ const hasConfig = <P extends object, V extends object>(
 const getConfigClasses = <P extends object, V extends object>(
 	args: SharedConfig<P, V>
 ): string | undefined => {
-	const { config, prefix, selector } = args
+	const { check, config, prefix, selector } = args
 
-	if (typeof config === 'boolean')
+	if (check.isUnstyled) return
+
+	else if (typeof config === 'boolean')
 		return getBaseClass(selector, prefix)
 
 	else if (!hasConfig(args)) return

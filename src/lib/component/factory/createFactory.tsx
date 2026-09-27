@@ -6,6 +6,7 @@ import {
 	type ReactNode,
 } from 'react'
 
+import { keyHasValue } from '@/utils/helpers'
 import { setDefaultProps } from '@/hooks/useProps'
 import { POLYMORPHIC_MARKER } from './constants'
 import type { AsPolymorphic, SpecDefaultProps, Specs } from './types'
@@ -49,7 +50,7 @@ export interface MethodsBase<
 	D = _MethodSetDefault<S>
 > {
 	classes?: Record<string, string>
-	setDefaults: (args: D) => D
+	setDefaults: (defaults: D) => D
 	withProps: (props: P) => C
 }
 
@@ -82,16 +83,16 @@ export const createFactory = <
 
 	if (classes) BaseComponent.classes = classes
 
-	BaseComponent.setDefaults = args => {
+	BaseComponent.setDefaults = defaults => {
 		const { displayName } = BaseComponent
 
 		if (!displayName)
 			throw new Error('cannot set defaultProps: missing `displayName`')
 
-		if (args?.props && Object.keys(args.props).length)
-			setDefaultProps(displayName, args.props)
+		if (keyHasValue(defaults, 'props') && defaults.props && Object.keys(defaults.props).length)
+			setDefaultProps(displayName, defaults.props)
 
-		return args
+		return defaults
 	}
 
 	BaseComponent.withProps = props => {

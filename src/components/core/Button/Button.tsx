@@ -4,7 +4,7 @@ import { useProps, extractOtherProps } from '@/hooks/useProps'
 import { useStyles } from '@/hooks/useStyles'
 import { useVariants } from '@/hooks/useVariants'
 import { extractChildrenText } from '@/lib/component'
-import { isExternalLink } from '@/utils/helpers'
+import { isExternalLink, keyHasValue } from '@/utils/helpers'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import { ButtonGroup, useButtonGroupProps } from './ButtonGroup'
@@ -14,7 +14,7 @@ import type { ComponentPropsWithoutRef, MouseEventHandler, ReactNode, Ref } from
 import type { Route } from 'next'
 import type { Priority as ThemePriority, Variant as ThemeVariant } from '@/lib/theme'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
-import Link from 'next/link'
+import Link, { type LinkProps } from 'next/link'
 import classes from './Button.module.scss'
 
 const NAME = 'Button' as const,
@@ -43,8 +43,9 @@ interface BaseButtonProps {
 }
 
 interface LinkButtonProps<T extends string = string>
-	extends ComponentPropsWithoutRef<'a'> {
-	href: Route<T>
+	extends ComponentPropsWithoutRef<'a'>,
+		Pick<LinkProps<T>, 'prefetch' | 'replace' | 'scroll'> {
+	href: T | Route<T>
 	onClick?: never
 	ref?: Ref<HTMLAnchorElement>
 }
@@ -92,8 +93,7 @@ const buildSections = (
 			} else if (process.env.NODE_ENV !== 'production') {
 				const section = `${NAME}.Section`
 				console.warn(`${NAME}: multiple ${section}[${isLeft ? 'left' : 'right'}] found; only the first ${section} is rendered.`)
-			}
-			return
+			} return
 		}
 
 		label.push(child)
@@ -158,17 +158,19 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 		</ButtonProvider>
 	)
 
-	if ('href' in others) {
+	if ('href' in others && keyHasValue(others, 'href')) {
 		// narrows `rest` typing (`LinkButtonProps | NativeButtonProps`)
 		// by excluding `NativeButtonProps` from `rest`
 		// this allows `rest` to be properly typed
 
-		let linkProps: LinkButtonProps = {
+		const { href } = others
+		let linkProps = {
 			...sharedProps,
 			...others as Extract<typeof others, LinkButtonProps>,
+			href: href as Route<typeof href>,
 		}
 
-		if (isExternalLink(others.href)) {
+		if (isExternalLink(href)) {
 			const external = { target: '_blank', rel: 'noopener noreferrer' }
 			linkProps = { ...linkProps, ...external }
 		}

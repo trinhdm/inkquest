@@ -3,10 +3,15 @@ import type { OneKeyOf, PluralizeKeys } from '@/types/utils'
 export const isObject = <T extends Record<string, any>>(target: unknown): target is T =>
 	!!target && target?.constructor === Object && !Array.isArray(target)
 
+type WithKeyValue<T, K extends PropertyKey> =
+	T extends unknown
+		? T & { [P in K]: P extends keyof T ? NonNullable<T[P]> : unknown }
+		: never
+
 function hasKeyWithValue<
 	T extends object,
 	K extends PropertyKey,
->(obj: T | undefined, key: K): obj is T & Record<K, unknown>
+>(obj: T | undefined, key: K): obj is WithKeyValue<T, K>
 function hasKeyWithValue<
 	T extends object,
 	const E extends Record<string, unknown>,
