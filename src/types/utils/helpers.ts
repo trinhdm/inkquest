@@ -1,6 +1,8 @@
 
 //	general
 
+import type { Primitive } from '../shared'
+
 export type DeepRequired<T> = T extends Function
 	? T
 	: T extends Array<infer InferredArrayType>
@@ -17,20 +19,25 @@ type ContainSubstr<S extends string, Sub extends string> =
 		? true
 		: false
 
-export type RemoveSubstr<S extends string, Sub extends string> =
+type RemoveSubstr<S extends string, Sub extends string> =
 	S extends `${infer Before}${Sub}${infer After}`
 		? `${Before}${After}`
 		: S
 
 
+//	unions
+
+export type ExcludeIn<Union extends string, Sub extends string> =
+	Union extends `${string}${Sub}${string}`
+		? never
+		: Union
+
+
 //	arrays
 
-export type ExtractFrom<
-	T extends any[],
-	ExtractVal extends boolean | number | string
-> =
+export type ExtractFrom<T extends any[], V extends Primitive> =
 	T extends any
-		? ExtractVal extends T[number]
+		? V extends T[number]
 			? T
 			: never
 	: never

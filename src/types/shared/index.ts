@@ -1,6 +1,6 @@
 export type * from './common'
-export type * from './fonts'
 export type * from './html'
 
-export type * from './content'
+export type * from './unit'
 export type * from './datetime'
+export type * from './content'

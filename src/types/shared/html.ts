@@ -27,3 +27,7 @@ export interface SpecAttributes {
 	aria?: AriaName
 	data?: Record<string, unknown>
 }
+
+
+export type Orientation =
+	AriaAttributes['aria-orientation']
