@@ -4,6 +4,7 @@ import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import { MenuItem } from './MenuItem'
 import type { NavigationItem } from '@/utils/navigation'
+import type { Orientation } from '@/types/shared'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Menu.module.scss'
 
@@ -12,12 +13,15 @@ const NAME = 'Menu' as const,
 
 const DEFAULT_PROPS = {
 	as: TAG,
+	depth: 0,
 	hasDropdowns: true,
 } as const
 
 interface MenuProps {
+	depth?: number
 	hasDropdowns?: boolean
 	items: NavigationItem['menu']
+	orientation?: Orientation
 }
 
 interface MenuSpecs {
@@ -34,25 +38,29 @@ export const Menu = polymorphic<MenuSpecs>(_props => {
 
 	const {
 		className,
+		depth,
 		hasDropdowns,
 		items,
+		orientation,
 		...rest
 	} = props
 
 	const { others } = extractOtherProps(rest)
+	const module = { [`${orientation}`]: (depth === 0 && !!orientation) || null }
 	// const isActive = pathname === route
 
 	return (
 		<Box
+			{ ...styles('root', { module }) }
+			{ ...others }
 			as={ TAG }
 			role="menubar"
-			{ ...styles('root') }
-			{ ...others }
 		>
 			{ items?.map(item => (
 				<MenuItem
 					key={ item.label }
 					className={ className }
+					depth={ depth }
 					hasDropdowns={ hasDropdowns }
 					{ ...item }
 				/>

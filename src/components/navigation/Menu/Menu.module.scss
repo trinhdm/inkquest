@@ -1,23 +1,31 @@
 .inkq-menu {
 	$name: &;
 
-	// align-items: center;
 	column-gap: var(--inkq-space-menu);
 	display: flex;
 	position: relative;
+
+	&--vertical {
+		flex-direction: column;
+
+		.inkq-menu-item {
+			line-height: var(--inkq-font-leading-prose);
+		}
+	}
 }
 
 .inkq-menu-item {
 	$name: &;
 
 	align-items: center;
+	color: var(--inkq-color-link);
 	column-gap: var(--inkq-space-icon);
 	display: flex;
+	font: var(--inkq-text-navigation);
 	position: relative;
 
 	&__label {
-		color: var(--inkq-color-link);
-		font: var(--inkq-text-navigation);
+		color: inherit;
 		text-decoration: none;
 		white-space: nowrap;
 

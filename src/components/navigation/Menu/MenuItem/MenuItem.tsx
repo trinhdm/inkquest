@@ -21,7 +21,9 @@ const DEFAULT_PROPS = {
 	hasDropdowns: true,
 } as const
 
-interface MenuItemProps extends NavigationItem {
+interface MenuItemProps
+	extends NavigationItem {
+	depth: number
 	hasDropdowns?: boolean
 }
 
@@ -81,6 +83,7 @@ export const MenuItem = polymorphic<MenuItemSpecs>(_props => {
 	}, [])
 
 	const {
+		depth,
 		hasDropdowns,
 		label,
 		menu,
@@ -214,6 +217,7 @@ export const MenuItem = polymorphic<MenuItemSpecs>(_props => {
 			{ isOpen && (
 				<Menu
 					attributes={ { aria: { labelledby: triggerID } } }
+					depth={ depth + 1 }
 					id={ menuID }
 					items={ menu }
 				/>

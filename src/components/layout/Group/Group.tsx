@@ -17,6 +17,7 @@ import { setThemeCSS } from '@/lib/theme'
 import { Box } from '@/components/polymorphic/Box'
 import { GroupItem } from './GroupItem'
 import { GroupProvider, type GroupContext } from './Group.context'
+import type { Orientation } from '@/types/shared'
 import type { PolymorphicProps, PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Group.module.scss'
 
@@ -37,7 +38,7 @@ interface BaseGroupProps {
 	divider?: boolean
 	fullWidth?: boolean
 	justify?: CSSProperties['justifyContent']
-	orientation?: 'horizontal' | 'vertical'
+	orientation?: Orientation
 }
 
 interface CompoundGroupProps {

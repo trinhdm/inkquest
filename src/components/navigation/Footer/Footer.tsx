@@ -32,6 +32,7 @@ const BASE_FOOTER_NAV: FooterArea.Props['items'] = [
 	{
 		routes: ['/privacy-policy', '/terms-conditions', '/cookies'],
 		location: 'legal',
+		orientation: 'horizontal',
 	},
 ] as const
 

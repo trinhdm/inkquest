@@ -6,6 +6,7 @@ import { filterNavigation, type NavigationGroup } from '@/utils/navigation'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import { Menu } from '../../Menu'
+import type { Orientation } from '@/types/shared'
 import classes from '../Footer.module.scss'
 
 const NAME = 'FooterArea' as const
@@ -17,6 +18,7 @@ interface FooterAreaProps {
 interface FooterNavGroup
 	extends NavigationGroup {
 	location?: 'info' | 'legal'
+	orientation?: Orientation
 }
 
 interface FooterAreaSpecs {
@@ -43,7 +45,7 @@ export const FooterArea = polymorphic<FooterAreaSpecs>(_props => {
 
 			{ !!items.length && (
 				<div { ...styles('navigation') }>
-					{ items.map(({ category, routes }) => {
+					{ items.map(({ category, orientation, routes }) => {
 						const menuItems = filterNavigation(routes, 'breadcrumbs')
 
 						return (
@@ -55,6 +57,7 @@ export const FooterArea = polymorphic<FooterAreaSpecs>(_props => {
 									{ ...styles('menu') }
 									hasDropdowns={ false }
 									items={ menuItems }
+									orientation={ orientation ?? 'vertical' }
 								/>
 							</div>
 						)

@@ -7,6 +7,7 @@ import { revealItemFrom } from '@/hooks/animation'
 import { Box } from '@/components/polymorphic/Box'
 import { ButtonGroupProvider, type ButtonGroupContext } from './ButtonGroup.context'
 import type { Button } from '../Button'
+import type { Orientation } from '@/types/shared'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from '../Button.module.scss'
 
@@ -28,7 +29,7 @@ interface ButtonGroupProps
 	fullWidth?: boolean
 	hasPriority?: boolean
 	justify?: CSSProperties['justifyContent']
-	orientation?: 'horizontal' | 'vertical'
+	orientation?: Orientation
 	revealFrom?: number
 }
 
