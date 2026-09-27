@@ -1,6 +1,6 @@
 import { createRootCtx } from '@/lib/component'
 import type { AnimateInViewConfig } from '@/hooks/animation'
-import type { Size } from '@/types/shared'
+import type { HeadingOrder, Size } from '@/types/shared'
 
 type AccordionGroupLayout =
 	'default' | 'steps'
@@ -14,6 +14,7 @@ export interface AccordionGroupContext
 	disabled?: boolean
 	layout?: AccordionGroupLayout
 	onItemToggle?: (index: number, open: boolean) => void
+	order?: HeadingOrder
 	open?: boolean
 	size?: Size
 }

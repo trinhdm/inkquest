@@ -1,5 +1,8 @@
 import type { AriaAttributes, ComponentPropsWithoutRef, ElementType } from 'react'
 
+export type HeadingOrder =
+	1 | 2 | 3 | 4 | 5 | 6
+
 // type Aria = `aria-${string}`
 export type DataAttrs = Record<`data-${string}`, unknown>
 

@@ -14,21 +14,4 @@
 			font-size: var(--inkq-font-size-heading-h3);
 		}
 	}
-
-	.inkq-accordion {
-		--accordion-column-width: var(--space-8);
-		--accordion-gap: var(--space-6);
-	}
-
-	.inkq-accordion-title {
-		padding-block: var(--space-5);
-
-		&__indicator {
-			--icon-size: var(--font-size-20);
-		}
-
-		&__text {
-			font-size: var(--inkq-font-size-heading-h4);
-		}
-	}
 }

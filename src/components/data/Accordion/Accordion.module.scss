@@ -3,20 +3,13 @@
 .inkq-accordion,
 .inkq-accordion-group {
 	--accordion-border-color: var(--inkq-border);
+	--accordion-indent: calc(var(--accordion-column-width) / 1.5);
 }
 
 .inkq-accordion {
 	$name: &;
 
-	// --accordion-column-width: var(--space-11);
-	// --accordion-gap: var(--space-9);
-	--accordion-indent: calc(var(--accordion-column-width) / 1.5);
-
 	position: relative;
-	// opacity: 1;
-	// transform: none;
-	// transition: opacity 520ms var(--easing-out) 17ms,
-	// 	transform 520ms var(--easing-out) 17ms;
 
 	&__divider {
 		background-color: var(--accordion-border-color);
@@ -27,7 +20,7 @@
 		position: absolute;
 		transform: scaleX(1);
 		transform-origin: left center;
-		transition: transform 620ms var(--easing-out) 17ms;
+		// transition: transform 620ms var(--easing-out) 17ms;
 	}
 
 	&__wrapper {
@@ -54,17 +47,11 @@
 .inkq-accordion-title {
 	$name: &;
 
-	--accordion-title-indent: var(--accordion-indent);
-
-	.inkq-accordion:where([data-step]) & {
-		--accordion-title-indent: 0;
-	}
-
 	align-items: center;
 	column-gap: var(--accordion-gap);
 	display: flex;
 	justify-content: space-between;
-	padding-block: var(--space-6);
+	padding-block: var(--accordion-padding);
 	width: 100%;
 
 	&__indicator,
@@ -77,17 +64,16 @@
 	&__step {
 		color: var(--inkq-color-text-tertiary);
 		font: var(--inkq-text-prose);
-		font-size: 14px;
+		font-size: var(--accordion-step-size);
 		justify-items: end;
 	}
 
 	&__text {
 		color: var(--inkq-color-text);
 		flex: 1 1 100%;
-		// font-size: var(--inkq-font-size-heading-h3);
 		font-size: var(--accordion-text-size);
 		font-weight: var(--inkq-font-weight-semibold);
-		letter-spacing: -0.01em;
+		letter-spacing: var(--inkq-font-tracking-display);
 		line-height: var(--inkq-font-leading-label);
 		text-align: left;
 
@@ -97,7 +83,7 @@
 	}
 
 	&__indicator {
-		--icon-size: var(--font-size-24);
+		--icon-size: var(--accordion-indicator-size);
 
 		justify-items: start;
 
@@ -131,12 +117,6 @@
 .inkq-accordion-content {
 	$name: &;
 
-	--accordion-content-indent: var(--accordion-indent);
-
-	.inkq-accordion:where([data-step]) & {
-		--accordion-content-indent: calc(var(--accordion-column-width) + var(--accordion-gap));
-	}
-
 	color: var(--inkq-color-text-secondary);
 	display: grid;
 	font: var(--inkq-text-body);
@@ -145,6 +125,11 @@
 	text-wrap: pretty;
 	transition: grid-template-rows 340ms var(--easing),
 		opacity 340ms var(--easing);
+
+	.inkq-accordion:not([data-open]) & {
+		grid-template-rows: 0fr;
+		opacity: 0;
+	}
 
 	&__wrapper {
 		min-height: 0;
@@ -155,10 +140,5 @@
 		margin-inline: var(--accordion-content-indent);
 		max-width: var(--inkq-container-block);
 		padding-block-end: var(--space-6);
-	}
-
-	.inkq-accordion:not([data-open]) & {
-		grid-template-rows: 0fr;
-		opacity: 0;
 	}
 }

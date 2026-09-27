@@ -24,13 +24,14 @@ const DEFAULT_PROPS = {
 	defaultOpen: false,
 	index: 0,
 	indicator: 'plus',
+	order: 3,
 	size: 'md',
 } as const
 
 interface AccordionProps
 	extends Omit<AccordionGroup.Context, 'withinView'> {
 	children: ReactNode
-	// collapsible?: AccordionGroup.Context['collapsible']
+	// collapsible?: Accordion.Context['collapsible']
 	defaultOpen?: boolean
 	// disabled?: boolean
 	id?: string
@@ -82,9 +83,7 @@ const buildAccordion = (children: AccordionProps['children']) => {
 }
 
 const tokens = setThemeCSS<AccordionSpecs>((theme, props) => {
-	const { onItemToggle } = props
-
-	if (typeof onItemToggle === 'function') return {}
+	if (typeof props.onItemToggle === 'function') return {}
 	return getSharedTokens(props)
 })
 
@@ -104,6 +103,8 @@ export const Accordion = polymorphic<AccordionSpecs>(_props => {
 		onItemToggle,
 		onToggle,
 		open,
+		order,
+		size,
 		unstyled,
 		...rest
 	} = props
@@ -143,14 +144,15 @@ export const Accordion = polymorphic<AccordionSpecs>(_props => {
 	])
 
 	const ctxValues = useMemo(() => ({
-		collapsible, disabled,
 		handleToggle,
-		idx, indicator,
-		isOpen, step, unstyled,
-	}), [
 		collapsible, disabled,
-		handleToggle, idx, indicator,
-		isOpen, step, unstyled,
+		idx, indicator, isOpen,
+		order, step, unstyled,
+	}), [
+		handleToggle,
+		collapsible, disabled,
+		idx, indicator, isOpen,
+		order, step, unstyled,
 	])
 
 	return (

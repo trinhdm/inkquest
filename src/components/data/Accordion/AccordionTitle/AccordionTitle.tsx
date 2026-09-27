@@ -4,7 +4,7 @@ import { useStyles } from '@/hooks/useStyles'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import { Icon } from '@/components/core'
-import type { KeyboardEvent, ReactNode } from 'react'
+import type { ElementType, KeyboardEvent, ReactNode } from 'react'
 import classes from '../Accordion.module.scss'
 
 const NAME = 'Accordion.Title' as const
@@ -26,6 +26,7 @@ export const AccordionTitle = polymorphic<AccordionTitleSpecs>(_props => {
 		idx,
 		indicator,
 		isOpen,
+		order,
 		step,
 	} = useAccordionCtx(NAME)
 
@@ -62,8 +63,9 @@ export const AccordionTitle = polymorphic<AccordionTitleSpecs>(_props => {
 		titles[next]?.focus()
 	}
 
+	const Tag: ElementType = `h${order}`
 	const stepEl = !!step && <span { ...styles('step') }>{ step }</span>,
-		textEl = <span { ...styles('text') }>{ children }</span>,
+		textEl = <Tag { ...styles('text') }>{ children }</Tag>,
 		titleItems = <>{ stepEl }{ textEl }</>
 
 	if (interactive) {

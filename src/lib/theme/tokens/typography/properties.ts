@@ -17,6 +17,7 @@ interface FontSizeTokens {
 		h2: string
 		h3: string
 		h4: string
+		h5: string
 	}
 	body: {
 		base: string
@@ -77,6 +78,7 @@ export const getFontPropertyTokens = (): FontPropertyTokens => ({
 			h2:		base.fontSize('40'),
 			h3:		base.fontSize('32'),
 			h4:		base.fontSize('20'),
+			h5:		base.fontSize('16'),
 		},
 		body:		{
 			base:	base.fontSize('16'),

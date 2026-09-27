@@ -16,11 +16,12 @@ const NAME = 'Accordion.Group' as const
 const DEFAULT_PROPS = {
 	collapsible: 'single',
 	defaultOpen: 0,
+	order: 3,
 	size: 'md',
 } as const
 
 interface AccordionGroupProps
-	extends Pick<AccordionGroupContext, 'disabled' | 'layout' | 'size'> {
+	extends Pick<AccordionGroupContext, 'disabled' | 'layout' | 'order' | 'size'> {
 	collapsible?: AccordionGroupType | false
 	defaultOpen?: number | number[]
 	// disabled?: boolean
@@ -52,6 +53,7 @@ export const AccordionGroup = polymorphic<AccordionGroupSpecs>(_props => {
 		defaultOpen,
 		disabled,
 		layout,
+		order,
 		unstyled,
 		...rest
 	} = props
@@ -86,12 +88,12 @@ export const AccordionGroup = polymorphic<AccordionGroupSpecs>(_props => {
 			disabled, index, layout,
 			onItemToggle: handleItemToggle,
 			open: openItems.includes(index),
-			unstyled, withinView,
+			order, unstyled, withinView,
 		})),
 		[
 			collapsible, disabled, handleItemToggle,
 			layout, openItems, total,
-			unstyled, withinView,
+			order, unstyled, withinView,
 		]
 	)
 

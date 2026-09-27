@@ -1,5 +1,6 @@
 import { createRootCtx } from '@/lib/component'
 import type { AnimationOptions } from '@/hooks/animation'
+import type { HeadingOrder } from '@/types/shared'
 
 export type AccordionIndicator =
 	| 'chevron'
@@ -20,6 +21,7 @@ export interface AccordionContext
 	idx: AccordionIds
 	indicator?: AccordionIndicator
 	isOpen: boolean
+	order: HeadingOrder
 	step?: `${number}`
 }
 
