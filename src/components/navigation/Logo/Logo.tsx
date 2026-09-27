@@ -66,7 +66,7 @@ export const Logo = polymorphic<LogoSpecs>(_props => {
 		? { height: viewBox, width: viewBox }
 		: viewBox
 
-	const height = width * vb.height / vb.width,
+	const height = Math.round(width * vb.height / vb.width),
 		filename = type === 'wordmark' ? `${type}-${colorScheme}` : type
 
 	return (
@@ -76,6 +76,7 @@ export const Logo = polymorphic<LogoSpecs>(_props => {
 			href={ href as Route<typeof href> }
 		>
 			<Image
+				{ ...styles('image') }
 				src={ `/logo/${filename}.svg` }
 				alt={ alt }
 				height={ height }

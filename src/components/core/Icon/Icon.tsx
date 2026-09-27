@@ -21,7 +21,9 @@ const DEFAULT_PROPS = {
 	size: 16,
 	strokeLinecap: 'round',
 } as const
-type SvgProps = ComponentPropsWithoutRef<'svg'>
+
+type SvgProps =
+	ComponentPropsWithoutRef<'svg'>
 
 interface BaseIconProps<T extends SvgProps | LucideProps> {
 	color?: T['color']
