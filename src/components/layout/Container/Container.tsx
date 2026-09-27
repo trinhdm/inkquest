@@ -34,12 +34,10 @@ export const Container = polymorphic<ContainerSpecs>(_props => {
 
 	return (
 		<Box
-			as={ as }
-			attributes={ {
-				data: { block: !!fullWidth || null },
-			} }
 			{ ...styles('root', { global }) }
 			{ ...others }
+			as={ as }
+			attributes={ { data: { block: !!fullWidth || null } } }
 		>
 			<div { ...styles('wrapper', true) }>
 				{ children }

@@ -78,23 +78,27 @@ const orderSection = ({
 
 const buildContent = ({ id, props, reveal, styles }: BuildSectionConfig): ReactNode[] => {
 	const { buttons, items } = orderSection({ id, props, reveal })
-	const clsx = { global: { prose: true } }
 	const content: ReactNode[] = []
 
 	if (!!items?.length) {
-		const [first] = items
+		const clsx = { global: { prose: true } },
+			[first] = items
+
 		let args = { ...styles('description', clsx) },
-			Tag: ElementType | undefined
+			DescTag: ElementType | undefined
 
 		if (items.length > 1) {
-			Tag = 'div'
+			DescTag = 'div'
 		} else if (isValidElement(first) && first.type === Fragment) {
 			args = { ...args, ...reveal.next() }
-			Tag = 'p'
+			DescTag = 'p'
 		}
 
-		const description = !!Tag ? <Tag { ...args }>{ items }</Tag> : items,
-			body = <div key={ `${id}-body` } { ...styles('body') }>{ description }</div>
+		const description = !!DescTag ? <DescTag { ...args }>{ items }</DescTag> : items
+		const key = `${id}-body`,
+			body = !!(props.title || props.eyebrow || buttons?.length)
+				? <div key={ key } { ...styles('body') }>{ description }</div>
+				: <Fragment key={ key }>{ description }</Fragment>
 
 		content.push(body)
 	}
