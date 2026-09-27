@@ -21,7 +21,7 @@ export const getSpaceTokens = (): SpaceTokens => ({
 	chip: `${base.space('1')} ${base.space('2')}`,
 	icon: base.space('1'),
 
-	menu: `${base.space('2')} ${base.space('6')}`,
+	menu: base.space('6'),
 	grid: {
 		base: base.space('6'),
 		sm: base.space('4'),

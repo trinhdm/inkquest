@@ -1,6 +1,5 @@
 import { Archivo, Archivo_Black, Space_Mono } from 'next/font/google'
 import { AppProvider } from '@/providers/AppProvider'
-import { Footer, Navbar, Subnav } from '@/components/navigation'
 import { ScriptInjector } from '@/components/document/ScriptInjector'
 import type { Metadata } from 'next'
 import '@/styles/_global.scss'
@@ -44,12 +43,7 @@ export default function RootLayout({
 			</head>
 			<body>
 				<AppProvider>
-					<header>
-						<Navbar routes={ ['/discover', '/marketplace', '/community'] } />
-						<Subnav routes={ ['/community', '/community/feed', '/community/events', '/community/spotlights'] } />
-					</header>
-					<main>{ children }</main>
-					<Footer />
+					{ children }
 				</AppProvider>
 			</body>
 		</html>

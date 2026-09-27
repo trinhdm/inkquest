@@ -1,9 +1,18 @@
-// Pass-through segment layout. Its only job is to give the (company) route
-// group its own boundary in the route tree, so Turbopack can scope
-// invalidation to routes under this group instead of treating the root
-// layout as the sole segment boundary for the whole app.
+import { Footer, Header } from '@/components/navigation'
+
 export default function CompanyLayout({
 	children,
 }: Readonly<{ children: React.ReactNode }>) {
-	return <>{ children }</>
+	const subnav: Header.Props['subnav'] = {
+		category: 'Company',
+		routes: ['/about', '/faqs', '/careers', '/press'],
+	}
+
+	return (
+		<>
+			<Header subnav={ subnav } />
+			<main>{ children }</main>
+			<Footer />
+		</>
+	)
 }
