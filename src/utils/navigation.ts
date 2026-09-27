@@ -11,6 +11,14 @@ export enum NavRoutes {
 	COMMUNITY_FEED = '/community/feed',
 	COMMUNITY_FEED_CIRCLE = '/community/feed/circle',
 	COMMUNITY_SPOTLIGHTS = '/community/spotlights',
+	COMPANY_ABOUT = '/about',
+	COMPANY_CAREERS = '/careers',
+	COMPANY_FAQS = '/faqs',
+	COMPANY_PRESS = '/press',
+	COMPANY_SUPPORT = '/support',
+	LEGAL_COOKIES = '/cookies',
+	LEGAL_PRIVACY = '/privacy-policy',
+	LEGAL_TERMS = '/terms-conditions',
 	PROFILE = '/profile',
 	SETTINGS = '/settings',
 	LOGIN = '/login',
@@ -29,6 +37,14 @@ const NAV_ROUTES = {
 	COMMUNITY_FEED: '/community/feed',
 	COMMUNITY_FEED_CIRCLE: '/community/feed/circle',
 	COMMUNITY_SPOTLIGHTS: '/community/spotlights',
+	COMPANY_ABOUT: '/about',
+	COMPANY_CAREERS: '/careers',
+	COMPANY_FAQS: '/faqs',
+	COMPANY_PRESS: '/press',
+	COMPANY_SUPPORT: '/support',
+	LEGAL_COOKIES: '/cookies',
+	LEGAL_PRIVACY: '/privacy-policy',
+	LEGAL_TERMS: '/terms-conditions',
 	PROFILE: '/profile',
 	SETTINGS: '/settings',
 	LOGIN: '/login',
@@ -41,6 +57,11 @@ export interface NavigationItem {
 	label: string
 	menu?: NavigationItem[]
 	route?: NavRoute
+}
+
+export interface NavigationGroup {
+	category?: string
+	routes: readonly NavRoute[]
 }
 
 export const NAVIGATION_DATA: NavigationItem[] = [
@@ -88,6 +109,24 @@ export const NAVIGATION_DATA: NavigationItem[] = [
 		],
 	},
 	{
+		label: 'Company',
+		menu: [
+			{ label: 'About', route: NavRoutes.COMPANY_ABOUT },
+			{ label: 'Careers', route: NavRoutes.COMPANY_CAREERS },
+			{ label: 'FAQs', route: NavRoutes.COMPANY_FAQS },
+			{ label: 'Press', route: NavRoutes.COMPANY_PRESS },
+			{ label: 'Support', route: NavRoutes.COMPANY_SUPPORT },
+		],
+	},
+	{
+		label: 'Legal',
+		menu: [
+			{ label: 'Privacy Policy', route: NavRoutes.LEGAL_PRIVACY },
+			{ label: 'Terms', route: NavRoutes.LEGAL_TERMS },
+			{ label: 'Cookies', route: NavRoutes.LEGAL_COOKIES },
+		],
+	},
+	{
 		label: 'Log in',
 		route: NavRoutes.LOGIN,
 	},
@@ -97,6 +136,42 @@ export const NAVIGATION_DATA: NavigationItem[] = [
 	},
 ]
 
+export const listRoutesWithSlug = (
+	slug: NavRoute,
+	maxDepth: number = Infinity,
+	navitems: NavigationItem[] = NAVIGATION_DATA,
+): NavRoute[] => {
+	const filterRoutes = (items: NavigationItem[], depth: number): NavRoute[] =>
+		items.reduce<NavRoute[]>((acc, item) => {
+			let routes: NavRoute[] = []
+
+			if (depth <= maxDepth) {
+				if (item.route?.includes(slug))
+					routes.push(item.route)
+
+				if (!!item.menu?.length) {
+					const nestedRoutes = filterRoutes(item.menu, depth + 1)
+					routes = [...routes, ...nestedRoutes]
+				}
+			}
+
+			acc.push(...new Set(routes))
+			return acc
+		}, [])
+
+	const [subdir] = slug.split('/').filter(Boolean)
+	const list = navitems.filter(item => {
+		const { menu, route } = item
+		if (route) return route?.startsWith(`/${subdir}`)
+
+		if (!!menu?.length) {
+			const subitem = menu.find(sub => sub.route?.startsWith(`/${subdir}`))
+			if (subitem) return item
+		}
+	})
+
+	return filterRoutes(list, 0)
+}
 
 export const filterNavigation = (
 	routes?: readonly NavRoute[],
