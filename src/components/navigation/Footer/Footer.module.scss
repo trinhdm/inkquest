@@ -1,28 +1,43 @@
-
 .inkq-footer {
 	$name: &;
 
 	background-color: var(--inkq-background-surface);
 	position: relative;
 
-	&__main,
-	&__copyright {
+	&__info,
+	&__legal {
 		border-top: 1px solid var(--inkq-border);
 
 	}
 
-	&__main {
+	&__info {
 		color: var(--inkq-color-text-secondary);
 		padding-block: var(--inkq-footer-padding);
 
 		#{$name}__wrapper {
+			column-gap: var(--space-11);
 			display: grid;
-			gap: var(--space-11);
 			grid-template-columns: minmax(var(--inkq-breakpoint-min), 1fr) minmax(0, var(--inkq-container-block));
 		}
 	}
 
-	&__copyright {
+	&__navigation {
+		display: grid;
+		gap: var(--space-6) var(--space-5);
+		grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+	}
+
+	&__group {
+		display: flex;
+		flex-direction: column;
+		row-gap: var(--space-2);
+	}
+
+	&__menu {
+		flex-direction: column;
+	}
+
+	&__legal {
 		color: var(--inkq-color-text-tertiary);
 		font-size: var(--inkq-font-size-caption);
 		padding-block: calc(var(--inkq-gutter) / 2);
