@@ -14,6 +14,7 @@ import type { ComponentPropsWithoutRef, MouseEventHandler, ReactNode, Ref } from
 import type { Route } from 'next'
 import type { Priority as ThemePriority, Variant as ThemeVariant } from '@/lib/theme'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
+import type { Size } from '@/types/shared'
 import Link, { type LinkProps } from 'next/link'
 import classes from './Button.module.scss'
 
@@ -26,32 +27,29 @@ const DEFAULT_PROPS = {
 	variant: 'solid',
 } as const
 
-type ButtonSize =
-	| 'sm'
-	| 'md'
-	| 'lg'
-
 interface BaseButtonProps {
 	children: ReactNode
 	disabled?: boolean
 	fullWidth?: boolean
 	loading?: boolean
 	priority?: ThemePriority
-	size?: ButtonSize
+	size?: Extract<Size, 'sm' | 'md' | 'lg'>
 	showLabel?: boolean
 	variant?: ThemeVariant
 }
 
+type LinkOptions<T extends string = string> =
+	Pick<LinkProps<T>, 'prefetch' | 'replace' | 'scroll'>
+
 interface LinkButtonProps<T extends string = string>
-	extends ComponentPropsWithoutRef<'a'>,
-		Pick<LinkProps<T>, 'prefetch' | 'replace' | 'scroll'> {
+	extends ComponentPropsWithoutRef<'a'>, LinkOptions {
 	href: T | Route<T>
 	onClick?: never
 	ref?: Ref<HTMLAnchorElement>
 }
 
 interface NativeButtonProps
-	extends ComponentPropsWithoutRef<'button'> {
+	extends ComponentPropsWithoutRef<'button'>, Record<keyof LinkOptions, never> {
 	href?: never
 	onClick?: MouseEventHandler<HTMLButtonElement>
 	ref?: Ref<HTMLButtonElement>
@@ -115,7 +113,10 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 		disabled,
 		fullWidth,
 		loading,
+		prefetch,
 		priority,
+		replace,
+		scroll,
 		size,
 		showLabel,
 		unstyled,
@@ -175,7 +176,17 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 			linkProps = { ...linkProps, ...external }
 		}
 
-		return <Box { ...linkProps } as={ Link }>{ inner }</Box>
+		return (
+			<Box
+				{ ...linkProps }
+				as={ Link }
+				prefetch={ prefetch }
+				scroll={ scroll }
+				replace={ replace }
+			>
+				{ inner }
+			</Box>
+		)
 	}
 
 	return (
@@ -200,7 +211,7 @@ export declare namespace Button {
 	export type Specs = ButtonSpecs
 
 	export type Priority = ThemePriority
-	export type Size = ButtonSize
+	export type Size = NonNullable<Button.Props['size']>
 	export type Variant = ThemeVariant
 
 	export namespace Group {

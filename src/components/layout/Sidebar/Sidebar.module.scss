@@ -1,0 +1,54 @@
+.inkq-sidebar {
+	$name: &;
+
+	&__inner {
+		position: relative;
+
+		&:not(:last-child) {
+			padding-block-end: var(--space-3);
+		}
+	}
+
+	&__wrapper {
+		border-left: 1px solid var(--inkq-border);
+		display: flex;
+		flex-direction: column;
+		gap: 0;
+		position: relative;
+	}
+
+	&__rail {
+		background: var(--inkq-background-card-hover);
+		border-left: 2px solid var(--inkq-color-action);
+		border-radius: 0 var(--inkq-border-radius-sm) var(--inkq-border-radius-sm) 0;
+		height: var(--sidebar-rail-height);
+		inset: 0;
+		inset-block-end: auto;
+		opacity: 1;
+		pointer-events: none;
+		position: absolute;
+		transform: translateY(var(--sidebar-rail-position));
+		transition: transform var(--duration-slow) var(--easing);
+		user-select: none;
+	}
+
+	&__item {
+		align-items: center;
+		border-left: 2px solid transparent;
+		border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+		cursor: pointer;
+		display: flex;
+		gap: var(--space-3);
+		justify-content: space-between;
+		min-height: 0;
+		position: relative;
+		z-index: 1;
+	}
+
+	&__button {
+		display: block;
+		padding: var(--space-3) var(--space-3);
+		text-align: left;
+		width: 100%;
+	}
+}

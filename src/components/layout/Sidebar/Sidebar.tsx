@@ -1,0 +1,155 @@
+import { useProps, extractOtherProps } from '@/hooks/useProps'
+import { useStyles } from '@/hooks/useStyles'
+import { polymorphic } from '@/lib/component'
+import { Box } from '@/components/polymorphic/Box'
+import { Button } from '@/components/core'
+import type { AriaAttributes, ChangeEventHandler, ReactNode } from 'react'
+import type { Route } from 'next'
+import type { MaybeAnimationProps } from '@/hooks/animation'
+import type { PropsDefaultList } from '@/lib/component/factory/types'
+import classes from './Sidebar.module.scss'
+import { setThemeCSS } from '@/lib/theme'
+import { rem } from '@/lib/general'
+
+const NAME = 'Sidebar' as const,
+	TAG = 'div' as const
+
+const DEFAULT_PROPS = {
+	as: TAG,
+	scroll: false,
+} as const
+
+interface BaseSidebarProps {
+	children?: ReactNode
+}
+
+interface BaseSidebarItem {
+	id: string
+	label: string
+}
+
+interface SidebarActionItem
+	extends BaseSidebarItem {
+	url?: never
+}
+
+interface SidebarLinkItem
+	extends BaseSidebarItem {
+	url: Route<string>
+}
+
+interface ActionSidebarProps {
+	active: string
+	items: SidebarActionItem[]
+	onItemChange: (id: string) => void
+	// onItemChange: ChangeEventHandler<HTMLButtonElement>
+	scroll?: never
+}
+
+interface LinkedSidebarProps {
+	active?: string
+	items: SidebarLinkItem[]
+	onItemChange?: never
+	scroll?: Button.Props['scroll']
+}
+
+type SidebarNavProps =
+	| ActionSidebarProps
+	| LinkedSidebarProps
+
+type SidebarProps =
+	& BaseSidebarProps
+	& SidebarNavProps
+	& MaybeAnimationProps
+
+interface SidebarSpecs {
+	defaults: {
+		as: typeof TAG
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
+	}
+	props: SidebarProps
+}
+
+const tokens = setThemeCSS<SidebarSpecs>((theme, props) => {
+	const { active, items } = props
+
+	const activeIndex = items.findIndex(item => active === item.id)
+	const height = 48
+
+	return {
+		rail: {
+			'--sidebar-rail-height': rem(height),
+			'--sidebar-rail-position': rem(height * activeIndex),
+		},
+	}
+})
+
+export const Sidebar = polymorphic<SidebarSpecs>(_props => {
+	const props = useProps(NAME, _props)
+	const styles = useStyles(NAME, { classes, props, tokens })
+
+	const {
+		active,
+		children,
+		items,
+		onItemChange,
+		scroll,
+		...rest
+	} = props
+
+	const { as, others } = extractOtherProps(rest)
+
+	return (
+		<Box
+			{ ...styles('root') }
+			{ ...others }
+			as={ as }
+		>
+			<nav { ...styles('inner') }>
+				<span { ...styles('rail') } />
+				<ul { ...styles('wrapper') } role="menu">
+					{ items.map(({ id, label, url }) => {
+						const isActive = active === id,
+							selector = { active: isActive }
+						const itemProps = { ...styles('button'), unstyled: true }
+
+						return (
+							<li key={ `sidebar-item-${id}` } { ...styles('item', { selector }) }>
+								{ url ? (
+									<Button
+										{ ...itemProps }
+										attributes={ { aria: { current: isActive ? 'page' : undefined } } }
+										href={ url }
+										scroll={ scroll }
+									>
+										{ label }
+									</Button>
+								) : (
+									<Button
+										{ ...itemProps }
+										attributes={ { aria: { current: isActive || undefined } } }
+										onClick={ () => onItemChange?.(id) }
+									>
+										{ label }
+									</Button>
+								) }
+							</li>
+						)
+					}) }
+				</ul>
+			</nav>
+			{ children }
+		</Box>
+	)
+}, classes)
+
+Sidebar.displayName = NAME
+Sidebar.setDefaults({ props: DEFAULT_PROPS })
+
+export declare namespace Sidebar {
+	export type Props = SidebarProps
+	export type Specs = SidebarSpecs
+
+	export type ActionItem = SidebarActionItem
+	export type LinkItem = SidebarLinkItem
+}

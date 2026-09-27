@@ -158,13 +158,21 @@ const inheritClasses = <P extends object, V extends object>({
 		element = `__${self}`
 	}
 
-	const isExtendable = (cn: string) =>
-		!!prefix && cn.startsWith(prefix) && !cn.includes('--')
+	const semanticOf = (cn: string) => {
+		if (!prefix) return ''
+		if (cn.startsWith(`${prefix}-`)) return cn
+
+		const index = cn.lastIndexOf(`__${prefix}-`)
+		return index > -1 ? cn.slice(index + 2) : ''
+	}
+
+	const isPrefixed = (cn: string) => !!semanticOf(cn)
+	const isExtendable = (cn: string) => isPrefixed(cn) && !semanticOf(cn).includes('--')
 
 	return classList
 		.filter(cn => check.isRoot
-			? (!check.isUnstyled || (!!prefix && cn.startsWith(prefix)))
-			: isExtendable(cn)
+			? (!check.isUnstyled || isPrefixed(cn))
+        	: isExtendable(cn)
 		)
 		.map(cn => {
 			const root = suffix && cn.endsWith(suffix)
