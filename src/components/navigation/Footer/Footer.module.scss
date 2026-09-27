@@ -19,7 +19,6 @@
 				display: grid;
 				grid-template-columns: var(--inkq-breakpoint-min) minmax(0, var(--inkq-container-block));
 				justify-content: space-between;
-				// grid-template-columns: minmax(var(--inkq-breakpoint-min), 1fr) minmax(0, var(--inkq-container-block));
 			}
 
 			&__content,
@@ -46,6 +45,7 @@
 	&__legal {
 		color: var(--inkq-color-text-tertiary);
 		font-size: var(--inkq-font-size-caption);
+		font-weight: var(--inkq-font-weight-semibold);
 		padding-block: calc(var(--inkq-gutter) / 2);
 
 		#{$name} {

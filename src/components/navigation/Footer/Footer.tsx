@@ -6,6 +6,7 @@ import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import { FooterArea } from './FooterArea'
 import { Icon } from '@/components/core'
+import { Logo } from '../Logo'
 import { COMPANY_NAME } from '@/utils/constants'
 import { FOOTER_GLOBAL_NAV, SOCIALS_NAV } from '@/utils/navigation'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
@@ -65,7 +66,7 @@ export const Footer = polymorphic<FooterSpecs>(_props => {
 		>
 			<div { ...styles('info') }>
 				<FooterArea items={ infoItems }>
-					<p>logo here</p>
+					<Logo width={ 148 } />
 					<span { ...styles('tagline') }>
 						Find your artist. Own the ink.
 					</span>

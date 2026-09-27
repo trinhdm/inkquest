@@ -6,9 +6,9 @@ import { filterNavigation, NavRoute } from '@/utils/navigation'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import { Button } from '@/components/core'
+import { Logo } from '../Logo'
 import { Menu } from '../Menu'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
-import Link from 'next/link'
 import classes from './Navbar.module.scss'
 
 const NAME = 'Navbar' as const,
@@ -49,7 +49,7 @@ export const Navbar = polymorphic<NavbarSpecs>(_props => {
 			<div { ...styles('wrapper', true) }>
 				<div { ...styles('inner') }>
 					<div { ...styles('col') }>
-						<Link href="/">logo</Link>
+						<Logo width={ 124 } />
 					</div>
 
 					{ !!navitems.length && (
