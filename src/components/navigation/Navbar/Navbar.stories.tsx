@@ -1,7 +1,7 @@
 import { expect, within } from 'storybook/test'
 import { getDefaultProps } from '@/hooks/useProps'
 import { Navbar } from './Navbar'
-import { NAV_ROUTES } from '@/utils/navigation'
+import { NavRoutes } from '@/utils/navigation'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import moduleClasses from './Navbar.module.scss'
@@ -39,7 +39,7 @@ const meta: Meta<NavbarStoryProps> = {
 	argTypes: {
 		routes: {
 			control: 'multi-select',
-			options: Object.values(NAV_ROUTES),
+			options: Object.values(NavRoutes),
 			description: 'Allow-list handed to `filterNavigation(routes, NAVIGATION_DATA)`. Omitted/empty means "no filtering" — the full nav tree renders. Filtering is shallow-first: an item is kept only if its OWN `route` is in the list (so the route-less `User` item is always dropped), and its children are then filtered by the same list.',
 		},
 		as: {
@@ -111,9 +111,9 @@ export const Default: Story = {
 export const FilteredRoutes: Story = {
 	args: {
 		routes: [
-			NAV_ROUTES.DISCOVER,
-			NAV_ROUTES.MARKETPLACE,
-			NAV_ROUTES.COMMUNITY,
+			NavRoutes.DISCOVER,
+			NavRoutes.MARKETPLACE,
+			NavRoutes.COMMUNITY,
 		],
 	},
 	play: async ({ canvasElement }) => {
@@ -133,7 +133,7 @@ export const FilteredRoutes: Story = {
 }
 
 export const SingleRoute: Story = {
-	args: { routes: [NAV_ROUTES.MARKETPLACE] },
+	args: { routes: [NavRoutes.MARKETPLACE] },
 }
 
 /**
@@ -141,12 +141,12 @@ export const SingleRoute: Story = {
  * `Navbar` guards the menu with `!!navItems.length`, so the `<Menu>` is not
  * rendered at all — only the logo column and the auth buttons remain.
  *
- * `/settings` is a deliberate choice: it exists in `NAV_ROUTES`, but only as a
+ * `/settings` is a deliberate choice: it exists in `NavRoutes`, but only as a
  * child of the route-less `User` item, which `filterNavigation` drops outright
  * (it keys off `item.route` before ever recursing into `item.menu`).
  */
 export const NoMatchingRoutes: Story = {
-	args: { routes: [NAV_ROUTES.SETTINGS] },
+	args: { routes: [NavRoutes.SETTINGS] },
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement)
 

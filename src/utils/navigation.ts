@@ -17,7 +17,8 @@ export enum NavRoutes {
 	SIGNUP = '/signup',
 }
 
-export const NAV_ROUTES = {
+// checks if slugs exist
+const NAV_ROUTES = {
 	HOME: '/',
 	DISCOVER: '/discover',
 	DISCOVER_STYLE: '/discover/style',
@@ -32,9 +33,9 @@ export const NAV_ROUTES = {
 	SETTINGS: '/settings',
 	LOGIN: '/login',
 	SIGNUP: '/signup',
-} as const satisfies Record<string, Route>
+} as const satisfies Record<`${keyof typeof NavRoutes}`, Route>
 
-export type NavRoute = (typeof NAV_ROUTES)[keyof typeof NAV_ROUTES]
+export type NavRoute = `${NavRoutes}`
 
 export interface NavigationItem {
 	label: string
@@ -98,17 +99,36 @@ export const NAVIGATION_DATA: NavigationItem[] = [
 
 
 export const filterNavigation = (
-	routes?: NavRoute[],
+	routes?: readonly NavRoute[],
+	layout: 'breadcrumbs' | 'dropdown' = 'dropdown',
+	isEmptyReturn = true,
 	navitems: NavigationItem[] = NAVIGATION_DATA,
 ): NavigationItem[] => {
-	if (!routes?.length) return navitems
+	if (!routes?.length)
+		return isEmptyReturn ? [] : navitems
 
-	return navitems.reduce<NavigationItem[]>((acc, item) => {
-		if (item.route && routes.includes(item.route)) {
-			const submenu = item.menu && filterNavigation(routes, item.menu)
-			acc.push({ ...item, menu: submenu })
-		}
+	const filterNavitems = (
+		items: NavigationItem[],
+		routes: readonly NavRoute[],
+	): NavigationItem[] =>
+		items.reduce<NavigationItem[]>((acc, item) => {
+			const list: NavigationItem[] = [],
+				submenu = item.menu && filterNavitems(item.menu, routes)
 
-		return acc
-	}, [])
+			if (!!item.route && routes.includes(item.route)) {
+				const target = { ...item }
+
+				if (layout === 'dropdown' && submenu)
+					Object.assign(target, { menu: submenu })
+
+				list.push(target)
+			} else if (submenu) {
+				list.push(...submenu)
+			}
+
+			acc.push(...new Set(list))
+			return acc
+		}, [])
+
+	return filterNavitems(navitems, routes)
 }

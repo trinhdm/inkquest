@@ -19,7 +19,7 @@ const DEFAULT_PROPS = {
 } as const
 
 interface NavbarProps {
-	routes?: NavRoute[]
+	routes?: readonly NavRoute[]
 }
 
 interface NavbarSpecs {
@@ -37,7 +37,7 @@ export const Navbar = polymorphic<NavbarSpecs>(_props => {
 	const { routes, ...rest } = props
 	const { as, others } = extractOtherProps(rest)
 
-	const navItems = filterNavigation(routes)
+	const navitems = filterNavigation(routes)
 
 	return (
 		<Box
@@ -52,12 +52,9 @@ export const Navbar = polymorphic<NavbarSpecs>(_props => {
 						<Link href="/">logo</Link>
 					</div>
 
-					{ !!navItems.length && (
+					{ !!navitems.length && (
 						<div { ...styles('col') }>
-							<Menu
-								items={ navItems }
-								{ ...styles('menu') }
-							/>
+							<Menu items={ navitems } { ...styles('menu') } />
 						</div>
 					) }
 

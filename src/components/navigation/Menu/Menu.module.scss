@@ -1,9 +1,9 @@
 .inkq-menu {
 	$name: &;
 
-	align-items: center;
+	// align-items: center;
+	column-gap: var(--inkq-space-menu);
 	display: flex;
-	gap: var(--inkq-space-menu);
 	position: relative;
 }
 
@@ -11,8 +11,8 @@
 	$name: &;
 
 	align-items: center;
+	column-gap: var(--inkq-space-icon);
 	display: flex;
-	gap: var(--inkq-space-icon);
 	position: relative;
 
 	&__label {

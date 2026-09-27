@@ -2,7 +2,7 @@
 
 import { useProps, extractOtherProps } from '@/hooks/useProps'
 import { useStyles } from '@/hooks/useStyles'
-import { filterNavigation, NavRoute } from '@/utils/navigation'
+import { filterNavigation, NavRoute, type NavigationGroup } from '@/utils/navigation'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import { Menu } from '../Menu'
@@ -16,9 +16,8 @@ const DEFAULT_PROPS = {
 	as: TAG,
 } as const
 
-interface SubnavProps {
-	routes: NavRoute[]
-}
+interface SubnavProps
+	extends NavigationGroup {}
 
 interface SubnavSpecs {
 	defaults: {
@@ -32,10 +31,12 @@ export const Subnav = polymorphic<SubnavSpecs>(_props => {
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { classes, props })
 
-	const { routes, ...rest } = props
+	const { category, routes, ...rest } = props
 	const { as, others } = extractOtherProps(rest)
 
-	const navItems = filterNavigation(routes)
+	const navitems = filterNavigation(routes, 'breadcrumbs')
+
+	if (!navitems.length) return null
 
 	return (
 		<Box
@@ -45,18 +46,15 @@ export const Subnav = polymorphic<SubnavSpecs>(_props => {
 		>
 			<div { ...styles('wrapper', true) }>
 				<div { ...styles('inner') }>
-					{ !!navItems.length && (
-						<>
-							<span { ...styles('label') }>
-								{ navItems[0].label }
-							</span>
-							<Menu
-								hasDropdowns={ false }
-								items={ navItems }
-								{ ...styles('menu') }
-							/>
-						</>
-					) }
+					<span { ...styles('label') }>
+						{ category ?? navitems[0].label }
+					</span>
+
+					<Menu
+						{ ...styles('menu') }
+						hasDropdowns={ false }
+						items={ navitems }
+					/>
 				</div>
 			</div>
 		</Box>

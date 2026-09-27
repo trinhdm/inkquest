@@ -23,7 +23,7 @@ function hasKeyWithValue(
 	if (!isObject(obj) || !Object.hasOwn(obj, k))
 		return false
 
-	return v === null ? !!obj[k] : obj[k] === v
+	return k in obj && (v === null ? !!obj[k] : obj[k] === v)
 }
 
 export const keyHasValue = hasKeyWithValue

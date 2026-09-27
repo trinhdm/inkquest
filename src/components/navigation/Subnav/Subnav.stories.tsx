@@ -1,7 +1,7 @@
 import { expect, within } from 'storybook/test'
 import { getDefaultProps } from '@/hooks/useProps'
+import { NavRoutes } from '@/utils/navigation'
 import { Subnav } from './Subnav'
-import { NAV_ROUTES } from '@/utils/navigation'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
@@ -32,10 +32,10 @@ const ROOT_SELECTOR = '.inkq-subnav',
 
 // The `routes` allow-list the app shell (`src/app/layout.tsx`) passes.
 const COMMUNITY_ROUTES = [
-	NAV_ROUTES.COMMUNITY,
-	NAV_ROUTES.COMMUNITY_FEED,
-	NAV_ROUTES.COMMUNITY_EVENTS,
-	NAV_ROUTES.COMMUNITY_SPOTLIGHTS,
+	NavRoutes.COMMUNITY,
+	NavRoutes.COMMUNITY_FEED,
+	NavRoutes.COMMUNITY_EVENTS,
+	NavRoutes.COMMUNITY_SPOTLIGHTS,
 ]
 
 // `Subnav.Props` (the `declare namespace` export) is just the raw `SubnavProps`
@@ -56,7 +56,7 @@ const meta: Meta<SubnavStoryProps> = {
 	argTypes: {
 		routes: {
 			control: 'multi-select',
-			options: Object.values(NAV_ROUTES),
+			options: Object.values(NavRoutes),
 			description: 'Required (unlike `Navbar`, where it is optional). Handed to `filterNavigation(routes, NAVIGATION_DATA)`. There is no separate `label` prop — the visible label (`inkq-subnav__label`) is derived straight from the FIRST filtered item\'s own `label` (`navItems[0].label`), so it is entirely data-driven. When `routes` matches nothing, `filterNavigation` returns `[]` and `Subnav` guards its whole inner block (label AND `<Menu>`) with `!!navItems.length` — neither renders.',
 		},
 		unstyled: {
@@ -122,12 +122,12 @@ export const Default: Story = {
  * an empty `navItems` means NEITHER renders: the root mounts with an empty
  * inner wrapper.
  *
- * `/settings` is a deliberate choice: it exists in `NAV_ROUTES`, but only as a
+ * `/settings` is a deliberate choice: it exists in `NavRoutes`, but only as a
  * child of the route-less `User` item, which `filterNavigation` drops outright
  * (it keys off `item.route` before ever recursing into `item.menu`).
  */
 export const NoMatchingRoutes: Story = {
-	args: { routes: [NAV_ROUTES.SETTINGS] },
+	args: { routes: [NavRoutes.SETTINGS] },
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement)
 

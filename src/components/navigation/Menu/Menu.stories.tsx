@@ -1,7 +1,7 @@
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { getDefaultProps } from '@/hooks/useProps'
 import { Menu } from './Menu'
-import { NAV_ROUTES, NAVIGATION_DATA, type NavigationItem } from '@/utils/navigation'
+import { NavRoutes, NAVIGATION_DATA, type NavigationItem } from '@/utils/navigation'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
@@ -196,8 +196,8 @@ export const LeafItems: Story = {
 			noRoute = within(menubar).getByRole('menuitem', { name: 'No route (span)' })
 
 		await expect(home.tagName).toBe('A')
-		await expect(home).toHaveAttribute('href', NAV_ROUTES.HOME)
-		await expect(marketplace).toHaveAttribute('href', NAV_ROUTES.MARKETPLACE)
+		await expect(home).toHaveAttribute('href', NavRoutes.HOME)
+		await expect(marketplace).toHaveAttribute('href', NavRoutes.MARKETPLACE)
 
 		await expect(noRoute.tagName).toBe('SPAN')
 		await expect(noRoute).not.toHaveAttribute('href')

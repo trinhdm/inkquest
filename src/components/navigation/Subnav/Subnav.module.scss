@@ -11,8 +11,8 @@
 
 	&__inner {
 		align-items: center;
+		column-gap: var(--inkq-space-menu);
 		display: flex;
-		gap: var(--inkq-space-menu);
 	}
 
 	&__label {
@@ -23,7 +23,6 @@
 	}
 
 	&__menu {
-		flex-direction: row;
 		height: var(--inkq-subnav-size);
 	}
 

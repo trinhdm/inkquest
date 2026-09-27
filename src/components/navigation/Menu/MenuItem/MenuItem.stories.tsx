@@ -1,7 +1,7 @@
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { getDefaultProps } from '@/hooks/useProps'
 import { MenuItem } from './MenuItem'
-import { NAV_ROUTES, NAVIGATION_DATA, type NavigationItem } from '@/utils/navigation'
+import { NavRoutes, NAVIGATION_DATA, type NavigationItem } from '@/utils/navigation'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
@@ -79,7 +79,7 @@ const meta: Meta<MenuItemStoryProps> = {
 		},
 		route: {
 			control: 'select',
-			options: [undefined, ...Object.values(NAV_ROUTES)],
+			options: [undefined, ...Object.values(NavRoutes)],
 			description: 'When set, `MenuLabel` renders an `<a href>` (via `next/link`) instead of a `<span tabIndex={-1}>` that\'s excluded from the natural Tab order.',
 		},
 		unstyled: {
@@ -90,7 +90,7 @@ const meta: Meta<MenuItemStoryProps> = {
 	args: {
 		...getDefaultProps<MenuItem.Props>('MenuItem'),
 		label: 'Home',
-		route: NAV_ROUTES.HOME,
+		route: NavRoutes.HOME,
 	},
 }
 
@@ -102,7 +102,7 @@ export const Default: Story = {
 			item = canvas.getByRole('menuitem')
 
 		await expect(item.tagName).toBe('A')
-		await expect(item).toHaveAttribute('href', NAV_ROUTES.HOME)
+		await expect(item).toHaveAttribute('href', NavRoutes.HOME)
 		await expect(item.closest('li')).toHaveAttribute('role', 'none')
 	},
 }
@@ -124,7 +124,7 @@ export const Leaf: Story = {
 	render: (args) => (
 		<Row>
 			<Group label="route: set">
-				<MenuItem { ...args } label="Home" route={ NAV_ROUTES.HOME } />
+				<MenuItem { ...args } label="Home" route={ NavRoutes.HOME } />
 			</Group>
 			<Group label="route: undefined">
 				<MenuItem { ...args } label="No route" route={ undefined } />
@@ -137,7 +137,7 @@ export const Leaf: Story = {
 			withoutRoute = canvas.getByRole('menuitem', { name: 'No route' })
 
 		await expect(withRoute.tagName).toBe('A')
-		await expect(withRoute).toHaveAttribute('href', NAV_ROUTES.HOME)
+		await expect(withRoute).toHaveAttribute('href', NavRoutes.HOME)
 
 		await expect(withoutRoute.tagName).toBe('SPAN')
 		await expect(withoutRoute).not.toHaveAttribute('href')
@@ -539,7 +539,7 @@ export const KeyboardFocusRouteless: Story = {
 		route: undefined,
 		menu: [
 			{ label: 'No Route' },
-			{ label: 'Settings', route: NAV_ROUTES.SETTINGS },
+			{ label: 'Settings', route: NavRoutes.SETTINGS },
 		],
 	},
 	play: async ({ canvasElement }) => {
