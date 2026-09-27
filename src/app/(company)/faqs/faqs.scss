@@ -1,0 +1,34 @@
+#faqs-list {
+	.inkq-grid {
+		grid-template-columns: minmax(15rem, auto) minmax(0, 1fr);
+	}
+
+	.inkq-heading {
+		align-items: baseline;
+		column-gap: var(--space-5);
+		display: flex;
+		// justify-content: space-between;
+		margin-block-end: var(--inkq-stack-gap-lede);
+
+		h2 {
+			font-size: var(--inkq-font-size-heading-h3);
+		}
+	}
+
+	.inkq-accordion {
+		--accordion-column-width: var(--space-8);
+		--accordion-gap: var(--space-6);
+	}
+
+	.inkq-accordion-title {
+		padding-block: var(--space-5);
+
+		&__indicator {
+			--icon-size: var(--font-size-20);
+		}
+
+		&__text {
+			font-size: var(--inkq-font-size-heading-h4);
+		}
+	}
+}

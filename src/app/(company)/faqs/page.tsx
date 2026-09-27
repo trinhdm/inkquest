@@ -1,14 +1,16 @@
 'use client'
 
-import { use } from 'react'
-import { Accordion } from '@/components/data'
-import { Grid, Section } from '@/components/layout'
-import { FAQ_ITEMS, resolveFaqGroup } from './faqs.data'
+import { Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { Grid, Section, Sidebar } from '@/components/layout'
+import { FaqCategory } from './FaqCategory'
+import { FAQ_CATEGORIES, FAQ_PARAM, resolveFaqGroup } from './faqs.data'
+import './faqs.scss'
 
-export default function FAQs({ searchParams }: PageProps<'/faqs'>) {
+export default function FAQs() {
 	const pageID = 'faqs'
-	const activeGroup = resolveFaqGroup(use(searchParams).category)
-	// const [activeCategory, setActiveCategory] = useState(() => categories[0])
+	const searchParams = useSearchParams()
+	const activeGroup = resolveFaqGroup(searchParams.get(FAQ_PARAM))
 
 	return (
 		<>
@@ -25,33 +27,12 @@ export default function FAQs({ searchParams }: PageProps<'/faqs'>) {
 				id={ `${pageID}-list` }
 				// title="What we believe."
 			>
-				<Grid gap="lg">
-					{ FAQ_ITEMS.map(({ category, id: faqsID, questions }) => {
-						const faqCount = questions.length
-
-						if (activeGroup.id !== faqsID) return null
-
-						return (
-							<div id={ faqsID } key={ `category-${faqsID}-group` }>
-								<div>
-									<h2>{ category }</h2>
-									<span className="inkq-eyebrow">{ faqCount } questions</span>
-								</div>
-
-								{ faqCount > 0 && (
-									<Accordion.Group>
-										{ questions.map(({ content, id, title }) => (
-											<Accordion id={ id } key={ `faq-${id}` }>
-												<Accordion.Title>{ title }</Accordion.Title>
-												<Accordion.Content>{ content }</Accordion.Content>
-											</Accordion>
-										)) }
-									</Accordion.Group>
-								) }
-							</div>
-						)
-					}) }
-				</Grid>
+				<Suspense>
+					<Grid gap="lg">
+						<Sidebar active={ activeGroup.id } items={ FAQ_CATEGORIES } />
+						<FaqCategory { ...activeGroup } />
+					</Grid>
+				</Suspense>
 			</Section>
 
 			<Section

@@ -10,10 +10,7 @@
 	}
 
 	&__title {
-		letter-spacing: var(--inkq-font-tracking-display);
 		margin-top: var(--inkq-stack-gap-kicker);
-		text-transform: uppercase;
-		text-wrap: balance;
 
 		&:has(+ div) {
 			margin-bottom: var(--inkq-stack-gap-head);

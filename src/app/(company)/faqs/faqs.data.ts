@@ -1,13 +1,13 @@
 import type { PageDataItem } from '@/types/shared'
 import type { Sidebar } from '@/components/layout'
 
-interface FaqGroup {
+export interface FaqGroup {
 	id: string
 	category: string
 	questions: PageDataItem[]
 }
 
-export const FAQ_ITEMS: FaqGroup[] = [
+const FAQ_ITEMS: FaqGroup[] = [
 	{
 		id: 'general-faqs',
 		category: 'General',
@@ -103,7 +103,9 @@ export const FAQ_CATEGORIES: Sidebar.LinkItem[] = FAQ_ITEMS.map(({ category, id 
 	url: `/faqs?category=${id}`,
 }))
 
-export const resolveFaqGroup = (value?: string | string[]): FaqGroup => {
+export const FAQ_PARAM = 'category'
+
+export const resolveFaqGroup = (value: string | string[] | null): FaqGroup => {
 	const id = Array.isArray(value) ? value[0] : value
 	return FAQ_ITEMS.find(group => group.id === id) ?? FAQ_ITEMS[0]
 }
