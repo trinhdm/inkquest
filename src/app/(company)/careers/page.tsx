@@ -1,28 +1,62 @@
 'use client'
 
-import { Section } from '@/components/layout'
+import { Grid, Section } from '@/components/layout'
+import type { ReactNode } from 'react'
+
+interface ComponentItem {
+	id: string
+	title: string
+	content: ReactNode
+}
+
+const CULTURE_PILLARS: ComponentItem[] = [
+	{
+		id: 'goals',
+		title: 'Craft over volume',
+		content: 'We ship less, better. Nobody is measured on output theater.',
+	},
+	{
+		id: 'expectations',
+		title: 'Skin in the game',
+		content: 'Everyone talks to artists and clients — support shifts included, founders too.',
+	},
+	{
+		id: 'benefits',
+		title: 'Honest terms',
+		content: 'Salary bands published internally. Equity for every role. No surprise re-orgs.',
+	},
+]
 
 export default function Careers() {
+	const pageID = 'careers'
+
 	return (
 		<>
 			<Section
-				eyebrow="Company · Careers"
+				eyebrow="Careers · Brooklyn + remote"
+				id={ `${pageID}-hero` }
 				layout="hero"
-				title="Questions, answered."
+				title="Small crew, sharp needles."
 			>
-				Everything about bidding, booking, verification, and payouts — for clients, artists, and studios. Can't find it? Message us.
+				We're a team of fourteen building the place where tattoo work gets found, priced, and booked on the artist's terms. Half of us are tattooed. All of us ship.
 			</Section>
 
 			<Section
-				eyebrow="Still need help?"
-				id="faq-cta"
-				layout="cta"
-				title="Ask a human."
+				id={ `${pageID}-culture` }
+				// layout="blocks"
 			>
-				Our support team answers within a day — usually much faster. For booking disputes or safety concerns, head straight to the Support page.
-
-				<Section.Button href="/careers">Open ticket</Section.Button>
-				<Section.Button href="/press">Email support</Section.Button>
+				<Grid columns={ 3 }>
+					{ CULTURE_PILLARS.map(({ content, id, title }) => (
+						<Grid.Item
+							key={ `${id}-pillar` }
+							className="inkq-item--block"
+						>
+							<span className="inkq-rail" />
+							<h3 className="inkq-h4">{ title }</h3>
+							<p>{ content }</p>
+						</Grid.Item>
+					)) }
+				</Grid>
 			</Section>
 		</>
 	)
