@@ -3,7 +3,7 @@ import { getDefaultProps } from '@/hooks/useProps'
 import { Icon } from './Icon'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
-import type { IconType } from './IconMap'
+import type { LucideType } from './IconMap'
 
 // Single source of truth for this file's option lists. `Icon` has no
 // subcomponent family (unlike Button/ButtonGroup/ButtonSection), so these
@@ -14,36 +14,36 @@ import type { IconType } from './IconMap'
 // `CONTROL_ICON_MAP`, `USER_SETTING_MAP`, plus the standalone misc entries
 // spread directly into `ICON_MAP`) purely for story scannability — `Icon`
 // itself has no notion of these categories.
-const ARROW_NAV_TYPES: readonly IconType[] = [
+const ARROW_NAV_TYPES: readonly LucideType[] = [
 	'arrow-down', 'caret-down', 'arrow-left', 'caret-left',
 	'arrow-right', 'caret-right', 'arrow-up', 'caret-up',
 	'add', 'close', 'confirm', 'remove',
 	'alert-tooltip', 'info-tooltip', 'warn-tooltip',
 ]
 
-const ACTION_TYPES: readonly IconType[] = [
+const ACTION_TYPES: readonly LucideType[] = [
 	'attach', 'block', 'call', 'comment', 'copy', 'delete', 'download',
 	'drag', 'edit', 'email', 'invite', 'like', 'notify', 'paste',
 	'refresh', 'report', 'save', 'send', 'share',
 ]
 
-const CONTROL_TYPES: readonly IconType[] = [
+const CONTROL_TYPES: readonly LucideType[] = [
 	'calendar', 'filter', 'grid', 'hidden', 'list',
 	'price', 'row', 'search', 'sort', 'visible',
 ]
 
-const USER_SETTING_TYPES: readonly IconType[] = [
+const USER_SETTING_TYPES: readonly LucideType[] = [
 	'group', 'you', 'follow', 'handle',
 	'link-internal', 'link-external', 'settings',
 	'dark-theme', 'light-theme', 'menu', 'unverified', 'verified', 'website',
 ]
 
-const MISC_TYPES: readonly IconType[] = [
+const MISC_TYPES: readonly LucideType[] = [
 	'camera', 'media', 'loading', 'location',
 	'private', 'rating', 'ruler', 'time', 'wrench',
 ]
 
-const ICON_GROUPS: Record<string, readonly IconType[]> = {
+const ICON_GROUPS: Record<string, readonly LucideType[]> = {
 	'arrow / navigation': ARROW_NAV_TYPES,
 	'action': ACTION_TYPES,
 	'control': CONTROL_TYPES,
@@ -51,9 +51,9 @@ const ICON_GROUPS: Record<string, readonly IconType[]> = {
 	'misc': MISC_TYPES,
 }
 
-// Full `IconType` union (all 66 keys of `ICON_MAP`), used for `argTypes.type`
+// Full `LucideType` union (all 66 keys of `ICON_MAP`), used for `argTypes.type`
 // and as the exhaustive list the `AllIcons` story maps over.
-const ICON_TYPE_OPTIONS: readonly IconType[] = [
+const ICON_TYPE_OPTIONS: readonly LucideType[] = [
 	...ARROW_NAV_TYPES,
 	...ACTION_TYPES,
 	...CONTROL_TYPES,
@@ -284,11 +284,11 @@ export const UnrecognizedType: Story = {
 	parameters: { layout: 'padded' },
 	render: () => (
 		<Group label="type=&quot;not-a-real-icon&quot; (absent from ICON_MAP)">
-			{ /* `type` is a strict `IconType` union with no escape hatch for
+			{ /* `type` is a strict `LucideType` union with no escape hatch for
 				invalid values, so force one through with a local cast — same
 				fallback the agent guidelines describe for unions that don't fit
 				a spread cleanly. */ }
-			<Icon type={ 'not-a-real-icon' as unknown as IconType } />
+			<Icon type={ 'not-a-real-icon' as unknown as LucideType } />
 		</Group>
 	),
 	play: async ({ canvasElement }) => {

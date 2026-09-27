@@ -46,10 +46,10 @@ h6,
 a {
 	color: var(--inkq-color-link);
 	text-decoration: none;
+	transition: var(--inkq-motion-colors);
 
 	&:hover {
 		color: var(--inkq-color-link-hover);
-		transition: var(--inkq-motion-colors);
 	}
 
 	&:where([data-action]) {

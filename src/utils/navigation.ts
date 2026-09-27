@@ -1,4 +1,6 @@
+import { SOCIAL_BRANDS } from './constants'
 import type { Route } from 'next'
+import type { Orientation, SocialBrand } from '@/types/shared'
 
 export enum NavRoutes {
 	HOME = '/',
@@ -59,8 +61,9 @@ export interface NavigationItem {
 	route?: NavRoute
 }
 
-export interface NavigationGroup {
+export interface NavigationGroup<T extends string = string> {
 	category?: string
+	location?: T
 	routes: readonly NavRoute[]
 }
 
@@ -207,3 +210,57 @@ export const filterNavigation = (
 
 	return filterNavitems(navitems, routes)
 }
+
+interface FooterNavGroup
+	extends NavigationGroup<'info' | 'legal'> {
+	orientation?: Orientation
+}
+
+export const HEADER_GLOBAL_NAV: readonly NavRoute[] = [
+	'/discover',
+	'/marketplace',
+	'/community',
+]
+
+export const FOOTER_GLOBAL_NAV: FooterNavGroup[] = [
+	{
+		category: 'Discover',
+		routes: listRoutesWithSlug('/discover'),
+	},
+	{
+		category: 'Marketplace',
+		routes: listRoutesWithSlug('/marketplace'),
+	},
+	{
+		category: 'Community',
+		routes: listRoutesWithSlug('/community'),
+	},
+	{
+		category: 'Company',
+		routes: ['/about', '/faqs', '/careers', '/press'],
+	},
+	{
+		routes: ['/privacy-policy', '/terms-conditions', '/cookies'],
+		location: 'legal',
+		orientation: 'horizontal',
+	},
+] as const
+
+interface SocialBrandGroup {
+	type: SocialBrand
+	url: string
+}
+
+const getSocials = (handle: string): SocialBrandGroup[] => {
+	const socials: SocialBrandGroup[] = []
+
+	for (const brand of SOCIAL_BRANDS) {
+		const url = `https://${brand}.com/${handle}`
+		socials.push({ type: brand, url })
+	}
+
+	return socials
+}
+
+const BRAND_HANDLE = 'inkquest'
+export const SOCIALS_NAV = getSocials(BRAND_HANDLE)

@@ -3,11 +3,11 @@
 import { usePathname } from 'next/navigation'
 import { useProps, extractOtherProps } from '@/hooks/useProps'
 import { useStyles } from '@/hooks/useStyles'
-import { listRoutesWithSlug, type NavRoute } from '@/utils/navigation'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import { Navbar } from '../Navbar'
 import { Subnav } from '../Subnav'
+import { HEADER_GLOBAL_NAV, listRoutesWithSlug, type NavRoute } from '@/utils/navigation'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Header.module.scss'
 
@@ -16,7 +16,7 @@ const NAME = 'Header' as const,
 
 const DEFAULT_PROPS = {
 	as: TAG,
-	navbar: { routes: ['/discover', '/marketplace', '/community'] },
+	navbar: { routes: HEADER_GLOBAL_NAV },
 } as const
 
 interface HeaderProps {
@@ -45,7 +45,7 @@ export const Header = polymorphic<HeaderSpecs>(_props => {
 		: listRoutesWithSlug(pathname as NavRoute)
 
 	return (
-		<Box as={ as } { ...styles('root') } { ...others }>
+		<Box { ...styles('root') } { ...others } as={ as }>
 			<Navbar routes={ navbar?.routes } />
 			<Subnav category={ subnav?.category } routes={ subnavRoutes } />
 		</Box>

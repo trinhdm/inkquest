@@ -1,4 +1,5 @@
 import type { AriaAttributes } from 'react'
+import type { SOCIAL_BRANDS } from '@/utils/constants'
 
 export type Size =
 	| 'xs'
@@ -38,3 +39,5 @@ export type Orientation =
 export interface StyleContext {
 	classes?: Record<string, string>
 }
+
+export type SocialBrand = (typeof SOCIAL_BRANDS)[number]

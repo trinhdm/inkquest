@@ -49,7 +49,7 @@ export const FooterArea = polymorphic<FooterAreaSpecs>(_props => {
 						const menuItems = filterNavigation(routes, 'breadcrumbs')
 
 						return (
-							<div { ...styles('group') }>
+							<div key={ `${category}-footer-group` } { ...styles('group') }>
 								{ category && (
 									<span { ...styles('label', true) }>{ category }</span>
 								) }

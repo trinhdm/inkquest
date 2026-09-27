@@ -53,9 +53,9 @@ describe('Icon', () => {
 	})
 
 	it('renders nothing for an unknown icon type', () => {
-		// `ICON_MAP[type]` is undefined for anything outside `IconType`; the
+		// `ICON_MAP[type]` is undefined for anything outside `LucideType`; the
 		// component returns `null` rather than throwing. Cast is required since
-		// `IconType` is a closed union — this exercises the runtime guard for a
+		// `LucideType` is a closed union — this exercises the runtime guard for a
 		// value that could slip through at a JS call site or from unvalidated data.
 		const { container } = render(<Icon type={ 'not-a-real-icon' as Icon.Props['type'] } />)
 		expect(container).toBeEmptyDOMElement()

@@ -104,4 +104,4 @@ export const ICON_MAP = {
 	wrench: Wrench,
 }
 
-export type IconType = keyof typeof ICON_MAP
+export type LucideType = keyof typeof ICON_MAP

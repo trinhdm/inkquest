@@ -2,48 +2,28 @@
 
 import { useProps, extractOtherProps } from '@/hooks/useProps'
 import { useStyles } from '@/hooks/useStyles'
-import { listRoutesWithSlug } from '@/utils/navigation'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import { FooterArea } from './FooterArea'
 import { Icon } from '@/components/core'
+import { COMPANY_NAME } from '@/utils/constants'
+import { FOOTER_GLOBAL_NAV, SOCIALS_NAV } from '@/utils/navigation'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
+import type { SocialBrand } from '@/types/shared'
 import classes from './Footer.module.scss'
 
 const NAME = 'Footer' as const,
 	TAG = 'footer' as const
 
-const BASE_FOOTER_NAV: FooterArea.Props['items'] = [
-	{
-		category: 'Discover',
-		routes: listRoutesWithSlug('/discover'),
-	},
-	{
-		category: 'Marketplace',
-		routes: listRoutesWithSlug('/marketplace'),
-	},
-	{
-		category: 'Community',
-		routes: listRoutesWithSlug('/community'),
-	},
-	{
-		category: 'Company',
-		routes: ['/about', '/faqs', '/careers', '/press'],
-	},
-	{
-		routes: ['/privacy-policy', '/terms-conditions', '/cookies'],
-		location: 'legal',
-		orientation: 'horizontal',
-	},
-] as const
-
 const DEFAULT_PROPS = {
 	as: TAG,
-	items: BASE_FOOTER_NAV,
+	items: FOOTER_GLOBAL_NAV,
+	socials: ['instagram', 'tiktok', 'x'],
 } as const
 
 interface FooterProps {
-	items: FooterArea.Props['items']
+	items?: FooterArea.Props['items']
+	socials?: readonly SocialBrand[]
 }
 
 interface FooterSpecs {
@@ -61,8 +41,13 @@ export const Footer = polymorphic<FooterSpecs>(_props => {
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { classes, props })
 
-	const { children, items, ...rest } = props
+	const { children, items, socials, ...rest } = props
 	const { as, others } = extractOtherProps(rest)
+
+	const currentYear = new Date().getFullYear()
+	const socialIcons = !!socials?.length
+		? SOCIALS_NAV.filter(social => socials.includes(social.type))
+		: SOCIALS_NAV
 
 	const infoItems = [],
 		legalItems = []
@@ -81,18 +66,20 @@ export const Footer = polymorphic<FooterSpecs>(_props => {
 			<div { ...styles('info') }>
 				<FooterArea items={ infoItems }>
 					<p>logo here</p>
-					<span { ...styles('tagline') }>Find your artist. Own the ink.</span>
+					<span { ...styles('tagline') }>
+						Find your artist. Own the ink.
+					</span>
 					<div { ...styles('socials') }>
-						<Icon href="https://instagram.com" type="instagram" />
-						<Icon type="tiktok" />
-						<Icon type="x" />
+						{ socialIcons.map(({ type, url }) => (
+							<Icon key={ `${type}-footer` } href={ url } type={ type } />
+						)) }
 					</div>
 				</FooterArea>
 			</div>
 
 			<div { ...styles('legal') }>
 				<FooterArea items={ legalItems }>
-					<span>© 2026 Inkquest, Inc.</span>
+					<span>© { currentYear } { COMPANY_NAME }</span>
 				</FooterArea>
 			</div>
 		</Box>

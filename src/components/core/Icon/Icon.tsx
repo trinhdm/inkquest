@@ -3,11 +3,12 @@ import { useStyles } from '@/hooks/useStyles'
 import { isExternalLink, keyHasValue } from '@/utils/helpers'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
-import { ICON_MAP, type IconType } from './IconMap'
+import { ICON_MAP, type LucideType } from './IconMap'
 import type { ComponentPropsWithoutRef } from 'react'
 import type { LucideProps } from 'lucide-react'
 import type { Route } from 'next'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
+import type { SocialBrand } from '@/types/shared'
 import Link from 'next/link'
 import classes from './Icon.module.scss'
 
@@ -20,17 +21,6 @@ const DEFAULT_PROPS = {
 	size: 16,
 	strokeLinecap: 'round',
 } as const
-
-const SOCIAL_BRANDS = [
-	'facebook',
-	'instagram',
-	'pinterest',
-	'tiktok',
-	'twitter',
-	'x',
-] as const
-
-type SocialIconType = (typeof SOCIAL_BRANDS)[number]
 type SvgProps = ComponentPropsWithoutRef<'svg'>
 
 interface BaseIconProps<T extends SvgProps | LucideProps> {
@@ -43,14 +33,14 @@ interface LucideIconProps extends BaseIconProps<LucideProps> {
 	filled?: boolean
 	size?: LucideProps['size']
 	strokeLinecap?: never
-	type: IconType
+	type: LucideType
 }
 
 interface SocialIconProps extends BaseIconProps<SvgProps> {
 	filled?: never
 	size?: SvgProps['width']
 	strokeLinecap?: SvgProps['strokeLinecap']
-	type: SocialIconType
+	type: SocialBrand
 }
 
 type IconProps =
@@ -65,7 +55,7 @@ interface IconSpecs {
 	props: IconProps
 }
 
-const isSocialIcon = (type: IconProps['type']): type is SocialIconType =>
+const isSocialIcon = (type: IconProps['type']): type is SocialBrand =>
 	!keyHasValue(ICON_MAP, type)
 
 
@@ -89,7 +79,6 @@ const getBrandProps = (type: IconProps['type']): SvgProps | undefined => {
 				strokeWidth: '1.777',
 				viewBox: '0.833 1.333 21.333 21.333',
 			}
-		case 'twitter':
 		case 'x':
 			return {
 				children: <path d="M3.2 3.2h5.3l5.1 6.9 5.9-6.9h2.3l-7 8.2 7.6 10.4h-5.3l-5.3-7.2-6.2 7.2H3l7.4-8.6z" />,
