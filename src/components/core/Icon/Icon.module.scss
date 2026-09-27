@@ -1,8 +1,15 @@
-
 .inkq-icon {
 	display: inline-block;
 	font-size: var(--icon-size);
-	height: 1em;
-	vertical-align: middle;
-	width: 1em;
+
+	&,
+	&__glyph {
+		height: 1em;
+		vertical-align: middle;
+		width: 1em;
+	}
+
+	&__glyph {
+		font-size: inherit;
+	}
 }

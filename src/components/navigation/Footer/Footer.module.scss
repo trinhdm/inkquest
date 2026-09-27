@@ -48,13 +48,37 @@
 		font-size: var(--inkq-font-size-caption);
 		padding-block: calc(var(--inkq-gutter) / 2);
 
-		#{$name}__wrapper {
-			align-items: center;
-			display: flex;
-			flex-wrap: wrap;
-			gap: var(--space-4);
-			justify-content: space-between;
+		#{$name} {
+			&__wrapper {
+				align-items: center;
+				display: flex;
+				gap: var(--space-4);
+				justify-content: space-between;
+			}
+
+			&__menu {
+				column-gap: var(--space-4);
+			}
+
+			&__menu-item {
+				font-size: inherit;
+			}
 		}
+	}
+
+	&__navigation {
+		display: grid;
+		gap: var(--space-6) var(--space-5);
+	}
+
+	&__socials {
+		column-gap: var(--space-4);
+		display: flex;
+		margin-top: var(--space-1);
+	}
+
+	&__icon {
+		color: currentColor;
 	}
 }
 

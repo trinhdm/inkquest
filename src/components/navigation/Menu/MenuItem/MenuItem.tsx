@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { useOutsideClick } from '@/hooks/useOutsideClick'
 import { useProps, extractOtherProps } from '@/hooks/useProps'
@@ -10,6 +9,7 @@ import { Button, Icon } from '@/components/core'
 import { Menu } from '../Menu'
 import type { NavigationItem } from '@/utils/navigation'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
+import Link from 'next/link'
 import classes from '../Menu.module.scss'
 
 const NAME = 'MenuItem' as const,

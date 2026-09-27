@@ -1,6 +1,5 @@
 'use client'
 
-import Link from 'next/link'
 import { useProps, extractOtherProps } from '@/hooks/useProps'
 import { useStyles } from '@/hooks/useStyles'
 import { filterNavigation, NavRoute } from '@/utils/navigation'
@@ -9,6 +8,7 @@ import { Box } from '@/components/polymorphic/Box'
 import { Button } from '@/components/core'
 import { Menu } from '../Menu'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
+import Link from 'next/link'
 import classes from './Navbar.module.scss'
 
 const NAME = 'Navbar' as const,

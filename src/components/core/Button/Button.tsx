@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { LoaderCircle } from 'lucide-react'
 import { isValidElement, useMemo, Children } from 'react'
 import { useProps, extractOtherProps } from '@/hooks/useProps'
@@ -15,6 +14,7 @@ import type { ComponentPropsWithoutRef, MouseEventHandler, ReactNode, Ref } from
 import type { Route } from 'next'
 import type { Priority as ThemePriority, Variant as ThemeVariant } from '@/lib/theme'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
+import Link from 'next/link'
 import classes from './Button.module.scss'
 
 const NAME = 'Button' as const,
@@ -142,9 +142,9 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 	}
 
 	const sharedProps = {
+		...styles('root', clsx),
 		attributes: { aria, data },
 		unstyled,
-		...styles('root', clsx),
 	}
 
 	const ctxValues = useMemo(() => ({ unstyled }), [unstyled])

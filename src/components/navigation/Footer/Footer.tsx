@@ -6,6 +6,7 @@ import { listRoutesWithSlug } from '@/utils/navigation'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import { FooterArea } from './FooterArea'
+import { Icon } from '@/components/core'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Footer.module.scss'
 
@@ -81,6 +82,11 @@ export const Footer = polymorphic<FooterSpecs>(_props => {
 				<FooterArea items={ infoItems }>
 					<p>logo here</p>
 					<span { ...styles('tagline') }>Find your artist. Own the ink.</span>
+					<div { ...styles('socials') }>
+						<Icon href="https://instagram.com" type="instagram" />
+						<Icon type="tiktok" />
+						<Icon type="x" />
+					</div>
 				</FooterArea>
 			</div>
 
