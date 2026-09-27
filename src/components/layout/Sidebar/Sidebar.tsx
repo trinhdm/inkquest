@@ -1,15 +1,15 @@
 import { useProps, extractOtherProps } from '@/hooks/useProps'
 import { useStyles } from '@/hooks/useStyles'
 import { polymorphic } from '@/lib/component'
+import { rem } from '@/lib/general'
+import { setThemeCSS } from '@/lib/theme'
 import { Box } from '@/components/polymorphic/Box'
 import { Button } from '@/components/core'
-import type { AriaAttributes, ChangeEventHandler, ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import type { Route } from 'next'
 import type { MaybeAnimationProps } from '@/hooks/animation'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Sidebar.module.scss'
-import { setThemeCSS } from '@/lib/theme'
-import { rem } from '@/lib/general'
 
 const NAME = 'Sidebar' as const,
 	TAG = 'div' as const
@@ -17,6 +17,7 @@ const NAME = 'Sidebar' as const,
 const DEFAULT_PROPS = {
 	as: TAG,
 	scroll: false,
+	shallow: true,
 } as const
 
 interface BaseSidebarProps {
@@ -44,6 +45,7 @@ interface ActionSidebarProps {
 	onItemChange: (id: string) => void
 	// onItemChange: ChangeEventHandler<HTMLButtonElement>
 	scroll?: never
+	shallow?: never
 }
 
 interface LinkedSidebarProps {
@@ -51,6 +53,7 @@ interface LinkedSidebarProps {
 	items: SidebarLinkItem[]
 	onItemChange?: never
 	scroll?: Button.Props['scroll']
+	shallow?: boolean
 }
 
 type SidebarNavProps =
@@ -94,10 +97,16 @@ export const Sidebar = polymorphic<SidebarSpecs>(_props => {
 		items,
 		onItemChange,
 		scroll,
+		shallow,
 		...rest
 	} = props
 
 	const { as, others } = extractOtherProps(rest)
+
+	const replaceUrl = (url: SidebarLinkItem['url']) => (event: { preventDefault: () => void }) => {
+		event.preventDefault()
+		window.history.pushState(null, '', url)
+	}
 
 	return (
 		<Box
@@ -120,6 +129,7 @@ export const Sidebar = polymorphic<SidebarSpecs>(_props => {
 										{ ...itemProps }
 										attributes={ { aria: { current: isActive ? 'page' : undefined } } }
 										href={ url }
+										onNavigate={ shallow ? replaceUrl(url) : undefined }
 										scroll={ scroll }
 									>
 										{ label }

@@ -39,7 +39,7 @@ interface BaseButtonProps {
 }
 
 type LinkOptions<T extends string = string> =
-	Pick<LinkProps<T>, 'prefetch' | 'replace' | 'scroll'>
+	Pick<LinkProps<T>, 'onNavigate' | 'prefetch' | 'replace' | 'scroll'>
 
 interface LinkButtonProps<T extends string = string>
 	extends ComponentPropsWithoutRef<'a'>, LinkOptions {

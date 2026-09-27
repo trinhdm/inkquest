@@ -1,5 +1,6 @@
 import type { PageDataItem } from '@/types/shared'
 import type { Sidebar } from '@/components/layout'
+import type { Route } from 'next'
 
 export interface FaqGroup {
 	id: string
@@ -105,7 +106,9 @@ export const FAQ_CATEGORIES: Sidebar.LinkItem[] = FAQ_ITEMS.map(({ category, id 
 
 export const FAQ_PARAM = 'category'
 
-export const resolveFaqGroup = (value: string | string[] | null): FaqGroup => {
+export const faqCategoryUrl = (id: string): Route<string> => `/faqs?category=${id}`
+
+export const resolveFaqGroup = (value?: string | string[] | null): FaqGroup => {
 	const id = Array.isArray(value) ? value[0] : value
 	return FAQ_ITEMS.find(group => group.id === id) ?? FAQ_ITEMS[0]
 }

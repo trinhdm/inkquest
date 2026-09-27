@@ -1,16 +1,30 @@
 'use client'
 
-import { Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useOptimistic, useTransition, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Grid, Section, Sidebar } from '@/components/layout'
 import { FaqCategory } from './FaqCategory'
-import { FAQ_CATEGORIES, FAQ_PARAM, resolveFaqGroup } from './faqs.data'
+import { FAQ_CATEGORIES, FAQ_PARAM, faqCategoryUrl, resolveFaqGroup } from './faqs.data'
 import './faqs.scss'
 
 export default function FAQs() {
 	const pageID = 'faqs'
+
+	const router = useRouter()
 	const searchParams = useSearchParams()
-	const activeGroup = resolveFaqGroup(searchParams.get(FAQ_PARAM))
+
+	const urlID = searchParams.get(FAQ_PARAM) ?? undefined
+	const [optimisticID, setOptimisticID] = useOptimistic(urlID)
+	const [isPending, startTransition] = useTransition()
+
+	const activeGroup = resolveFaqGroup(optimisticID)
+
+	const selectCategory = (id: string) => {
+		startTransition(() => {
+			setOptimisticID(id)
+			router.push(faqCategoryUrl(id), { scroll: false })
+		})
+	}
 
 	return (
 		<>
@@ -28,8 +42,12 @@ export default function FAQs() {
 				// title="What we believe."
 			>
 				<Suspense>
-					<Grid gap="lg">
-						<Sidebar active={ activeGroup.id } items={ FAQ_CATEGORIES } />
+					<Grid attributes={ { aria: { busy: isPending || undefined } } } gap="lg">
+						<Sidebar
+							active={ activeGroup.id }
+							items={ FAQ_CATEGORIES }
+							onItemChange={ selectCategory }
+						/>
 						<FaqCategory { ...activeGroup } />
 					</Grid>
 				</Suspense>
