@@ -1,7 +1,7 @@
 import { expect, fn, userEvent, within } from 'storybook/test'
 import { getDefaultProps } from '@/hooks/useProps'
 import { Accordion } from './Accordion'
-import { BOOLEAN_OPTIONS, INDICATOR_OPTIONS, LAYOUT_OPTIONS, TYPE_OPTIONS } from './options.story'
+import { BOOLEAN_OPTIONS, INDICATOR_OPTIONS, LAYOUT_OPTIONS, ORDER_OPTIONS, SIZE_OPTIONS } from './options.story'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import classes from './Accordion.module.scss'
@@ -90,10 +90,15 @@ const meta: Meta<AccordionStoryProps> = {
 			control: 'boolean',
 			description: 'Setting this to a boolean (rather than leaving it `undefined`) switches `Accordion` into CONTROLLED mode (`isControlled = typeof open === \'boolean\'`): internal state is bypassed entirely, and `isOpen` always reflects this prop directly. `onToggle`/`onItemToggle` still fire on click. See the `Controlled` story.',
 		},
-		type: {
+		order: {
 			control: 'select',
-			options: TYPE_OPTIONS,
-			description: 'NOT inheritable from an enclosing `Accordion.Group` — `type` is absent from both `AccordionGroup.tsx`\'s own `ctxValues` and the `AccordionGroupContext` interface it publishes, unlike `collapsible`/`disabled`/`layout`. On `Accordion` itself it\'s a dead prop: destructured out of `props` and otherwise unused. Only `Accordion.Group`\'s own internal state logic (`handleItemToggle`) reads its OWN `type`, entirely independent of any per-`Accordion` `type` prop.',
+			options: ORDER_OPTIONS,
+			description: 'Registered default `3`. Published onto `Accordion.context` and read directly by `AccordionTitle`, which renders its text as a literal `h${order}` heading tag — also feeds `getSharedTokens`\' `--accordion-text-size` token, offset by `size` (`config.order = order + step`, where `step` is `{ sm: 2, md: 1, lg: 0 }[size]`). Also inheritable from an enclosing `Accordion.Group` (own prop always wins). See the `Order` story.',
+		},
+		size: {
+			control: 'select',
+			options: SIZE_OPTIONS,
+			description: 'Registered default `\'md\'`. Feeds `getSharedTokens`\' shared CSS custom properties (`--accordion-column-width`, `--accordion-gap`, `--accordion-padding`, `--accordion-indicator-size`, `--accordion-text-size`, etc.) via a per-size `step` (`{ sm: 2, md: 1, lg: 0 }`) applied on top of `order`. Also inheritable from an enclosing `Accordion.Group` (own prop always wins). See the `Size` story.',
 		},
 		unstyled: {
 			control: 'boolean',
@@ -173,6 +178,71 @@ export const Layouts: Story = {
 
 		await expect(stepsRoot).toHaveAttribute('data-step', '01')
 		await expect(canvas.getAllByRole('button')[1].querySelector('[class*="step"]')).toHaveTextContent('01')
+	},
+}
+
+// `HeadingOrder` (`1`-`6`) is read straight off `Accordion.context` by
+// `AccordionTitle`, which renders its text as a literal `h${order}` tag —
+// tested here via the implicit ARIA `heading` role's `level`, not a
+// class/selector heuristic.
+export const Order: Story = {
+	parameters: {
+		layout: 'padded',
+		controls: { exclude: ['order'] },
+	},
+	render: args => (
+		<Row>
+			{ ORDER_OPTIONS.map(order => (
+				<Group key={ order } label={ String(order) }>
+					{ accordionTemplate({ ...args, order }) }
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement)
+
+		for (const order of ORDER_OPTIONS) {
+			const heading = canvas.getByRole('heading', { level: order })
+			await expect(heading.tagName).toBe(`H${ order }`)
+		}
+	},
+}
+
+// `size` feeds `getSharedTokens`' shared CSS custom properties via a per-size
+// `step` (`{ sm: 2, md: 1, lg: 0 }`) applied on top of `order` — asserted here
+// against `--accordion-text-size` (`config.order = order + step`), which with
+// the registered default `order: 3` resolves to `h5`/`h4`/`h3` respectively.
+// The shared `getSharedTokens` computation is SKIPPED whenever `onItemToggle`
+// is a function (`Accordion.tsx`'s guard against double-computing tokens
+// already applied by an enclosing `Accordion.Group`'s own root) — every other
+// story in this file sets `onItemToggle: fn()` via `meta.args` for click/
+// keyboard assertions, so this story explicitly clears it back to `undefined`
+// to observe the real per-size token output on a standalone `Accordion`.
+export const Size: Story = {
+	parameters: {
+		layout: 'padded',
+		controls: { exclude: ['size'] },
+	},
+	render: args => (
+		<Row>
+			{ SIZE_OPTIONS.map(size => (
+				<Group key={ size } label={ size }>
+					{ accordionTemplate({ ...args, size, onItemToggle: undefined }) }
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const roots = canvasElement.querySelectorAll('.inkq-accordion')
+
+		expect(roots).toHaveLength(3)
+		// `SIZE_OPTIONS` is `['sm', 'md', 'lg']`, mapped in order.
+		const [sm, md, lg] = roots as unknown as HTMLElement[]
+
+		await expect(sm.style.getPropertyValue('--accordion-text-size')).toBe('var(--inkq-font-size-heading-h5)')
+		await expect(md.style.getPropertyValue('--accordion-text-size')).toBe('var(--inkq-font-size-heading-h4)')
+		await expect(lg.style.getPropertyValue('--accordion-text-size')).toBe('var(--inkq-font-size-heading-h3)')
 	},
 }
 

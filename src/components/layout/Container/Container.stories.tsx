@@ -60,11 +60,11 @@ const meta: Meta<ContainerStoryProps> = {
 		children: { control: 'text' },
 		fullWidth: {
 			control: 'boolean',
-			description: 'Stretches the container to fill its parent\'s width. Sets `data-block` on the root AND builds `const global = { block: fullWidth }`, passed to `styles(\'root\', { global })` — this emits a literal `inkq-block` class (no CSS-module hash: that class is declared in the global `styles/_base.scss`, not in `Container.module.scss` — `.inkq-block { &, &:where([data-block]) { ... } }`), additive to the base `inkq-container` class.',
+			description: 'Stretches the container to fill its parent\'s width. Sets `data-block` on the root AND builds `const global = { block: fullWidth }`, passed to `styles(\'root\', { global })` — an OBJECT config (`{ global: {...} }`), NOT the boolean shorthand `unstyled`\'s own wrapper uses — this emits a literal `inkq-block` class (no CSS-module hash: that class is declared in the global `styles/_base.scss`, not in `Container.module.scss` — `.inkq-block { &, &:where([data-block]) { ... } }`), additive to the base `inkq-container` class. **Object configs are suppressed ENTIRELY when `unstyled`** (`getConfigClasses`, `getClassName.tsx`: `else if (check.isUnstyled || !hasConfig(args)) return` — this branch is only reached for non-boolean configs), so `inkq-block` disappears completely on an `unstyled` + `fullWidth` container, unlike the boolean-shorthand `inkq-wrapper` class documented on `unstyled` below. Not currently exercised by any story in combination with `unstyled` — see `unstyled`\'s own description for the contrast.',
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Container`\'s own `ContainerProps`. The semantic base class (`inkq-container` on the root, `inkq-container__wrapper` on the inner `<div>`) is ALWAYS emitted regardless of this prop. **Source quirk, verified against `Container.module.scss`**: `.inkq-container` (the root selector) has NO declarations of its own — only a nested `&__wrapper` rule — so CSS Modules exports no hashed class for the root at all; `getStyleClass()` (`getClassName.tsx`) finds no matching key in the compiled `classes` map and returns `undefined` regardless of `unstyled`. The root therefore NEVER carries a module hash, styled or unstyled — only the semantic base class. The inner `<div>` wrapper is rendered via `styles(\'wrapper\', true)` (boolean config, not `styles(\'wrapper\')`): its `&__wrapper` declaration DOES have its own SCSS rule, so a real CSS-module hash is appended when styled and suppressed when `unstyled` — but the boolean config ALSO unconditionally emits a literal, unhashed global `inkq-wrapper` class (same boolean-shorthand mechanism as `fullWidth`\'s `inkq-block`), which is present regardless of `unstyled`. See the `Unstyled` story.',
+			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Container`\'s own `ContainerProps`. The semantic base class (`inkq-container` on the root, `inkq-container__wrapper` on the inner `<div>`) is ALWAYS emitted regardless of this prop. **Source quirk, verified against `Container.module.scss`**: `.inkq-container` (the root selector) has NO declarations of its own — only a nested `&__wrapper` rule — so CSS Modules exports no hashed class for the root at all; `getStyleClass()` (`getClassName.tsx`) finds no matching key in the compiled `classes` map and returns `undefined` regardless of `unstyled`. The root therefore NEVER carries a module hash, styled or unstyled — only the semantic base class.\n\nThe inner `<div>` wrapper is rendered via `styles(\'wrapper\', true)` — the BOOLEAN-shorthand config, not `styles(\'wrapper\')` or an object config like `fullWidth`\'s `{ global }` above. **Verified against the live `getClassName.tsx`** (edited since an earlier pass of this description): `getConfigClasses` now checks `typeof config === \'boolean\'` FIRST, unconditionally, before it ever looks at `check.isUnstyled` — so the boolean branch\'s literal, unhashed global `inkq-wrapper` class is emitted regardless of `unstyled`. This is the OPPOSITE of `fullWidth`\'s object-config `inkq-block`, which vanishes entirely when `unstyled` (see `fullWidth`\'s description) — `Container` demonstrates both rules side by side. The wrapper\'s CSS-MODULE HASH is a separate, still-unstyled-gated concern (`getStyleClass`, checked one layer down inside `formatConfigClass`/directly for the base selector): a real hash is appended when styled and suppressed when `unstyled`, same as any other hashed selector. See the `Unstyled` story.',
 		},
 	},
 	args: {
@@ -168,25 +168,32 @@ export const NestedContent: Story = {
 // CSS-module-hashed class normally appended alongside it — and only where a
 // hashed class exists to suppress in the first place.
 //
-// **Re-verified against the LIVE `Container.tsx`/`Container.module.scss`**:
-// the root selector, `.inkq-container`, has NO declarations of its own in the
-// SCSS — only a nested `&__wrapper` rule — so CSS Modules never compiles a
-// hash for the `inkq-container` key at all. `getStyleClass()` looks up that
-// exact key in the compiled `classes` map and finds nothing, so it returns
-// `undefined` regardless of `unstyled`: the ROOT never carries a module hash,
-// styled or unstyled alike. The inner wrapper (`&__wrapper`, matching
-// `Container.tsx`'s `styles('wrapper', true)` call — note the boolean config,
-// not `styles('wrapper')`) DOES have its own declaration, so it behaves as
-// originally expected: a real CSS-module hash is appended when styled and
-// suppressed when `unstyled`. That same boolean config ALSO unconditionally
-// emits a literal, unhashed global `inkq-wrapper` class (identical mechanism
-// to `fullWidth`'s `inkq-block`) — present regardless of `unstyled`, since
-// the boolean-shorthand branch of `getConfigClasses` never consults
-// `check.isUnstyled` at all. The two elements are NOT symmetric — assert on
-// the real, compiled `classes` map below rather than a naive "any class
-// beyond the base" heuristic, which would incorrectly pass/fail depending on
-// unrelated config/global classes and can't tell a genuine module hash apart
-// from anything else.
+// **Re-verified against the LIVE `Container.tsx`/`Container.module.scss`/
+// `getClassName.tsx`**: the root selector, `.inkq-container`, has NO
+// declarations of its own in the SCSS — only a nested `&__wrapper` rule — so
+// CSS Modules never compiles a hash for the `inkq-container` key at all.
+// `getStyleClass()` looks up that exact key in the compiled `classes` map and
+// finds nothing, so it returns `undefined` regardless of `unstyled`: the ROOT
+// never carries a module hash, styled or unstyled alike. The inner wrapper
+// (`&__wrapper`, matching `Container.tsx`'s `styles('wrapper', true)` call —
+// note the boolean config, not `styles('wrapper')`) DOES have its own
+// declaration, so a real CSS-module hash is appended when styled and
+// suppressed when `unstyled`, same as any other hashed selector.
+//
+// **`getClassName.tsx` has been revised since an earlier pass of this
+// story — verify against the live file before trusting this comment.**
+// Current `getConfigClasses` order: `if (typeof config === 'boolean') return
+// getBaseClass(selector, prefix)` runs FIRST, unconditionally — BEFORE the
+// `check.isUnstyled` check that gates every other (object-shaped) config.
+// So the boolean-shorthand branch's literal, unhashed global `inkq-wrapper`
+// class (same mechanism `fullWidth`'s `styles('root', { global })` WOULD use
+// if it were boolean — it isn't, it's an object config, so `inkq-block`
+// behaves oppositely and is suppressed entirely when `unstyled`; see
+// `Container`'s `fullWidth` argType description) is emitted regardless of
+// `unstyled`. Assert on the real, compiled `classes` map (for the genuinely
+// hashed `&__wrapper` selector) rather than a naive "any class beyond the
+// base" heuristic, which can't tell a module hash apart from this
+// config-derived global class.
 export const Unstyled: Story = {
 	parameters: {
 		layout: 'padded',
@@ -243,9 +250,12 @@ export const Unstyled: Story = {
 		expect(hasModuleClass(styledInner, 'inkq-container__wrapper')).toBe(true)
 		expect(hasModuleClass(unstyledInner, 'inkq-container__wrapper')).toBe(false)
 
-		// The boolean `styles('wrapper', true)` config ALSO unconditionally
-		// emits a literal, unhashed global `inkq-wrapper` class — present in
-		// both the styled and unstyled groups alike.
+		// The boolean `styles('wrapper', true)` config ALSO computes a literal,
+		// unhashed global `inkq-wrapper` class — `getConfigClasses` checks
+		// `typeof config === 'boolean'` FIRST, unconditionally, before it ever
+		// looks at `check.isUnstyled` (that check only gates object-shaped
+		// configs, like `fullWidth`'s `{ global }` — see the `FullWidth` story),
+		// so `inkq-wrapper` is present in BOTH the styled and unstyled groups.
 		await expect(styledInner).toHaveClass('inkq-wrapper')
 		await expect(unstyledInner).toHaveClass('inkq-wrapper')
 	},

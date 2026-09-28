@@ -4,11 +4,16 @@ import { Menu } from './Menu'
 import { NavRoutes, NAVIGATION_DATA, type NavigationItem } from '@/utils/navigation'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+import moduleClasses from './Menu.module.scss'
 
 // `Menu`'s only enumerable prop is the boolean `hasDropdowns` (`items` is
 // data, not an enum), so — same as `Badge`/`Container` — this stays local
 // instead of living in a shared `options.story.ts`.
 const BOOLEAN_OPTIONS = [true, false] as const
+
+// `Menu`'s only other enumerable prop, alongside `hasDropdowns` — a plain 2-value
+// literal pair, so it stays local rather than living in a shared `options.story.ts`.
+const ORIENTATION_OPTIONS = ['horizontal', 'vertical'] as const
 
 const Row = ({ children }: { children: ReactNode }) => (
 	<div style={ { display: 'flex', gap: 48, flexWrap: 'wrap', alignItems: 'flex-start' } }>
@@ -75,9 +80,18 @@ const meta: Meta<MenuStoryProps> = {
 			control: 'boolean',
 			description: 'Forwarded to every `MenuItem`. When `true`, an item that has its own `menu` renders a trigger `<button>` plus a nested `Menu` (opened on hover/click). When `false`, such an item renders NO trigger and NO label of its own — `MenuItem` returns a flat ARRAY of its children\'s `<li>`s instead (see the `FlattenedItems` story).',
 		},
+		activeItem: {
+			control: 'text',
+			description: 'A `NavRoute` to mark active (exact match against each item\'s own `route`), or `null`/`undefined` to fall back to `usePathname()`. Forwarded unchanged to every top-level `MenuItem`, and one level further into any dropdown\'s own nested `Menu`. See the `ActiveItem` and `ActiveFromPathname` stories.',
+		},
 		items: {
 			control: 'object',
 			description: 'The `NavigationItem[]` to render (typed as `NavigationItem[\'menu\']`). Optional at the type level, so `undefined`/`[]` are both valid and produce an empty `role="menubar"`.',
+		},
+		orientation: {
+			control: 'select',
+			options: ORIENTATION_OPTIONS,
+			description: 'Drives a `module`-config class on the root `<ul>`, computed as `{ [orientation]: depth === 0 && !!orientation }` — so it ONLY takes effect at the top level (`depth === 0`); a nested `Menu` (opened from a dropdown) always gets `depth > 0` and ignores this entirely. `\'vertical\'` has a real SCSS rule (`&--vertical`, switches to `flex-direction: column`), so it carries a real CSS-module hash when styled; `\'horizontal\'` has no matching SCSS rule at all, so `inkq-menu--horizontal` is a permanently unhashed literal class. See the `Orientation` story.',
 		},
 		unstyled: {
 			control: 'boolean',
@@ -224,6 +238,16 @@ export const LeafItems: Story = {
  * no-`route` branch — but `sharedProps` sets `role: 'menuitem'`
  * unconditionally before that branch, so the `<span>` still carries
  * `role="menuitem"` and is reachable via `getByRole('menuitem', { name: 'User' })`.
+ *
+ * Verified against the live `Icon.tsx`: `buildIcon`'s LUCIDE branch (used for
+ * `caret-down`/`caret-up`, as opposed to its separate social-brand SVG branch) sets NO
+ * `attributes` literal of its own — its `sharedProps` is just `{ ...others,
+ * ...styles('glyph') }`, and `attributes` isn't one of `extractOtherProps`'s stripped
+ * keys, so it passes straight through in `others`. `MenuItem`'s own
+ * `attributes={ { aria: { hidden: true } } }` therefore reaches the rendered icon
+ * completely unmodified — the caret genuinely IS `aria-hidden="true"`. (The social
+ * icon branch is different: it always sets its OWN `attributes: { aria: { label: type
+ * } }`, overwriting anything a caller passes — not relevant here.)
  */
 export const DropdownItems: Story = {
 	parameters: { layout: 'padded' },
@@ -244,7 +268,14 @@ export const DropdownItems: Story = {
 		await expect(trigger).toHaveAttribute('aria-haspopup', 'true')
 		await expect(trigger).toHaveAttribute('aria-expanded', 'false')
 
-		await expect(trigger.querySelector('[aria-hidden="true"]')).toBeInTheDocument()
+		// A CSS selector, not a role query, because `aria-hidden="true"` removes the
+		// icon from the accessibility tree — there's no role to query it by. Assert
+		// non-null explicitly first: `toBeInTheDocument()` throws an unhelpful,
+		// message-less error when handed `null` outright, rather than failing with a
+		// readable diff.
+		const icon = trigger.querySelector('[aria-hidden="true"]')
+		await expect(icon).not.toBeNull()
+		await expect(icon).toBeInTheDocument()
 
 		// Closed by default: the nested menu isn't mounted at all.
 		await expect(canvas.getAllByRole('menubar')).toHaveLength(1)
@@ -391,6 +422,53 @@ export const Unstyled: Story = {
 		await expect(unstyledRoot).toHaveClass('inkq-menu')
 		expect(hasModuleClass(styledRoot, 'inkq-menu')).toBe(true)
 		expect(hasModuleClass(unstyledRoot, 'inkq-menu')).toBe(false)
+	},
+}
+
+/**
+ * `orientation` only applies its module class at `depth === 0` (both stories here
+ * render at the registered default `depth: 0`). `'vertical'` has a real SCSS rule
+ * (`&--vertical`), so the modifier is emitted as a HASHED CSS-module class (e.g.
+ * `_inkq-menu--vertical_gtzaz_6`), NOT the literal `inkq-menu--vertical` token —
+ * `getConfigClass`'s `module` branch (`formatConfigClass`) returns the resolved hash
+ * INSTEAD of the literal whenever one exists, it doesn't add both. `'horizontal'` has
+ * no matching SCSS rule, so it has no hash to substitute and stays a literal class.
+ * Because the hash token embeds the full literal name, a substring match is used for
+ * the vertical case rather than pinning the compiled hash (which churns on every SCSS
+ * edit).
+ */
+export const Orientation: Story = {
+	parameters: {
+		layout: 'padded',
+		controls: { exclude: ['orientation'] },
+	},
+	args: { items: itemsFor('Home', 'Marketplace') },
+	render: (args) => (
+		<Row>
+			{ ORIENTATION_OPTIONS.map(orientation => (
+				<Group key={ orientation } label={ orientation }>
+					<Menu { ...args } orientation={ orientation } />
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			[horizontalRoot, verticalRoot] = canvas.getAllByRole('menubar')
+
+		const hasModuleClass = (el: Element, base: string) => {
+			const moduleClass = (moduleClasses as Record<string, string>)[base]
+			return !!moduleClass && el.classList.contains(moduleClass)
+		}
+
+		const hasClassLike = (el: Element, substring: string) =>
+			Array.from(el.classList).some(c => c.includes(substring))
+
+		await expect(horizontalRoot).toHaveClass('inkq-menu--horizontal')
+		expect(hasModuleClass(horizontalRoot, 'inkq-menu--horizontal')).toBe(false)
+
+		expect(hasClassLike(verticalRoot, 'inkq-menu--vertical')).toBe(true)
+		expect(hasModuleClass(verticalRoot, 'inkq-menu--vertical')).toBe(true)
 	},
 }
 
@@ -572,5 +650,49 @@ export const KeyboardActivation: Story = {
 		// is browser/environment-dependent and not worth asserting on.
 		trigger.blur()
 		await expect(trigger).not.toHaveFocus()
+	},
+}
+
+/**
+ * An explicit `activeItem` prop marks exactly one item — its `route` must
+ * match exactly, so `Discover` (whose own route is `/discover`, distinct from
+ * its child `/discover/style`) stays unmarked here.
+ */
+export const ActiveItem: Story = {
+	parameters: { layout: 'padded' },
+	args: {
+		activeItem: NavRoutes.MARKETPLACE,
+		items: itemsFor('Home', 'Marketplace', 'Discover'),
+	},
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			marketplace = canvas.getByRole('menuitem', { name: 'Marketplace' }),
+			home = canvas.getByRole('menuitem', { name: 'Home' })
+		await expect(marketplace).toHaveAttribute('aria-current', 'page')
+		await expect(marketplace.closest('li')).toHaveAttribute('data-current')
+		await expect(home).not.toHaveAttribute('aria-current')
+		await expect(home.closest('li')).not.toHaveAttribute('data-current')
+	},
+}
+
+/**
+ * `parameters.nextjs.appDirectory` is set HERE ONLY, never at the meta level
+ * — the built `RouterDecorator` only mounts a real `PathnameContext` provider
+ * when this flag is truthy, with a default fixture pathname of `'/'` if
+ * `parameters.nextjs.navigation.pathname` is left unset. A meta-level default
+ * would retroactively mark `Home` active in every OTHER story in this file.
+ */
+export const ActiveFromPathname: Story = {
+	parameters: {
+		layout: 'padded',
+		nextjs: { appDirectory: true, navigation: { pathname: NavRoutes.MARKETPLACE } },
+	},
+	args: { items: itemsFor('Home', 'Marketplace') },
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement)
+		await expect(canvas.getByRole('menuitem', { name: 'Marketplace' }))
+			.toHaveAttribute('aria-current', 'page')
+		await expect(canvas.getByRole('menuitem', { name: 'Home' }))
+			.not.toHaveAttribute('aria-current')
 	},
 }

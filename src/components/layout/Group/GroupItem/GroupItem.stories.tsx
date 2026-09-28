@@ -140,8 +140,27 @@ export const FixedTag: Story = {
 // `unstyled` does NOT remove `Group.Item`'s semantic base class
 // (`inkq-group__item`) — per `getClassName.tsx` the base class is always
 // emitted. It only suppresses the CSS-module-hashed class normally appended
-// alongside it. `Group.Item` makes exactly one `styles(...)` call, so the
-// root element is the only one to check here.
+// alongside it. `Group.Item` makes exactly one `styles(...)` call
+// (`styles(baseName, true)`, `baseName` resolving to `'item'` via
+// `useGroupCtx`), so the root element is the only one to check here.
+//
+// That call's boolean config ALSO computes a literal, unhashed GLOBAL
+// `inkq-item` class (`getConfigClasses`'s boolean-shorthand branch,
+// `getBaseClass('item', 'inkq')` — the same generic utility class
+// `styles/_base.scss` declares padding/layout rules for, shared with
+// `Container`'s own `styles('wrapper', true)`-driven `inkq-wrapper`).
+//
+// **`getClassName.tsx` has been revised since an earlier pass of this
+// story — verify against the live file before trusting this comment.**
+// Current `getConfigClasses` order: `if (typeof config === 'boolean') return
+// getBaseClass(selector, prefix)` runs FIRST, unconditionally, BEFORE the
+// `check.isUnstyled` check that gates every other (object-shaped) config —
+// so `inkq-item` is emitted regardless of `unstyled`, same as `Container`'s
+// `inkq-wrapper`. It is still never hashed (this branch never calls
+// `getStyleClass`), so "present regardless of `unstyled`" and "never hashed"
+// are two independent, both-true facts here — don't confuse the class's
+// permanence with the separate, still-`unstyled`-gated module-hash toggle on
+// `inkq-group__item` itself, asserted below.
 export const Unstyled: Story = {
 	parameters: { controls: { exclude: ['unstyled'] } },
 	render: (args) => (
@@ -171,6 +190,14 @@ export const Unstyled: Story = {
 		await expect(unstyledRoot).toHaveClass('inkq-group__item')
 		expect(hasModuleClass(styledRoot, 'inkq-group__item')).toBe(true)
 		expect(hasModuleClass(unstyledRoot, 'inkq-group__item')).toBe(false)
+
+		// The boolean-config-derived `inkq-item` global class is present in
+		// BOTH groups — `getConfigClasses` checks the boolean-shorthand branch
+		// FIRST, unconditionally, before it ever looks at `check.isUnstyled`
+		// (that check only gates object-shaped configs), so this class survives
+		// `unstyled` even though it was never hashed to begin with.
+		await expect(styledRoot).toHaveClass('inkq-item')
+		await expect(unstyledRoot).toHaveClass('inkq-item')
 	},
 }
 

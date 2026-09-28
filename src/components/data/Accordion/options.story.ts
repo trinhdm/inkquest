@@ -18,8 +18,33 @@ export const LAYOUT_OPTIONS: readonly NonNullable<Accordion.Props['layout']>[] =
 	'default', 'steps',
 ]
 
+// Kept even though the standalone `type` prop no longer exists on either
+// `Accordion` or `Accordion.Group` — `AccordionGroupType` (the union backing
+// the new `collapsible?: AccordionGroupType | false`) is still re-exported as
+// `Accordion.Type` (`Accordion.tsx`'s own `declare namespace`, itself sourced
+// from `AccordionGroup.tsx`'s `AccordionGroup.Type`).
 export const TYPE_OPTIONS: readonly NonNullable<Accordion.Type>[] = [
 	'single', 'multiple',
 ]
 
 export const BOOLEAN_OPTIONS = [true, false] as const
+
+// `Accordion.Group.Props['collapsible']` is `AccordionGroupType | false` —
+// `'single'`/`'multiple'` pick the disclosure mode, `false` makes every item
+// in the group permanently open and non-interactive.
+export const COLLAPSIBLE_OPTIONS: readonly NonNullable<Accordion.Group.Props['collapsible']>[] = [
+	'single', 'multiple', false,
+]
+
+// Shared between `Accordion.Props['size']` and `Accordion.Group.Props['size']`
+// — read off the namespace type itself rather than re-declared by hand.
+export const SIZE_OPTIONS: readonly NonNullable<Accordion.Group.Props['size']>[] = [
+	'sm', 'md', 'lg',
+]
+
+// Shared between `Accordion.Props['order']` and `Accordion.Group.Props['order']`
+// (`HeadingOrder`) — read off the namespace type itself rather than
+// re-declared by hand.
+export const ORDER_OPTIONS: readonly NonNullable<Accordion.Group.Props['order']>[] = [
+	1, 2, 3, 4, 5, 6,
+]

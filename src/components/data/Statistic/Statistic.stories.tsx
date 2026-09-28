@@ -55,7 +55,7 @@ const meta: Meta<StatisticStoryProps> = {
 		},
 		highlight: {
 			control: 'boolean',
-			description: 'A `global`-scope config class (`global = { highlight, item: true }`, not a `module`-scope one) — per `getClassName.tsx`, this always emits as a literal, unhashed `inkq-highlight` class (no matching rule in `Statistic.module.scss` to hash against), independent of `unstyled`. The same `global` config also unconditionally includes `item: true`, which likewise always emits a literal `inkq-item` class regardless of `highlight`. See the `Highlight` story.',
+			description: 'A `global`-scope OBJECT config class (`global = { highlight, item: true }`, not a `module`-scope one, and not the `true` boolean-shorthand form) — per `getClassName.tsx`, this emits as a literal, unhashed `inkq-highlight` class (no matching rule in `Statistic.module.scss` to hash against) whenever styled. The same `global` config also includes `item: true` unconditionally, which likewise emits a literal `inkq-item` class regardless of `highlight`. **Both are gated by `unstyled`**: `getConfigClasses` (`getClassName.tsx`) checks the OBJECT-config branch (`{ global }`/`{ module }`) after `check.isUnstyled` and returns nothing at all for it when unstyled is true — this is unlike a `true` boolean-shorthand config (e.g. `Statistic`\'s own `caption`, or `Quote`\'s `rail`/`caption`), which is checked BEFORE the unstyled gate and survives unconditionally. So `inkq-highlight`/`inkq-item` are entirely absent when `unstyled` is true. See the `Highlight` story (styled state) and this file\'s own `Unstyled` story (which asserts the `item` global class disappears entirely when unstyled) for the unstyled interaction.',
 		},
 		icon: {
 			control: false,
@@ -63,7 +63,7 @@ const meta: Meta<StatisticStoryProps> = {
 		},
 		caption: {
 			control: 'text',
-			description: 'Same pattern as `Quote`\'s `author` — the caption `<span>` (`styles(\'caption\', true)`) renders UNCONDITIONALLY, even with `caption` omitted, producing an empty (but present) element. `Statistic.module.scss` also has no `&__caption` declaration at all, so this selector never carries a CSS-module hash, styled or unstyled — only the semantic base class plus the `inkq-caption` literal utility class from the `true` boolean-shorthand config. See the `Caption` story.',
+			description: 'Same pattern as `Quote`\'s `author` — the caption `<span>` (`styles(\'caption\', true)`) renders UNCONDITIONALLY, even with `caption` omitted, producing an empty (but present) element. `Statistic.module.scss` also has no `&__caption` declaration at all, so this selector never carries a CSS-module hash, styled or unstyled — only the semantic base class, plus the `inkq-caption` literal class from the `true` boolean-shorthand config. **Verified against the current `getConfigClasses` in `getClassName.tsx`**: the `typeof config === \'boolean\'` branch is checked BEFORE `check.isUnstyled`, so this boolean-shorthand class is emitted UNCONDITIONALLY — present styled or unstyled (unlike an object-config class such as `Statistic`\'s own `highlight`/`item`, which IS suppressed entirely when unstyled). See the `Caption` story and the `Unstyled` story.',
 		},
 		order: {
 			control: 'select',
@@ -89,7 +89,7 @@ const meta: Meta<StatisticStoryProps> = {
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps`, not `Statistic`\'s own `StatisticProps`. The semantic base class is ALWAYS emitted for `root`/`inner`/`value`/`caption` (`inkq-statistic`, `inkq-statistic__inner`, `inkq-statistic__value`, `inkq-statistic__caption`) regardless of this prop — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it, and only for selectors that actually have a hash to suppress. `root`, `inner`, and `value` each have a real declaration in `Statistic.module.scss` (`root` carries its own custom-property/layout rules directly, not just nested `&__...` rules), so their hash is genuinely suppressed when unstyled. `caption` (`&__caption`) has no own declaration — see the `caption` description above — and ALSO always carries the literal `inkq-caption` utility class from its `true` boolean-shorthand config (unaffected by `unstyled`, since only `getStyleClass` checks `check.isUnstyled` — never the boolean-config branch of `getConfigClasses`). See the `Unstyled` story.',
+			description: 'Part of `PolymorphicProps`, not `Statistic`\'s own `StatisticProps`. The semantic base class is ALWAYS emitted for `root`/`inner`/`value`/`caption` (`inkq-statistic`, `inkq-statistic__inner`, `inkq-statistic__value`, `inkq-statistic__caption`) regardless of this prop. **Verified directly against the current `getConfigClasses` in `getClassName.tsx`** (this function has changed shape more than once during development — re-check the live source rather than trusting this comment if these assertions ever start failing again): the `typeof config === \'boolean\'` branch runs BEFORE the `check.isUnstyled` check, so a `true` boolean-shorthand config class is always emitted regardless of `unstyled` — that\'s `caption`\'s `styles(\'caption\', true)` class (`inkq-caption`), which survives `unstyled` unconditionally. The OBJECT-config branch (`{ global }`/`{ module }`), by contrast, IS gated on `check.isUnstyled` and returns nothing at all when unstyled — that\'s root\'s `global: { highlight, item: true }` classes (`inkq-highlight`/`inkq-item`) and its `module`-scope size class (`inkq-statistic--sm`/`--lg`), all entirely absent when unstyled. Separately (via `getStyleClass`, a third code path), `root`/`inner`/`value` each have a real declaration in `Statistic.module.scss` and lose their own CSS-module hash when unstyled; `caption` has no own declaration, so it never carries a hash either way. See the `Unstyled` story.',
 		},
 	},
 	args: {
@@ -368,18 +368,29 @@ export const Size: Story = {
 }
 
 // `unstyled` does NOT remove any of `Statistic`'s semantic base classes — per
-// `getClassName.tsx`, the base class is now ALWAYS emitted. It only
-// suppresses the CSS-module-hashed class normally appended alongside it, and
-// only where a hash exists to suppress in the first place: `root`, `inner`,
-// and `value` each have a real declaration in `Statistic.module.scss` (root's
-// own custom-property/layout rules live directly under `.inkq-statistic`,
-// not just its nested `&__inner`/`&__value` rules), so their hash is
-// genuinely suppressed when unstyled. `caption` (`&__caption`) has no own
-// declaration — see the `caption` description above — and ALSO always
-// carries the literal `inkq-caption` utility class from its `true`
-// boolean-shorthand config (unaffected by `unstyled`, since only
-// `getStyleClass` checks `check.isUnstyled` — never the boolean-config
-// branch of `getConfigClasses`).
+// `getClassName.tsx`, the base class is always emitted. Beyond that, the
+// CURRENT `getConfigClasses` (`getClassName.tsx`) checks `typeof config ===
+// 'boolean'` FIRST, before `check.isUnstyled` — so a `true` boolean-shorthand
+// config class is emitted unconditionally, styled or unstyled. Only the
+// OBJECT-config branch (`{ global }`/`{ module }`) is gated on
+// `check.isUnstyled` and returns nothing at all when unstyled. Concretely:
+//   - root: loses its own hashed module class (`root` has a real
+//     declaration in `Statistic.module.scss`, carrying custom
+//     properties/`flex-direction`/`justify-content`/`row-gap` directly, not
+//     just nested `&__...`/`&--...` rules), its OBJECT `global: { item:
+//     true }` class (`inkq-item`; `highlight` is falsy by default here), AND
+//     its OBJECT `module`-scope size class (`inkq-statistic--lg`, the
+//     registered default size) — all three present only when styled.
+//   - inner/value: lose only their own hashed module class — neither has
+//     any `config` argument in `Statistic.tsx`'s `styles(...)` calls.
+//   - caption: has no own SCSS declaration (no hash either way). Its
+//     `styles('caption', true)` BOOLEAN-shorthand config class
+//     (`inkq-caption`) is checked before the unstyled gate, so it's ALWAYS
+//     present, styled or unstyled.
+//
+// (This mechanism has changed more than once during development — re-verify
+// `getConfigClasses` directly against `getClassName.tsx` before trusting this
+// comment if these assertions ever start failing again.)
 export const Unstyled: Story = {
 	parameters: { controls: { exclude: ['unstyled'] } },
 	render: (args) => (
@@ -404,11 +415,18 @@ export const Unstyled: Story = {
 		// root — `.inkq-statistic` DOES carry its own declared rules directly
 		// (custom properties, `flex-direction`, `justify-content`, `row-gap`),
 		// not just nested `&__...`/`&--...` rules, so it genuinely hashes and
-		// is genuinely suppressed when unstyled.
-		await expect(styledRoot).toHaveClass('inkq-statistic')
+		// is genuinely suppressed when unstyled. Its `global: { item: true }`
+		// class (`inkq-item`; `highlight` is falsy here, so `inkq-highlight`
+		// never applies either way) and its `module`-scope size class
+		// (`inkq-statistic--lg`, the registered default size) are both present
+		// when styled and entirely absent when unstyled.
+		await expect(styledRoot).toHaveClass('inkq-statistic', 'inkq-item')
 		await expect(unstyledRoot).toHaveClass('inkq-statistic')
+		await expect(unstyledRoot).not.toHaveClass('inkq-item')
 		expect(hasModuleClass(styledRoot, 'inkq-statistic')).toBe(true)
 		expect(hasModuleClass(unstyledRoot, 'inkq-statistic')).toBe(false)
+		expect(hasModuleClass(styledRoot, 'inkq-statistic--lg')).toBe(true)
+		expect(hasModuleClass(unstyledRoot, 'inkq-statistic--lg')).toBe(false)
 
 		// inner
 		const styledInner = styledRoot.querySelector('.inkq-statistic__inner') as HTMLElement,
@@ -428,7 +446,10 @@ export const Unstyled: Story = {
 		expect(hasModuleClass(styledValue, 'inkq-statistic__value')).toBe(true)
 		expect(hasModuleClass(unstyledValue, 'inkq-statistic__value')).toBe(false)
 
-		// caption — no own SCSS declaration, so no hash exists to suppress
+		// caption — no own SCSS declaration (no hash either way). Its
+		// `styles('caption', true)` BOOLEAN-shorthand config class
+		// (`inkq-caption`) is checked before `check.isUnstyled` in
+		// `getConfigClasses`, so it's ALWAYS present, styled or unstyled.
 		const styledCaption = styledRoot.querySelector('.inkq-statistic__caption') as HTMLElement,
 			unstyledCaption = unstyledRoot.querySelector('.inkq-statistic__caption') as HTMLElement
 

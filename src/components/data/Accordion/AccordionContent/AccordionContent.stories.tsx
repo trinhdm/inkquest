@@ -1,5 +1,6 @@
 import { Component } from 'react'
 import { expect, userEvent, within } from 'storybook/test'
+import { getDefaultProps } from '@/hooks/useProps'
 import { Accordion } from '../Accordion'
 import { BOOLEAN_OPTIONS } from '../options.story'
 import type { ReactNode } from 'react'
@@ -93,6 +94,7 @@ const meta: Meta<AccordionContentStoryProps> = {
 		},
 	},
 	args: {
+		...getDefaultProps<Accordion.Content.Props>('Accordion.Content'),
 		children: 'We offer a 30-day money-back guarantee on all plans, no questions asked.',
 	},
 }

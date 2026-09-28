@@ -111,7 +111,8 @@ export const AsElement: Story = {
 
 // `filterChildren(children, TimelineItem.displayName)` (`Timeline.tsx`)
 // recurses into `Fragment`s (flattening their children into the same list)
-// and drops any element whose `displayName` isn't `'TimelineItem'` — a raw
+// and drops any element whose `displayName` isn't `'Timeline.Item'` (the
+// dotted `NAME` registered on `TimelineItem.tsx`) — a raw
 // `<span>` simply renders nothing; it's excluded before the
 // `.map(child => child)` pass, not merely hidden.
 export const NonTimelineItemChildren: Story = {

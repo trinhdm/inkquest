@@ -1,7 +1,7 @@
 import { expect, userEvent, within } from 'storybook/test'
 import { getDefaultProps } from '@/hooks/useProps'
 import { Accordion } from '../Accordion'
-import { BOOLEAN_OPTIONS, LAYOUT_OPTIONS, TYPE_OPTIONS } from '../options.story'
+import { BOOLEAN_OPTIONS, COLLAPSIBLE_OPTIONS, LAYOUT_OPTIONS, ORDER_OPTIONS, SIZE_OPTIONS } from '../options.story'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import classes from '../Accordion.module.scss'
@@ -50,12 +50,13 @@ const meta: Meta<AccordionGroupStoryProps> = {
 	parameters: { layout: 'padded' },
 	argTypes: {
 		collapsible: {
-			control: 'boolean',
-			description: 'Defaults to `true`. The group never acts on this itself — `handleItemToggle` does not read it — it only PUBLISHES it to every child `Accordion` through `ctxValues`, where each item enforces it (own `collapsible` on a child still wins). Setting it `false` makes EVERY item in the group permanently open and untogglable, with a non-interactive `<div>` title carrying no `aria-expanded` and no indicator. Applies in BOTH `type` modes, not just `\'single\'`, and makes `defaultOpen` moot — nothing can close, so nothing needs seeding. See the `Collapsible` story.',
+			control: 'select',
+			options: COLLAPSIBLE_OPTIONS,
+			description: 'Registered default `\'single\'`. `\'single\'`/`\'multiple\'` select the group\'s disclosure mode — read by `handleItemToggle` (`\'single\'`: at most one item open at a time; `\'multiple\'`: items toggle independently) — and are also PUBLISHED to every child `Accordion` through `ctxValues` as a plain `true` (`collapsible: typeof collapsible === \'string\'`), where each item can still override its own `collapsible` (own prop always wins). Setting it `false` instead makes EVERY item in the group permanently open and untogglable, with a non-interactive `<div>` title carrying no `aria-expanded` and no indicator, and makes `defaultOpen` moot — nothing can close, so nothing needs seeding. See the `Collapsible` story.',
 		},
 		defaultOpen: {
 			control: 'object',
-			description: 'A `number` or `number[]`, normalized by `handleOpenItems`. In `type: \'single\'` mode the normalized list is SLICED to just the first index (`indices.slice(0, 1)`) — passing an array with more than one entry only ever opens the first of them. See the `DefaultOpen` story.',
+			description: 'A `number` or `number[]`, normalized by `handleOpenItems`. In `collapsible: \'single\'` mode the normalized list is SLICED to just the first index (`indices.slice(0, 1)`) — passing an array with more than one entry only ever opens the first of them. See the `DefaultOpen` story.',
 		},
 		disabled: {
 			control: 'boolean',
@@ -66,10 +67,15 @@ const meta: Meta<AccordionGroupStoryProps> = {
 			options: LAYOUT_OPTIONS,
 			description: 'Cascades to every child `Accordion` via context (`useAccordionGroupProps`), same own-prop-wins precedence as `index`/`open`/`onItemToggle`/`unstyled`. Only `\'steps\'` produces a zero-padded `step` label on each item, keyed off that item\'s own sequential `index`. See the `Layout` story.',
 		},
-		type: {
+		order: {
 			control: 'select',
-			options: TYPE_OPTIONS,
-			description: '`\'single\'`: at most one item open at a time (opening one closes any other). `\'multiple\'`: items toggle independently. See the `Types` story.',
+			options: ORDER_OPTIONS,
+			description: 'Registered default `3`. Cascades to every child `Accordion` via context (own prop always wins), which reads it straight off `Accordion.context` and renders its title text as a literal `h${order}` heading tag — also feeds `getSharedTokens`\' `--accordion-text-size` token on the GROUP\'S OWN root, offset by `size` (`config.order = order + step`, where `step` is `{ sm: 2, md: 1, lg: 0 }[size]`). See the `Order` story.',
+		},
+		size: {
+			control: 'select',
+			options: SIZE_OPTIONS,
+			description: 'Registered default `\'md\'`. Feeds `getSharedTokens`\' shared CSS custom properties on the GROUP\'S OWN root (`--accordion-column-width`, `--accordion-gap`, `--accordion-padding`, `--accordion-indicator-size`, `--accordion-text-size`, etc.) via a per-size `step` applied on top of `order`. Also cascades to every child `Accordion` via context (own prop always wins) — though each child\'s OWN token computation is skipped whenever it receives a function `onItemToggle` (as every grouped item does), so the CSS variables it renders with come from the group\'s root via normal CSS inheritance, not a second computation. See the `Size` story.',
 		},
 		unstyled: {
 			control: 'boolean',
@@ -104,40 +110,12 @@ export const Default: Story = {
 	},
 }
 
-export const Types: Story = {
-	render: args => (
-		<Row>
-			{ TYPE_OPTIONS.map(type => (
-				<Group key={ type } label={ type }>
-					<Accordion.Group { ...args } type={ type } defaultOpen={ 0 } collapsible>
-						{ renderItems(3) }
-					</Accordion.Group>
-				</Group>
-			)) }
-		</Row>
-	),
-	play: async ({ canvasElement }) => {
-		const groups = canvasElement.querySelectorAll('[data-group]')
-
-		expect(groups).toHaveLength(2)
-
-		// `TYPE_OPTIONS` is `['single', 'multiple']`, mapped in order.
-		const [single, multiple] = groups,
-			singleTitles = within(single as HTMLElement).getAllByRole('button'),
-			multipleTitles = within(multiple as HTMLElement).getAllByRole('button')
-
-		await userEvent.click(singleTitles[2])
-		await expect(singleTitles[0]).toHaveAttribute('aria-expanded', 'false')
-		await expect(singleTitles[2]).toHaveAttribute('aria-expanded', 'true')
-
-		await userEvent.click(multipleTitles[2])
-		await expect(multipleTitles[0]).toHaveAttribute('aria-expanded', 'true')
-		await expect(multipleTitles[2]).toHaveAttribute('aria-expanded', 'true')
-	},
-}
-
-// `collapsible={false}` makes the group's items permanently open and
-// untogglable, and that is enforced in TWO places:
+// `collapsible` is `AccordionGroupType | false` (registered default
+// `'single'`): `'single'`/`'multiple'` pick the group's disclosure mode
+// (`handleItemToggle` reads its OWN value directly — `'single'` closes any
+// other open item when one opens; `'multiple'` toggles independently), while
+// `false` makes EVERY item in the group permanently open and untogglable —
+// enforced in TWO places:
 //
 //  1. `Accordion.tsx` computes `isOpen = collapsible ? (...) : true`, so the
 //     item is always open, and its `handleToggle` returns early.
@@ -145,15 +123,15 @@ export const Types: Story = {
 //     When NOT interactive it renders a plain `<div>` (with `data-title`, no
 //     `aria`) instead of a `<button>` — so there is no button role and no
 //     `aria-expanded` at all, rather than a button that lies about being
-//     expandable. That is why the non-collapsible group below is queried by
+//     expandable. That is why the `false` group below is queried by
 //     `[data-title]`, not by role.
 export const Collapsible: Story = {
 	parameters: { controls: { exclude: ['collapsible'] } },
 	render: args => (
 		<Row>
-			{ BOOLEAN_OPTIONS.map(collapsible => (
+			{ COLLAPSIBLE_OPTIONS.map(collapsible => (
 				<Group key={ String(collapsible) } label={ String(collapsible) }>
-					<Accordion.Group { ...args } type="single" collapsible={ collapsible } defaultOpen={ 0 }>
+					<Accordion.Group { ...args } collapsible={ collapsible } defaultOpen={ 0 }>
 						{ renderItems(3) }
 					</Accordion.Group>
 				</Group>
@@ -162,27 +140,31 @@ export const Collapsible: Story = {
 	),
 	play: async ({ canvasElement }) => {
 		const groups = canvasElement.querySelectorAll('[data-group]')
-		expect(groups).toHaveLength(2)
+		expect(groups).toHaveLength(3)
 
-		const [collapsibleGroup, nonCollapsibleGroup] = groups as unknown as [HTMLElement, HTMLElement]
+		// `COLLAPSIBLE_OPTIONS` is `['single', 'multiple', false]`, mapped in
+		// order.
+		const [single, multiple, nonCollapsible] = groups as unknown as [HTMLElement, HTMLElement, HTMLElement]
 
-		// collapsible: a real <button> that toggles.
-		const collapsibleTitle = within(collapsibleGroup).getAllByRole('button')[0]!
+		const singleTitles = within(single).getAllByRole('button')
+		await userEvent.click(singleTitles[2])
+		await expect(singleTitles[0]).toHaveAttribute('aria-expanded', 'false')
+		await expect(singleTitles[2]).toHaveAttribute('aria-expanded', 'true')
 
-		await expect(collapsibleTitle.tagName).toBe('BUTTON')
-		await expect(collapsibleTitle).toHaveAttribute('aria-expanded', 'true')
-		await userEvent.click(collapsibleTitle)
-		await expect(collapsibleTitle).toHaveAttribute('aria-expanded', 'false')
+		const multipleTitles = within(multiple).getAllByRole('button')
+		await userEvent.click(multipleTitles[2])
+		await expect(multipleTitles[0]).toHaveAttribute('aria-expanded', 'true')
+		await expect(multipleTitles[2]).toHaveAttribute('aria-expanded', 'true')
 
-		// non-collapsible: no button role anywhere in the group, and the title
-		// is a plain <div> carrying no aria-expanded.
-		await expect(within(nonCollapsibleGroup).queryAllByRole('button')).toHaveLength(0)
+		// `false`: no button role anywhere in the group, and every title is a
+		// plain <div> carrying no aria-expanded.
+		await expect(within(nonCollapsible).queryAllByRole('button')).toHaveLength(0)
 
 		// ALL THREE, not just the first: "every item forced open" is precisely
-		// what separates these semantics from the older "one item is always
-		// open, but you can switch which one" reading — and that older reading
+		// what separates these semantics from a reading where only one item is
+		// always open, but you can switch which one — and that other reading
 		// satisfies every assertion below if only item 0 is inspected.
-		const nonCollapsibleTitles = [...nonCollapsibleGroup.querySelectorAll<HTMLElement>('[data-title]')]
+		const nonCollapsibleTitles = [...nonCollapsible.querySelectorAll<HTMLElement>('[data-title]')]
 
 		await expect(nonCollapsibleTitles).toHaveLength(3)
 
@@ -202,21 +184,21 @@ export const Collapsible: Story = {
 }
 
 export const DefaultOpen: Story = {
-	parameters: { controls: { exclude: ['defaultOpen', 'type'] } },
+	parameters: { controls: { exclude: ['defaultOpen', 'collapsible'] } },
 	render: args => (
 		<Row>
 			<Group label="number: 1">
-				<Accordion.Group { ...args } type="single" defaultOpen={ 1 }>
+				<Accordion.Group { ...args } collapsible="single" defaultOpen={ 1 }>
 					{ renderItems(3) }
 				</Accordion.Group>
 			</Group>
-			<Group label="array [0, 2], type: single (sliced to first index only)">
-				<Accordion.Group { ...args } type="single" defaultOpen={ [0, 2] }>
+			<Group label="array [0, 2], collapsible: single (sliced to first index only)">
+				<Accordion.Group { ...args } collapsible="single" defaultOpen={ [0, 2] }>
 					{ renderItems(3) }
 				</Accordion.Group>
 			</Group>
-			<Group label="array [0, 2], type: multiple">
-				<Accordion.Group { ...args } type="multiple" defaultOpen={ [0, 2] }>
+			<Group label="array [0, 2], collapsible: multiple">
+				<Accordion.Group { ...args } collapsible="multiple" defaultOpen={ [0, 2] }>
 					{ renderItems(3) }
 				</Accordion.Group>
 			</Group>
@@ -235,11 +217,11 @@ export const DefaultOpen: Story = {
 		await expect(numberTitles[1]).toHaveAttribute('aria-expanded', 'true')
 		await expect(numberTitles[2]).toHaveAttribute('aria-expanded', 'false')
 
-		// `type: 'single'` slices the normalized `[0, 2]` down to `[0]`.
+		// `collapsible: 'single'` slices the normalized `[0, 2]` down to `[0]`.
 		await expect(slicedTitles[0]).toHaveAttribute('aria-expanded', 'true')
 		await expect(slicedTitles[2]).toHaveAttribute('aria-expanded', 'false')
 
-		// `type: 'multiple'` keeps the full normalized list.
+		// `collapsible: 'multiple'` keeps the full normalized list.
 		await expect(multipleTitles[0]).toHaveAttribute('aria-expanded', 'true')
 		await expect(multipleTitles[2]).toHaveAttribute('aria-expanded', 'true')
 	},
@@ -259,6 +241,64 @@ export const Layout: Story = {
 		await expect(titles[0].querySelector('[class*="step"]')).toHaveTextContent('01')
 		await expect(titles[1].querySelector('[class*="step"]')).toHaveTextContent('02')
 		await expect(titles[2].querySelector('[class*="step"]')).toHaveTextContent('03')
+	},
+}
+
+// `order` cascades to every child `Accordion` via context (own prop always
+// wins), which renders its title text as a literal `h${order}` heading tag —
+// tested here via the implicit ARIA `heading` role's `level`, not a
+// class/selector heuristic.
+export const Order: Story = {
+	parameters: { controls: { exclude: ['order'] } },
+	render: args => (
+		<Row>
+			{ ORDER_OPTIONS.map(order => (
+				<Group key={ order } label={ String(order) }>
+					<Accordion.Group { ...args } order={ order }>
+						{ renderItems(1) }
+					</Accordion.Group>
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement)
+
+		for (const order of ORDER_OPTIONS) {
+			const heading = canvas.getByRole('heading', { level: order })
+			await expect(heading.tagName).toBe(`H${ order }`)
+		}
+	},
+}
+
+// `size` feeds `getSharedTokens`' shared CSS custom properties on the GROUP'S
+// OWN root via a per-size `step` (`{ sm: 2, md: 1, lg: 0 }`) applied on top of
+// `order` — asserted here against `--accordion-text-size` (`config.order =
+// order + step`), which with the registered default `order: 3` resolves to
+// `h5`/`h4`/`h3` respectively.
+export const Size: Story = {
+	parameters: { controls: { exclude: ['size'] } },
+	render: args => (
+		<Row>
+			{ SIZE_OPTIONS.map(size => (
+				<Group key={ size } label={ size }>
+					<Accordion.Group { ...args } size={ size }>
+						{ renderItems(1) }
+					</Accordion.Group>
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const groups = canvasElement.querySelectorAll('[data-group]')
+
+		expect(groups).toHaveLength(3)
+		// `SIZE_OPTIONS` is `['sm', 'md', 'lg']`, mapped in order.
+		const [sm, md, lg] = groups as unknown as HTMLElement[]
+
+		await expect(sm.style.getPropertyValue('--accordion-text-size')).toBe('var(--inkq-font-size-heading-h5)')
+		await expect(md.style.getPropertyValue('--accordion-text-size')).toBe('var(--inkq-font-size-heading-h4)')
+		await expect(lg.style.getPropertyValue('--accordion-text-size')).toBe('var(--inkq-font-size-heading-h3)')
 	},
 }
 
@@ -366,12 +406,12 @@ export const KeyboardFocus: Story = {
 // child's own props. Two independent overrides, both against a `disabled`
 // group so the `disabled` precedence isn't confused with the `open` one:
 // only the first item is opened by the group's own state (`defaultOpen: 0`,
-// `type: 'single'`), but the third item forces its own `open` prop to `true`
+// `collapsible: 'single'`), but the third item forces its own `open` prop to `true`
 // regardless; the group's own `disabled` cascades to items 1-3 (none set
 // their own), but the fourth item's own `disabled={false}` wins over it.
 export const ContextOverrides: Story = {
 	render: args => (
-		<Accordion.Group { ...args } type="single" defaultOpen={ 0 } disabled>
+		<Accordion.Group { ...args } collapsible="single" defaultOpen={ 0 } disabled>
 			<Accordion>
 				<Accordion.Title>Item 1</Accordion.Title>
 				<Accordion.Content>Content for item 1.</Accordion.Content>

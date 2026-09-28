@@ -65,9 +65,17 @@ const meta: Meta<MenuItemStoryProps> = {
 	title: 'Navigation/Menu/MenuItem',
 	decorators: [(Story) => <MenubarWrapper><Story /></MenubarWrapper>],
 	argTypes: {
+		depth: {
+			control: 'number',
+			description: 'Required — `MenuItemProps` declares it non-optional, and it has NO registered default (`DEFAULT_PROPS` only sets `as`/`hasDropdowns`), so every story must supply it explicitly. Used to compute the nested submenu\'s own `depth` (`depth + 1`) when a dropdown opens; `Menu.tsx` (not `MenuItem` itself) also reads its OWN `depth` prop to gate the orientation-driven module class to depth 0 only.',
+		},
 		hasDropdowns: {
 			control: 'boolean',
 			description: 'Selects between `MenuItem`\'s three render branches when `menu` is present: `undefined`/`false` returns a flat ARRAY of the children\'s `<li>`s (the item\'s own label is dropped); `true` renders the label plus a trigger `<button>` and a nested `Menu`. Has no effect when `menu` is absent.',
+		},
+		activeItem: {
+			control: 'text',
+			description: 'A `NavRoute` compared for an EXACT match against this item\'s own `route` (`Menu.tsx`, not `MenuItem` itself, is what falls back to `usePathname()` when this is left `undefined`). Drives `data-current` on the wrapping and `aria-current="page"` on the rendered. An item with no `route` can never match. See `ActiveItem`/`ActiveItemFlattened`.',
 		},
 		label: {
 			control: 'text',
@@ -89,6 +97,7 @@ const meta: Meta<MenuItemStoryProps> = {
 	},
 	args: {
 		...getDefaultProps<MenuItem.Props>('MenuItem'),
+		depth: 0,
 		label: 'Home',
 		route: NavRoutes.HOME,
 	},
@@ -184,6 +193,16 @@ export const FlattenedDropdown: Story = {
  * sets `role: 'menuitem'` unconditionally before that branch runs, though, so
  * the `<span>` still carries `role="menuitem"` and is reachable via
  * `getByRole('menuitem', { name: 'User' })`.
+ *
+ * Verified against the live `Icon.tsx`: `buildIcon`'s LUCIDE branch (used for
+ * `caret-down`/`caret-up`, as opposed to its separate social-brand SVG branch) sets NO
+ * `attributes` literal of its own — its `sharedProps` is just `{ ...others,
+ * ...styles('glyph') }`, and `attributes` isn't one of `extractOtherProps`'s stripped
+ * keys, so it passes straight through in `others`. `MenuItem`'s own
+ * `attributes={ { aria: { hidden: true } } }` therefore reaches the rendered icon
+ * completely unmodified — the caret genuinely IS `aria-hidden="true"`. (The social
+ * icon branch is different: it always sets its OWN `attributes: { aria: { label: type
+ * } }`, overwriting anything a caller passes — not relevant here.)
  */
 export const DropdownTrigger: Story = {
 	args: {
@@ -204,7 +223,15 @@ export const DropdownTrigger: Story = {
 		await expect(trigger).toHaveAttribute('aria-controls', USER_MENU_ID)
 		await expect(trigger).toHaveAttribute('aria-haspopup', 'true')
 		await expect(trigger).toHaveAttribute('aria-expanded', 'false')
-		await expect(trigger.querySelector('[aria-hidden="true"]')).toBeInTheDocument()
+
+		// A CSS selector, not a role query, because `aria-hidden="true"` removes the
+		// icon from the accessibility tree — there's no role to query it by. Assert
+		// non-null explicitly first: `toBeInTheDocument()` throws an unhelpful,
+		// message-less error when handed `null` outright, rather than failing with a
+		// readable diff.
+		const icon = trigger.querySelector('[aria-hidden="true"]')
+		await expect(icon).not.toBeNull()
+		await expect(icon).toBeInTheDocument()
 
 		// NOT `canvas.queryByRole('menubar')` — the meta-level `MenubarWrapper`
 		// decorator's OWN `<ul role="menubar">` always satisfies that query
@@ -271,6 +298,43 @@ export const DataCurrentHook: Story = {
 			item = canvas.getByRole('menuitem').closest('li') as HTMLElement
 
 		await expect(item).toHaveAttribute('data-current')
+	},
+}
+
+/**
+ * `activeItem` matching an exact `route`: `data-current` on the,
+ * `aria-current="page"` on the rendered.
+ */
+export const ActiveItem: Story = {
+	args: { activeItem: NavRoutes.HOME, label: 'Home', route: NavRoutes.HOME },
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			link = canvas.getByRole('menuitem', { name: 'Home' })
+		await expect(link).toHaveAttribute('aria-current', 'page')
+		await expect(link.closest('li')).toHaveAttribute('data-current')
+	},
+}
+
+/**
+ * The flattened branch ((b), `isDropdown && !hasDropdowns`) evaluates each
+ * child independently — only `Settings` matches here, not `Profile`, even
+ * though both are rendered from the SAME `menu?.map(...)` call.
+ */
+export const ActiveItemFlattened: Story = {
+	args: {
+		activeItem: NavRoutes.SETTINGS,
+		hasDropdowns: false,
+		label: 'User',
+		route: undefined,
+		menu: USER_ITEM.menu,
+	},
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			profile = canvas.getByRole('menuitem', { name: 'Profile' }),
+			settings = canvas.getByRole('menuitem', { name: 'Settings' })
+		await expect(profile.closest('li')).not.toHaveAttribute('data-current')
+		await expect(settings.closest('li')).toHaveAttribute('data-current')
+		await expect(settings).toHaveAttribute('aria-current', 'page')
 	},
 }
 
@@ -380,11 +444,12 @@ export const OutsideClick: Story = {
 		const canvas = within(canvasElement),
 			outside = canvas.getByRole('button', { name: 'Outside' }),
 			// Two `role="button"` elements exist in THIS story (the trigger plus
-			// the plain "Outside" sibling), so — unlike stories with only one
-			// button — role alone is ambiguous here; the trigger has no
-			// accessible name (see `Menu.stories.tsx`'s `DropdownItems` quirk
-			// note), so it's the only match for an empty `name`.
-			trigger = canvas.getByRole('button', { name: '' })
+			// the plain "Outside" sibling), so role alone is ambiguous — but the
+			// trigger's accessible name isn't a stable thing to filter on either
+			// (see `Menu.stories.tsx`'s `DropdownItems` quirk note), so it's
+			// identified here by elimination against the one button already
+			// queried by its own stable, real name instead.
+			trigger = canvas.getAllByRole('button').find(button => button !== outside)!
 
 		// Focus assertions first — a click would focus the trigger and make a
 		// later `tab()` move focus away instead of onto it.

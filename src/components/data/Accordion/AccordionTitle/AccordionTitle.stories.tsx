@@ -1,5 +1,6 @@
 import { Component } from 'react'
 import { expect, userEvent, within } from 'storybook/test'
+import { getDefaultProps } from '@/hooks/useProps'
 import { Accordion } from '../Accordion'
 import { BOOLEAN_OPTIONS, INDICATOR_OPTIONS } from '../options.story'
 import type { ReactNode } from 'react'
@@ -93,6 +94,7 @@ const meta: Meta<AccordionTitleStoryProps> = {
 		},
 	},
 	args: {
+		...getDefaultProps<Accordion.Title.Props>('Accordion.Title'),
 		children: 'What is your refund policy?',
 	},
 }

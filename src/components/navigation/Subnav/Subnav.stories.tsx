@@ -1,9 +1,12 @@
 import { expect, within } from 'storybook/test'
 import { getDefaultProps } from '@/hooks/useProps'
-import { NavRoutes } from '@/utils/navigation'
+import { NavRoutes, type NavRoute } from '@/utils/navigation'
 import { Subnav } from './Subnav'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+import moduleClasses from './Subnav.module.scss'
+
+const BOOLEAN_OPTIONS = [true, false] as const
 
 const Row = ({ children }: { children: ReactNode }) => (
 	<div style={ { display: 'flex', flexDirection: 'column', gap: 32 } }>
@@ -37,6 +40,14 @@ const COMMUNITY_ROUTES = [
 	NavRoutes.COMMUNITY_EVENTS,
 	NavRoutes.COMMUNITY_SPOTLIGHTS,
 ]
+
+// A route that appears NOWHERE in `NAVIGATION_DATA` — unlike every real `NavRoute`
+// (all of them are used somewhere in the tree, several only as a child of a
+// route-less parent like `User`, which still surfaces via `filterNavigation`'s
+// flattening branch; see the `NoMatchingRoutes` story below), this one guarantees a
+// genuinely empty filtered result. Cast because `NavRoute` is a closed union of the
+// real app routes.
+const UNMATCHED_ROUTE = '/does-not-exist' as NavRoute
 
 // `Subnav.Props` (the `declare namespace` export) is just the raw `SubnavProps`
 // interface — it doesn't include `as`/`unstyled`/`attributes`/etc., which only
@@ -115,19 +126,22 @@ export const Default: Story = {
 }
 
 /**
- * Edge case: `routes` that match nothing. `filterNavigation` returns `[]`, and
- * `Subnav` guards its entire inner block — the label span AND the `<Menu>` —
- * with a single `!!navItems.length`. Since there
- * is no separate `label` prop anymore (it's derived from `navItems[0].label`),
- * an empty `navItems` means NEITHER renders: the root mounts with an empty
- * inner wrapper.
+ * Edge case: `routes` that match NOTHING anywhere in `NAVIGATION_DATA`.
+ * `filterNavigation` returns `[]` (`Subnav` even short-circuits to `return null`
+ * before rendering ANYTHING — root included — via its own `if (!navitems.length)
+ * return null` guard, unlike `Navbar`'s narrower per-column guard).
  *
- * `/settings` is a deliberate choice: it exists in `NavRoutes`, but only as a
- * child of the route-less `User` item, which `filterNavigation` drops outright
- * (it keys off `item.route` before ever recursing into `item.menu`).
+ * `NavRoutes.SETTINGS` (`/settings`) is deliberately NOT used here even though it
+ * "matches nothing" at the top level: it's a real child of the route-less `User` item,
+ * and `filterNavigation`'s recursive `filterNavitems` FLATTENS a route-less parent's
+ * own matching children to the top level whenever `submenu` is non-empty (`else if
+ * (submenu) list.push(...submenu)`) — so `routes: [SETTINGS]` actually renders a
+ * `Settings` item, not nothing. Every real `NavRoute` is used somewhere in the tree
+ * this same way, so a genuinely unmatched fixture needs a route that isn't a
+ * `NavRoute` at all (`UNMATCHED_ROUTE`).
  */
 export const NoMatchingRoutes: Story = {
-	args: { routes: [NavRoutes.SETTINGS] },
+	args: { routes: [UNMATCHED_ROUTE] },
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement)
 
@@ -135,8 +149,10 @@ export const NoMatchingRoutes: Story = {
 		await expect(canvas.queryAllByRole('menuitem')).toHaveLength(0)
 		await expect(canvasElement.querySelector(LABEL_SELECTOR)).not.toBeInTheDocument()
 
-		const root = canvasElement.querySelector(ROOT_SELECTOR)
-		await expect(root).toBeInTheDocument()
+		// `Subnav` returns `null` OUTRIGHT when `navitems` is empty — root included —
+		// so nothing at all is in the canvas, not even an empty root element.
+		await expect(canvasElement.querySelector(ROOT_SELECTOR)).toBeNull()
+		await expect(canvasElement).toBeEmptyDOMElement()
 	},
 }
 
@@ -172,5 +188,68 @@ export const AsElement: Story = {
 		await expect(asDiv.tagName).toBe('DIV')
 		await expect(asSection.tagName).toBe('SECTION')
 		await expect(asHeader.tagName).toBe('HEADER')
+	},
+}
+
+/**
+ * `unstyled` never removes the semantic base classes (`inkq-subnav`,
+ * `inkq-subnav__inner`, `inkq-subnav__label`) — only their CSS-module hash is
+ * suppressed, since each has a plain (config-less) SCSS declaration. `Subnav`'s
+ * `styles('wrapper', true)` boolean-config call behaves differently again: `&__wrapper`
+ * has no SCSS rule at all (no hash ever), and `getConfigClasses` in `getClassName.tsx`
+ * checks `typeof config === 'boolean'` BEFORE it ever looks at `unstyled`, so the
+ * boolean-config's own literal `inkq-wrapper` class is emitted REGARDLESS of
+ * `unstyled`.
+ */
+export const Unstyled: Story = {
+	parameters: { controls: { exclude: ['unstyled'] } },
+	render: (args) => (
+		<Row>
+			{ BOOLEAN_OPTIONS.map(unstyled => (
+				<Group key={ String(unstyled) } label={ String(unstyled) }>
+					<Subnav { ...args } unstyled={ unstyled } />
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const roots = Array.from(canvasElement.querySelectorAll(ROOT_SELECTOR)) as HTMLElement[]
+		await expect(roots).toHaveLength(2)
+
+		const [unstyledRoot, styledRoot] = roots
+
+		const hasModuleClass = (el: Element, base: string) => {
+			const moduleClass = (moduleClasses as Record<string, string>)[base]
+			return !!moduleClass && el.classList.contains(moduleClass)
+		}
+
+		await expect(styledRoot).toHaveClass('inkq-subnav')
+		await expect(unstyledRoot).toHaveClass('inkq-subnav')
+		expect(hasModuleClass(styledRoot, 'inkq-subnav')).toBe(true)
+		expect(hasModuleClass(unstyledRoot, 'inkq-subnav')).toBe(false)
+
+		const styledWrapper = styledRoot.querySelector('.inkq-subnav__wrapper') as HTMLElement,
+			unstyledWrapper = unstyledRoot.querySelector('.inkq-subnav__wrapper') as HTMLElement
+
+		await expect(styledWrapper).toHaveClass('inkq-subnav__wrapper', 'inkq-wrapper')
+		await expect(unstyledWrapper).toHaveClass('inkq-subnav__wrapper', 'inkq-wrapper')
+		expect(hasModuleClass(styledWrapper, 'inkq-subnav__wrapper')).toBe(false)
+		expect(hasModuleClass(unstyledWrapper, 'inkq-subnav__wrapper')).toBe(false)
+
+		const styledInner = styledWrapper.querySelector('.inkq-subnav__inner') as HTMLElement,
+			unstyledInner = unstyledWrapper.querySelector('.inkq-subnav__inner') as HTMLElement
+
+		await expect(styledInner).toHaveClass('inkq-subnav__inner')
+		await expect(unstyledInner).toHaveClass('inkq-subnav__inner')
+		expect(hasModuleClass(styledInner, 'inkq-subnav__inner')).toBe(true)
+		expect(hasModuleClass(unstyledInner, 'inkq-subnav__inner')).toBe(false)
+
+		const styledLabel = styledRoot.querySelector('.inkq-subnav__label') as HTMLElement,
+			unstyledLabel = unstyledRoot.querySelector('.inkq-subnav__label') as HTMLElement
+
+		await expect(styledLabel).toHaveClass('inkq-subnav__label')
+		await expect(unstyledLabel).toHaveClass('inkq-subnav__label')
+		expect(hasModuleClass(styledLabel, 'inkq-subnav__label')).toBe(true)
+		expect(hasModuleClass(unstyledLabel, 'inkq-subnav__label')).toBe(false)
 	},
 }

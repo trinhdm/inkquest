@@ -6,12 +6,26 @@ import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import moduleClasses from './Grid.module.scss'
 
-// `Grid`'s own props are `{ children, columns }` (plus the polymorphic
+// `Grid`'s own props are `{ children, columns, gap }` (plus the polymorphic
 // `as`/Box escape hatches). `columns` is a plain `number`, not a fixed enum,
 // so there is nothing to move into a shared `options.story.ts` — the
 // representative values exercised below (`COLUMN_VALUES`) live locally,
 // same precedent as `Button`/`Badge`/`Container`/`Section`.
 const COLUMN_VALUES = [2, 3, 4] as const
+
+// `gap`'s type (`Grid.tsx`): `Exclude<UnpackArray<GridGapOptions>, 'grid'>`,
+// where `GridGapOptions = ConfigOptions<'space', 'grid'>` extracts every
+// `theme.space(...)` path tuple that contains the literal `'grid'` from
+// `SpaceTokens` (`src/lib/theme/tokens/layout/space.ts`'s `grid: { base, lg }`
+// — the commented-out `sm` entry there is dead, not a live option). That
+// yields exactly `['grid'] | ['grid', 'lg']`, unpacked to `'grid' | 'lg'`,
+// with the `'grid'` bare-default excluded — so `'lg'` is the ONLY valid,
+// non-default `gap` value. Read off `Grid.Props['gap']` itself (not
+// hand-typed) so this can't silently drift if `SpaceTokens.grid` ever grows a
+// new step. Single value, but still a real enum worth its own shared-shape
+// story, same treatment as every other enumerable prop in this codebase.
+type GridGap = NonNullable<Grid.Props['gap']>
+const GAP_OPTIONS: readonly GridGap[] = ['lg']
 
 const Row = ({ children }: { children: ReactNode }) => (
 	<div style={ { display: 'flex', gap: 24, flexWrap: 'wrap' } }>
@@ -69,6 +83,11 @@ const meta: Meta<GridStoryProps> = {
 		columns: {
 			control: 'number',
 			description: 'Feeds a `--grid-cols` CSS custom property on the root via an inline style (`setThemeCSS`\'s `tokens`), NOT a class — `Grid.tsx` calls `styles(\'root\')` with no `module`/`global`/`selector` config at all, so `columns` never produces any `inkq-grid--*` modifier class. `--grid-cols` is only set inline when `columns` is a positive number (`!!(columns && columns > 0)`); otherwise it is absent from the inline style, and `Grid.module.scss`\'s own base rule (`--grid-cols: auto-fit`) applies instead. See the `Columns` story.',
+		},
+		gap: {
+			control: 'select',
+			options: GAP_OPTIONS,
+			description: 'Feeds a `--grid-gap` CSS custom property on the root (`setThemeCSS`\'s `tokens`, via `theme.space(...gridGap)` where `gridGap` starts as `[\'grid\']` and pushes `gap` when set) — NOT a class. `\'lg\'` is the only valid, non-default value (`Grid.Props[\'gap\']` resolves to exactly `\'lg\'` — see the type note above); leaving it unset resolves `--grid-gap` to `var(--inkq-space-grid)` (the semantic `space.grid.base` token), while `gap="lg"` resolves it to `var(--inkq-space-grid-lg)` (`space.grid.lg`). See the `Gap` story.',
 		},
 		unstyled: {
 			control: 'boolean',
@@ -152,6 +171,57 @@ export const Columns: Story = {
 		// passes a `module`/`global`/`selector` config to `styles('root')`.
 		for (const root of [root2, root3, root4]) {
 			const modifiers = Array.from(root.classList).filter(c => /--\d+/.test(c))
+			await expect(modifiers).toHaveLength(0)
+		}
+	},
+}
+
+/**
+ * `gap: undefined` vs. `gap: 'lg'`, side by side. Feeds `--grid-gap` on the
+ * root via `theme.space(...gridGap)` (`setThemeCSS`'s `tokens`), where
+ * `gridGap` starts as `['grid']` and pushes `gap` onto it when set — resolving
+ * to the semantic token path `space.grid.base` (unset) or `space.grid.lg`
+ * (`'lg'`). No class of any kind is involved (`Grid.tsx` calls `styles('root')`
+ * with no `module`/`global`/`selector` config), so only the inline custom
+ * property is asserted below.
+ */
+export const Gap: Story = {
+	parameters: {
+		layout: 'padded',
+		controls: { exclude: ['gap'] },
+	},
+	render: (args) => (
+		<Row>
+			<Group label="undefined">
+				<Grid { ...args } gap={ undefined }>
+					<Grid.Item>{ tile('gap-unset-a') }</Grid.Item>
+					<Grid.Item>{ tile('gap-unset-b') }</Grid.Item>
+				</Grid>
+			</Group>
+			{ GAP_OPTIONS.map(gap => (
+				<Group key={ gap } label={ gap }>
+					<Grid { ...args } gap={ gap }>
+						<Grid.Item>{ tile(`gap-${gap}-a`) }</Grid.Item>
+						<Grid.Item>{ tile(`gap-${gap}-b`) }</Grid.Item>
+					</Grid>
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			unsetRoot = canvas.getByText('gap-unset-a').closest(ROOT_SELECTOR) as HTMLElement,
+			lgRoot = canvas.getByText('gap-lg-a').closest(ROOT_SELECTOR) as HTMLElement
+
+		// `theme.space(...)` resolves to a `var(--inkq-space-...)` reference, not
+		// a raw pixel value — `space.grid.base` (unset `gap`) vs. `space.grid.lg`
+		// (`gap="lg"`), formatted by `formatToken` (`src/lib/theme/format/tokenName.ts`).
+		await expect(unsetRoot.style.getPropertyValue('--grid-gap')).toBe('var(--inkq-space-grid)')
+		await expect(lgRoot.style.getPropertyValue('--grid-gap')).toBe('var(--inkq-space-grid-lg)')
+
+		// No `inkq-grid--*` modifier class exists for either value.
+		for (const root of [unsetRoot, lgRoot]) {
+			const modifiers = Array.from(root.classList).filter(c => c.includes('--'))
 			await expect(modifiers).toHaveLength(0)
 		}
 	},
