@@ -11,8 +11,10 @@ import { setDefaultProps } from '@/hooks/useProps'
 import { POLYMORPHIC_MARKER } from './constants'
 import type { AsPolymorphic, SpecDefaultProps, Specs } from './types'
 import type { DistributiveOmit, WithDefaults } from '@/types/utils'
+import type { SpecAttributes } from '@/types/shared'
 
 type _CommonProps = {
+	attributes?: SpecAttributes
 	children?: ReactNode
 	className?: string
 	id?: string

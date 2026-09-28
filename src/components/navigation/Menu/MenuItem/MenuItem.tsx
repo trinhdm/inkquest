@@ -9,6 +9,7 @@ import { Button, Icon } from '@/components/core'
 import { Menu } from '../Menu'
 import type { NavigationItem } from '@/utils/navigation'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
+import type { SpecAttributes } from '@/types/shared'
 import Link from 'next/link'
 import classes from '../Menu.module.scss'
 
@@ -23,7 +24,8 @@ const DEFAULT_PROPS = {
 
 interface MenuItemProps
 	extends NavigationItem {
-	depth: number
+	activeItem?: NavigationItem['route'] | null
+	depth?: number
 	hasDropdowns?: boolean
 }
 
@@ -41,25 +43,36 @@ const getSubmenuItems = (root: HTMLLIElement | null) =>
 			?.querySelectorAll<HTMLElement>(MENUITEM_SELECTOR) ?? []
 	)
 
+const isCurrentRoute = (
+	item: NavigationItem,
+	activeItem?: MenuItemProps['activeItem']
+) => !!item.route && item.route === activeItem
+
 const MenuLabel = (
 	item: NavigationItem,
-	styles: ReturnType<typeof useStyles>
+	styles: ReturnType<typeof useStyles>,
+	isActive = false,
 ) => {
 	const sharedProps = {
-		role: 'menuitem',
 		...styles('label'),
+		role: 'menuitem',
 	}
 
 	if (item.route) {
 		return (
-			<Box as={ Link } href={ item.route } { ...sharedProps }>
+			<Box
+				{ ...sharedProps }
+				as={ Link }
+				attributes={ { aria: { current: isActive ? 'page' : undefined } } }
+				href={ item.route }
+			>
 				{ item.label }
 			</Box>
 		)
 	}
 
 	return (
-		<Box as="span" tabIndex={ -1 } { ...sharedProps }>
+		<Box { ...sharedProps } as="span" tabIndex={ -1 }>
 			{ item.label }
 		</Box>
 	)
@@ -68,9 +81,6 @@ const MenuLabel = (
 export const MenuItem = polymorphic<MenuItemSpecs>(_props => {
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { classes, props })
-	// add behavior for:
-	// aria-current="page": Marks the link of the active page
-	// add state to set tabIndex on keyboard navigation
 
 	const timeoutRef = useRef<NodeJS.Timeout>(null)
 	const itemRef = useRef<HTMLLIElement>(null)
@@ -83,6 +93,8 @@ export const MenuItem = polymorphic<MenuItemSpecs>(_props => {
 	}, [])
 
 	const {
+		activeItem,
+		attributes,
 		depth,
 		hasDropdowns,
 		label,
@@ -92,7 +104,6 @@ export const MenuItem = polymorphic<MenuItemSpecs>(_props => {
 	} = props
 
 	const { as, others } = extractOtherProps(rest)
-
 	const isDropdown = !!menu?.length
 
 	const handleToggle: React.MouseEventHandler<HTMLButtonElement> = evt => {
@@ -155,31 +166,46 @@ export const MenuItem = polymorphic<MenuItemSpecs>(_props => {
 		}
 	}
 
-	const wrappedLabel = MenuLabel({ label, route }, styles)
+	const setAttributes = (isCurrent: boolean): SpecAttributes => ({
+		...attributes,
+		data: {
+			...attributes?.data,
+			current: isCurrent || attributes?.data?.current || null,
+		},
+	})
+
+	const isActive = isCurrentRoute({ label, route }, activeItem),
+		wrappedLabel = MenuLabel({ label, route }, styles, isActive)
+
 	const sharedProps = {
-		role: 'none',
 		...styles('root'),
 		...others,
+		role: 'none',
 	}
 
 	if (!isDropdown) {
 		return (
-			<Box as={ as } { ...sharedProps }>
+			<Box { ...sharedProps } as={ as } attributes={ setAttributes(isActive) }>
 				{ wrappedLabel }
 			</Box>
 		)
 	}
 
 	if (!hasDropdowns) {
-		return menu?.map(item => (
-			<Box
-				as={ TAG }
-				key={ item.label }
-				{ ...sharedProps }
-			>
-				{ MenuLabel(item, styles) }
-			</Box>
-		))
+		return menu?.map(item => {
+			const isCurrent = isCurrentRoute(item, activeItem)
+
+			return (
+				<Box
+					{ ...sharedProps }
+					as={ TAG }
+					attributes={ setAttributes(isCurrent) }
+					key={ item.label }
+				>
+					{ MenuLabel(item, styles, isCurrent) }
+				</Box>
+			)
+		})
 	}
 
 	const target = toKebabCase(label),
@@ -188,25 +214,26 @@ export const MenuItem = polymorphic<MenuItemSpecs>(_props => {
 
 	return (
 		<Box
+			{ ...sharedProps }
 			as={ as }
+			attributes={ setAttributes(isActive) }
 			ref={ itemRef }
 			onKeyDown={ handleKeyDown }
 			onMouseEnter={ handleMouseEnter }
 			onMouseLeave={ handleMouseLeave }
-			{ ...sharedProps }
 		>
 			{ wrappedLabel }
 
 			<Button
+				{ ...styles('trigger') }
 				unstyled
-				id={ triggerID }
-				onClick={ handleToggle }
 				attributes={ { aria: {
 					controls: menuID,
 					expanded: isOpen,
 					haspopup: 'true',
 				} } }
-				{ ...styles('trigger') }
+				onClick={ handleToggle }
+				id={ triggerID }
 			>
 				<Icon
 					attributes={ { aria: { hidden: true } } }
@@ -216,8 +243,9 @@ export const MenuItem = polymorphic<MenuItemSpecs>(_props => {
 
 			{ isOpen && (
 				<Menu
+					activeItem={ activeItem }
 					attributes={ { aria: { labelledby: triggerID } } }
-					depth={ depth + 1 }
+					depth={ typeof depth === 'number' ? depth + 1 : undefined }
 					id={ menuID }
 					items={ menu }
 				/>

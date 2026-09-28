@@ -30,18 +30,21 @@
 		height: 100%;
 		padding-inline: var(--inkq-space-icon);
 
-		&::after {
-			background-color: var(--inkq-color-action);
-			bottom: -1px;
-			content: '';
-			display: block;
-			height: 1px;
-			inset-inline: 0;
-			margin-inline: auto;
-			opacity: 0;
-			pointer-events: none;
-			position: absolute;
-			width: 100%;
+		&:where([data-current]) {
+			--subnav-rail-height: 1px;
+
+			&::after {
+				background-color: var(--inkq-color-action);
+				content: '';
+				display: block;
+				height: var(--subnav-rail-height);
+				inset-block-end: calc(-1 * var(--subnav-rail-height));
+				inset-inline: 0;
+				margin-inline: auto;
+				pointer-events: none;
+				position: absolute;
+				width: 100%;
+			}
 		}
 	}
 }

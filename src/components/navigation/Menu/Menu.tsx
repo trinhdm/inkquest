@@ -1,3 +1,4 @@
+import { usePathname } from 'next/navigation'
 import { useProps, extractOtherProps } from '@/hooks/useProps'
 import { useStyles } from '@/hooks/useStyles'
 import { polymorphic } from '@/lib/component'
@@ -18,6 +19,7 @@ const DEFAULT_PROPS = {
 } as const
 
 interface MenuProps {
+	activeItem?: NavigationItem['route'] | null
 	depth?: number
 	hasDropdowns?: boolean
 	items: NavigationItem['menu']
@@ -33,10 +35,12 @@ interface MenuSpecs {
 }
 
 export const Menu = polymorphic<MenuSpecs>(_props => {
+	const pathname = usePathname()
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { classes, props })
 
 	const {
+		activeItem,
 		className,
 		depth,
 		hasDropdowns,
@@ -47,7 +51,7 @@ export const Menu = polymorphic<MenuSpecs>(_props => {
 
 	const { others } = extractOtherProps(rest)
 	const module = { [`${orientation}`]: (depth === 0 && !!orientation) || null }
-	// const isActive = pathname === route
+	const currentRoute = activeItem ?? (pathname as NavigationItem['route'])
 
 	return (
 		<Box
@@ -59,6 +63,7 @@ export const Menu = polymorphic<MenuSpecs>(_props => {
 			{ items?.map(item => (
 				<MenuItem
 					key={ item.label }
+					activeItem={ currentRoute }
 					className={ className }
 					depth={ depth }
 					hasDropdowns={ hasDropdowns }
