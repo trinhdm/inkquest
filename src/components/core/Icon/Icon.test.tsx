@@ -60,4 +60,20 @@ describe('Icon', () => {
 		const { container } = render(<Icon type={ 'not-a-real-icon' as Icon.Props['type'] } />)
 		expect(container).toBeEmptyDOMElement()
 	})
+
+	it('renders a lucide glyph as decorative, with no aria-label or img role', () => {
+		const { container } = render(<Icon type="close" />)
+		const svg = container.querySelector('svg')
+
+		expect(svg).not.toHaveAttribute('aria-label')
+		expect(svg).not.toHaveAttribute('role')
+	})
+
+	it('labels a social-brand glyph with its type and marks it as an image', () => {
+		const { container } = render(<Icon type="instagram" />)
+		const svg = container.querySelector('svg')
+
+		expect(svg).toHaveAttribute('aria-label', 'instagram')
+		expect(svg).toHaveAttribute('role', 'img')
+	})
 })

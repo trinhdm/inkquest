@@ -1,5 +1,6 @@
 import { getDefaultProps } from '@/hooks/useProps'
 import { render, reset, screen } from '@/tests/test-utils'
+import { COMPANY_NAME } from '@/utils/constants'
 import { NavRoutes, type NavRoute } from '@/utils/navigation'
 import { Navbar } from './Navbar'
 
@@ -10,7 +11,8 @@ import { Navbar } from './Navbar'
 // mock is required for these to render correctly.
 
 describe('Navbar', () => {
-	reset('Navbar', 'Menu', 'MenuItem', 'Button', 'Button.Group')
+	// `Navbar` always renders `Logo` alongside `Menu`/`MenuItem`/`Button`/`Button.Group`.
+	reset('Navbar', 'Menu', 'MenuItem', 'Button', 'Button.Group', 'Logo')
 
 	it('renders a navigation landmark', () => {
 		render(<Navbar />)
@@ -26,7 +28,7 @@ describe('Navbar', () => {
 
 	it('links the logo back home', () => {
 		render(<Navbar />)
-		expect(screen.getByRole('link', { name: 'logo' })).toHaveAttribute('href', '/')
+		expect(screen.getByRole('link', { name: `${ COMPANY_NAME } Logo` })).toHaveAttribute('href', '/')
 	})
 
 	it('renders the login and signup actions grouped together', () => {
@@ -37,13 +39,24 @@ describe('Navbar', () => {
 		expect(screen.getByRole('button', { name: 'Sign up' })).toBeInTheDocument()
 	})
 
-	it('renders the full unfiltered nav data (including routeless items) when no routes prop is given', () => {
+	it('renders no nav Menu at all when no routes prop is given', () => {
+		// SOURCE NOTE: `filterNavigation` now short-circuits to `[]` by default
+		// (`isEmptyReturn` defaults to `true`) when `routes` is falsy/empty, and
+		// `Navbar` calls `filterNavigation(routes)` with no override. In
+		// production `Header` always forwards an explicit `routes` (defaulting
+		// to `HEADER_GLOBAL_NAV`), so a bare `<Navbar />` never renders this way
+		// in the app, but the component's own default is an empty menu.
 		render(<Navbar />)
+		expect(screen.queryByRole('menubar')).not.toBeInTheDocument()
+	})
 
-		// `filterNavigation` short-circuits to the raw `NAVIGATION_DATA` when
-		// `routes` is unset — that data set includes the routeless "User" item
-		expect(screen.getByRole('menuitem', { name: 'User' })).toBeInTheDocument()
+	it('hoists Profile/Settings out of the routeless "User" parent onto the menu when their routes are explicitly requested', () => {
+		render(<Navbar routes={ [NavRoutes.HOME, NavRoutes.PROFILE, NavRoutes.SETTINGS] } />)
+
 		expect(screen.getByRole('menuitem', { name: 'Home' })).toBeInTheDocument()
+		expect(screen.getByRole('menuitem', { name: 'Profile' })).toBeInTheDocument()
+		expect(screen.getByRole('menuitem', { name: 'Settings' })).toBeInTheDocument()
+		expect(screen.queryByRole('menuitem', { name: 'User' })).not.toBeInTheDocument()
 	})
 
 	it('narrows the menu to only the items matching an explicit routes list', () => {

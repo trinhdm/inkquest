@@ -1,5 +1,6 @@
 import userEvent from '@testing-library/user-event'
 import { render, reset, screen } from '@/tests/test-utils'
+import { getDefaultProps } from '@/hooks/useProps'
 import { Accordion } from '@/components/data/Accordion'
 
 const item = (title: string, content: string) => (
@@ -10,7 +11,30 @@ const item = (title: string, content: string) => (
 )
 
 describe('Accordion.Group', () => {
-	reset('Accordion.Group', 'Accordion', 'Accordion.Title', 'Accordion.Content')
+	// `Accordion.Title` renders a real `Icon` for its default "plus" indicator.
+	reset('Accordion.Group', 'Accordion', 'Accordion.Title', 'Accordion.Content', 'Icon')
+
+	it('registers defaults of collapsible="single", defaultOpen=0, order=3, size="md"', () => {
+		expect(getDefaultProps<Accordion.Group.Props>('Accordion.Group')).toEqual({
+			collapsible: 'single',
+			defaultOpen: 0,
+			order: 3,
+			size: 'md',
+		})
+	})
+
+	it('defaults defaultOpen to 0, so the first item starts open with no defaultOpen given', () => {
+		render(
+			<Accordion.Group>
+				{ item('One', 'First body') }
+				{ item('Two', 'Second body') }
+			</Accordion.Group>
+		)
+
+		const [first, second] = screen.getAllByRole('button')
+		expect(first).toHaveAttribute('aria-expanded', 'true')
+		expect(second).toHaveAttribute('aria-expanded', 'false')
+	})
 
 	it('renders as a group container with a data-group marker', () => {
 		const { container } = render(
@@ -36,7 +60,7 @@ describe('Accordion.Group', () => {
 		expect(screen.getByText('03')).toBeInTheDocument()
 	})
 
-	it('defaults to type="single": opening one item closes any other that was open', async () => {
+	it('defaults to collapsible="single": opening one item closes any other that was open', async () => {
 		const user = userEvent.setup()
 		render(
 			<Accordion.Group defaultOpen={ 0 }>
@@ -55,10 +79,10 @@ describe('Accordion.Group', () => {
 		expect(second).toHaveAttribute('aria-expanded', 'true')
 	})
 
-	it('allows several open at once when type="multiple"', async () => {
+	it('allows several open at once when collapsible="multiple"', async () => {
 		const user = userEvent.setup()
 		render(
-			<Accordion.Group defaultOpen={ [] } type="multiple">
+			<Accordion.Group defaultOpen={ [] } collapsible="multiple">
 				{ item('One', 'First body') }
 				{ item('Two', 'Second body') }
 			</Accordion.Group>
@@ -111,9 +135,9 @@ describe('Accordion.Group', () => {
 		expect(title).not.toHaveAttribute('aria-expanded')
 	})
 
-	it('honours defaultOpen as an array of indices when type="multiple"', () => {
+	it('honours defaultOpen as an array of indices when collapsible="multiple"', () => {
 		render(
-			<Accordion.Group defaultOpen={ [0, 2] } type="multiple">
+			<Accordion.Group defaultOpen={ [0, 2] } collapsible="multiple">
 				{ item('One', 'First body') }
 				{ item('Two', 'Second body') }
 				{ item('Three', 'Third body') }
@@ -144,10 +168,10 @@ describe('Accordion.Group', () => {
 		expect(first).toHaveFocus()
 	})
 
-	it('closes an item in type="multiple" mode when it is clicked again (removes it from openItems)', async () => {
+	it('closes an item in collapsible="multiple" mode when it is clicked again (removes it from openItems)', async () => {
 		const user = userEvent.setup()
 		render(
-			<Accordion.Group defaultOpen={ [] } type="multiple">
+			<Accordion.Group defaultOpen={ [] } collapsible="multiple">
 				{ item('One', 'First body') }
 				{ item('Two', 'Second body') }
 			</Accordion.Group>

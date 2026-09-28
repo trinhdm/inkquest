@@ -13,7 +13,8 @@ const item = (title: string, content: string, props?: ItemProps) => (
 )
 
 describe('Accordion.Title', () => {
-	reset('Accordion.Group', 'Accordion', 'Accordion.Title', 'Accordion.Content')
+	// `Accordion.Title` renders a real `Icon` for its default "plus" indicator.
+	reset('Accordion.Group', 'Accordion', 'Accordion.Title', 'Accordion.Content', 'Icon')
 
 	it('renders as a native button element', () => {
 		render(
@@ -114,7 +115,7 @@ describe('Accordion.Title', () => {
 
 		buttons[0].focus()
 		await user.keyboard('{ArrowDown}')
-		expect(buttons[1]).toHaveFocus()  // fails today: focus stays on buttons[0]
+		expect(buttons[1]).toHaveFocus()  // the non-collapsible div isn't a `button[data-title]`, so it's absent from the query entirely
 
 		await user.keyboard('{ArrowDown}')
 		expect(buttons[0]).toHaveFocus()  // wraps across the skipped div

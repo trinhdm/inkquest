@@ -1,14 +1,16 @@
 import { act, fireEvent, render, reset, screen } from '@/tests/test-utils'
 import { MenuItem } from './MenuItem'
 
-// `MenuItem.tsx` imports `usePathname` from `next/navigation`, but it is
-// commented out (dead code, tracked by a literal `// add behavior for:
-// aria-current="page"` TODO). Nothing in the component actually calls it at
-// runtime, so no navigation mock is required for these components to render
-// correctly — this is asserted directly in the "active link" section below.
+// `MenuItem.tsx` renders `activeItem` matching purely from the `route` it's
+// handed as a prop — it has no `next/navigation` import of its own, and
+// doesn't need one: `Menu` (its parent) is the only place `usePathname` is
+// read, and it forwards the resolved route down as `activeItem`. No router
+// mock is required for these tests.
 
 describe('MenuItem', () => {
-	reset('MenuItem', 'Menu')
+	// the "full dropdown" branch renders a real `Button` trigger with a nested
+	// `Icon` (caret-up/down), so both need resetting alongside `MenuItem`/`Menu`.
+	reset('MenuItem', 'Menu', 'Button', 'Icon')
 
 	describe('non-dropdown item (no menu)', () => {
 		it('renders a single menuitem link for a routed item', () => {
@@ -31,14 +33,15 @@ describe('MenuItem', () => {
 			expect(container.querySelector('li[role="none"]')).toBeInTheDocument()
 		})
 
-		it('does not set aria-current, since active-link state is an unimplemented TODO', () => {
-			// SOURCE GAP: `MenuItem.tsx` has a literal
-			// `// add behavior for: aria-current="page"` comment and never sets
-			// this attribute — this test documents current (unfinished) behavior,
-			// it does not assert a working feature.
-			render(<MenuItem label="Marketplace" route="/marketplace" />)
-			expect(screen.getByRole('menuitem')).not.toHaveAttribute('aria-current')
+		it('marks the matching item current: data-current on the li, aria-current on the link', () => {
+			render(<MenuItem activeItem="/marketplace" label="Marketplace" route="/marketplace" />)
+			const link = screen.getByRole('menuitem', { name: 'Marketplace' })
+			expect(link).toHaveAttribute('aria-current', 'page')
+			expect(link.closest('li')).toHaveAttribute('data-current')
 		})
+		it('does not mark a non-matching item current', () => { /* ... */ })
+		it('never marks a routeless item current, even if activeItem happens to be falsy', () => { /* ... */ })
+		it('preserves a consumer-supplied attributes.data bag alongside the computed data-current', () => { /* ... */ })
 	})
 
 	describe('dropdown without hasDropdowns (flattened submenu)', () => {

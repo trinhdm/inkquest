@@ -1,18 +1,23 @@
 import { getDefaultProps } from '@/hooks/useProps'
 import { render, reset, screen } from '@/tests/test-utils'
+import { COMPANY_NAME } from '@/utils/constants'
 import { Footer } from './Footer'
 
 describe('Footer', () => {
-	reset('Footer')
+	// `Footer` always renders `Footer.Area` (info + legal), which in turn
+	// renders `Logo`, `Icon` (social links), and `Menu`/`MenuItem` — all real
+	// factory components whose registries need resetting alongside `Footer`'s own.
+	reset('Footer', 'Footer.Area', 'Logo', 'Icon', 'Menu', 'MenuItem')
 
 	it('renders the tagline', () => {
 		render(<Footer />)
 		expect(screen.getByText('Find your artist. Own the ink.')).toBeInTheDocument()
 	})
 
-	it('renders the copyright notice', () => {
+	it('renders the copyright notice with the current year and the company name', () => {
 		render(<Footer />)
-		expect(screen.getByText('© 2026 Inkquest, Inc.')).toBeInTheDocument()
+		const currentYear = new Date().getFullYear()
+		expect(screen.getByText(`© ${ currentYear } ${ COMPANY_NAME }`)).toBeInTheDocument()
 	})
 
 	it('renders as the registered default tag (footer)', () => {

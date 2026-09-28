@@ -1,10 +1,27 @@
+import { usePathname } from 'next/navigation'
 import { getDefaultProps } from '@/hooks/useProps'
 import { render, reset, screen } from '@/tests/test-utils'
 import { Menu } from './Menu'
 import type { NavigationItem } from '@/utils/navigation'
 
+// Only mocked to DRIVE the fallback branch with a specific value — Next
+// 16.2.11's real `usePathname` (`useContext(PathnameContext)`, a context
+// created with a `null` default) already returns `null` outside an
+// app-router provider and never throws — no mock is required just to keep
+// the rest of this suite from crashing.
+jest.mock('next/navigation', () => ({
+	...jest.requireActual('next/navigation'),
+	usePathname: jest.fn(() => null),
+}))
+
 describe('Menu', () => {
-	reset('Menu', 'MenuItem')
+	// the default `hasDropdowns=true` full-dropdown branch (see below) renders
+	// a real `Button` trigger with a nested `Icon`, so both need resetting too.
+	reset('Menu', 'MenuItem', 'Button', 'Icon')
+
+	afterEach(() => {
+		(usePathname as jest.Mock).mockReturnValue(null)
+	})
 
 	const leafItems: NavigationItem['menu'] = [
 		{ label: 'Marketplace', route: '/marketplace' },

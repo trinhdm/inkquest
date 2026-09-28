@@ -22,7 +22,10 @@ jest.mock('framer-motion', () => {
 import { animate } from 'framer-motion'
 
 describe('Statistic.Group', () => {
-	reset('Statistic.Group', 'Statistic')
+	// `StatisticGroup` renders a real `Group` internally (childName="Statistic"),
+	// so its registry needs resetting too, alongside the two names this suite
+	// authors directly.
+	reset('Statistic.Group', 'Statistic', 'Group')
 
 	afterEach(() => {
 		jest.mocked(animate).mockClear()

@@ -5,7 +5,7 @@ import { Quote } from './Quote'
 describe('Quote', () => {
 	reset('Quote')
 
-	it('wraps the quote prop text in curly quotation marks', () => {
+	it('wraps the quote prop text in straight double quotation marks', () => {
 		render(<Quote content="Simplicity is the ultimate sophistication" />)
 		expect(screen.getByText('"Simplicity is the ultimate sophistication"')).toBeInTheDocument()
 	})

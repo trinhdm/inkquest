@@ -3,7 +3,10 @@ import { render, reset, screen } from '@/tests/test-utils'
 import { Button } from './Button'
 
 describe('Button', () => {
-	reset('Button')
+	// this suite also renders real `Button.Group`/`Button.Section` compound
+	// parts (see the nested describes below), so their registries need
+	// resetting too, alongside `Button`'s own.
+	reset('Button', 'Button.Group', 'Button.Section')
 
 	it('renders its children', () => {
 		render(<Button>Save</Button>)

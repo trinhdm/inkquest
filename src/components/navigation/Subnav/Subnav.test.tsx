@@ -41,17 +41,23 @@ describe('Subnav', () => {
 		expect(screen.getByRole('menuitem', { name: 'Spotlights' })).toBeInTheDocument()
 	})
 
-	it('recursively filters nested submenus to only the routes provided', () => {
+	it('leaves a matched parent\'s entire original submenu tree intact under the "breadcrumbs" layout, even branches absent from routes', () => {
 		render(
 			<Subnav
 				routes={ [NavRoutes.COMMUNITY, NavRoutes.COMMUNITY_FEED, NavRoutes.COMMUNITY_SPOTLIGHTS] }
 			/>
 		)
 
-		// "Events" is a child of Community but was not included in `routes`,
-		// so `filterNavigation`'s recursive call drops it (and its own child,
-		// "Your Lineup") entirely
-		expect(screen.queryByRole('menuitem', { name: 'Events' })).not.toBeInTheDocument()
+		// SOURCE NOTE: `Subnav` calls `filterNavigation(routes, 'breadcrumbs')`.
+		// Under the 'breadcrumbs' layout the matched item's `menu` is never
+		// reassigned to the recursively-filtered submenu (that swap only runs
+		// for `layout === 'dropdown'`) — the original, unfiltered menu passes
+		// straight through, so "Events" surfaces even though its own route
+		// was never requested. Its grandchild "Your Lineup" still does not
+		// appear: `MenuItem`'s `hasDropdowns={ false }` branch only flattens
+		// one level (`menu.map(item => MenuLabel(item))`), so a dropdown
+		// item's own nested children are never recursed into.
+		expect(screen.getByRole('menuitem', { name: 'Events' })).toBeInTheDocument()
 		expect(screen.queryByText('Your Lineup')).not.toBeInTheDocument()
 	})
 
@@ -62,16 +68,14 @@ describe('Subnav', () => {
 		expect(container.querySelector('span')).not.toBeInTheDocument()
 	})
 
-	it('renders every top-level item when the routes list happens to be empty (same short-circuit as filterNavigation)', () => {
-		// SOURCE NOTE: `filterNavigation`'s guard is `!routes?.length`, so an
-		// empty array is treated the same as "no filter" and returns the full,
-		// unfiltered `NAVIGATION_DATA`. The routeless "User" item is present in
-		// that data, but (per `hasDropdowns={ false }`'s flattening behavior
-		// above) it never renders itself — only its children ("Profile",
-		// "Settings") surface as menuitems.
-		render(<Subnav routes={ [] } />)
-		expect(screen.getByText('Home', { selector: 'span' })).toBeInTheDocument()
-		expect(screen.getByRole('menuitem', { name: 'Profile' })).toBeInTheDocument()
-		expect(screen.getByRole('menuitem', { name: 'Settings' })).toBeInTheDocument()
+	it('renders nothing when the routes list happens to be empty, since filterNavigation now defaults to an empty result', () => {
+		// SOURCE NOTE: `filterNavigation`'s guard is `!routes?.length`, and it
+		// now returns `[]` by default (`isEmptyReturn` defaults to `true`)
+		// rather than falling back to the full `NAVIGATION_DATA`. `Subnav`
+		// calls `filterNavigation(routes, 'breadcrumbs')` with no override, so
+		// an empty `routes` array yields zero nav items and the component
+		// returns `null` — the same as the "nothing matches" case below.
+		const { container } = render(<Subnav routes={ [] } />)
+		expect(container).toBeEmptyDOMElement()
 	})
 })

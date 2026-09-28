@@ -10,7 +10,8 @@ const buildAccordion = (props: Partial<Accordion.Props> = {}) => (
 )
 
 describe('Accordion', () => {
-	reset('Accordion', 'Accordion.Title', 'Accordion.Content')
+	// `Accordion.Title` renders a real `Icon` for its default "plus" indicator.
+	reset('Accordion', 'Accordion.Title', 'Accordion.Content', 'Icon')
 
 	it('renders the title as a button and the content as a labelled region', () => {
 		render(buildAccordion())
