@@ -1,9 +1,12 @@
 'use client'
 
 import Link from 'next/link'
-import { Button } from '@/components/core'
-import { Grid, Group, Section } from '@/components/layout'
-import { Statistic, Table } from '@/components/data'
+import { Button } from '@/components/core/Button'
+import { Grid } from '@/components/layout/Grid'
+import { Group } from '@/components/layout/Group'
+import { Section } from '@/components/layout/Section'
+import { Statistic } from '@/components/data/Statistic'
+import { Table } from '@/components/data/Table'
 import { ASSETS_LIST, COMPANY_STATS, PRESS_HISTORY } from './press.data'
 import type { Route } from 'next'
 

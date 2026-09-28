@@ -1,6 +1,7 @@
 'use client'
 
-import { Grid, Section } from '@/components/layout'
+import { Grid } from '@/components/layout/Grid'
+import { Section } from '@/components/layout/Section'
 import { CULTURE_PILLARS } from './careers.data'
 
 export default function Careers() {

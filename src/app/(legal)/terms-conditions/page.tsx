@@ -1,6 +1,6 @@
 'use client'
 
-import { Section } from '@/components/layout'
+import { Section } from '@/components/layout/Section'
 
 export default function PrivacyPolicy() {
 	const pageID = 'privacy-policy'

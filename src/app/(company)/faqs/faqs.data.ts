@@ -1,6 +1,6 @@
-import type { PageDataItem } from '@/types/shared'
-import type { Sidebar } from '@/components/layout'
 import type { Route } from 'next'
+import type { PageDataItem } from '@/types/shared'
+import type { Sidebar } from '@/components/layout/Sidebar'
 
 export interface FaqGroup {
 	id: string

@@ -1,8 +1,8 @@
-import { render, reset, screen } from '@/tests/test-utils'
-import { Button } from '@/components/core'
 import { buildSection } from '../builder'
-import type { RevealCounter } from '@/hooks/animation'
+import { render, reset, screen } from '@/tests/test-utils'
+import { Button } from '@/components/core/Button'
 import type { useStyles } from '@/hooks/useStyles'
+import type { RevealCounter } from '@/hooks/animation'
 import type { Section } from '../Section'
 
 // `buildSection` renders real `Button`/`Button.Group`/`Grid`/`Grid.Item`

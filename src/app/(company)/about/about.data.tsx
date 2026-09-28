@@ -1,4 +1,4 @@
-import { Icon } from '@/components/core'
+import { Icon } from '@/components/core/Icon'
 import type { PageDataItem, PressItem, StaffItem, StatisticItem } from '@/types/shared'
 
 export const STORY_TIMELINE: Required<PageDataItem>[] = [

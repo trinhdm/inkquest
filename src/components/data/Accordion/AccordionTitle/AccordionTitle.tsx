@@ -3,7 +3,7 @@ import { useProps, extractOtherProps } from '@/hooks/useProps'
 import { useStyles } from '@/hooks/useStyles'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
-import { Icon } from '@/components/core'
+import { Icon } from '@/components/core/Icon'
 import type { ElementType, KeyboardEvent, ReactNode } from 'react'
 import classes from '../Accordion.module.scss'
 

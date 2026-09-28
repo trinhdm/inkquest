@@ -4,7 +4,7 @@ import { polymorphic } from '@/lib/component'
 import { rem } from '@/lib/general'
 import { setThemeCSS } from '@/lib/theme'
 import { Box } from '@/components/polymorphic/Box'
-import { Button } from '@/components/core'
+import { Button } from '@/components/core/Button'
 import type { ReactNode } from 'react'
 import type { Route } from 'next'
 import type { MaybeAnimationProps } from '@/hooks/animation'
@@ -43,7 +43,6 @@ interface ActionSidebarProps {
 	active: string
 	items: SidebarActionItem[]
 	onItemChange: (id: string) => void
-	// onItemChange: ChangeEventHandler<HTMLButtonElement>
 	scroll?: never
 	shallow?: never
 }

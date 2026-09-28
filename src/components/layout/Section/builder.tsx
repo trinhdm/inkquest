@@ -6,8 +6,9 @@ import {
 	type ReactNode,
 } from 'react'
 
-import { Button } from '@/components/core'
+import { Button } from '@/components/core/Button'
 import { Grid } from '../Grid'
+import { TextInput } from '@/components/form/TextInput'
 import type { useStyles } from '@/hooks/useStyles'
 import type { RevealCounter } from '@/hooks/animation'
 import type { Section } from './Section'

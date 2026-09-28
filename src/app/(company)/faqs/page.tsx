@@ -2,8 +2,10 @@
 
 import { useOptimistic, useTransition, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Grid, Section, Sidebar } from '@/components/layout'
 import { FaqCategory } from './FaqCategory'
+import { Grid } from '@/components/layout/Grid'
+import { Section } from '@/components/layout/Section'
+import { Sidebar } from '@/components/layout/Sidebar'
 import { FAQ_CATEGORIES, FAQ_PARAM, faqCategoryUrl, resolveFaqGroup } from './faqs.data'
 import './faqs.scss'
 

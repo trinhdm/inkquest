@@ -1,7 +1,7 @@
 'use client'
 
-import { Accordion } from '@/components/data'
-import { Section } from '@/components/layout'
+import { Accordion } from '@/components/data/Accordion'
+import { Section } from '@/components/layout/Section'
 import type { FaqGroup } from '../faqs.data'
 
 interface FaqCategoryProps {

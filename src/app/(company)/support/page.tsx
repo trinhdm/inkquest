@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Section } from '@/components/layout'
+import { Section } from '@/components/layout/Section'
 
 export default function Support() {
 	const pageID = 'support'

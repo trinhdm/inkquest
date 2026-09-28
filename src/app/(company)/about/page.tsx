@@ -1,8 +1,12 @@
 'use client'
 
-import { Accordion, Quote, Statistic, Timeline } from '@/components/data'
-import { Card } from '@/components/core'
-import { Grid, Section } from '@/components/layout'
+import { Accordion } from '@/components/data/Accordion'
+import { Card } from '@/components/core/Card'
+import { Grid } from '@/components/layout/Grid'
+import { Quote } from '@/components/data/Quote'
+import { Section } from '@/components/layout/Section'
+import { Statistic } from '@/components/data/Statistic'
+import { Timeline } from '@/components/data/Timeline'
 
 import {
 	COMPANY_VALUES,
@@ -53,7 +57,7 @@ export default function About() {
 				id={ `${pageID}-values` }
 				title="What we believe."
 			>
-				<Accordion.Group layout="steps">
+				<Accordion.Group layout="steps" size="lg">
 					{ COMPANY_VALUES.map(({ content, id, title }) => (
 						<Accordion id={ id } key={ `${id}-value` }>
 							<Accordion.Title>{ title }</Accordion.Title>

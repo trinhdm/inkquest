@@ -1,6 +1,6 @@
 'use client'
 
-import { Section } from '@/components/layout'
+import { Section } from '@/components/layout/Section'
 
 export default function Cookies() {
 	const pageID = 'cookies'

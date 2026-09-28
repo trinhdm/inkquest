@@ -2,8 +2,10 @@
 
 import Image from "next/image"
 import { useColorScheme } from '@/hooks/useColorScheme'
-import { Badge, Button, Icon } from '@/components/core'
-import { Container } from '@/components/layout'
+import { Badge } from '@/components/core/Badge'
+import { Button } from '@/components/core/Button'
+import { Container } from '@/components/layout/Container'
+import { Icon } from '@/components/core/Icon'
 
 export default function Home() {
 	const { setColorScheme } = useColorScheme()
