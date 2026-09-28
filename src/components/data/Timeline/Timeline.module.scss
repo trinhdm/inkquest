@@ -50,7 +50,7 @@
 		display: block;
 		height: var(--inkq-icon-sm);
 		position: relative;
-		transition: border-color 260ms var(--ease-out), background 260ms var(--ease-out);
+		transition: border-color 260ms var(--easing-out), background 260ms var(--easing-out);
 		width: var(--inkq-icon-sm);
 		z-index: 2;
 	}

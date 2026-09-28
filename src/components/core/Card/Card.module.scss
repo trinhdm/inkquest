@@ -11,7 +11,7 @@
 		gap: var(--space-3);
 		opacity: 1;
 		transform: none;
-		transition: opacity 560ms var(--ease-out) 38ms, transform 560ms var(--ease-out) 38ms;
+		transition: opacity 560ms var(--easing-out) 38ms, transform 560ms var(--easing-out) 38ms;
 	}
 
 	&__image {
@@ -22,7 +22,7 @@
 		width: 100%;
 
 		&::after {
-			background: var(--inkq-background-gradient);
+			background-color: var(--inkq-background-gradient);
 			content: '';
 			display: block;
 			height: 100%;

@@ -9,7 +9,7 @@ import { Menu } from '../../Menu'
 import type { Orientation } from '@/types/shared'
 import classes from '../Footer.module.scss'
 
-const NAME = 'FooterArea' as const
+const NAME = 'Footer.Area' as const
 
 interface FooterAreaProps {
 	items: readonly FooterNavGroup[]

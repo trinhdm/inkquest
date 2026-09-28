@@ -1,5 +1,5 @@
 body {
-	background: var(--inkq-background-page);
+	background-color: var(--inkq-background-page);
 	color: var(--inkq-color-text);
 	font: var(--inkq-text-body);
 	font-smooth: antialiased;
@@ -88,7 +88,7 @@ ul {
 }
 
 ::selection {
-	background: var(--inkq-color-action-select, var(--inkq-color-action));
+	background-color: var(--inkq-color-action-select, var(--inkq-color-action));
 	color: var(--inkq-color-text-on-accent);
 }
 
@@ -130,7 +130,7 @@ ul {
 	row-gap: var(--space-1);
 
 	&--block {
-		background: var(--inkq-background-card);
+		background-color: var(--inkq-background-card);
 		border: 1px solid var(--inkq-border);
 		border-radius: var(--inkq-border-radius-md);
 		height: 100%;
@@ -197,7 +197,7 @@ ul {
 
 
 .inkq-rail {
-	background: var(--inkq-color-action);
+	background-color: var(--inkq-color-action);
 	height: .125rem;
 	inset: 0 0 auto 0;
 	position: absolute;

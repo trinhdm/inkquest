@@ -72,7 +72,8 @@ export const Logo = polymorphic<LogoSpecs>(_props => {
 	return (
 		<Box
 			{ ...styles('root') }
-			{ ...others } as={ Link }
+			{ ...others }
+			as={ Link }
 			href={ href as Route<typeof href> }
 		>
 			<Image
