@@ -14,11 +14,15 @@ interface TableRowProps {
 interface TableRowSpecs {
 	isCompound: true
 	props: TableRowProps
+	selectors: TableRowSelectors
 }
+
+type TableRowSelectors =
+	| 'root'
 
 export const TableRow = polymorphic<TableRowSpecs>(_props => {
 	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props })
+	const styles = useStyles<TableRowSpecs>(NAME, { classes, props })
 
 	const { children, ...rest } = props
 	const others = extractOtherProps(rest)

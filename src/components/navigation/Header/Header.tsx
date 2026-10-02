@@ -30,12 +30,16 @@ interface HeaderSpecs {
 		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: HeaderProps
+	selectors: HeaderSelectors
 }
+
+type HeaderSelectors =
+	| 'root'
 
 export const Header = polymorphic<HeaderSpecs>(_props => {
 	const pathname = usePathname()
 	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props })
+	const styles = useStyles<HeaderSpecs>(NAME, { classes, props })
 
 	const {
 		as,

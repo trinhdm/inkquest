@@ -25,15 +25,19 @@ interface TableSpecs {
 		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: TableProps
+	selectors: TableSelectors
 	subcomponents: {
 		Cell: typeof TableCell
 		Row: typeof TableRow
 	}
 }
 
+type TableSelectors =
+	| 'root'
+
 export const Table = polymorphic<TableSpecs>(_props => {
 	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props })
+	const styles = useStyles<TableSpecs>(NAME, { classes, props })
 
 	const { children, ...rest } = props
 	const others = extractOtherProps(rest)

@@ -24,11 +24,17 @@ interface FooterNavGroup
 interface FooterAreaSpecs {
 	isCompound: true
 	props: FooterAreaProps
+	selectors: FooterSelectors
 }
+
+type FooterSelectors =
+	| 'root' | 'wrapper'
+	| 'content'
+	| 'navigation' | 'group' | 'label' | 'menu'
 
 export const FooterArea = polymorphic<FooterAreaSpecs>(_props => {
 	const props = useProps(NAME, _props)
-	const styles = useStyles('footer', { classes, props })
+	const styles = useStyles<FooterAreaSpecs>('footer', { classes, props })
 
 	const { children, items, ...rest } = props
 	const others = extractOtherProps(rest)

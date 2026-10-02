@@ -58,19 +58,28 @@ interface CompoundGroupProps {
 	valuesCtx?: never
 }
 
-interface NamedGroupProps<Ctx extends GroupContext = GroupContext>  {
+interface NamedGroupProps<
+	Ctx extends GroupContext = GroupContext,
+	N extends string = string,
+> {
 	childName: string
-	provider?: RootProviderFn<Ctx>
+	provider?: RootProviderFn<Ctx, N>
 	valuesCtx?: Partial<Ctx>
 }
 
-type NestedGroupProps<Ctx extends GroupContext = GroupContext> =
+type NestedGroupProps<
+	Ctx extends GroupContext = GroupContext,
+	N extends string = string,
+> =
 	| CompoundGroupProps
-	| NamedGroupProps<Ctx>
+	| NamedGroupProps<Ctx, N>
 
-type GroupProps<Ctx extends GroupContext = GroupContext> =
+type GroupProps<
+	Ctx extends GroupContext = GroupContext,
+	N extends string = string,
+> =
 	& BaseGroupProps
-	& NestedGroupProps<Ctx>
+	& NestedGroupProps<Ctx, N>
 	& MaybeAnimationProps
 
 type GroupSpecs = {
@@ -78,12 +87,16 @@ type GroupSpecs = {
 		as: typeof TAG
 		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
-	props: GroupProps
+	props: GroupProps<GroupContext, typeof NAME>
+	selectors: GroupSelectors
 	subcomponents: {
 		Item: typeof GroupItem
 	}
 	tokens: GroupTokens
 }
+
+type GroupSelectors =
+	| 'root'
 
 type GroupTokens = {
 	root:
@@ -171,9 +184,11 @@ export const GroupBase = polymorphic<GroupSpecs>(_props => {
 }, classes)
 
 type GroupComponent =
-	& (<Ctx extends GroupContext, U extends ElementType = typeof TAG>(
-		props: PolymorphicProps<GroupProps<Ctx>, U>
-	) => ReactElement)
+	& (<
+		Ctx extends GroupContext,
+		U extends ElementType = typeof TAG,
+		N extends string = typeof NAME,
+	>(props: PolymorphicProps<GroupProps<Ctx, N>, U>) => ReactElement)
 	& typeof GroupBase
 
 export const Group = GroupBase as unknown as GroupComponent
@@ -184,7 +199,10 @@ Group.setDefaults({ props: DEFAULT_PROPS })
 
 export declare namespace Group {
 	export type Context = GroupContext
-	export type Props<Ctx extends GroupContext = GroupContext> = GroupProps<Ctx>
+	export type Props<
+		Ctx extends GroupContext = GroupContext,
+		N extends string = typeof NAME,
+	> = GroupProps<Ctx, N>
 	export type Specs = GroupSpecs
 
 	export namespace Item {

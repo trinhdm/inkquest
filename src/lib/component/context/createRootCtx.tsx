@@ -4,31 +4,50 @@ import {
 } from 'react'
 import type { NoExcessKeys } from './props.types'
 
-export interface RootProviderProps<T, V extends T = T> {
-	baseName?: string
-    children: ReactNode
-    rootName?: string
-    unstyled?: boolean
-    value: V & NoExcessKeys<T, V>
+export interface RootProviderProps<
+	T,
+	V extends T = T,
+	N extends string = string,
+> {
+	children: ReactNode
+	rootName?: N
+	unstyled?: boolean
+	value: V & NoExcessKeys<T, V>
 }
 
-export type RootProviderFn<T> =
-	<V extends T>(props: RootProviderProps<T, V>) => ReactElement
+export type BaseName<C extends string, N extends string> =
+	C extends N
+		? Lowercase<N>
+		: C extends `${N}.${infer Rest}`
+			? Lowercase<Rest>
+			: C extends `${N}${infer Rest}`
+				? Lowercase<Rest>
+				: Lowercase<C>
 
-export type RootCtxValue<T> =
-	T & Required<Pick<RootProviderProps<T>, 'baseName' | 'rootName'>>
+export type RootCtxValue<T, N extends string = string, C extends string = N> =
+	T & {
+		baseName: BaseName<C, N>
+		rootName: N
+	}
 
-export type SafeRootCtxValue<T> =
-	(T & Required<Pick<RootProviderProps<T>, 'rootName'>>) | null
+export type SafeRootCtxValue<T, N extends string = string> =
+	| (T & Required<Pick<RootProviderProps<T, T, N>, 'rootName'>>)
+	| null
 
-export const createRootCtx = <T extends object>(name: string) => {
-	const RootCtx = createContext<SafeRootCtxValue<T>>(null)
+export type RootProviderFn<T, N extends string = string> =
+	<V extends T>(props: RootProviderProps<T, V, N>) => ReactElement
+
+export const createRootCtx = <
+	T extends object,
+	N extends string = string,
+>(name: N) => {
+	const RootCtx = createContext<SafeRootCtxValue<T, N>>(null)
 
 	const RootProvider = <V extends T>({
 		children,
 		rootName,
 		value,
-	}: RootProviderProps<T, V>) => {
+	}: RootProviderProps<T, V, N>) => {
 		const ctxValue = useMemo(
 			() => ({ ...value, rootName: rootName ?? name }),
 			[rootName, value]
@@ -37,16 +56,16 @@ export const createRootCtx = <T extends object>(name: string) => {
 		return <RootCtx value={ ctxValue }>{ children }</RootCtx>
 	}
 
-	const useRootCtx = (componentName: string): RootCtxValue<T> => {
+	const useRootCtx = <C extends string>(componentName: C): RootCtxValue<T, N, C> => {
 		const ctx = use(RootCtx)
 
 		if (ctx === null)
 			throw new Error(`<${componentName} /> must be rendered inside <${name}>`)
 
 		const { rootName } = ctx
-		let baseName = rootName
+		let baseName: string = rootName
 
-		if (rootName !== componentName) {
+		if ((rootName as string) !== componentName) {
 			const compoundName = componentName.replace(rootName, ''),
 				index = compoundName.startsWith('.') ? 1 : 0
 			baseName = compoundName.slice(index)
@@ -54,10 +73,10 @@ export const createRootCtx = <T extends object>(name: string) => {
 
 		baseName = baseName.toLowerCase()
 
-		return { ...ctx, baseName }
+		return { ...ctx, baseName } as RootCtxValue<T, N, C>
 	}
 
-	const useSafeRootCtx = (): SafeRootCtxValue<T> =>
+	const useSafeRootCtx = (): SafeRootCtxValue<T, N> =>
 		use(RootCtx)
 
 	/** Fills keys absent from `_props` with context values. Own prop always wins. */
@@ -68,7 +87,7 @@ export const createRootCtx = <T extends object>(name: string) => {
 	// invert the precedence — `useRootProps` below is the only door in.
 	const inheritProps = <P extends object>(
 		_props: P,
-		ctx: SafeRootCtxValue<T>
+		ctx: SafeRootCtxValue<T, N>,
 	): P => {
 		if (!ctx) return _props
 
@@ -90,10 +109,9 @@ export const createRootCtx = <T extends object>(name: string) => {
 		return { ...inherited, ..._props }
 	}
 
-	// refactor: NEW — the third hook. Reads the context AND applies the
-	// guarded merge in one call, so a consumer just does
-	// `useProps(NAME, useRootProps(_props))` with no way to get the
-	// precedence or the guard wrong
+	// reads the context AND applies the guarded merge in one call,
+	// so a consumer just does `useProps(NAME, useRootProps(_props))`
+	// with no way to get the precedence or the guard wrong
 	const useRootProps = <P extends object>(_props: P): P =>
 		inheritProps(_props, use(RootCtx))
 

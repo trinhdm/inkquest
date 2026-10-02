@@ -2,7 +2,7 @@
 
 import { useProps, extractOtherProps } from '@/hooks/useProps'
 import { useStyles } from '@/hooks/useStyles'
-import { filterNavigation, NavRoute, type NavigationGroup } from '@/utils/navigation'
+import { filterNavigation, type NavigationGroup } from '@/utils/navigation'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import { Menu } from '../Menu'
@@ -25,15 +25,19 @@ interface SubnavSpecs {
 		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: SubnavProps
+	selectors: SubnavSelectors
 }
+
+type SubnavSelectors =
+	| 'root' | 'wrapper' | 'inner'
+	| 'label' | 'menu'
 
 export const Subnav = polymorphic<SubnavSpecs>(_props => {
 	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props })
+	const styles = useStyles<SubnavSpecs>(NAME, { classes, props })
 
 	const { as, category, routes, ...rest } = props
 	const others = extractOtherProps(rest)
-
 	const navitems = filterNavigation(routes, 'breadcrumbs')
 
 	if (!navitems.length) return null

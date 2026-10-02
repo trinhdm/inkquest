@@ -41,11 +41,16 @@ interface StatisticSpecs {
 		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: StatisticProps
+	selectors: StatisticSelectors
 	subcomponents: {
 		Group: typeof StatisticGroup
 	}
 	tokens: StatisticTokens
 }
+
+type StatisticSelectors =
+	| 'root' | 'inner'
+	| 'value' | 'caption'
 
 type StatisticTokens = {
 	root:
@@ -138,6 +143,7 @@ export declare namespace Statistic {
 	export type Specs = StatisticSpecs
 
 	export namespace Group {
+		export type Context = StatisticGroup.Context
 		export type Props = StatisticGroup.Props
 		export type Specs = StatisticGroup.Specs
 	}

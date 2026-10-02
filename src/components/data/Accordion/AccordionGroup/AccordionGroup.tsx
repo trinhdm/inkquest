@@ -3,7 +3,7 @@ import { useProps, extractOtherProps } from '@/hooks/useProps'
 import { useReplayInView } from '@/hooks/animation'
 import { useStyles } from '@/hooks/useStyles'
 import { defineTokens, filterChildren, polymorphic, withProvider } from '@/lib/component'
-import { getSharedTokens, type AccordionTokens } from '../utils'
+import { getSharedTokens, type AccordionTokens as AccordionGroupTokens } from '../utils'
 import { AccordionGroupProvider } from './AccordionGroup.context'
 import { Box } from '@/components/polymorphic/Box'
 import type { AccordionGroupContext, AccordionGroupType } from './AccordionGroup.context'
@@ -31,8 +31,12 @@ type AccordionGroupSpecs = {
 	defaults: { props: PropsDefaultList<typeof DEFAULT_PROPS> }
 	isCompound: true
 	props: AccordionGroupProps
-	tokens: AccordionTokens
+	selectors: AccordionGroupSelectors
+	tokens: AccordionGroupTokens
 }
+
+type AccordionGroupSelectors =
+	| 'root'
 
 const handleOpenItems = (value?: AccordionGroupProps['defaultOpen']): number[] =>
 	typeof value === 'number'

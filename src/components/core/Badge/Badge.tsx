@@ -40,12 +40,16 @@ interface BadgeSpecs {
 		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: BadgeProps
+	selectors: BadgeSelectors
 }
+
+type BadgeSelectors =
+	| 'root' | 'inner'
 
 export const Badge = polymorphic<BadgeSpecs>(_props => {
 	useVariants(NAME)
 	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props })
+	const styles = useStyles<BadgeSpecs>(NAME, { classes, props })
 
 	const {
 		as,

@@ -22,7 +22,11 @@ interface ContainerSpecs {
 		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: ContainerProps
+	selectors: ContainerSelectors
 }
+
+type ContainerSelectors =
+	| 'root' | 'wrapper'
 
 export const Container = polymorphic<ContainerSpecs>(_props => {
 	const props = useProps(NAME, _props)

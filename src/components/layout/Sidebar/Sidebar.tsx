@@ -69,8 +69,13 @@ interface SidebarSpecs {
 		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: SidebarProps
+	selectors: SidebarSelectors
 	tokens: SidebarTokens
 }
+
+type SidebarSelectors =
+	| 'root' | 'inner' | 'wrapper' | 'rail'
+	| 'button' | 'item'
 
 type SidebarTokens = {
 	rail:

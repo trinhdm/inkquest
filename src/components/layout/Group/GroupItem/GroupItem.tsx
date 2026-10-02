@@ -15,12 +15,16 @@ interface GroupItemProps {
 interface GroupItemSpecs {
 	isCompound: true
 	props: GroupItemProps
+	selectors: GroupItemSelectors
 }
+
+type GroupItemSelectors =
+	| 'item'
 
 export const GroupItem = polymorphic<GroupItemSpecs>(_props => {
 	const { baseName, rootName } = useGroupCtx(NAME)
 	const props = useProps(NAME, _props)
-	const styles = useStyles(rootName, { classes, props })
+	const styles = useStyles<GroupItemSpecs>(rootName, { classes, props })
 
 	const { children, ...rest } = props
 	const others = extractOtherProps(rest)

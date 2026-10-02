@@ -23,11 +23,16 @@ interface QuoteSpecs {
 		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: QuoteProps
+	selectors: QuoteSelectors
 }
+
+type QuoteSelectors =
+	| 'root' | 'rail'
+	| 'content' | 'caption'
 
 export const Quote = polymorphic<QuoteSpecs>(_props => {
 	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props })
+	const styles = useStyles<QuoteSpecs>(NAME, { classes, props })
 
 	const { as, author, content, ...rest } = props
 	const others = extractOtherProps(rest)

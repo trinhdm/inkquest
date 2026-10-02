@@ -18,8 +18,12 @@ interface AccordionContentSpecs {
 	context: Accordion.Context
 	isCompound: true
 	props: AccordionContentProps
+	selectors: AccordionContentSelectors
 	tokens: AccordionContentTokens
 }
+
+type AccordionContentSelectors =
+	| 'root' | 'wrapper' | 'inner'
 
 type AccordionContentTokens = {
 	root:

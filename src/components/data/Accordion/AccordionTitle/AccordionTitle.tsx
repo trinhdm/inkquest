@@ -20,8 +20,12 @@ interface AccordionTitleSpecs {
 	context: Accordion.Context
 	isCompound: true
 	props: AccordionTitleProps
+	selectors: AccordionTitleSelectors
 	tokens: AccordionTitleTokens
 }
+
+type AccordionTitleSelectors =
+	| 'root' | 'step' | 'text' | 'indicator'
 
 type AccordionTitleTokens = {
 	root:

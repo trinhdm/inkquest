@@ -33,14 +33,20 @@ interface FooterSpecs {
 		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: FooterProps
+	selectors: FooterSelectors
 	subcomponents: {
 		Area: typeof FooterArea
 	}
 }
 
+type FooterSelectors =
+	| 'root'
+	| 'info' | 'tagline' | 'socials'
+	| 'legal'
+
 export const Footer = polymorphic<FooterSpecs>(_props => {
 	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props })
+	const styles = useStyles<FooterSpecs>(NAME, { classes, props })
 
 	const { as, children, items, socials, ...rest } = props
 	const others = extractOtherProps(rest)

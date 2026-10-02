@@ -31,11 +31,15 @@ interface GridSpecs {
 		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: GridProps
+	selectors: GridSelectors
 	subcomponents: {
 		Item: typeof GridItem
 	}
 	tokens: GridTokens
 }
+
+type GridSelectors =
+	| 'root'
 
 type GridTokens = {
 	root:

@@ -53,11 +53,18 @@ type SectionProps =
 interface SectionSpecs {
 	defaults: { props: PropsDefaultList<typeof DEFAULT_PROPS> }
 	props: SectionProps
+	selectors: SectionSelectors
 	subcomponents: {
 		Button: typeof Button
 	}
 	tokens: SectionTokens
 }
+
+type SectionSelectors =
+	| 'root' | 'inner'
+	| 'eyebrow' | 'title'
+	| 'description' | 'body'
+	| 'cta'
 
 type SectionTokens = {
 	root:

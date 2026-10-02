@@ -24,11 +24,15 @@ type StatisticGroupSpecs = {
 	defaults: { props: PropsDefaultList<typeof DEFAULT_PROPS> }
 	isCompound: true
 	props: StatisticGroupProps
+	selectors: StatisticGroupSelectors
 }
+
+type StatisticGroupSelectors =
+	| 'root'
 
 export const StatisticGroup = polymorphic<StatisticGroupSpecs>(_props => {
 	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props })
+	const styles = useStyles<StatisticGroupSpecs>(NAME, { classes, props })
 
 	const { children, order, size, ...rest } = props
 	const others = extractOtherProps(rest, GROUP_CASCADE_PROPS)
@@ -52,5 +56,6 @@ StatisticGroup.setDefaults({ props: DEFAULT_PROPS })
 export declare namespace StatisticGroup {
 	export type Context = StatisticGroupContext
 	export type Props = StatisticGroupProps
+	export type Selectors = StatisticGroupSelectors
 	export type Specs = StatisticGroupSpecs
 }

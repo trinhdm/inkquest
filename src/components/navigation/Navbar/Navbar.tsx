@@ -28,11 +28,16 @@ interface NavbarSpecs {
 		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: NavbarProps
+	selectors: NavbarSelectors
 }
+
+type NavbarSelectors =
+	| 'root' | 'wrapper' | 'inner'
+	| 'col' | 'menu'
 
 export const Navbar = polymorphic<NavbarSpecs>(_props => {
 	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props })
+	const styles = useStyles<NavbarSpecs>(NAME, { classes, props })
 
 	const { as, routes, ...rest } = props
 	const others = extractOtherProps(rest)

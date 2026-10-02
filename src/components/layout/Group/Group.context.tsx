@@ -8,4 +8,4 @@ export const {
 	RootProvider: GroupProvider,
 	useRootCtx: useGroupCtx,
 	useRootProps: useGroupProps,
-} = createRootCtx<GroupContext>('Group')
+} = createRootCtx<GroupContext, 'Group'>('Group')

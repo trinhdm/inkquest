@@ -25,14 +25,18 @@ interface TimelineSpecs {
 		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: TimelineProps
+	selectors: TimelineSelectors
 	subcomponents: {
 		Item: typeof TimelineItem
 	}
 }
 
+type TimelineSelectors =
+	| 'root'
+
 export const Timeline = polymorphic<TimelineSpecs>(_props => {
 	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props })
+	const styles = useStyles<TimelineSpecs>(NAME, { classes, props })
 
 	const { as, children, ...rest } = props
 	const others = extractOtherProps(rest)

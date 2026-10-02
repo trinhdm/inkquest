@@ -24,12 +24,16 @@ type ButtonSectionProps = (
 type ButtonSectionSpecs = {
 	isCompound: true
 	props: ButtonSectionProps
+	selectors: ButtonSectionSelectors
 }
+
+type ButtonSectionSelectors =
+	| 'section'
 
 export const ButtonSection = polymorphic<ButtonSectionSpecs>(_props => {
 	const { baseName, rootName } = useButtonCtx(NAME)
 	const props = useProps(NAME, _props)
-	const styles = useStyles(rootName, { classes, props })
+	const styles = useStyles<ButtonSectionSpecs>(rootName, { classes, props })
 
 	const { children, left, right, ...rest } = props
 	const others = extractOtherProps(rest)

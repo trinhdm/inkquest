@@ -8,4 +8,4 @@ export const {
 	RootProvider: ButtonProvider,
 	useRootCtx: useButtonCtx,
 	useRootProps: useButtonProps,
-} = createRootCtx<ButtonContext>('Button')
+} = createRootCtx<ButtonContext, 'Button'>('Button')

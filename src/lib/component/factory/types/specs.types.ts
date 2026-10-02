@@ -76,6 +76,11 @@ export type SpecsDefaultProps<S> =
 		? Extract<K, keyof P>
 		: never
 
+export type SpecsSelectors<S> =
+	'selectors' extends keyof S
+		? NonNullable<S['selectors']>
+		: never
+
 type _TokensGroup<V> = {
 	[K in keyof V]: V[K] extends CSSVariable
 		? Record<V[K], number | string | undefined>

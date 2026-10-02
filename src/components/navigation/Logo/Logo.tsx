@@ -51,12 +51,16 @@ interface LogoConfig {
 interface LogoSpecs {
 	defaults: { props: PropsDefaultList<typeof DEFAULT_PROPS> }
 	props: LogoProps
+	selectors: LogoSelectors
 }
+
+type LogoSelectors =
+	| 'root' | 'image'
 
 export const Logo = polymorphic<LogoSpecs>(_props => {
 	const { colorScheme } = useColorScheme()
 	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props })
+	const styles = useStyles<LogoSpecs>(NAME, { classes, props })
 
 	const {
 		alt,

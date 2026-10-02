@@ -45,11 +45,15 @@ interface TextInputSpecs {
 		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: TextInputProps
+	selectors: TextInputSelectors
 }
+
+type TextInputSelectors =
+	| 'root'
 
 export const TextInput = polymorphic<TextInputSpecs>(_props => {
 	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props })
+	const styles = useStyles<TextInputSpecs>(NAME, { classes, props })
 
 	const {
 		disabled,

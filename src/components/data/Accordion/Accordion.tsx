@@ -47,6 +47,7 @@ interface AccordionSpecs {
 		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: AccordionProps
+	selectors: AccordionSelectors
 	subcomponents: {
 		Group: typeof AccordionGroup
 		Content: typeof AccordionContent
@@ -54,6 +55,9 @@ interface AccordionSpecs {
 	}
 	tokens: AccordionTokens
 }
+
+type AccordionSelectors =
+	| 'root' | 'wrapper' | 'divider'
 
 const buildAccordion = (children: AccordionProps['children']) => {
 	const childNames = [AccordionTitle.displayName, AccordionContent.displayName]

@@ -55,7 +55,11 @@ interface IconSpecs {
 		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: IconProps
+	selectors: IconSelectors
 }
+
+type IconSelectors =
+	| 'root' | 'glyph'
 
 const isSocialIcon = (type: IconProps['type']): type is SocialBrand =>
 	!keyHasValue(ICON_MAP, type)
@@ -109,7 +113,7 @@ const configSocialIcon = ({ color, strokeWidth, type }: IconProps): SvgProps | u
 
 const buildIcon = (
 	props: IconProps,
-	styles: ReturnType<typeof useStyles>,
+	styles: ReturnType<typeof useStyles<IconSpecs>>,
 ) => {
 	const { color, filled, href, size, type, ...rest } = props
 	const others = extractOtherProps(rest)
@@ -155,7 +159,7 @@ const buildIcon = (
 
 export const Icon = polymorphic<IconSpecs>(_props => {
 	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props })
+	const styles = useStyles<IconSpecs>(NAME, { classes, props })
 
 	const iconEl = buildIcon(props, styles)
 	if (!iconEl) return null

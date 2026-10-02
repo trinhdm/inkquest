@@ -46,7 +46,9 @@ describe('Group', () => {
 	it('registers childName, divider, and provider as its own defaults', () => {
 		// Read from `Group.tsx`'s own `Group.setDefaults({...})` call, rather
 		// than hand-typing a guess at what it registers.
-		const defaults = getDefaultProps<Group.Props & { provider?: RootProviderFn<Group.Context> }>('Group')
+		const defaults = getDefaultProps<
+			Group.Props & { provider?: RootProviderFn<Group.Context, 'Group'> }
+		>('Group')
 
 		expect(defaults).toEqual({
 			as: 'div',

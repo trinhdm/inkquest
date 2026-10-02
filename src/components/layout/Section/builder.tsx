@@ -17,7 +17,7 @@ interface BuildSectionConfig {
 	id: string
 	props: Section.Props & { id?: string }
 	reveal: RevealCounter
-	styles: ReturnType<typeof useStyles>
+	styles: ReturnType<typeof useStyles<Section.Specs>>
 }
 
 const buildHeader = ({ id, props, reveal, styles }: BuildSectionConfig): ReactNode[] => {

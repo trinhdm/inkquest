@@ -66,15 +66,20 @@ interface ButtonSpecs {
 		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: ButtonProps
+	selectors: ButtonSelectors
 	subcomponents: {
 		Group: typeof ButtonGroup
 		Section: typeof ButtonSection
 	}
 }
 
+type ButtonSelectors =
+	| 'root' | 'inner'
+	| 'icon' | 'label'
+
 const buildSections = (
 	children: ButtonProps['children'],
-	styles: ReturnType<typeof useStyles>
+	styles: ReturnType<typeof useStyles<ButtonSpecs>>,
 ) => {
 	const label: ReactNode[] = []
 	let left: ReactNode = null,
@@ -106,7 +111,7 @@ const buildSections = (
 export const Button = polymorphic<ButtonSpecs>(_props => {
 	useVariants(NAME)
 	const props = useProps(NAME, useButtonGroupProps(_props))
-	const styles = useStyles(NAME, { classes, props })
+	const styles = useStyles<ButtonSpecs>(NAME, { classes, props })
 
 	const {
 		as,

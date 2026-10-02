@@ -14,11 +14,15 @@ interface GridItemProps {
 interface GridItemSpecs {
 	isCompound: true
 	props: GridItemProps
+	selectors: GridItemSelectors
 }
+
+type GridItemSelectors =
+	| 'root'
 
 export const GridItem = polymorphic<GridItemSpecs>(_props => {
 	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props })
+	const styles = useStyles<GridItemSpecs>(NAME, { classes, props })
 
 	const { children, ...rest } = props
 	const others = extractOtherProps(rest)

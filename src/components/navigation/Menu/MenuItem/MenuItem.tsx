@@ -36,7 +36,11 @@ interface MenuItemSpecs {
 		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: MenuItemProps
+	selectors: MenuItemSelectors
 }
+
+type MenuItemSelectors =
+	| 'root' | 'label' | 'trigger'
 
 const getSubmenuItems = (root: HTMLLIElement | null) =>
 	Array.from(
@@ -51,7 +55,7 @@ const isCurrentRoute = (
 
 const MenuLabel = (
 	item: NavigationItem,
-	styles: ReturnType<typeof useStyles>,
+	styles: ReturnType<typeof useStyles<MenuItemSpecs>>,
 	isActive = false,
 ) => {
 	const sharedProps = {
@@ -81,7 +85,7 @@ const MenuLabel = (
 
 export const MenuItem = polymorphic<MenuItemSpecs>(_props => {
 	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props })
+	const styles = useStyles<MenuItemSpecs>(NAME, { classes, props })
 
 	const timeoutRef = useRef<NodeJS.Timeout>(null)
 	const itemRef = useRef<HTMLLIElement>(null)

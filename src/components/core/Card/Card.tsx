@@ -29,11 +29,17 @@ interface CardSpecs {
 		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: CardProps
+	selectors: CardSelectors
 }
+
+type CardSelectors =
+	| 'root' | 'wrapper'
+	| 'image' | 'image-caption'
+	| 'info' | 'title' | 'caption'
 
 export const Card = polymorphic<CardSpecs>(_props => {
 	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props })
+	const styles = useStyles<CardSpecs>(NAME, { classes, props })
 
 	const {
 		as,

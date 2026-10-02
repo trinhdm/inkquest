@@ -37,7 +37,11 @@ type ButtonGroupSpecs = {
 	defaults: { props: PropsDefaultList<typeof DEFAULT_PROPS> }
 	isCompound: true
 	props: ButtonGroupProps
+	selectors: ButtonGroupSelectors
 }
+
+type ButtonGroupSelectors =
+	| 'root'
 
 const derivePriority = (index: number): Button.Priority => {
 	const max = PRIORITY_ROLES.length,
@@ -47,7 +51,7 @@ const derivePriority = (index: number): Button.Priority => {
 
 export const ButtonGroup = polymorphic<ButtonGroupSpecs>(_props => {
 	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props })
+	const styles = useStyles<ButtonGroupSpecs>(NAME, { classes, props })
 
 	const {
 		children,

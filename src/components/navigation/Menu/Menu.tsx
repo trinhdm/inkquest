@@ -32,12 +32,16 @@ interface MenuSpecs {
 		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: MenuProps
+	selectors: MenuSelectors
 }
+
+type MenuSelectors =
+	| 'root'
 
 export const Menu = polymorphic<MenuSpecs>(_props => {
 	const pathname = usePathname()
 	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props })
+	const styles = useStyles<MenuSpecs>(NAME, { classes, props })
 
 	const {
 		activeItem,
