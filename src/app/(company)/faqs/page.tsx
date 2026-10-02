@@ -1,11 +1,13 @@
 'use client'
 
+import Link from 'next/link'
 import { useOptimistic, useTransition, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { FaqCategory } from './FaqCategory'
 import { Grid } from '@/components/layout/Grid'
 import { Section } from '@/components/layout/Section'
 import { Sidebar } from '@/components/layout/Sidebar'
+import { TextInput } from '@/components/form/TextInput'
 import { FAQ_CATEGORIES, FAQ_PARAM, faqCategoryUrl, resolveFaqGroup } from './faqs.data'
 import './faqs.scss'
 
@@ -36,7 +38,9 @@ export default function FAQs() {
 				layout="hero"
 				title="Questions, answered."
 			>
-				Everything about bidding, booking, verification, and payouts — for clients, artists, and studios. Can't find it? Message us.
+				<>Everything about bidding, booking, verification, and payouts — for clients, artists, and studios. Can't find it? <Link href="/messages" data-cta>Message us</Link>.</>
+
+				<TextInput placeholder="Search questions" />
 			</Section>
 
 			<Section

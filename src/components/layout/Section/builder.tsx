@@ -55,6 +55,7 @@ const orderSection = ({
 	reveal,
 }: Omit<BuildSectionConfig, 'styles'>) => {
 	const buttons: ReactNode[] = [],
+		cta: ReactNode[] = [],
 		items: ReactNode[] = []
 
 	Children.toArray(children).forEach((child, index) => {
@@ -68,17 +69,18 @@ const orderSection = ({
 
 			if (isValidElement(child)) {
 				if (child.type === Fragment) items.push(desc)
+				else if (child.type === TextInput) cta.push(child)
 				else if (child.type !== Button) items.push(child)
 				else if (buttons.length < 2) buttons.push(child)
 			}
 		}
 	})
 
-	return { buttons, items }
+	return { buttons, cta, items }
 }
 
 const buildContent = ({ id, props, reveal, styles }: BuildSectionConfig): ReactNode[] => {
-	const { buttons, items } = orderSection({ id, props, reveal })
+	const { buttons, cta, items } = orderSection({ id, props, reveal })
 	const content: ReactNode[] = []
 
 	if (!!items?.length) {
@@ -104,10 +106,15 @@ const buildContent = ({ id, props, reveal, styles }: BuildSectionConfig): ReactN
 		content.push(body)
 	}
 
+	if (!!cta?.length) {
+		const footer = <div key={ `${id}-cta` } { ...styles('cta') }>{ cta }</div>
+		content.push(footer)
+	}
+
 	if (!!buttons?.length) {
-		const cta = (
+		const footer = (
 			<Button.Group
-				key={ `${id}-cta` }
+				key={ `${id}-buttons` }
 				{ ...styles('cta') }
 				hasPriority={ buttons.length > 1 }
 				revealFrom={ reveal.reserve(buttons.length) }
@@ -117,7 +124,7 @@ const buildContent = ({ id, props, reveal, styles }: BuildSectionConfig): ReactN
 			</Button.Group>
 		)
 
-		content.push(cta)
+		content.push(footer)
 	}
 
 	return content

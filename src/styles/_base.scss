@@ -92,17 +92,43 @@ ul {
 	color: var(--inkq-color-text-on-accent);
 }
 
-:focus-visible {
-	border-radius: var(--inkq-border-radius-chip);
-	outline: 2px solid var(--inkq-color-action);
-	outline-offset: .125rem;
+input,
+select,
+textarea {
+	--form-control-border: 1px;
+
+    background-color: var(--inkq-background-card);
+    border-radius: var(--inkq-border-radius-md);
+    border: var(--form-control-border) solid var(--inkq-border);
+    box-shadow: none;
+	color: var(--inkq-color-link);
+	font: var(--inkq-text-body);
+    transition: border-color var(--duration-fast),
+		box-shadow var(--duration-fast);
+
+	&::placeholder {
+		color: var(--inkq-color-link-focus);
+	}
+
+	&:hover {
+		border-color: var(--inkq-border-strong);
+	}
+
+	&:focus-visible {
+		border-color: var(--inkq-color-action);
+		box-shadow: 0 0 0 calc(var(--space-1) - var(--form-control-border)) rgb(from var(--inkq-color-action) r g b / .25);
+		outline: 0 solid transparent;
+	}
 }
 
-// button:focus-visible {
-// 	border: none;
-// 	border-color: transparent;
-// 	border-image-width: 0;
-// }
+a,
+button {
+	&:focus-visible {
+		border-radius: var(--inkq-border-radius-chip);
+		outline: 2px solid var(--inkq-color-action);
+		outline-offset: .125rem;
+	}
+}
 
 :disabled,
 [aria-disabled="true"],

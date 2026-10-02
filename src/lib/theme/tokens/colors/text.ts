@@ -1,5 +1,6 @@
 import { alias } from '../../reference'
 import { byScheme } from '../utils'
+import type { TokenStateHues } from '../../types'
 
 export interface TextColorTokens {
 	text: {
@@ -11,10 +12,7 @@ export interface TextColorTokens {
 			accent: string
 		}
 	}
-	link: {
-		base: string
-		hover: string
-	}
+	link: Pick<TokenStateHues, 'base' | 'hover' | 'focus' | 'disable'>
 }
 
 export const getTextColorTokens = (
@@ -35,6 +33,8 @@ export const getTextColorTokens = (
 		link: {
 			base: alias.secondary('shade'),
 			hover: alias.secondary('tint'),
+			focus: alias.secondary('muted'),
+			disable: alias.secondary('dim'),
 		},
 	}
 }
