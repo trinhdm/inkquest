@@ -52,7 +52,6 @@ export const Table = polymorphic<TableSpecs>((_props, { useProps, useStyles }) =
 	)
 }, { name: NAME, classes })
 
-Table.displayName = NAME
 Table.Cell = TableCell
 Table.Row = TableRow
 Table.setDefaults({ props: DEFAULT_PROPS })

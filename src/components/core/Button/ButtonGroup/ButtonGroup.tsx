@@ -100,7 +100,6 @@ export const ButtonGroup = polymorphic<ButtonGroupSpecs>((_props, { useProps, us
 	)
 }, { name: NAME, classes })
 
-ButtonGroup.displayName = NAME
 ButtonGroup.setDefaults({ props: DEFAULT_PROPS })
 
 export declare namespace ButtonGroup {

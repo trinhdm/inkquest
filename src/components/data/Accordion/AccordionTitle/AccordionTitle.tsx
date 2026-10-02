@@ -118,7 +118,6 @@ export const AccordionTitle = polymorphic<AccordionTitleSpecs>((_props, { usePro
 	)
 }, { name: NAME, classes })
 
-AccordionTitle.displayName = NAME
 AccordionTitle.setDefaults({})
 
 export declare namespace AccordionTitle {

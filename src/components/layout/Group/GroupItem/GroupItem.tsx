@@ -35,7 +35,6 @@ export const GroupItem = polymorphic<GroupItemSpecs>((_props, { useProps, useSty
 	)
 }, { name: NAME, classes })
 
-GroupItem.displayName = NAME
 GroupItem.setDefaults({})
 
 export declare namespace GroupItem {

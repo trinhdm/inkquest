@@ -63,7 +63,6 @@ export const AccordionContent = polymorphic<AccordionContentSpecs>((_props, { us
 	)
 }, { name: NAME, classes })
 
-AccordionContent.displayName = NAME
 AccordionContent.setDefaults({})
 
 export declare namespace AccordionContent {

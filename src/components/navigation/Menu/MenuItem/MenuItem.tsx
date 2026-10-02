@@ -260,7 +260,6 @@ export const MenuItem = polymorphic<MenuItemSpecs>((_props, { useProps, useStyle
 	)
 }, { name: NAME, classes })
 
-MenuItem.displayName = NAME
 MenuItem.setDefaults({ props: DEFAULT_PROPS })
 
 export declare namespace MenuItem {

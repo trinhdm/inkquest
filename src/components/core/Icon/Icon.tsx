@@ -178,7 +178,6 @@ export const Icon = polymorphic<IconSpecs>((_props, { useProps, useStyles }) => 
 	return <Box { ...styles('root') } as="div">{ iconEl }</Box>
 }, { name: NAME, classes })
 
-Icon.displayName = NAME
 Icon.setDefaults({ props: DEFAULT_PROPS })
 
 export declare namespace Icon {

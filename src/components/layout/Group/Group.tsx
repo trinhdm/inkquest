@@ -192,7 +192,6 @@ type GroupComponent =
 
 export const Group = GroupBase as unknown as GroupComponent
 
-Group.displayName = NAME
 Group.Item = GroupItem
 Group.setDefaults({ props: DEFAULT_PROPS })
 

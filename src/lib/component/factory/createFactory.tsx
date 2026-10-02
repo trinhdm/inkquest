@@ -59,9 +59,9 @@ export interface MethodsBase<
 
 export type SubcomponentsBase<
 	S extends Specs,
-	List = S['subcomponents']
-> = List extends Record<string, unknown>
-	? List
+	C = S['subcomponents']
+> = C extends Record<string, unknown>
+	? C
 	: Record<string, never>
 
 type _FactoryComponent<S extends Specs> =
@@ -115,6 +115,7 @@ export const createFactory = <
 	const Render = (_props: _FactoryProps<S>) => target(_props, tooling(_props))
 	const BaseComponent = memo(Render) as unknown as FC
 
+	BaseComponent.displayName = name
 	Object.defineProperty(BaseComponent, POLYMORPHIC_MARKER, { value: true })
 
 	BaseComponent.setDefaults = defaults => {

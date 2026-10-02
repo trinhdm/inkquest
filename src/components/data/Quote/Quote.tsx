@@ -53,7 +53,6 @@ export const Quote = polymorphic<QuoteSpecs>((_props, { useProps, useStyles }) =
 	)
 }, { name: NAME, classes })
 
-Quote.displayName = NAME
 Quote.setDefaults({ props: DEFAULT_PROPS })
 
 export declare namespace Quote {

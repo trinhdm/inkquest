@@ -52,7 +52,6 @@ export const Timeline = polymorphic<TimelineSpecs>((_props, { useProps, useStyle
 	)
 }, { name: NAME, classes })
 
-Timeline.displayName = NAME
 Timeline.Item = TimelineItem
 Timeline.setDefaults({ props: DEFAULT_PROPS })
 

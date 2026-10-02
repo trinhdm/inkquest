@@ -49,7 +49,6 @@ export const Container = polymorphic<ContainerSpecs>((_props, { useProps, useSty
 	)
 }, { name: NAME, classes })
 
-Container.displayName = NAME
 Container.setDefaults({ props: DEFAULT_PROPS })
 
 export declare namespace Container {

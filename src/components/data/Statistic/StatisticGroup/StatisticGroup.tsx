@@ -49,7 +49,6 @@ export const StatisticGroup = polymorphic<StatisticGroupSpecs>((_props, { usePro
 	)
 }, { name: NAME, classes })
 
-StatisticGroup.displayName = NAME
 StatisticGroup.setDefaults({ props: DEFAULT_PROPS })
 
 export declare namespace StatisticGroup {

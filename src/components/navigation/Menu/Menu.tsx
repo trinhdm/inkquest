@@ -77,7 +77,6 @@ export const Menu = polymorphic<MenuSpecs>((_props, { useProps, useStyles }) => 
 	)
 }, { name: NAME, classes })
 
-Menu.displayName = NAME
 Menu.setDefaults({ props: DEFAULT_PROPS })
 
 export declare namespace Menu {

@@ -176,7 +176,6 @@ export const Accordion = polymorphic<AccordionSpecs>((_props, { useProps, useSty
 	)
 }, { name: NAME, classes })
 
-Accordion.displayName = NAME
 Accordion.Group = AccordionGroup
 Accordion.Title = AccordionTitle
 Accordion.Content = AccordionContent

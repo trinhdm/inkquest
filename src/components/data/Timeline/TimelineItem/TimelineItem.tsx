@@ -57,7 +57,6 @@ export const TimelineItem = polymorphic<TimelineItemSpecs>((_props, { useProps, 
 	)
 }, { name: NAME, classes })
 
-TimelineItem.displayName = NAME
 TimelineItem.setDefaults({})
 
 export declare namespace TimelineItem {

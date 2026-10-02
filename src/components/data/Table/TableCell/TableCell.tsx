@@ -37,7 +37,6 @@ export const TableCell = polymorphic<TableCellSpecs>((_props, { useProps, useSty
 	)
 }, { name: NAME, classes })
 
-TableCell.displayName = NAME
 TableCell.setDefaults({})
 
 export declare namespace TableCell {

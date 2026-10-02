@@ -37,7 +37,6 @@ export const TableRow = polymorphic<TableRowSpecs>((_props, { useProps, useStyle
 	)
 }, { name: NAME, classes })
 
-TableRow.displayName = NAME
 TableRow.setDefaults({})
 
 export declare namespace TableRow {

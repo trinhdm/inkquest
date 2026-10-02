@@ -111,7 +111,6 @@ export const Section = polymorphic<SectionSpecs>((_props, { useProps, useStyles 
 	)
 }, { name: NAME, classes })
 
-Section.displayName = NAME
 Section.Button = Button
 Section.setDefaults({ props: DEFAULT_PROPS })
 

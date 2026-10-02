@@ -133,7 +133,6 @@ export const Statistic = polymorphic<StatisticSpecs>((_props, { useProps, useSty
 	)
 }, { name: NAME, classes })
 
-Statistic.displayName = NAME
 Statistic.Group = StatisticGroup
 Statistic.setDefaults({ props: DEFAULT_PROPS })
 
