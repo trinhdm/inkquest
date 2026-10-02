@@ -1,6 +1,6 @@
 'use client'
 
-import { extractOtherProps } from '@/hooks/useProps'
+import { extractOthers } from '@/hooks/useProps'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import { FooterArea } from './FooterArea'
@@ -48,7 +48,7 @@ export const Footer = polymorphic<FooterSpecs>((_props, { useProps, useStyles })
 	const styles = useStyles(NAME, { props })
 
 	const { as, children, items, socials, ...rest } = props
-	const others = extractOtherProps(rest)
+	const others = extractOthers(rest)
 
 	const currentYear = new Date().getFullYear()
 	const socialIcons = !!socials?.length

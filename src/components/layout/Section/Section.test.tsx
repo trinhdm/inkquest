@@ -10,7 +10,7 @@ describe('Section', () => {
 	})
 
 	it('always renders the root through Container, ignoring its own "as" prop', () => {
-		// `Section.tsx` reads `others` off `extractOtherProps(rest)` but never
+		// `Section.tsx` reads `others` off `extractOthers(rest)` but never
 		// its sibling `as` — the root is hardcoded to `<Box as={Container}>`.
 		const { container } = render(
 			// `as` is typed `never` on `Section` (no `defaults.as` in its specs),

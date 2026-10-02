@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useOutsideClick } from '@/hooks/useOutsideClick'
-import { extractOtherProps } from '@/hooks/useProps'
+import { extractOthers } from '@/hooks/useProps'
 import { polymorphic } from '@/lib/component'
 import { toKebabCase } from '@/utils/helpers'
 import { Box } from '@/components/polymorphic/Box'
@@ -109,7 +109,7 @@ export const MenuItem = polymorphic<MenuItemSpecs>((_props, { useProps, useStyle
 		...rest
 	} = props
 
-	const others = extractOtherProps(rest)
+	const others = extractOthers(rest)
 	const isDropdown = !!menu?.length
 
 	const handleToggle: React.MouseEventHandler<HTMLButtonElement> = evt => {

@@ -1,7 +1,7 @@
 import { useCallback, useId, useMemo, useState, Children, type ReactNode } from 'react'
 import { useAccordionGroupProps, AccordionGroup } from './AccordionGroup'
 import { defineTokens, filterChildren, polymorphic } from '@/lib/component'
-import { extractOtherProps } from '@/hooks/useProps'
+import { extractOthers } from '@/hooks/useProps'
 import { getSharedTokens, type AccordionTokens } from './utils'
 import { toKebabCase } from '@/utils/helpers'
 import { AccordionContent } from './AccordionContent'
@@ -112,7 +112,7 @@ export const Accordion = polymorphic<AccordionSpecs>((_props, { useProps, useSty
 		...rest
 	} = props
 
-	const others = extractOtherProps(rest)
+	const others = extractOthers(rest)
 
 	const [uncontrolled, setUncontrolled] = useState(() => !!defaultOpen)
 	const isControlled = typeof open === 'boolean',

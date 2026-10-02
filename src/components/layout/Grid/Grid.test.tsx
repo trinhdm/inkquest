@@ -72,7 +72,7 @@ describe('Grid', () => {
 
 		// **Probable source bug, verified against the live `GridItem.tsx`**:
 		// `GridItem` (`isCompound: true`, no `defaults.as`) destructures only
-		// `others` off `extractOtherProps(rest)` — it never reads the sibling
+		// `others` off `extractOthers(rest)` — it never reads the sibling
 		// `as` value that call also returns, so `as` is silently discarded and
 		// the root always renders through `<Box>`'s own default, `div`.
 		it('ignores its "as" prop and always renders a div (as is never read)', () => {

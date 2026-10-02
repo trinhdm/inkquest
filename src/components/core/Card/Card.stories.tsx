@@ -64,7 +64,7 @@ const meta: Meta<CardStoryProps> = {
 		},
 		elevated: {
 			control: 'boolean',
-			description: '**Probable source bug, verified against the live `Card.tsx`**: declared on `CardProps` but never destructured or read anywhere in the component body — it falls straight through `extractOtherProps(rest)`\'s `others` and gets spread onto the rendered root element as `elevated={true}`/`elevated={false}`. Since `elevated` isn\'t a recognized DOM/ARIA attribute, React silently DROPS it (booleans on unknown attributes are not rendered) and logs a dev-mode warning instead — it never actually reaches the DOM as `elevated=""` or similar. It has no visual or behavioral effect of any kind (no class, no style, no `data-*` attribute, no rendered DOM attribute), so no story exercises it beyond this doc note — asserting "elevated" behavior here would document something the component doesn\'t actually do.',
+			description: '**Probable source bug, verified against the live `Card.tsx`**: declared on `CardProps` but never destructured or read anywhere in the component body — it falls straight through `extractOthers(rest)`\'s `others` and gets spread onto the rendered root element as `elevated={true}`/`elevated={false}`. Since `elevated` isn\'t a recognized DOM/ARIA attribute, React silently DROPS it (booleans on unknown attributes are not rendered) and logs a dev-mode warning instead — it never actually reaches the DOM as `elevated=""` or similar. It has no visual or behavioral effect of any kind (no class, no style, no `data-*` attribute, no rendered DOM attribute), so no story exercises it beyond this doc note — asserting "elevated" behavior here would document something the component doesn\'t actually do.',
 		},
 	},
 	args: {

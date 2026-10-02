@@ -1,6 +1,6 @@
 import { useAccordionCtx } from '../Accordion.context'
 import { defineTokens, polymorphic } from '@/lib/component'
-import { extractOtherProps } from '@/hooks/useProps'
+import { extractOthers } from '@/hooks/useProps'
 import { keyHasValue } from '@/utils/helpers'
 import { Box } from '@/components/polymorphic/Box'
 import type { Accordion } from '../Accordion'
@@ -43,7 +43,7 @@ export const AccordionContent = polymorphic<AccordionContentSpecs>((_props, { us
 
 	const { idx, isOpen } = useAccordionCtx(NAME)
 	const { children, ...rest } = props
-	const others = extractOtherProps(rest)
+	const others = extractOthers(rest)
 
 	return (
 		<Box

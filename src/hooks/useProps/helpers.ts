@@ -109,7 +109,7 @@ export type ExtractedOtherProps<T, K extends ReservedProp = never> =
 
 //	`keep` is the escape hatch for a component that forwards `others`
 //	to another component rather than to the DOM — i.e. `StatisticGroup`
-export const extractOtherProps = <
+export const extractOthers = <
 	T extends object,
 	E extends ElementType = ElementType,
 	K extends ReservedProp = never,

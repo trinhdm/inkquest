@@ -128,7 +128,7 @@ const meta: Meta<SidebarStoryProps> = {
 		},
 		animated: {
 			control: false,
-			description: '**Probable source gap, verified against the live `Sidebar.tsx`**: part of `SidebarProps` via `MaybeAnimationProps` (same discriminated union `Group`/`Section` use), but `Sidebar.tsx` never destructures `animated` (or `duration`/`stagger`/`amount`/`once`/`lead`/`margin`/`withinView`/`index`) out of `rest`, and calls no animation hook (`useReveal`/`useReplayInView`) at all — unlike `Group`/`Section`. `extractOtherProps` doesn\'t reserve any of these names either, so passing `animated`/`duration`/etc. lands the raw prop straight onto the root `<Box>` as a lowercase DOM attribute (same silent-passthrough class of bug as `Group`\'s documented `justify`/`lead`). No story exercises this beyond this doc note.',
+			description: '**Probable source gap, verified against the live `Sidebar.tsx`**: part of `SidebarProps` via `MaybeAnimationProps` (same discriminated union `Group`/`Section` use), but `Sidebar.tsx` never destructures `animated` (or `duration`/`stagger`/`amount`/`once`/`lead`/`margin`/`withinView`/`index`) out of `rest`, and calls no animation hook (`useReveal`/`useReplayInView`) at all — unlike `Group`/`Section`. `extractOthers` doesn\'t reserve any of these names either, so passing `animated`/`duration`/etc. lands the raw prop straight onto the root `<Box>` as a lowercase DOM attribute (same silent-passthrough class of bug as `Group`\'s documented `justify`/`lead`). No story exercises this beyond this doc note.',
 		},
 		duration: { control: false, description: 'See `animated`\'s doc note — not consumed by `Sidebar.tsx` at all.' },
 		stagger: { control: false, description: 'See `animated`\'s doc note — not consumed by `Sidebar.tsx` at all.' },

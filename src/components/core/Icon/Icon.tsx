@@ -1,4 +1,4 @@
-import { extractOtherProps } from '@/hooks/useProps'
+import { extractOthers } from '@/hooks/useProps'
 import { isExternalLink, keyHasValue } from '@/utils/helpers'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
@@ -116,7 +116,7 @@ const buildIcon = (
 	styles: StyleFn<IconSpecs>,
 ) => {
 	const { color, filled, href, size, type, ...rest } = props
-	const others = extractOtherProps(rest)
+	const others = extractOthers(rest)
 
 	const sharedProps = {
 		...others,

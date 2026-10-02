@@ -18,7 +18,7 @@ import {
 
 import { useReducedMotion } from 'framer-motion'
 import { useReplayInView } from '../useReplayInView'
-import { extractOtherProps, type ExtractedOtherProps } from '../../useProps'
+import { extractOthers, type ExtractedOtherProps } from '../../useProps'
 import { revealMargin, type ReplayAnimateInViewConfig } from '../constants'
 
 interface UseRevealOptions
@@ -42,7 +42,7 @@ export const useReveal = <T extends HTMLElement = HTMLElement>({
 	...props
 }: UseRevealOptions = {}): RevealValue<T> => {
 	const { duration, stagger, ...rest } = props
-	const others = extractOtherProps(rest)
+	const others = extractOthers(rest)
 
 	const {
 		child: dataChild,

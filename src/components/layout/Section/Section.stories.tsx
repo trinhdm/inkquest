@@ -500,7 +500,7 @@ export const FixedTag: Story = {
  * `unstyled` now ALSO reaches `Container`. `Section` never destructures
  * `unstyled` out of `rest` — neither `useReveal`'s own destructure
  * (`amount`/`animated`/`lead`/`margin`/`once`/`withinView`) nor
- * `extractOtherProps`'s reserved-key list names it — so it survives into
+ * `extractOthers`'s reserved-key list names it — so it survives into
  * `others` and is spread onto `<Box as={Container} {...others}>`. `Box.tsx`
  * itself forwards its own `unstyled` prop straight through to the `as` target
  * whenever that target carries `POLYMORPHIC_MARKER` (`isPolymorphic`'s

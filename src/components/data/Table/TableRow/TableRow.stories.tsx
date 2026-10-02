@@ -59,7 +59,7 @@ const meta: Meta<TableRowStoryProps> = {
 	argTypes: {
 		as: {
 			control: false,
-			description: 'NOT part of `Table.Row`\'s accepted props. `TableRowSpecs` declares `isCompound: true` with no `defaults.as`, which is the codebase-wide signal for a compound part with a fixed tag — `polymorphic()`\'s non-polymorphic call-signature branch then types `as` as `never`, so only `undefined` is assignable and passing a tag is a type error. `Table.Row` correspondingly hardcodes `as="tr"` on its `Box` and takes only `{ others }` from `extractOtherProps`. This is the same deliberate contract used by `Grid.Item`, `Group.Item`, `Timeline.Item`, `Table.Cell`, `Button.Section` and the `Accordion` parts (see `Table.test.tsx`, which asserts it directly) — not an oversight. See the `FixedTag` story.',
+			description: 'NOT part of `Table.Row`\'s accepted props. `TableRowSpecs` declares `isCompound: true` with no `defaults.as`, which is the codebase-wide signal for a compound part with a fixed tag — `polymorphic()`\'s non-polymorphic call-signature branch then types `as` as `never`, so only `undefined` is assignable and passing a tag is a type error. `Table.Row` correspondingly hardcodes `as="tr"` on its `Box` and takes only `{ others }` from `extractOthers`. This is the same deliberate contract used by `Grid.Item`, `Group.Item`, `Timeline.Item`, `Table.Cell`, `Button.Section` and the `Accordion` parts (see `Table.test.tsx`, which asserts it directly) — not an oversight. See the `FixedTag` story.',
 		},
 		unstyled: {
 			control: 'boolean',

@@ -1,6 +1,6 @@
 'use client'
 
-import { extractOtherProps } from '@/hooks/useProps'
+import { extractOthers } from '@/hooks/useProps'
 import { filterNavigation, type NavigationGroup } from '@/utils/navigation'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
@@ -36,7 +36,7 @@ export const Subnav = polymorphic<SubnavSpecs>((_props, { useProps, useStyles })
 	const styles = useStyles(NAME, { props })
 
 	const { as, category, routes, ...rest } = props
-	const others = extractOtherProps(rest)
+	const others = extractOthers(rest)
 	const navitems = filterNavigation(routes, 'breadcrumbs')
 
 	if (!navitems.length) return null

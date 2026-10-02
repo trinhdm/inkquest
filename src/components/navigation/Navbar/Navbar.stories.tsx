@@ -67,7 +67,7 @@ const meta: Meta<NavbarStoryProps> = {
 		},
 		as: {
 			control: false,
-			description: '`Navbar` forwards `as` to its root `<Box>` via `extractOtherProps`, so the rendered tag genuinely changes — see `AsElement`. Note `Navbar` also hardcodes `role="navigation"` on that same root `<Box>`, independent of `as` — that\'s the only reason `getAllByRole(\'navigation\')` still resolves the `as="div"`/`as="section"` cases in `AsElement`, which otherwise carry no implicit navigation landmark role.',
+			description: '`Navbar` forwards `as` to its root `<Box>` via `extractOthers`, so the rendered tag genuinely changes — see `AsElement`. Note `Navbar` also hardcodes `role="navigation"` on that same root `<Box>`, independent of `as` — that\'s the only reason `getAllByRole(\'navigation\')` still resolves the `as="div"`/`as="section"` cases in `AsElement`, which otherwise carry no implicit navigation landmark role.',
 		},
 		unstyled: {
 			control: 'boolean',
@@ -209,7 +209,7 @@ export const NoMatchingRoutes: Story = {
 }
 
 /**
- * `Navbar` forwards `as` to its root `<Box>` (via `extractOtherProps`), so the
+ * `Navbar` forwards `as` to its root `<Box>` (via `extractOthers`), so the
  * rendered tag genuinely changes. `Navbar` also hardcodes `role="navigation"`
  * on that same root `<Box>`, independent of `as` — that's the ONLY reason
  * `getAllByRole('navigation')` resolves the `as="div"`/`as="section"` cases

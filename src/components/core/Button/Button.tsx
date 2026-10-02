@@ -2,7 +2,7 @@ import { LoaderCircle } from 'lucide-react'
 import { isValidElement, useMemo, Children } from 'react'
 import { useVariants } from '@/hooks/useVariants'
 import { extractChildrenText } from '@/lib/component'
-import { extractOtherProps } from '@/hooks/useProps'
+import { extractOthers } from '@/hooks/useProps'
 import { isExternalLink, keyHasValue } from '@/utils/helpers'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
@@ -130,7 +130,7 @@ export const Button = polymorphic<ButtonSpecs>((_props, { useProps, useStyles })
 		...rest
 	} = props
 
-	const others = extractOtherProps(rest)
+	const others = extractOthers(rest)
 
 	const clsx = {
 		global: { block: fullWidth },

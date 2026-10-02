@@ -1,7 +1,7 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { extractOtherProps } from '@/hooks/useProps'
+import { extractOthers } from '@/hooks/useProps'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import { Navbar } from '../Navbar'
@@ -48,7 +48,7 @@ export const Header = polymorphic<HeaderSpecs>((_props, { useProps, useStyles })
 		...rest
 	} = props
 
-	const others = extractOtherProps(rest)
+	const others = extractOthers(rest)
 
 	const subnavRoutes = !!subnav?.routes?.length
 		? subnav.routes

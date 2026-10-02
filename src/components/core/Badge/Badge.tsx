@@ -1,5 +1,5 @@
 import { useVariants } from '@/hooks/useVariants'
-import { extractOtherProps } from '@/hooks/useProps'
+import { extractOthers } from '@/hooks/useProps'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import type { ReactNode } from 'react'
@@ -60,7 +60,7 @@ export const Badge = polymorphic<BadgeSpecs>((_props, { useProps, useStyles }) =
 		...rest
 	} = props
 
-	const others = extractOtherProps(rest)
+	const others = extractOthers(rest)
 	const data = { variant, block: !!fullWidth || null },
 		global = { block: fullWidth }
 

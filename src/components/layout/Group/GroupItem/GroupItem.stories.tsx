@@ -83,7 +83,7 @@ const meta: Meta<GroupItemStoryProps> = {
 	argTypes: {
 		as: {
 			control: false,
-			description: 'NOT part of `Group.Item`\'s accepted props. `GroupItemSpecs` declares `isCompound: true` with no `defaults.as`, which is the codebase-wide signal for a compound part with a fixed tag — `polymorphic()`\'s non-polymorphic call-signature branch then types `as` as `never`, so only `undefined` is assignable and passing a tag is a type error. `GroupItem` correspondingly hardcodes `as="div"` on its `Box` and takes only `{ others }` from `extractOtherProps`. This is the same deliberate contract used by `Grid.Item`, `Timeline.Item`, `Table.Row`/`Table.Cell`, `Button.Section` and the `Accordion` parts — not an oversight. See the `FixedTag` story.',
+			description: 'NOT part of `Group.Item`\'s accepted props. `GroupItemSpecs` declares `isCompound: true` with no `defaults.as`, which is the codebase-wide signal for a compound part with a fixed tag — `polymorphic()`\'s non-polymorphic call-signature branch then types `as` as `never`, so only `undefined` is assignable and passing a tag is a type error. `GroupItem` correspondingly hardcodes `as="div"` on its `Box` and takes only `{ others }` from `extractOthers`. This is the same deliberate contract used by `Grid.Item`, `Timeline.Item`, `Table.Row`/`Table.Cell`, `Button.Section` and the `Accordion` parts — not an oversight. See the `FixedTag` story.',
 		},
 		unstyled: {
 			control: 'boolean',

@@ -1,4 +1,4 @@
-import { extractOtherProps, filterProps, styleProps } from '../helpers'
+import { extractOthers, filterProps, styleProps } from '../helpers'
 
 describe('filterProps', () => {
 	it('returns a shallow copy of all own enumerable keys by default (omitEmpty=false)', () => {
@@ -64,9 +64,9 @@ describe('styleProps', () => {
 	})
 })
 
-describe('extractOtherProps', () => {
+describe('extractOthers', () => {
 	it('returns the leftover props flat, with no `others`/`as`/`withinView` wrapper keys', () => {
-		const result = extractOtherProps({ id: 'x', 'data-testid': 'y' })
+		const result = extractOthers({ id: 'x', 'data-testid': 'y' })
 		expect(result).toEqual({ id: 'x', 'data-testid': 'y' })
 		expect(result).not.toHaveProperty('others')
 		expect(result).not.toHaveProperty('as')
@@ -74,49 +74,49 @@ describe('extractOtherProps', () => {
 	})
 
 	it('strips `as` out entirely instead of returning it', () => {
-		const result = extractOtherProps({ as: 'a' as const, id: 'x' })
+		const result = extractOthers({ as: 'a' as const, id: 'x' })
 		expect(result).toEqual({ id: 'x' })
 		expect(result).not.toHaveProperty('as')
 	})
 
 	it('strips `withinView` out entirely instead of returning it', () => {
-		const result = extractOtherProps({ withinView: true, id: 'x' })
+		const result = extractOthers({ withinView: true, id: 'x' })
 		expect(result).toEqual({ id: 'x' })
 		expect(result).not.toHaveProperty('withinView')
 	})
 
 	it('strips `childName` out entirely', () => {
-		const result = extractOtherProps({ childName: 'Icon', id: 'x' })
+		const result = extractOthers({ childName: 'Icon', id: 'x' })
 		expect(result).toEqual({ id: 'x' })
 		expect(result).not.toHaveProperty('childName')
 	})
 
 	it('strips `children` out entirely', () => {
-		const result = extractOtherProps({ children: 'hi', id: 'x' })
+		const result = extractOthers({ children: 'hi', id: 'x' })
 		expect(result).toEqual({ id: 'x' })
 		expect(result).not.toHaveProperty('children')
 	})
 
 	it('strips `displayName` out entirely', () => {
-		const result = extractOtherProps({ displayName: 'Button', id: 'x' })
+		const result = extractOthers({ displayName: 'Button', id: 'x' })
 		expect(result).toEqual({ id: 'x' })
 		expect(result).not.toHaveProperty('displayName')
 	})
 
 	it('strips `loading` out entirely', () => {
-		const result = extractOtherProps({ loading: true, id: 'x' })
+		const result = extractOthers({ loading: true, id: 'x' })
 		expect(result).toEqual({ id: 'x' })
 		expect(result).not.toHaveProperty('loading')
 	})
 
 	it('strips `revealFrom` out entirely', () => {
-		const result = extractOtherProps({ revealFrom: 20, id: 'x' })
+		const result = extractOthers({ revealFrom: 20, id: 'x' })
 		expect(result).toEqual({ id: 'x' })
 		expect(result).not.toHaveProperty('revealFrom')
 	})
 
 	it('drops the style alias keys entirely, rather than merging them into a resolved className/style', () => {
-		const result = extractOtherProps({
+		const result = extractOthers({
 			className: 'a',
 			classNames: 'b',
 			style: { color: 'red' },
@@ -132,26 +132,26 @@ describe('extractOtherProps', () => {
 	})
 
 	it('passes `animated` through untouched, since it is not a reserved key', () => {
-		const result = extractOtherProps({ animated: true, id: 'x' })
+		const result = extractOthers({ animated: true, id: 'x' })
 		expect(result).toEqual({ animated: true, id: 'x' })
 	})
 
 	it('passes `href` through untouched, since it is not a reserved key', () => {
-		const result = extractOtherProps({ href: '/x', id: 'x' })
+		const result = extractOthers({ href: '/x', id: 'x' })
 		expect(result).toEqual({ href: '/x', id: 'x' })
 	})
 
 	it('passes `disabled` through untouched, since it is not a reserved key', () => {
-		const result = extractOtherProps({ disabled: true, id: 'x' })
+		const result = extractOthers({ disabled: true, id: 'x' })
 		expect(result).toEqual({ disabled: true, id: 'x' })
 	})
 
 	it('returns an empty object for an input with no extra props at all', () => {
-		expect(extractOtherProps({})).toEqual({})
+		expect(extractOthers({})).toEqual({})
 	})
 
 	it('returns an empty object when every supplied prop is a reserved key', () => {
-		const result = extractOtherProps({
+		const result = extractOthers({
 			as: 'span' as const,
 			childName: 'Icon',
 			children: 'hi',
@@ -169,7 +169,7 @@ describe('extractOtherProps', () => {
 	})
 
 	it('keeps a falsy-but-present leftover prop, showing filterProps is called without omitEmpty', () => {
-		expect(extractOtherProps({ id: '' })).toEqual({ id: '' })
-		expect(extractOtherProps({ hidden: false })).toEqual({ hidden: false })
+		expect(extractOthers({ id: '' })).toEqual({ id: '' })
+		expect(extractOthers({ hidden: false })).toEqual({ hidden: false })
 	})
 })

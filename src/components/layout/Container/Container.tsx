@@ -1,4 +1,4 @@
-import { extractOtherProps } from '@/hooks/useProps'
+import { extractOthers } from '@/hooks/useProps'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
@@ -32,7 +32,7 @@ export const Container = polymorphic<ContainerSpecs>((_props, { useProps, useSty
 	const styles = useStyles(NAME, { props })
 
 	const { as, children, fullWidth, ...rest } = props
-	const others = extractOtherProps(rest)
+	const others = extractOthers(rest)
 	const global = { block: fullWidth }
 
 	return (

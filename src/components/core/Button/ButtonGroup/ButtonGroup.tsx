@@ -1,5 +1,5 @@
 import { useMemo, type CSSProperties, type ReactNode } from 'react'
-import { extractOtherProps } from '@/hooks/useProps'
+import { extractOthers } from '@/hooks/useProps'
 import { filterChildren, withProvider } from '@/lib/component'
 import { polymorphic } from '@/lib/component'
 import { revealItemFrom } from '@/hooks/animation'
@@ -65,7 +65,7 @@ export const ButtonGroup = polymorphic<ButtonGroupSpecs>((_props, { useProps, us
 		...rest
 	} = props
 
-	const others = extractOtherProps(rest)
+	const others = extractOthers(rest)
 
 	const module = {
 		[`${orientation}`]: !!orientation || null,

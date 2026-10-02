@@ -1,4 +1,4 @@
-import { extractOtherProps } from '@/hooks/useProps'
+import { extractOthers } from '@/hooks/useProps'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import type { ReactNode } from 'react'
@@ -24,7 +24,7 @@ export const TableRow = polymorphic<TableRowSpecs>((_props, { useProps, useStyle
 	const styles = useStyles(NAME, { props })
 
 	const { children, ...rest } = props
-	const others = extractOtherProps(rest)
+	const others = extractOthers(rest)
 
 	return (
 		<Box

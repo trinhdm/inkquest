@@ -242,7 +242,7 @@ export const LeafItems: Story = {
  * Verified against the live `Icon.tsx`: `buildIcon`'s LUCIDE branch (used for
  * `caret-down`/`caret-up`, as opposed to its separate social-brand SVG branch) sets NO
  * `attributes` literal of its own — its `sharedProps` is just `{ ...others,
- * ...styles('glyph') }`, and `attributes` isn't one of `extractOtherProps`'s stripped
+ * ...styles('glyph') }`, and `attributes` isn't one of `extractOthers`'s stripped
  * keys, so it passes straight through in `others`. `MenuItem`'s own
  * `attributes={ { aria: { hidden: true } } }` therefore reaches the rendered icon
  * completely unmodified — the caret genuinely IS `aria-hidden="true"`. (The social

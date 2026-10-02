@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { useReplayInView } from '@/hooks/animation'
 import { defineTokens, filterChildren, polymorphic, withProvider } from '@/lib/component'
-import { extractOtherProps } from '@/hooks/useProps'
+import { extractOthers } from '@/hooks/useProps'
 import { getSharedTokens, type AccordionTokens as AccordionGroupTokens } from '../utils'
 import { AccordionGroupProvider } from './AccordionGroup.context'
 import { Box } from '@/components/polymorphic/Box'
@@ -60,7 +60,7 @@ export const AccordionGroup = polymorphic<AccordionGroupSpecs>((_props, { usePro
 		...rest
 	} = props
 
-	const others = extractOtherProps(rest)
+	const others = extractOthers(rest)
 
 	const root = useRef<HTMLDivElement>(null)
 	const withinView = useReplayInView(root)

@@ -81,7 +81,7 @@ const meta: Meta<ButtonGroupStoryArgs> = {
 		},
 		revealFrom: {
 			control: 'number',
-			description: 'Fed into `revealItemFrom(index, revealFrom)` (`@/hooks`) for each surviving child, and spread onto that child\'s `ButtonGroupContext` value alongside `disabled`/`loading`/`priority`/`size`/`unstyled` (`ButtonGroupContext extends RevealItemProps`). When `revealFrom` is a number, each child\'s context carries a `data-reveal-item` value (`revealFrom + index`, stringified); when it\'s `undefined`, `revealItemFrom` returns `{}` and no such key is published at all. That context key reaches each child `Button` via `useButtonGroupProps` (own props always win, same precedence as the other cascaded fields) and, since `Button` doesn\'t destructure it, flows through `...rest`/`extractOtherProps` straight onto the rendered element as a literal `data-reveal-item` attribute. See the `RevealFrom` story.',
+			description: 'Fed into `revealItemFrom(index, revealFrom)` (`@/hooks`) for each surviving child, and spread onto that child\'s `ButtonGroupContext` value alongside `disabled`/`loading`/`priority`/`size`/`unstyled` (`ButtonGroupContext extends RevealItemProps`). When `revealFrom` is a number, each child\'s context carries a `data-reveal-item` value (`revealFrom + index`, stringified); when it\'s `undefined`, `revealItemFrom` returns `{}` and no such key is published at all. That context key reaches each child `Button` via `useButtonGroupProps` (own props always win, same precedence as the other cascaded fields) and, since `Button` doesn\'t destructure it, flows through `...rest`/`extractOthers` straight onto the rendered element as a literal `data-reveal-item` attribute. See the `RevealFrom` story.',
 		},
 		justify: {
 			control: 'text',

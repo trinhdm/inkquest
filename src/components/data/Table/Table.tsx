@@ -1,4 +1,4 @@
-import { extractOtherProps } from '@/hooks/useProps'
+import { extractOthers } from '@/hooks/useProps'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import { TableCell } from './TableCell'
@@ -39,7 +39,7 @@ export const Table = polymorphic<TableSpecs>((_props, { useProps, useStyles }) =
 	const styles = useStyles(NAME, { props })
 
 	const { children, ...rest } = props
-	const others = extractOtherProps(rest)
+	const others = extractOthers(rest)
 
 	return (
 		<Box

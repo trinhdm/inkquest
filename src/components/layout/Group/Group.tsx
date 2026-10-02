@@ -17,7 +17,7 @@ import {
 } from '@/lib/component'
 
 import { useReplayInView, type MaybeAnimationProps } from '@/hooks/animation'
-import { extractOtherProps, type ReservedProp } from '@/hooks/useProps'
+import { extractOthers, type ReservedProp } from '@/hooks/useProps'
 import { Box } from '@/components/polymorphic/Box'
 import { GroupItem } from './GroupItem'
 import { GroupProvider, type GroupContext } from './Group.context'
@@ -142,7 +142,7 @@ export const GroupBase = polymorphic<GroupSpecs>((_props, { useProps, useStyles 
 		...rest
 	} = props
 
-	const others = extractOtherProps(rest)
+	const others = extractOthers(rest)
 
 	const aria = { orientation }
 	const data = {

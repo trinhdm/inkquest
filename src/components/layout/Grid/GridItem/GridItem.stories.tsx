@@ -56,7 +56,7 @@ const meta: Meta<GridItemStoryProps> = {
 	argTypes: {
 		as: {
 			control: 'text',
-			description: 'NOT part of `Grid.Item`\'s accepted props. `GridItemSpecs` declares `isCompound: true` with no `defaults.as`, which is the codebase-wide signal for a compound part with a fixed tag — `polymorphic()`\'s non-polymorphic call-signature branch then types `as` as `never`, so only `undefined` is assignable and passing a tag is a type error. `GridItem` correspondingly hardcodes `as="div"` on its `Box` and takes only `{ others }` from `extractOtherProps`. This is the same deliberate contract used by `Group.Item`, `Timeline.Item`, `Table.Row`/`Table.Cell`, `Button.Section` and the `Accordion` parts (see `Grid.test.tsx` and `Table.test.tsx`, which assert it directly) — not an oversight. See the `FixedTag` story.',
+			description: 'NOT part of `Grid.Item`\'s accepted props. `GridItemSpecs` declares `isCompound: true` with no `defaults.as`, which is the codebase-wide signal for a compound part with a fixed tag — `polymorphic()`\'s non-polymorphic call-signature branch then types `as` as `never`, so only `undefined` is assignable and passing a tag is a type error. `GridItem` correspondingly hardcodes `as="div"` on its `Box` and takes only `{ others }` from `extractOthers`. This is the same deliberate contract used by `Group.Item`, `Timeline.Item`, `Table.Row`/`Table.Cell`, `Button.Section` and the `Accordion` parts (see `Grid.test.tsx` and `Table.test.tsx`, which assert it directly) — not an oversight. See the `FixedTag` story.',
 		},
 		unstyled: {
 			control: 'boolean',

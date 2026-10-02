@@ -1,5 +1,5 @@
 import { defineTokens, polymorphic } from '@/lib/component'
-import { extractOtherProps } from '@/hooks/useProps'
+import { extractOthers } from '@/hooks/useProps'
 import { rem } from '@/lib/general'
 import { Box } from '@/components/polymorphic/Box'
 import { Button } from '@/components/core/Button'
@@ -110,7 +110,7 @@ export const Sidebar = polymorphic<SidebarSpecs>((_props, { useProps, useStyles 
 		...rest
 	} = props
 
-	const others = extractOtherProps(rest)
+	const others = extractOthers(rest)
 
 	const replaceUrl = (url: SidebarLinkItem['url']) => (event: { preventDefault: () => void }) => {
 		event.preventDefault()

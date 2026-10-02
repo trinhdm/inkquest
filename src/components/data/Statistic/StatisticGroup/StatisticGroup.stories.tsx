@@ -95,7 +95,7 @@ const meta: Meta<StatisticGroupStoryProps> = {
 		},
 		animated: {
 			control: 'boolean',
-			description: 'Cascades correctly to every child `Statistic` that doesn\'t set its own `animated` — `extractOtherProps` (`@/hooks/useProps/helpers.ts`) only strips `as`/`childName`/`children`/`className`/`classNames`/`displayName`/`loading`/`revealFrom`/`style`/`styles`/`withinView`; `animated` (along with `duration`/`stagger`/`once`) is NOT in that list, so `StatisticGroup.tsx`\'s `others` spread genuinely forwards it to the inner `<Group>`, which folds it into each child\'s context value. (Separately, `animated` is also part of a discriminated union with `duration`: TypeScript only allows `true` or entirely-absent, never an explicit `false`, on `Group`/`Statistic.Group`.) See `ContextPrecedence`, which demonstrates the cascade end to end via `duration`/`stagger` (chosen over `animated` itself purely to avoid a flaky always-true/always-false assertion).',
+			description: 'Cascades correctly to every child `Statistic` that doesn\'t set its own `animated` — `extractOthers` (`@/hooks/useProps/helpers.ts`) only strips `as`/`childName`/`children`/`className`/`classNames`/`displayName`/`loading`/`revealFrom`/`style`/`styles`/`withinView`; `animated` (along with `duration`/`stagger`/`once`) is NOT in that list, so `StatisticGroup.tsx`\'s `others` spread genuinely forwards it to the inner `<Group>`, which folds it into each child\'s context value. (Separately, `animated` is also part of a discriminated union with `duration`: TypeScript only allows `true` or entirely-absent, never an explicit `false`, on `Group`/`Statistic.Group`.) See `ContextPrecedence`, which demonstrates the cascade end to end via `duration`/`stagger` (chosen over `animated` itself purely to avoid a flaky always-true/always-false assertion).',
 		},
 		duration: {
 			control: 'number',
@@ -107,7 +107,7 @@ const meta: Meta<StatisticGroupStoryProps> = {
 		},
 		once: {
 			control: 'boolean',
-			description: 'Cascades to the inner `<Group>` exactly like `animated`/`duration`/`stagger`. `once` was previously in `extractOtherProps`\' hard-coded strip list (`@/hooks/useProps/helpers.ts`), which meant `Statistic.Group`\'s registered `once: false` — and any explicit override — never reached `Group`\'s `useReplayInView` call. It has since been removed from that list, so `others` now genuinely forwards it: `Group` destructures `once` and passes it into `useReplayInView(ref, { amount, once })`. With `once: true` the reveal latches on first entry instead of replaying each time the group re-enters the viewport.',
+			description: 'Cascades to the inner `<Group>` exactly like `animated`/`duration`/`stagger`. `once` was previously in `extractOthers`\' hard-coded strip list (`@/hooks/useProps/helpers.ts`), which meant `Statistic.Group`\'s registered `once: false` — and any explicit override — never reached `Group`\'s `useReplayInView` call. It has since been removed from that list, so `others` now genuinely forwards it: `Group` destructures `once` and passes it into `useReplayInView(ref, { amount, once })`. With `once: true` the reveal latches on first entry instead of replaying each time the group re-enters the viewport.',
 		},
 		order: {
 			control: 'select',

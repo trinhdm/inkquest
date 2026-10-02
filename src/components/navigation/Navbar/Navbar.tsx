@@ -1,6 +1,6 @@
 'use client'
 
-import { extractOtherProps } from '@/hooks/useProps'
+import { extractOthers } from '@/hooks/useProps'
 import { filterNavigation, NavRoute } from '@/utils/navigation'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
@@ -39,7 +39,7 @@ export const Navbar = polymorphic<NavbarSpecs>((_props, { useProps, useStyles })
 	const styles = useStyles(NAME, { props })
 
 	const { as, routes, ...rest } = props
-	const others = extractOtherProps(rest)
+	const others = extractOthers(rest)
 
 	const navitems = filterNavigation(routes)
 

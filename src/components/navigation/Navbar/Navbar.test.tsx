@@ -83,7 +83,7 @@ describe('Navbar', () => {
 
 	it('forwards the polymorphic "as" prop to the rendered tag', () => {
 		// Guards a fixed bug: the root `<Box>` used to hardcode `as="nav"`
-		// instead of forwarding the `as` that `extractOtherProps` returns, so
+		// instead of forwarding the `as` that `extractOthers` returns, so
 		// an override was silently dropped.
 		const { container } = render(<Navbar as="div" />)
 

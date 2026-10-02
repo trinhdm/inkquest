@@ -1,7 +1,7 @@
 import { useCountUp, type MaybeAnimationProps } from '@/hooks/animation'
 import { useStatisticGroupProps } from './StatisticGroup'
 import { defineTokens, polymorphic } from '@/lib/component'
-import { extractOtherProps } from '@/hooks/useProps'
+import { extractOthers } from '@/hooks/useProps'
 import { Box } from '@/components/polymorphic/Box'
 import { StatisticGroup } from './StatisticGroup'
 import type { ReactNode } from 'react'
@@ -101,7 +101,7 @@ export const Statistic = polymorphic<StatisticSpecs>((_props, { useProps, useSty
 		...rest
 	} = props
 
-	const others = extractOtherProps(rest)
+	const others = extractOthers(rest)
 
 	const { display, ref } = useCountUp({
 		delay: index * stagger,

@@ -112,7 +112,7 @@ const meta: Meta<GroupStoryProps> = {
 	argTypes: {
 		as: {
 			control: 'text',
-			description: 'Polymorphic escape hatch via the shared `Box` contract. `GroupSpecs` declares `defaults: { as: \'div\' }`, so — unlike `GridItem`/`Section`, whose `as` is silently ignored — `Group` genuinely forwards it: `Group.tsx` destructures `{ as, others } = extractOtherProps(rest)` and renders `<Box ... as={ as }>`. See the `AsElement` story.',
+			description: 'Polymorphic escape hatch via the shared `Box` contract. `GroupSpecs` declares `defaults: { as: \'div\' }`, so — unlike `GridItem`/`Section`, whose `as` is silently ignored — `Group` genuinely forwards it: `Group.tsx` destructures `{ as, others } = extractOthers(rest)` and renders `<Box ... as={ as }>`. See the `AsElement` story.',
 		},
 		childName: {
 			control: 'text',
@@ -137,7 +137,7 @@ const meta: Meta<GroupStoryProps> = {
 		},
 		justify: {
 			control: 'text',
-			description: '**Probable source bug, verified against the live `Group.tsx`**: declared on `BaseGroupProps` (typed as `CSSProperties[\'justifyContent\']`) but never destructured or applied to any inline style — `extractOtherProps` only pulls out `as`/`childName`/`children`/`displayName`/`loading`/`revealFrom`/`withinView` plus the style-alias fields (`className`/`classNames`/`style`/`styles`); `justify` falls straight through into `others` and lands as a raw `justify="..."` DOM attribute instead of `justifyContent` in the root\'s `style`. (It\'s all-lowercase, so React forwards it to the DOM without a console warning — which is why this is easy to miss.) No story exercises it beyond this doc note.',
+			description: '**Probable source bug, verified against the live `Group.tsx`**: declared on `BaseGroupProps` (typed as `CSSProperties[\'justifyContent\']`) but never destructured or applied to any inline style — `extractOthers` only pulls out `as`/`childName`/`children`/`displayName`/`loading`/`revealFrom`/`withinView` plus the style-alias fields (`className`/`classNames`/`style`/`styles`); `justify` falls straight through into `others` and lands as a raw `justify="..."` DOM attribute instead of `justifyContent` in the root\'s `style`. (It\'s all-lowercase, so React forwards it to the DOM without a console warning — which is why this is easy to miss.) No story exercises it beyond this doc note.',
 		},
 		provider: {
 			control: false,

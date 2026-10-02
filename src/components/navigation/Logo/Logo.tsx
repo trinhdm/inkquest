@@ -1,5 +1,5 @@
 import { useColorScheme } from '@/hooks/useColorScheme'
-import { extractOtherProps } from '@/hooks/useProps'
+import { extractOthers } from '@/hooks/useProps'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import { COMPANY_NAME } from '@/utils/constants'
@@ -69,7 +69,7 @@ export const Logo = polymorphic<LogoSpecs>((_props, { useProps, useStyles }) => 
 		...rest
 	} = props
 
-	const others = extractOtherProps(rest)
+	const others = extractOthers(rest)
 
 	const { viewBox } = LOGOS_CONFIG.find(logo => type === logo.type)!
 	const vb = typeof viewBox === 'number'

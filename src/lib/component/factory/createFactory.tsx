@@ -75,7 +75,8 @@ type _FactoryProps<S extends Specs> =
 type _FactoryStyles<S extends Specs> =
 	Omit<StyleOptions<S>, 'classes'>
 
-type _PropsName = Parameters<typeof usePropsHook>[0]
+type _PropsName =
+	Parameters<typeof usePropsHook>[0]
 
 interface _FactoryTools<S extends Specs> {
 	useProps: <P extends object = _FactoryProps<S>>(name: _PropsName, _props?: P) => P

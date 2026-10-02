@@ -149,7 +149,7 @@ const meta: Meta<IconStoryProps> = {
 		strokeLinecap: {
 			control: 'select',
 			options: STROKE_LINECAP_OPTIONS,
-			description: 'Forwarded straight through `extractOtherProps`\' `others` onto the rendered `<svg>`\'s `stroke-linecap` attribute — `Icon.tsx` never destructures it explicitly. Typed as `never` on `LucideIconProps` (TS blocks passing it explicitly alongside a Lucide `type`), but the REGISTERED default (`DEFAULT_PROPS.strokeLinecap`, merged in by `useProps` regardless of which union branch is active) still applies to Lucide icons too. See the `StrokeLinecap` story.',
+			description: 'Forwarded straight through `extractOthers`\' `others` onto the rendered `<svg>`\'s `stroke-linecap` attribute — `Icon.tsx` never destructures it explicitly. Typed as `never` on `LucideIconProps` (TS blocks passing it explicitly alongside a Lucide `type`), but the REGISTERED default (`DEFAULT_PROPS.strokeLinecap`, merged in by `useProps` regardless of which union branch is active) still applies to Lucide icons too. See the `StrokeLinecap` story.',
 		},
 		size: {
 			control: 'number',
