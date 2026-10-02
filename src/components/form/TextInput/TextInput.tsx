@@ -87,6 +87,7 @@ export const TextInput = polymorphic<TextInputSpecs>(_props => {
 			{ ...others }
 			as={ TAG }
 			attributes={ { aria, data } }
+			disabled={ disabled }
 			onChange={ onChange }
 			readOnly={ readOnly || (value !== undefined && !onChange) }
 			value={ value }

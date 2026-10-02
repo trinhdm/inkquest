@@ -4,10 +4,6 @@ import { Accordion } from '@/components/data/Accordion'
 import { Section } from '@/components/layout/Section'
 import type { FaqGroup } from '../faqs.data'
 
-interface FaqCategoryProps {
-	group: FaqGroup
-}
-
 export const FaqCategory = ({ category, id, questions }: FaqGroup) => {
 	const count = questions.length,
 		headingID = `${id}-heading`
