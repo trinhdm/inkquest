@@ -16,7 +16,7 @@ import {
 	type RootProviderFn,
 } from '@/lib/component'
 
-import { useProps, extractOtherProps } from '@/hooks/useProps'
+import { useProps, extractOtherProps, type ReservedProp } from '@/hooks/useProps'
 import { useReplayInView, type MaybeAnimationProps } from '@/hooks/animation'
 import { useStyles } from '@/hooks/useStyles'
 import { Box } from '@/components/polymorphic/Box'
@@ -36,6 +36,12 @@ const DEFAULT_PROPS = {
 	provider: GroupProvider,
 	valuesCtx: {},
 } as const
+
+export const GROUP_CASCADE_PROPS = [
+	'amount', 'initial', 'once', 'root',
+	'animated', 'delay', 'duration', 'index', 'stagger',
+	'lead', 'revealFrom', 'withinView',
+] as const satisfies readonly ReservedProp[]
 
 interface BaseGroupProps {
 	children: ReactNode

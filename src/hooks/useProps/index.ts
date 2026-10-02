@@ -1,3 +1,6 @@
 export { useProps } from './useProps'
-export { extractOtherProps, styleProps } from './helpers'
 export { getDefaultProps, resetComponentDefaults, setDefaultProps } from './defaultsRegistry'
+export {
+	extractOtherProps, styleProps,
+	type ExtractedOtherProps, type ReservedProp,
+} from './helpers'

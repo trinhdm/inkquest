@@ -1,7 +1,7 @@
 import { useProps, extractOtherProps } from '@/hooks/useProps'
 import { useStyles } from '@/hooks/useStyles'
 import { polymorphic } from '@/lib/component'
-import { Group } from '@/components/layout/Group'
+import { Group, GROUP_CASCADE_PROPS } from '@/components/layout/Group'
 import { StatisticGroupProvider, type StatisticGroupContext } from './StatisticGroup.context'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from '../Statistic.module.scss'
@@ -31,7 +31,7 @@ export const StatisticGroup = polymorphic<StatisticGroupSpecs>(_props => {
 	const styles = useStyles(NAME, { classes, props })
 
 	const { children, order, size, ...rest } = props
-	const others = extractOtherProps(rest)
+	const others = extractOtherProps(rest, GROUP_CASCADE_PROPS)
 
 	return (
 		<Group

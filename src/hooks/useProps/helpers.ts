@@ -79,27 +79,50 @@ type OtherProps<E extends ElementType = ElementType> =
 	& ReplayAnimateInViewConfig
 	& OtherPropsList<E>
 
-function extractOthers<T extends object, E extends ElementType = ElementType>(
-	rest: T & OtherProps<E>
-): DistributiveOmit<T, keyof OtherProps<E>>
-function extractOthers(rest: OtherProps<ElementType>) {
-	const {
-		animated,
-		as,
-		childName,
-		children,
-		className,
-		classNames,
-		displayName,
-		loading,
-		revealFrom,
-		style,
-		styles,
-		withinView,
-		...props
-	} = rest
+const RESERVED_PROPS = [
+	'amount',
+	'animated',
+	'as',
+	'childName',
+	'children',
+	'className',
+	'classNames',
+	'displayName',
+	'delay',
+	'duration',
+	'index',
+	'initial',
+	'lead',
+	'loading',
+	'margin',
+	'once',
+	'revealFrom',
+	'root',
+	'stagger',
+	'style',
+	'styles',
+	'withinView',
+] as const satisfies readonly (keyof OtherProps)[]
+
+const RESERVED = new Set<string>(RESERVED_PROPS)
+
+export type ReservedProp =
+	typeof RESERVED_PROPS[number]
+
+export type ExtractedOtherProps<T, K extends ReservedProp = never> =
+	DistributiveOmit<T, Exclude<ReservedProp, K>>
+
+//	`keep` is the escape hatch for a component that forwards `others`
+//	to another component rather than to the DOM — i.e. `StatisticGroup`
+export const extractOtherProps = <
+	T extends object,
+	E extends ElementType = ElementType,
+	K extends ReservedProp = never,
+>(rest: T & OtherProps<E>, keep?: readonly K[]): ExtractedOtherProps<T, K> => {
+	const kept = keep?.length ? new Set<string>(keep) : undefined
+	const props = Object.fromEntries(
+		Object.entries(rest).filter(([key]) => !RESERVED.has(key) || !!kept?.has(key))
+	) as ExtractedOtherProps<T, K>
 
 	return filterProps(props)
 }
-
-export const extractOtherProps = extractOthers

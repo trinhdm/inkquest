@@ -18,7 +18,7 @@ import {
 
 import { useReducedMotion } from 'framer-motion'
 import { useReplayInView } from '../useReplayInView'
-import { extractOtherProps } from '../../useProps'
+import { extractOtherProps, type ExtractedOtherProps } from '../../useProps'
 import { revealMargin, type ReplayAnimateInViewConfig } from '../constants'
 
 interface UseRevealOptions
@@ -26,7 +26,7 @@ interface UseRevealOptions
 
 interface RevealValue<T> {
 	item: (index: number) => RevealItemProps
-	others: ReturnType<typeof extractOtherProps> & RevealRootProps
+	others: ExtractedOtherProps<UseRevealOptions> & RevealRootProps
 	ref: RefObject<T | null>
 	reveal: () => RevealCounter
 	visible: boolean
