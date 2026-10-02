@@ -25,7 +25,7 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { expect, waitFor } from 'storybook/test'
 import { base, tokens } from '@/lib/theme/reference'
-import { schemeControls } from '@/components/document/ScriptInjector'
+import { schemeControls } from '@/components/document/ScriptInjector/schemeControls'
 import { COLOR_TOKENS } from '@/lib/theme/scales'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import type { ColorScheme } from '@/lib/theme/types'

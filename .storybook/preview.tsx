@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { inkqDark } from './theme'
-import { schemeControls } from '../src/components/document/ScriptInjector'
+import { schemeControls } from '../src/components/document/ScriptInjector/schemeControls'
 import { AppProvider } from '../src/providers/AppProvider'
 import { DEFAULT_COLOR_SCHEME, JS_ANIMATE_KEY } from '../src/components/document/constants'
 import type { Addon_StorySortComparatorV7 } from 'storybook/internal/types'

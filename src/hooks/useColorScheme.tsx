@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useState } from 'react'
-import { schemeControls } from '@/components/document/ScriptInjector'
+import { schemeControls } from '@/components/document/ScriptInjector/schemeControls'
 import type { ColorScheme } from '@/lib/theme/types'
 
 const { applyScheme, getAltScheme, getStoredScheme, persistScheme } = schemeControls()
