@@ -69,6 +69,7 @@ const fixtureTheme = {
 	easing: { base: 'ease' },
 	opacity: [1],
 	radius: [0],
+	iconSize: { md: 20 },
 	screenSize: [320],
 } as SiteTheme
 

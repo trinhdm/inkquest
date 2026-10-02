@@ -110,10 +110,10 @@ export const SCREEN_SCALE = [
 	1440, 1920,
 ] as const
 
-export const CONTAINER_SIZE_SCALE = {
-	sm: 1040,
-	md: 1136,
-	lg: 1200,
+export const ICON_SCALE = {
+	sm: 12,
+	md: 16,
+	lg: 20,
 }
 
 export const OPACITY_SCALE = [ 0, .2, .35, .5, .65, .8, 1 ] as const

@@ -20,9 +20,9 @@ export interface ElementTokens {
 
 export const getElementTokens = (): ElementTokens => ({
 	icon: {
-		sm: base.space('3'),
-		md: base.space('4'),
-		lg: base.space('5'),
+		sm: base.icon('sm'),
+		md: base.icon('md'),
+		lg: base.icon('lg'),
 	},
 	dot: {
 		sm: base.space('1'),

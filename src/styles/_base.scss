@@ -109,6 +109,14 @@ button {
 	padding-inline: unset;
 }
 
+svg {
+	font-size: var(--icon-size, var(--inkq-icon-md));
+	height: 1em;
+	transition: var(--inkq-motion-color);
+	vertical-align: middle;
+	width: 1em;
+}
+
 ol,
 ul {
 	&:where(

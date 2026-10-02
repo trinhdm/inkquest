@@ -1,7 +1,7 @@
 import { COLOR_TOKENS, THEME_SCHEMES } from '../scales'
 import type { CSSProperties } from 'react'
 import type { AtLeastOneKeyOf, ExtractFrom } from '@/types/utils'
-import type { CSSVars, HexCode, Unit } from '@/types/shared'
+import type { CSSVars, HexCode, Size, Unit } from '@/types/shared'
 import type { SemanticTokens, ShorthandTokens } from '../reference'
 
 export type ThemeName =
@@ -45,6 +45,8 @@ export interface SiteTheme {
 
 	opacity: number[]
 	radius: number[]
+
+	iconSize: BaseStyleValues<number, Size, 'md'>
 	screenSize: number[]
 }
 

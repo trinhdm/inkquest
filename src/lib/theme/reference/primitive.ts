@@ -5,7 +5,7 @@ import type {
 	LETTER_SPACING_SCALE, LINE_HEIGHT_SCALE,
 	DURATION_SCALE, EASE_SCALE,
 	OPACITY_SCALE, RADIUS_SCALE,
-	SCREEN_SCALE,
+	ICON_SCALE, SCREEN_SCALE,
 } from '../scales'
 
 const baseColorTokens = {
@@ -47,6 +47,7 @@ export const primitiveTokens = {
 	...baseColorTokens,
 	...baseFontTokens,
 
+	icon: token.path<keyof typeof ICON_SCALE>(baseVar, 'iconSize'),
 	screen: token.path<`${typeof SCREEN_SCALE[number]}`>(baseVar, 'screenSize'),
 
 	// small scale — step label = zero-padded position ('01'..'05')
