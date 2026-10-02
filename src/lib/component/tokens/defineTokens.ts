@@ -7,11 +7,17 @@ interface TokensArgs {
 	tokens?: unknown
 }
 
+interface DefineTokensProps<P = unknown, C = unknown> {
+	context: C
+	props: P
+	theme: SiteThemeConfig
+}
+
 type TokensFn<
 	P = unknown,
 	V extends object = object,
 	C = unknown,
-> = (props: P, theme: SiteThemeConfig, context: C) => V
+> = ({ context, props, theme }: DefineTokensProps<P, C>) => V
 
 export type TokensConfig<S extends TokensArgs> =
 	TokensFn<S['props'], SpecsTokens<S>, SpecsContext<S>>

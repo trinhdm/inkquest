@@ -37,7 +37,11 @@ export const getStyle = <S extends SpecsContract>(
 	} = args
 
 	if (typeof tokens === 'function') {
-		const variables = tokens(props, theme, context as RootCtxValue<S['context']>)
+		const variables = tokens({
+			context: context as RootCtxValue<S['context']>,
+			props,
+			theme,
+		})
 
 		if (keyHasValue(variables, selector)) {
 			const styles = variables[selector]

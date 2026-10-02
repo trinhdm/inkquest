@@ -78,7 +78,8 @@ type SidebarTokens = {
 		| '--sidebar-rail-position'
 }
 
-const tokens = defineTokens<SidebarSpecs>(({ active, items }) => {
+const tokens = defineTokens<SidebarSpecs>(({ props }) => {
+	const { active, items } = props
 	const activeIndex = items.findIndex(item => active === item.id)
 	const height = 48
 

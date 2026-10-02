@@ -65,12 +65,16 @@ type SectionTokens = {
 		| '--reveal-stagger'
 }
 
-const tokens = defineTokens<SectionSpecs>(({ duration, stagger }) => ({
-	root: {
-		'--reveal-duration': duration ? `${duration}ms` : undefined,
-		'--reveal-stagger': stagger ? `${stagger}ms` : undefined,
-	},
-}))
+const tokens = defineTokens<SectionSpecs>(({ props }) => {
+	const { duration, stagger } = props
+
+	return {
+		root: {
+			'--reveal-duration': duration ? `${duration}ms` : undefined,
+			'--reveal-stagger': stagger ? `${stagger}ms` : undefined,
+		},
+	}
+})
 
 export const Section = polymorphic<SectionSpecs>(_props => {
 	const props = useProps(NAME, _props)

@@ -43,7 +43,7 @@ type GridTokens = {
 		| '--grid-gap'
 }
 
-const tokens = defineTokens<GridSpecs>((props, theme) => {
+const tokens = defineTokens<GridSpecs>(({ props, theme }) => {
 	const { columns, gap } = props
 
 	const gridGap = ['grid']

@@ -1,3 +1,4 @@
+import { ChevronDown, Plus } from 'lucide-react'
 import { useAccordionCtx } from '../Accordion.context'
 import { useProps, extractOtherProps } from '@/hooks/useProps'
 import { useStyles } from '@/hooks/useStyles'
@@ -27,7 +28,7 @@ type AccordionTitleTokens = {
 		| '--accordion-title-indent'
 }
 
-const tokens = defineTokens<AccordionTitleSpecs>((props, theme, context) => ({
+const tokens = defineTokens<AccordionTitleSpecs>(({ context }) => ({
 	root: { '--accordion-title-indent': keyHasValue(context, 'step') ? 0 : undefined },
 }))
 
@@ -95,6 +96,7 @@ export const AccordionTitle = polymorphic<AccordionTitleSpecs>(_props => {
 
 				{ (indicator !== 'none') && (
 					<span { ...styles('indicator', { selector: indicateClass }) }>
+						<Box as={ indicator === 'plus' ? Plus : ChevronDown } />
 						<Icon type={ indicator === 'plus' ? 'add' : 'caret-down' } />
 					</span>
 				) }

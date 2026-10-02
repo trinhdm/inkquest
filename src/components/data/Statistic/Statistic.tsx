@@ -55,7 +55,7 @@ type StatisticTokens = {
 		| '--statistic-font-value'
 }
 
-const tokens = defineTokens<StatisticSpecs>((props, theme) => {
+const tokens = defineTokens<StatisticSpecs>(({ props, theme }) => {
 	const { order, size } = props
 	const isDescend = order === 'descend'
 
@@ -108,7 +108,7 @@ export const Statistic = polymorphic<StatisticSpecs>(_props => {
 	})
 
 	const clsx = {
-		global: { highlight, item: true },
+		global: { accent: !!highlight, item: true },
 		module: { [`${size}`]: !!size || null },
 	}
 
