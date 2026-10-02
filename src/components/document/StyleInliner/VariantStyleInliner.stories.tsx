@@ -1,6 +1,6 @@
 import { VariantStyleInliner } from './VariantStyleInliner'
 import { buildVariantSchemes } from '@/lib/theme/buildVariantSchemes'
-import { serializeStyles } from './serializer'
+import { serializeStyles } from '@/hooks/useVariants'
 import { PREFIX_CSS_SELECTOR } from '@/utils/constants'
 import { expect } from 'storybook/test'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'

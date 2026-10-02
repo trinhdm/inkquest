@@ -1,6 +1,6 @@
 import { expect } from 'storybook/test'
 import { resolveStyles } from './resolver'
-import { serializeStyles } from './serializer'
+import { serializeStyles } from '@/hooks/useVariants/helpers'
 import { StyleInliner } from './StyleInliner'
 import { DEFAULT_THEME } from '@/providers/ThemeProvider/constants'
 import { PREFIX_CSS_SELECTOR } from '@/utils/constants'

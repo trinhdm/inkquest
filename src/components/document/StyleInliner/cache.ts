@@ -1,6 +1,6 @@
 import { buildVariantSchemes } from '@/lib/theme/buildVariantSchemes'
 import { resolveStyles } from './resolver'
-import { serializeStyles } from './serializer'
+import { serializeStyles } from '@/hooks/useVariants'
 import type { SiteTheme } from '@/lib/theme/types'
 
 // Keyed by theme object identity — DEFAULT_THEME is a module constant, so

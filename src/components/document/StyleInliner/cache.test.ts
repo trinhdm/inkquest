@@ -1,6 +1,6 @@
 import { buildVariantSchemes } from '@/lib/theme/buildVariantSchemes'
 import { resolveStyles } from './resolver'
-import { serializeStyles } from './serializer'
+import { serializeStyles } from '@/hooks/useVariants/helpers'
 import type { getSchemeCSS as GetSchemeCSS, getVariantCSS as GetVariantCSS } from './cache'
 import type { SiteTheme } from '@/lib/theme/types'
 

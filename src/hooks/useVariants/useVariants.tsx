@@ -2,9 +2,8 @@
 
 import { useInsertionEffect } from 'react'
 import { useTheme } from '@/providers/ThemeProvider'
-import { deriveVariants } from './helpers'
+import { deriveVariants, serializeStyles } from './helpers'
 import { hasInjectVariant, markInjectVariant } from './variantsRegistry'
-import { serializeStyles } from '@/components/document/StyleInliner'
 
 export const useVariants = (name: string) => {
 	const theme = useTheme()

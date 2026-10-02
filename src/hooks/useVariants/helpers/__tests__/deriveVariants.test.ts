@@ -1,4 +1,4 @@
-import { deriveVariants } from '../helpers'
+import { deriveVariants } from '../deriveVariants'
 import { presets, tokens } from '@/lib/theme/reference'
 import type { SiteThemeConfig } from '@/lib/theme/types'
 

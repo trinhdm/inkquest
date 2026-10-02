@@ -1,4 +1,4 @@
-import { serializeStyles } from './serializer'
+import { serializeStyles } from '../serializeStyles'
 import type { CssRule } from '@/lib/theme/types'
 
 describe('serializeStyles', () => {
