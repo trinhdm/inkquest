@@ -1,6 +1,7 @@
 import { deepMerge } from '@/utils/helpers/objects'
-import { presets, tokens, type SiteThemeConfig } from '@/lib/theme'
+import { presets, tokens } from '@/lib/theme/reference'
 import { toKebabCase } from '@/utils/helpers'
+import type { SiteThemeConfig } from '@/lib/theme/types'
 
 // interface ThemeValidator<T,> {
 // 	(theme: Partial<T>): asserts theme is T

@@ -12,8 +12,7 @@
 // composites (referenced by their literal generated CSS variable name, the
 // only way to reach them today) to show what the primitive scale is
 // actually used for.
-import { base } from '@/lib/theme/reference'
-import { tokens } from '@/lib/theme'
+import { base, tokens } from '@/lib/theme/reference'
 import type { CSSProperties } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 

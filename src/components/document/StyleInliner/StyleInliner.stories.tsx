@@ -1,11 +1,11 @@
-import { StyleInliner } from './StyleInliner'
+import { expect } from 'storybook/test'
 import { resolveStyles } from './resolver'
 import { serializeStyles } from './serializer'
+import { StyleInliner } from './StyleInliner'
 import { DEFAULT_THEME } from '@/providers/ThemeProvider/constants'
 import { PREFIX_CSS_SELECTOR } from '@/utils/constants'
-import { expect } from 'storybook/test'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
-import type { SiteTheme } from '@/lib/theme'
+import type { SiteTheme } from '@/lib/theme/types'
 
 // `StyleInliner` now renders its `<style>` with `href`/`precedence`
 // (`StyleInliner.tsx`) — React 19's stylesheet-hoisting resource API. React

@@ -1,7 +1,7 @@
 import { buildVariantSchemes } from '@/lib/theme/buildVariantSchemes'
 import { resolveStyles } from './resolver'
 import { serializeStyles } from './serializer'
-import type { SiteTheme } from '@/lib/theme'
+import type { SiteTheme } from '@/lib/theme/types'
 
 // Keyed by theme object identity — DEFAULT_THEME is a module constant, so
 // this hits on every render without hashing the resolved token tree.

@@ -1,5 +1,5 @@
 import { handleTheme, mergeTheme } from '../handleTheme'
-import { tokens } from '@/lib/theme'
+import { tokens } from '@/lib/theme/reference'
 import { DEFAULT_THEME } from '../../constants'
 
 describe('mergeTheme', () => {

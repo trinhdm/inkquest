@@ -1,5 +1,5 @@
 import { configDocument, type DocumentConfig } from '../utils'
-import type { ColorScheme } from '@/lib/theme'
+import type { ColorScheme } from '@/lib/theme/types'
 
 export const schemeControls = (args: DocumentConfig = {}) => {
 	const {

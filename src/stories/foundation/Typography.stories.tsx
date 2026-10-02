@@ -24,11 +24,11 @@
 // one's ACTUAL computed value live, so the gap is visible rather than
 // papered over. This is flagged in the agent report; fixing it is out of
 // scope (it would mean editing `src/lib/theme/`).
-import { base } from '@/lib/theme/reference'
+import { base, tokens } from '@/lib/theme/reference'
 import {
-	FONT_FAMILY_SCALE, FONT_SIZE_SCALE,
-	FONT_WEIGHT_SCALE, LETTER_SPACING_SCALE, LINE_HEIGHT_SCALE, tokens,
-} from '@/lib/theme'
+	FONT_FAMILY_SCALE, FONT_SIZE_SCALE, FONT_WEIGHT_SCALE,
+	LETTER_SPACING_SCALE, LINE_HEIGHT_SCALE,
+} from '@/lib/theme/scales'
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 

@@ -10,9 +10,9 @@
 // `--inkq-motion-transform`, `--inkq-motion-box`, `--inkq-motion-colors`.
 // Documented (and demonstrated live, via computed-value readback) rather
 // than silently worked around.
-import { base } from '@/lib/theme/reference'
-import { DURATION_SCALE, EASE_SCALE, tokens } from '@/lib/theme'
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { base, tokens } from '@/lib/theme/reference'
+import { DURATION_SCALE, EASE_SCALE } from '@/lib/theme/scales'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
 const metaStyle: CSSProperties = { fontSize: 11, opacity: 0.6, fontFamily: 'monospace', marginTop: 4 }

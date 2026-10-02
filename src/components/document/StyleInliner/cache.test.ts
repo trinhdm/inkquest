@@ -1,8 +1,8 @@
+import { buildVariantSchemes } from '@/lib/theme/buildVariantSchemes'
 import { resolveStyles } from './resolver'
 import { serializeStyles } from './serializer'
-import { buildVariantSchemes } from '@/lib/theme/buildVariantSchemes'
-import type { SiteTheme } from '@/lib/theme'
 import type { getSchemeCSS as GetSchemeCSS, getVariantCSS as GetVariantCSS } from './cache'
+import type { SiteTheme } from '@/lib/theme/types'
 
 jest.mock('./resolver', () => ({ resolveStyles: jest.fn() }))
 jest.mock('./serializer', () => ({ serializeStyles: jest.fn() }))

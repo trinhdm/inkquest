@@ -15,8 +15,8 @@
 // `opacity.disabled` IS public (`tokens.opacity.disabled()`) and is
 // documented on the Colors page (paired with a disabled-state swatch); it's
 // cross-referenced, not repeated, here.
-import { base } from '@/lib/theme/reference'
-import { RADIUS_SCALE, tokens } from '@/lib/theme'
+import { base, tokens } from '@/lib/theme/reference'
+import { RADIUS_SCALE } from '@/lib/theme/scales'
 import type { CSSProperties } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 

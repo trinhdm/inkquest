@@ -1,6 +1,6 @@
 import { getStyle } from '../getStyle'
 import type { SharedConfig } from '../useStyles'
-import type { SiteThemeConfig } from '@/lib/theme'
+import type { SiteThemeConfig } from '@/lib/theme/types'
 
 const theme = { prefix: 'ink', prefixSelector: (name: string) => `.ink-${ name }` } as unknown as SiteThemeConfig
 

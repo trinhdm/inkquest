@@ -22,14 +22,13 @@
 // references, and the actual color is whatever the currently-applied color
 // scheme (`data-inkq-scheme` on `<html>`, via `schemeControls()`) resolves
 // them to at paint time.
-import { base } from '@/lib/theme/reference'
-import { COLOR_TOKENS } from '@/lib/theme'
-import { schemeControls } from '@/components/document/ScriptInjector'
-import { tokens } from '@/lib/theme'
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { expect, waitFor } from 'storybook/test'
-import type { ColorScheme } from '@/lib/theme'
+import { base, tokens } from '@/lib/theme/reference'
+import { schemeControls } from '@/components/document/ScriptInjector'
+import { COLOR_TOKENS } from '@/lib/theme/scales'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+import type { ColorScheme } from '@/lib/theme/types'
 
 // --- scheme control -------------------------------------------------------
 //

@@ -2,8 +2,11 @@ export { primitiveTokens as base } from './primitive'
 
 export {
 	aliasTokens as alias,
-	semanticTokens,
+	semanticTokens as tokens,
 	type SemanticTokens,
 } from './semantic'
 
-export { shorthandTokens, type ShorthandTokens } from './shorthand'
+export {
+	shorthandTokens as presets,
+	type ShorthandTokens,
+} from './shorthand'

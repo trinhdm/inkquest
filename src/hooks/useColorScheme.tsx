@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from 'react'
 import { schemeControls } from '@/components/document/ScriptInjector'
-import type { ColorScheme } from '@/lib/theme'
+import type { ColorScheme } from '@/lib/theme/types'
 
 const { applyScheme, getAltScheme, getStoredScheme, persistScheme } = schemeControls()
 

@@ -1,9 +1,9 @@
 import { buildScript } from './buildScript'
-import { ScriptInjector } from './ScriptInjector'
 import { expect } from 'storybook/test'
-import type { ColorScheme } from '@/lib/theme'
+import { ScriptInjector } from './ScriptInjector'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+import type { ColorScheme } from '@/lib/theme/types'
 
 // `ScriptInjector` currently has no sibling in `document/` that also needs a
 // `ColorScheme` option list, so this stays inlined rather than living in a

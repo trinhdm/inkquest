@@ -1,4 +1,4 @@
-import type { CssRule } from '@/lib/theme'
+import type { CssRule } from '@/lib/theme/types'
 
 const declarationBlock = (
 	variables: Record<string, unknown>,

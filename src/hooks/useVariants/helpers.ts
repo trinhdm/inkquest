@@ -1,5 +1,11 @@
 import { toKebabCase } from '@/utils/helpers'
-import type { CssRule, SiteThemeConfig, TokenState, VariantTokens } from '@/lib/theme'
+
+import type {
+	CssRule,
+	SiteThemeConfig,
+	TokenState,
+	VariantTokens,
+} from '@/lib/theme/types'
 
 type TokenSlot = keyof VariantTokens
 

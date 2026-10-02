@@ -1,5 +1,6 @@
 import { deriveVariants } from '../helpers'
-import { presets, tokens, type SiteThemeConfig } from '@/lib/theme'
+import { presets, tokens } from '@/lib/theme/reference'
+import type { SiteThemeConfig } from '@/lib/theme/types'
 
 // SiteThemeConfig extends SemanticTokens, so a hand-typed fixture would need
 // to fake the entire accessor catalog. Since reference/semantic.ts is real,

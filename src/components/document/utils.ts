@@ -3,8 +3,9 @@ import {
 	JS_ANIMATE_KEY,
 	SCHEME_STORAGE_KEY,
 } from './constants'
+
 import { deepMerge } from '@/utils/helpers'
-import type { ColorScheme } from '@/lib/theme'
+import type { ColorScheme } from '@/lib/theme/types'
 import type { DeepRequired } from '@/types/utils'
 
 export interface DocumentConfig {

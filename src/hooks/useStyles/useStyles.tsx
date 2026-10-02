@@ -5,7 +5,8 @@ import { getStyle } from './getStyle'
 import { keyHasValue, pluralizeKeys } from '@/utils/helpers'
 import type { ClassValue } from 'clsx'
 import type { PluralizeKeys } from '@/types/utils'
-import type { SiteThemeConfig, ThemeCSSConfig } from '@/lib/theme'
+import type { SiteThemeConfig } from '@/lib/theme/types'
+import type { ThemeCSSConfig } from '@/lib/theme'
 
 interface StyleOptions<P extends object, V extends object = object> {
 	readonly classes?: Record<string, string>

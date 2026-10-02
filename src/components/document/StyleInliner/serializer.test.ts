@@ -1,5 +1,5 @@
 import { serializeStyles } from './serializer'
-import type { CssRule } from '@/lib/theme'
+import type { CssRule } from '@/lib/theme/types'
 
 describe('serializeStyles', () => {
 	it('returns an empty string for an empty rule list', () => {

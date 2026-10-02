@@ -43,11 +43,11 @@ type StateVariable<
 		? `--${S}-${T}${StateSuffix<K>}`
 		: never
 
-export type ColorVariable<
-	S extends string,
-	T extends keyof VariantTokens = keyof VariantTokens
-> =
-	StateVariable<Lowercase<S>, T>
+// type ColorVariable<
+// 	S extends string,
+// 	T extends keyof VariantTokens = keyof VariantTokens
+// > =
+// 	StateVariable<Lowercase<S>, T>
 
 type StateToken<V, K extends StateKey> =
 	V extends Record<K, infer X>
