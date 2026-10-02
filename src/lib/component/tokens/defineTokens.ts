@@ -1,5 +1,5 @@
 import type { SiteThemeConfig } from '@/lib/theme/types'
-import type { SpecsContext, SpecsTokens } from '../factory'
+import type { SpecsContext, SpecsTokens } from '../factory/types'
 
 interface TokensArgs {
 	context?: unknown

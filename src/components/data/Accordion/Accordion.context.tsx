@@ -1,4 +1,4 @@
-import { createRootCtx } from '@/lib/component'
+import { createRootCtx } from '@/lib/component/context'
 import type { AnimationOptions } from '@/hooks/animation'
 import type { HeadingOrder } from '@/types/shared'
 

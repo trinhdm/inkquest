@@ -6,7 +6,8 @@ import { keyHasValue, pluralizeKeys } from '@/utils/helpers'
 import type { ClassValue } from 'clsx'
 import type { PluralizeKeys } from '@/types/utils'
 import type { SiteThemeConfig } from '@/lib/theme/types'
-import type { SpecsContext, SpecsContract, SpecsSelectors, TokensConfig } from '@/lib/component'
+import type { SpecsContext, SpecsContract, SpecsSelectors } from '@/lib/component/factory/types'
+import type { TokensConfig } from '@/lib/component/tokens'
 
 export interface StyleOptions<S extends SpecsContract> {
 	readonly classes?: S['selectors'] extends string ? Record<string, string> : never

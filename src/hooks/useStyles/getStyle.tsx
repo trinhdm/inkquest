@@ -1,7 +1,8 @@
 import { keyHasValue } from '@/utils/helpers'
 import type { CSSProperties } from 'react'
+import type { RootCtxValue } from '@/lib/component/context'
 import type { SharedConfig } from './useStyles'
-import type { RootCtxValue, SpecsContract } from '@/lib/component'
+import type { SpecsContract } from '@/lib/component/factory/types'
 
 type InheritConfig<S extends SpecsContract> =
 	Omit<SharedConfig<S>, 'props'>

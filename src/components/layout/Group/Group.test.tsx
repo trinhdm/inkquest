@@ -2,7 +2,7 @@ import { createContext, useContext } from 'react'
 import { getDefaultProps } from '@/hooks/useProps'
 import { render, reset, screen } from '@/tests/test-utils'
 import { Group } from './Group'
-import type { RootProviderFn } from '@/lib/component'
+import type { RootProviderFn } from '@/lib/component/context'
 
 // A plain, library-external component with its own `displayName` — the
 // contract `Group`'s `childName` filters against (`filterChildren(children,

@@ -1,7 +1,7 @@
 'use client'
 
 import { extractOthers } from '@/hooks/useProps'
-import { filterNavigation, NavRoute } from '@/utils/navigation'
+import { filterNavigation, type NavRoute } from '@/utils/navigation'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import { Button } from '@/components/core/Button'

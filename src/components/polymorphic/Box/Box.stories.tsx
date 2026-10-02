@@ -1,7 +1,7 @@
 import { expect, fn, userEvent, within } from 'storybook/test'
 import { Badge } from '@/components/core/Badge'
 import { Box } from './Box'
-import { DEFAULT_TAG } from '@/lib/component'
+import { DEFAULT_TAG } from '@/lib/component/factory'
 import type { ElementType, ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 

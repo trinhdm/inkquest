@@ -13,7 +13,6 @@ import {
 	filterChildren,
 	polymorphic,
 	withProvider,
-	type RootProviderFn,
 } from '@/lib/component'
 
 import { useReplayInView, type MaybeAnimationProps } from '@/hooks/animation'
@@ -23,6 +22,7 @@ import { GroupItem } from './GroupItem'
 import { GroupProvider, type GroupContext } from './Group.context'
 import type { Orientation } from '@/types/shared'
 import type { PolymorphicProps, PropsDefaultList } from '@/lib/component/factory/types'
+import type { RootProviderFn } from '@/lib/component/context'
 import classes from './Group.module.scss'
 
 const NAME = 'Group' as const,

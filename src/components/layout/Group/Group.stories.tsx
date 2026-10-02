@@ -5,7 +5,7 @@ import { Group } from './Group'
 import { ORIENTATION_OPTIONS, BOOLEAN_OPTIONS } from './options.story'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
-import type { RootProviderFn } from '@/lib/component'
+import type { RootProviderFn } from '@/lib/component/context'
 import moduleClasses from './Group.module.scss'
 
 const Row = ({ children }: { children: ReactNode }) => (

@@ -1,7 +1,7 @@
 import cx, { type ClassValue } from 'clsx'
 import { isObject, toKebabCase } from '@/utils/helpers'
 import type { SharedConfig } from './useStyles'
-import type { SpecsContract } from '@/lib/component'
+import type { SpecsContract } from '@/lib/component/factory/types'
 
 const getBaseClass = <S extends SpecsContract>(
 	name: SharedConfig<S>['name'],

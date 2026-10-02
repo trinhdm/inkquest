@@ -1,4 +1,4 @@
-import { definePolymorphic, DEFAULT_TAG, POLYMORPHIC_MARKER } from '@/lib/component'
+import { definePolymorphic, DEFAULT_TAG, POLYMORPHIC_MARKER } from '@/lib/component/factory'
 import { resolveProps } from './utils/resolveProps'
 import type { ComponentType, ElementType, ReactNode } from 'react'
 

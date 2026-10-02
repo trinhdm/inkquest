@@ -1,4 +1,4 @@
-import { createRootCtx } from '@/lib/component'
+import { createRootCtx } from '@/lib/component/context'
 import type { AnimationOptions, RevealItemProps } from '@/hooks/animation'
 import type { Button } from '../Button'
 

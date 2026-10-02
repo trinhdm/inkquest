@@ -1,3 +1,3 @@
-export * from './context'
-export * from './factory'
 export { defineTokens, type TokensConfig } from './tokens'
+export { extractChildrenText, filterChildren, withProvider } from './context'
+export { polymorphic } from './factory'
