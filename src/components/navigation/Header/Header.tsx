@@ -37,8 +37,15 @@ export const Header = polymorphic<HeaderSpecs>(_props => {
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { classes, props })
 
-	const { children, navbar, subnav, ...rest } = props
-	const { as, others } = extractOtherProps(rest)
+	const {
+		as,
+		children,
+		navbar,
+		subnav,
+		...rest
+	} = props
+
+	const others = extractOtherProps(rest)
 
 	const subnavRoutes = !!subnav?.routes?.length
 		? subnav.routes

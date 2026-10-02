@@ -36,13 +36,13 @@ export const Table = polymorphic<TableSpecs>(_props => {
 	const styles = useStyles(NAME, { classes, props })
 
 	const { children, ...rest } = props
-	const { as, others } = extractOtherProps(rest)
+	const others = extractOtherProps(rest)
 
 	return (
 		<Box
-			as={ as }
 			{ ...styles('root') }
 			{ ...others }
+			as={ TAG }
 		>
 			<tbody>{ children }</tbody>
 		</Box>

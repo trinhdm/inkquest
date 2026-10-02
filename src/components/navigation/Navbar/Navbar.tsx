@@ -34,8 +34,8 @@ export const Navbar = polymorphic<NavbarSpecs>(_props => {
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { classes, props })
 
-	const { routes, ...rest } = props
-	const { as, others } = extractOtherProps(rest)
+	const { as, routes, ...rest } = props
+	const others = extractOtherProps(rest)
 
 	const navitems = filterNavigation(routes)
 

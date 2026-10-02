@@ -28,8 +28,8 @@ export const Container = polymorphic<ContainerSpecs>(_props => {
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { classes, props })
 
-	const { children, fullWidth, ...rest } = props
-	const { as, others } = extractOtherProps(rest)
+	const { as, children, fullWidth, ...rest } = props
+	const others = extractOtherProps(rest)
 	const global = { block: fullWidth }
 
 	return (

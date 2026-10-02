@@ -31,7 +31,7 @@ export const StatisticGroup = polymorphic<StatisticGroupSpecs>(_props => {
 	const styles = useStyles(NAME, { classes, props })
 
 	const { children, order, size, ...rest } = props
-	const { others } = extractOtherProps(rest)
+	const others = extractOtherProps(rest)
 
 	return (
 		<Group

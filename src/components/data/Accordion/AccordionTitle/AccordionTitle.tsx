@@ -34,7 +34,7 @@ export const AccordionTitle = polymorphic<AccordionTitleSpecs>(_props => {
 	const styles = useStyles(NAME, { classes, props })
 
 	const { children, ...rest } = props
-	const { others } = extractOtherProps(rest)
+	const others = extractOtherProps(rest)
 
 	const sharedProps = { ...styles('root'), ...others, id: idx.title },
 		indicateClass = { [`${indicator}`]: indicator !== 'none' },
@@ -63,9 +63,8 @@ export const AccordionTitle = polymorphic<AccordionTitleSpecs>(_props => {
 		titles[next]?.focus()
 	}
 
-	const Tag: ElementType = `h${order}`
 	const stepEl = !!step && <span { ...styles('step') }>{ step }</span>,
-		textEl = <Tag { ...styles('text') }>{ children }</Tag>,
+		textEl = <span { ...styles('text', { global: `inkq-h${order}` }) }>{ children }</span>,
 		titleItems = <>{ stepEl }{ textEl }</>
 
 	if (interactive) {

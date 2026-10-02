@@ -25,7 +25,7 @@ export const TimelineItem = polymorphic<TimelineItemSpecs>(_props => {
 	const styles = useStyles(NAME, { classes, props })
 
 	const { bullet, content, title, ...rest } = props
-	const { others } = extractOtherProps(rest)
+	const others = extractOtherProps(rest)
 
 	return (
 		<Box

@@ -32,7 +32,7 @@ export const ButtonSection = polymorphic<ButtonSectionSpecs>(_props => {
 	const styles = useStyles(rootName, { classes, props })
 
 	const { children, left, right, ...rest } = props
-	const { others } = extractOtherProps(rest)
+	const others = extractOtherProps(rest)
 
 	const data = { side: left ? 'left' : 'right' }
 

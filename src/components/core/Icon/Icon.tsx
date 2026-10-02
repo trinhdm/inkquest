@@ -112,12 +112,11 @@ const buildIcon = (
 	styles: ReturnType<typeof useStyles>,
 ) => {
 	const { color, filled, href, size, type, ...rest } = props
-	const { others } = extractOtherProps(rest)
+	const others = extractOtherProps(rest)
 
 	const sharedProps = {
 		...others,
 		...styles('glyph'),
-		attributes: { aria: { label: type } }
 	}
 
 	if (isSocialIcon(type)) {
@@ -128,7 +127,8 @@ const buildIcon = (
 			<Box
 				{ ...sharedProps }
 				{ ...brandProps }
-				as="svg"
+				as={ TAG }
+				attributes={ { aria: { label: type } } }
 				height={ size }
 				role="img"
 				width={ size }

@@ -58,8 +58,15 @@ export const Logo = polymorphic<LogoSpecs>(_props => {
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { classes, props })
 
-	const { alt, href, type, width, ...rest } = props
-	const { others } = extractOtherProps(rest)
+	const {
+		alt,
+		href,
+		type,
+		width,
+		...rest
+	} = props
+
+	const others = extractOtherProps(rest)
 
 	const { viewBox } = LOGOS_CONFIG.find(logo => type === logo.type)!
 	const vb = typeof viewBox === 'number'

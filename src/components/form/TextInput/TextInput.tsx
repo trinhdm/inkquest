@@ -7,8 +7,11 @@ import type { PropsDefaultList } from '@/lib/component/factory/types'
 import type { Size } from '@/types/shared'
 import classes from './TextInput.module.scss'
 
-const NAME = 'TextInput' as const
+const NAME = 'TextInput' as const,
+	TAG = 'input' as const
+
 const DEFAULT_PROPS = {
+	as: TAG,
 	required: false,
 	type: 'text',
 } as const
@@ -37,7 +40,10 @@ type TextInputType =
 	| 'url'
 
 interface TextInputSpecs {
-	defaults: { props: PropsDefaultList<typeof DEFAULT_PROPS> }
+	defaults: {
+		as: typeof TAG
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
+	}
 	props: TextInputProps
 }
 
@@ -59,7 +65,7 @@ export const TextInput = polymorphic<TextInputSpecs>(_props => {
 		...rest
 	} = props
 
-	const { others } = extractOtherProps(rest)
+	const others = extractOtherProps(rest)
 
 	const hasError = !!error?.trim()
 
@@ -79,7 +85,7 @@ export const TextInput = polymorphic<TextInputSpecs>(_props => {
 		<Box
 			{ ...styles('root') }
 			{ ...others }
-			as="input"
+			as={ TAG }
 			attributes={ { aria, data } }
 			onChange={ onChange }
 			readOnly={ readOnly || (value !== undefined && !onChange) }

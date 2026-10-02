@@ -31,8 +31,8 @@ export const Subnav = polymorphic<SubnavSpecs>(_props => {
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { classes, props })
 
-	const { category, routes, ...rest } = props
-	const { as, others } = extractOtherProps(rest)
+	const { as, category, routes, ...rest } = props
+	const others = extractOtherProps(rest)
 
 	const navitems = filterNavigation(routes, 'breadcrumbs')
 

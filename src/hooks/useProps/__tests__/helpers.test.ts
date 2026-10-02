@@ -65,44 +65,57 @@ describe('styleProps', () => {
 })
 
 describe('extractOtherProps', () => {
-	it('extracts `as` and returns it at the top level', () => {
-		const { as } = extractOtherProps({ as: 'a' as const })
-		expect(as).toBe('a')
+	it('returns the leftover props flat, with no `others`/`as`/`withinView` wrapper keys', () => {
+		const result = extractOtherProps({ id: 'x', 'data-testid': 'y' })
+		expect(result).toEqual({ id: 'x', 'data-testid': 'y' })
+		expect(result).not.toHaveProperty('others')
+		expect(result).not.toHaveProperty('as')
+		expect(result).not.toHaveProperty('withinView')
 	})
 
-	it('returns `as` as undefined when it was not supplied', () => {
-		const { as } = extractOtherProps({ label: 'hi' })
-		expect(as).toBeUndefined()
+	it('strips `as` out entirely instead of returning it', () => {
+		const result = extractOtherProps({ as: 'a' as const, id: 'x' })
+		expect(result).toEqual({ id: 'x' })
+		expect(result).not.toHaveProperty('as')
 	})
 
-	it('extracts `withinView` and returns it at the top level', () => {
-		const { withinView } = extractOtherProps({ withinView: true })
-		expect(withinView).toBe(true)
+	it('strips `withinView` out entirely instead of returning it', () => {
+		const result = extractOtherProps({ withinView: true, id: 'x' })
+		expect(result).toEqual({ id: 'x' })
+		expect(result).not.toHaveProperty('withinView')
 	})
 
-	it('passes arbitrary unrecognized props through into `others` untouched', () => {
-		const { others } = extractOtherProps({ id: 'x', 'data-testid': 'y' })
-		expect(others).toEqual({ id: 'x', 'data-testid': 'y' })
+	it('strips `childName` out entirely', () => {
+		const result = extractOtherProps({ childName: 'Icon', id: 'x' })
+		expect(result).toEqual({ id: 'x' })
+		expect(result).not.toHaveProperty('childName')
 	})
 
-	it('passes `animated` through into `others` untouched, since it is not one of the extracted/stripped keys', () => {
-		const result = extractOtherProps({ animated: true, id: 'x' })
-		expect(result.others).toEqual({ animated: true, id: 'x' })
-	})
-
-	it('strips `loading` out entirely', () => {
-		const result = extractOtherProps({ loading: true, id: 'x' })
-		expect(result.others).toEqual({ id: 'x' })
-		expect((result as any).loading).toBeUndefined()
+	it('strips `children` out entirely', () => {
+		const result = extractOtherProps({ children: 'hi', id: 'x' })
+		expect(result).toEqual({ id: 'x' })
+		expect(result).not.toHaveProperty('children')
 	})
 
 	it('strips `displayName` out entirely', () => {
 		const result = extractOtherProps({ displayName: 'Button', id: 'x' })
-		expect(result.others).toEqual({ id: 'x' })
-		expect((result as any).displayName).toBeUndefined()
+		expect(result).toEqual({ id: 'x' })
+		expect(result).not.toHaveProperty('displayName')
 	})
 
-	it('strips `className`/`classNames` and `style`/`styles` out of `others` without folding them into a resolved style', () => {
+	it('strips `loading` out entirely', () => {
+		const result = extractOtherProps({ loading: true, id: 'x' })
+		expect(result).toEqual({ id: 'x' })
+		expect(result).not.toHaveProperty('loading')
+	})
+
+	it('strips `revealFrom` out entirely', () => {
+		const result = extractOtherProps({ revealFrom: 20, id: 'x' })
+		expect(result).toEqual({ id: 'x' })
+		expect(result).not.toHaveProperty('revealFrom')
+	})
+
+	it('drops the style alias keys entirely, rather than merging them into a resolved className/style', () => {
 		const result = extractOtherProps({
 			className: 'a',
 			classNames: 'b',
@@ -111,37 +124,52 @@ describe('extractOtherProps', () => {
 			id: 'x',
 		})
 
-		expect(result.others).toEqual({ id: 'x' })
-		expect(result.others).not.toHaveProperty('className')
-		expect(result.others).not.toHaveProperty('style')
+		expect(result).toEqual({ id: 'x' })
+		expect(result).not.toHaveProperty('className')
+		expect(result).not.toHaveProperty('classNames')
+		expect(result).not.toHaveProperty('style')
+		expect(result).not.toHaveProperty('styles')
 	})
 
-	it('returns `others` as an empty object when every supplied prop is one of the extracted/stripped keys', () => {
-		const { others, as, withinView } = extractOtherProps({
-			loading: true,
-			displayName: 'X',
-		})
-
-		expect(others).toEqual({})
-		expect(as).toBeUndefined()
-		expect(withinView).toBeUndefined()
+	it('passes `animated` through untouched, since it is not a reserved key', () => {
+		const result = extractOtherProps({ animated: true, id: 'x' })
+		expect(result).toEqual({ animated: true, id: 'x' })
 	})
 
-	it('keeps `as` and `withinView` independent of each other and of the stripped keys', () => {
-		const { as, withinView, others } = extractOtherProps({
+	it('passes `href` through untouched, since it is not a reserved key', () => {
+		const result = extractOtherProps({ href: '/x', id: 'x' })
+		expect(result).toEqual({ href: '/x', id: 'x' })
+	})
+
+	it('passes `disabled` through untouched, since it is not a reserved key', () => {
+		const result = extractOtherProps({ disabled: true, id: 'x' })
+		expect(result).toEqual({ disabled: true, id: 'x' })
+	})
+
+	it('returns an empty object for an input with no extra props at all', () => {
+		expect(extractOtherProps({})).toEqual({})
+	})
+
+	it('returns an empty object when every supplied prop is a reserved key', () => {
+		const result = extractOtherProps({
 			as: 'span' as const,
-			withinView: false,
+			childName: 'Icon',
+			children: 'hi',
+			className: 'a',
+			classNames: 'b',
+			displayName: 'X',
 			loading: true,
-			href: '/x',
+			revealFrom: 10,
+			style: {},
+			styles: {},
+			withinView: true,
 		})
 
-		expect(as).toBe('span')
-		expect(withinView).toBe(false)
-		expect(others).toEqual({ href: '/x' })
+		expect(result).toEqual({})
 	})
 
-	it('returns an empty `others` object for an input with no extra props at all', () => {
-		const { others } = extractOtherProps({})
-		expect(others).toEqual({})
+	it('keeps a falsy-but-present leftover prop, showing filterProps is called without omitEmpty', () => {
+		expect(extractOtherProps({ id: '' })).toEqual({ id: '' })
+		expect(extractOtherProps({ hidden: false })).toEqual({ hidden: false })
 	})
 })

@@ -31,7 +31,7 @@ export const FooterArea = polymorphic<FooterAreaSpecs>(_props => {
 	const styles = useStyles('footer', { classes, props })
 
 	const { children, items, ...rest } = props
-	const { others } = extractOtherProps(rest)
+	const others = extractOtherProps(rest)
 
 	return (
 		<Box

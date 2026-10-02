@@ -29,14 +29,14 @@ export const Quote = polymorphic<QuoteSpecs>(_props => {
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { classes, props })
 
-	const { author, content, ...rest } = props
-	const { as, others } = extractOtherProps(rest)
+	const { as, author, content, ...rest } = props
+	const others = extractOtherProps(rest)
 
 	return (
 		<Box
-			as={ as }
 			{ ...styles('root', { global: { 'item--block': true } }) }
 			{ ...others }
+			as={ as }
 		>
 			<span { ...styles('rail', true) } />
 			<p { ...styles('content', { global: { h4: true } }) }>

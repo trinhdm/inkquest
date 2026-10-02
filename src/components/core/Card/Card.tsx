@@ -36,6 +36,7 @@ export const Card = polymorphic<CardSpecs>(_props => {
 	const styles = useStyles(NAME, { classes, props })
 
 	const {
+		as,
 		caption,
 		children,
 		hasTitleAlt,
@@ -44,11 +45,11 @@ export const Card = polymorphic<CardSpecs>(_props => {
 		...rest
 	} = props
 
-	const { as, others } = extractOtherProps(rest)
+	const others = extractOtherProps(rest)
 	const altDefault = hasTitleAlt ? title : '[ PHOTO ]'
 
 	return (
-		<Box as={ as } { ...styles('root') } { ...others }>
+		<Box { ...styles('root') } { ...others } as={ as }>
 			<div { ...styles('wrapper') }>
 				<div { ...styles('image') }>
 					{ image && <Image { ...image } /> }

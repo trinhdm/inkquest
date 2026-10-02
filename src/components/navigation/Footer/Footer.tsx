@@ -42,8 +42,8 @@ export const Footer = polymorphic<FooterSpecs>(_props => {
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { classes, props })
 
-	const { children, items, socials, ...rest } = props
-	const { as, others } = extractOtherProps(rest)
+	const { as, children, items, socials, ...rest } = props
+	const others = extractOtherProps(rest)
 
 	const currentYear = new Date().getFullYear()
 	const socialIcons = !!socials?.length

@@ -77,19 +77,9 @@ type OtherPropsList<E extends ElementType> = {
 type OtherProps<E extends ElementType> =
 	StyleAliasInput & OtherPropsList<E>
 
-type ExtractOtherPropNames =
-	| 'as'
-	| 'children'
-	| 'withinView'
-
-type OtherExtractedProps<E extends ElementType> =
-	Pick<OtherPropsList<E>, ExtractOtherPropNames>
-
 function extractOthers<T extends object, E extends ElementType = ElementType>(
 	rest: T & OtherProps<E>
-): OtherExtractedProps<E> & {
-	others: DistributiveOmit<T, keyof OtherProps<E>>
-}
+): DistributiveOmit<T, keyof OtherProps<E>>
 function extractOthers(rest: OtherProps<ElementType>) {
 	const {
 		as,
@@ -106,21 +96,13 @@ function extractOthers(rest: OtherProps<ElementType>) {
 		...props
 	} = rest
 
-	const others = filterProps(props)
-
-	return {
-		as,
-		others,
-		withinView,
-	}
+	return filterProps(props)
 }
 
 interface ExtractOtherPropsFn {
 	<T extends object, E extends ElementType = ElementType>(
 		rest: T & OtherProps<E>
-	): OtherExtractedProps<E> & {
-		others: DistributiveOmit<T, keyof OtherProps<E>>
-	}
+	): DistributiveOmit<T, keyof OtherProps<E>>
 }
 
 export const extractOtherProps: ExtractOtherPropsFn = extractOthers

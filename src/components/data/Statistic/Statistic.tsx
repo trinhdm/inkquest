@@ -75,6 +75,7 @@ export const Statistic = polymorphic<StatisticSpecs>(_props => {
 
 	const {
 		animated,
+		as,
 		caption,
 		duration,
 		highlight,
@@ -87,6 +88,8 @@ export const Statistic = polymorphic<StatisticSpecs>(_props => {
 		...rest
 	} = props
 
+	const others = extractOtherProps(rest)
+
 	const { display, ref } = useCountUp({
 		delay: index * stagger,
 		duration,
@@ -95,7 +98,6 @@ export const Statistic = polymorphic<StatisticSpecs>(_props => {
 		withinView,
 	})
 
-	const { as, others } = extractOtherProps(rest)
 	const clsx = {
 		global: { highlight, item: true },
 		module: { [`${size}`]: !!size || null },

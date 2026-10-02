@@ -23,7 +23,7 @@ export const GroupItem = polymorphic<GroupItemSpecs>(_props => {
 	const styles = useStyles(rootName, { classes, props })
 
 	const { children, ...rest } = props
-	const { others } = extractOtherProps(rest)
+	const others = extractOtherProps(rest)
 
 	return (
 		<Box { ...styles(baseName, true) } { ...others } as="div">

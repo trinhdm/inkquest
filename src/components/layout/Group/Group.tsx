@@ -95,6 +95,7 @@ export const GroupBase = polymorphic<GroupSpecs>(_props => {
 	const styles = useStyles(NAME, { classes, props, tokens })
 
 	const {
+		as,
 		amount,
 		animated,
 		childName,
@@ -112,7 +113,7 @@ export const GroupBase = polymorphic<GroupSpecs>(_props => {
 		...rest
 	} = props
 
-	const { as, others } = extractOtherProps(rest)
+	const others = extractOtherProps(rest)
 
 	const aria = { orientation }
 	const data = {

@@ -91,6 +91,7 @@ export const Sidebar = polymorphic<SidebarSpecs>(_props => {
 	const styles = useStyles(NAME, { classes, props, tokens })
 
 	const {
+		as,
 		active,
 		children,
 		items,
@@ -100,7 +101,7 @@ export const Sidebar = polymorphic<SidebarSpecs>(_props => {
 		...rest
 	} = props
 
-	const { as, others } = extractOtherProps(rest)
+	const others = extractOtherProps(rest)
 
 	const replaceUrl = (url: SidebarLinkItem['url']) => (event: { preventDefault: () => void }) => {
 		event.preventDefault()

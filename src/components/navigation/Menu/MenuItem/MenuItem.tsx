@@ -95,6 +95,7 @@ export const MenuItem = polymorphic<MenuItemSpecs>(_props => {
 
 	const {
 		activeItem,
+		as,
 		attributes,
 		depth,
 		hasDropdowns,
@@ -104,7 +105,7 @@ export const MenuItem = polymorphic<MenuItemSpecs>(_props => {
 		...rest
 	} = props
 
-	const { as, others } = extractOtherProps(rest)
+	const others = extractOtherProps(rest)
 	const isDropdown = !!menu?.length
 
 	const handleToggle: React.MouseEventHandler<HTMLButtonElement> = evt => {

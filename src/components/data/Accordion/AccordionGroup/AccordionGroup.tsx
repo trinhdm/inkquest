@@ -58,7 +58,7 @@ export const AccordionGroup = polymorphic<AccordionGroupSpecs>(_props => {
 		...rest
 	} = props
 
-	const { others } = extractOtherProps(rest)
+	const others = extractOtherProps(rest)
 
 	const root = useRef<HTMLDivElement>(null)
 	const withinView = useReplayInView(root)

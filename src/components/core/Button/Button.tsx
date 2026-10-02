@@ -109,6 +109,7 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 	const styles = useStyles(NAME, { classes, props })
 
 	const {
+		as,
 		children,
 		disabled,
 		fullWidth,
@@ -124,7 +125,7 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 		...rest
 	} = props
 
-	const { as, others } = extractOtherProps(rest)
+	const others = extractOtherProps(rest)
 
 	const clsx = {
 		global: { block: fullWidth },

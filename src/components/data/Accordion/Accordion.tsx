@@ -92,6 +92,7 @@ export const Accordion = polymorphic<AccordionSpecs>(_props => {
 	const styles = useStyles(NAME, { classes, props, tokens })
 
 	const {
+		as,
 		children,
 		collapsible,
 		defaultOpen,
@@ -109,7 +110,7 @@ export const Accordion = polymorphic<AccordionSpecs>(_props => {
 		...rest
 	} = props
 
-	const { as, others } = extractOtherProps(rest)
+	const others = extractOtherProps(rest)
 
 	const [uncontrolled, setUncontrolled] = useState(() => !!defaultOpen)
 	const isControlled = typeof open === 'boolean',

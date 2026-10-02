@@ -49,7 +49,7 @@ export const Menu = polymorphic<MenuSpecs>(_props => {
 		...rest
 	} = props
 
-	const { others } = extractOtherProps(rest)
+	const others = extractOtherProps(rest)
 	const module = { [`${orientation}`]: (depth === 0 && !!orientation) || null }
 	const currentRoute = activeItem ?? (pathname as NavigationItem['route'])
 

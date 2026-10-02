@@ -62,7 +62,7 @@ export const ButtonGroup = polymorphic<ButtonGroupSpecs>(_props => {
 		...rest
 	} = props
 
-	const { others } = extractOtherProps(rest)
+	const others = extractOtherProps(rest)
 
 	const module = {
 		[`${orientation}`]: !!orientation || null,

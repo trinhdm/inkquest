@@ -34,8 +34,8 @@ export const Timeline = polymorphic<TimelineSpecs>(_props => {
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { classes, props })
 
-	const { children, ...rest } = props
-	const { as, others } = extractOtherProps(rest)
+	const { as, children, ...rest } = props
+	const others = extractOtherProps(rest)
 
 	return (
 		<Box
