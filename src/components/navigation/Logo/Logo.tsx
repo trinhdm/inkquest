@@ -97,7 +97,10 @@ export const Logo = polymorphic<LogoSpecs>((_props, { useProps, useStyles }) => 
 	)
 }, { name: NAME, classes })
 
-Logo.setDefaults({ props: DEFAULT_PROPS })
+Logo.set({
+	defaultProps: DEFAULT_PROPS,
+	displayName: NAME,
+})
 
 export declare namespace Logo {
 	export type Props = LogoProps

@@ -54,9 +54,22 @@ export const Table = polymorphic<TableSpecs>((_props, { useProps, useStyles }) =
 
 Table.Cell = TableCell
 Table.Row = TableRow
-Table.setDefaults({ props: DEFAULT_PROPS })
+Table.set({
+	defaultProps: DEFAULT_PROPS,
+	displayName: NAME,
+})
 
 export declare namespace Table {
 	export type Props = TableProps
 	export type Specs = TableSpecs
+
+	export namespace Cell {
+		export type Props = TableCell.Props
+		export type Specs = TableCell.Specs
+	}
+
+	export namespace Row {
+		export type Props = TableRow.Props
+		export type Specs = TableRow.Specs
+	}
 }

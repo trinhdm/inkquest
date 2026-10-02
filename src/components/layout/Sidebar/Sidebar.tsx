@@ -162,7 +162,10 @@ export const Sidebar = polymorphic<SidebarSpecs>((_props, { useProps, useStyles 
 	)
 }, { name: NAME, classes })
 
-Sidebar.setDefaults({ props: DEFAULT_PROPS })
+Sidebar.set({
+	defaultProps: DEFAULT_PROPS,
+	displayName: NAME,
+})
 
 export declare namespace Sidebar {
 	export type Props = SidebarProps

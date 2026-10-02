@@ -207,7 +207,10 @@ export const Button = polymorphic<ButtonSpecs>((_props, { useProps, useStyles, u
 
 Button.Group = ButtonGroup
 Button.Section = ButtonSection
-Button.setDefaults({ props: DEFAULT_PROPS })
+Button.set({
+	defaultProps: DEFAULT_PROPS,
+	displayName: NAME,
+})
 
 export declare namespace Button {
 	export type Context = ButtonContext

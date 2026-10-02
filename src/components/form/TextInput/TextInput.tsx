@@ -100,7 +100,10 @@ export const TextInput = polymorphic<TextInputSpecs>((_props, { useProps, useSty
 	)
 }, { name: NAME, classes })
 
-TextInput.setDefaults({ props: DEFAULT_PROPS })
+TextInput.set({
+	defaultProps: DEFAULT_PROPS,
+	displayName: NAME,
+})
 
 export declare namespace TextInput {
 	export type Props = TextInputProps

@@ -53,7 +53,10 @@ export const Quote = polymorphic<QuoteSpecs>((_props, { useProps, useStyles }) =
 	)
 }, { name: NAME, classes })
 
-Quote.setDefaults({ props: DEFAULT_PROPS })
+Quote.set({
+	defaultProps: DEFAULT_PROPS,
+	displayName: NAME,
+})
 
 export declare namespace Quote {
 	export type Props = QuoteProps

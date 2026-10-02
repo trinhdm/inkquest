@@ -39,10 +39,14 @@ type _DefaultProps<S extends Specs> =
 	& Required<Pick<S['props'], SpecsDefaultProps<S> & keyof S['props']>>
 	& _AsDefaultProps<S>
 
-type _MethodSetDefault<S extends Specs> =
+type _SetDefaultProps<S extends Specs> =
 	[SpecsDefaultProps<S>] extends [never]
-		? { props?: _DefaultProps<S> }
-		: { props: _DefaultProps<S> }
+		? { defaultProps?: _DefaultProps<S> }
+		: { defaultProps: _DefaultProps<S> }
+
+type _MethodSet<S extends Specs> =
+	& _SetDefaultProps<S>
+	& { displayName?: string }
 
 type _Component<S extends Specs> =
 	NamedExoticComponent<_ComponentProps<S>>
@@ -51,9 +55,9 @@ export interface MethodsBase<
 	S extends Specs,
 	C = _Component<S>,
 	P = _ComponentProps<S>,
-	D = _MethodSetDefault<S>
+	D = _MethodSet<S>
 > {
-	setDefaults: (defaults: D) => D
+	set: (args: D) => D
 	withProps: (props: P) => C
 }
 
@@ -118,16 +122,18 @@ export const createFactory = <
 	BaseComponent.displayName = name
 	Object.defineProperty(BaseComponent, POLYMORPHIC_MARKER, { value: true })
 
-	BaseComponent.setDefaults = defaults => {
-		const { displayName } = BaseComponent
+	BaseComponent.set = args => {
+		let { displayName } = BaseComponent
 
-		if (!displayName)
-			throw new Error('cannot set defaultProps: missing `displayName`')
+		if (keyHasValue(args, 'displayName') && displayName !== name) {
+			BaseComponent.displayName = args.displayName
+			;({ displayName } = BaseComponent)
+		}
 
-		if (keyHasValue(defaults, 'props') && defaults.props && Object.keys(defaults.props).length)
-			setDefaultProps(displayName, defaults.props)
+		if (keyHasValue(args, 'defaultProps') && !!displayName)
+			setDefaultProps(displayName, args.defaultProps)
 
-		return defaults
+		return args
 	}
 
 	BaseComponent.withProps = props => {

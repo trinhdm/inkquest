@@ -73,7 +73,10 @@ export const Card = polymorphic<CardSpecs>((_props, { useProps, useStyles }) => 
 	)
 }, { name: NAME, classes })
 
-Card.setDefaults({ props: DEFAULT_PROPS })
+Card.set({
+	defaultProps: DEFAULT_PROPS,
+	displayName: NAME,
+})
 
 export declare namespace Card {
 	export type Props = CardProps

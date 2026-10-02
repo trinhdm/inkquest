@@ -73,7 +73,7 @@ export const FooterArea = polymorphic<FooterAreaSpecs>((_props, { useProps, useS
 	)
 }, { name: NAME, classes })
 
-FooterArea.setDefaults({})
+FooterArea.set({ displayName: NAME })
 
 export declare namespace FooterArea {
 	export type Props = FooterAreaProps

@@ -193,7 +193,10 @@ type GroupComponent =
 export const Group = GroupBase as unknown as GroupComponent
 
 Group.Item = GroupItem
-Group.setDefaults({ props: DEFAULT_PROPS })
+Group.set({
+	defaultProps: DEFAULT_PROPS,
+	displayName: NAME,
+})
 
 export declare namespace Group {
 	export type Context = GroupContext

@@ -77,7 +77,10 @@ export const Badge = polymorphic<BadgeSpecs>((_props, { useProps, useStyles, use
 	)
 }, { name: NAME, classes })
 
-Badge.setDefaults({ props: DEFAULT_PROPS })
+Badge.set({
+	defaultProps: DEFAULT_PROPS,
+	displayName: NAME,
+})
 
 export declare namespace Badge {
 	export type Props = BadgeProps

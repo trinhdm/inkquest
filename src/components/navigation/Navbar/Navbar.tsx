@@ -74,7 +74,10 @@ export const Navbar = polymorphic<NavbarSpecs>((_props, { useProps, useStyles })
 	)
 }, { name: NAME, classes })
 
-Navbar.setDefaults({ props: DEFAULT_PROPS })
+Navbar.set({
+	defaultProps: DEFAULT_PROPS,
+	displayName: NAME,
+})
 
 export declare namespace Navbar {
 	export type Props = NavbarProps

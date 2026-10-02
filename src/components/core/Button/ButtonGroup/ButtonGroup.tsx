@@ -100,7 +100,10 @@ export const ButtonGroup = polymorphic<ButtonGroupSpecs>((_props, { useProps, us
 	)
 }, { name: NAME, classes })
 
-ButtonGroup.setDefaults({ props: DEFAULT_PROPS })
+ButtonGroup.set({
+	defaultProps: DEFAULT_PROPS,
+	displayName: NAME,
+})
 
 export declare namespace ButtonGroup {
 	export type Context = ButtonGroupContext

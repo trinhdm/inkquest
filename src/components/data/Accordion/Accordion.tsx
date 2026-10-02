@@ -179,7 +179,10 @@ export const Accordion = polymorphic<AccordionSpecs>((_props, { useProps, useSty
 Accordion.Group = AccordionGroup
 Accordion.Title = AccordionTitle
 Accordion.Content = AccordionContent
-Accordion.setDefaults({ props: DEFAULT_PROPS })
+Accordion.set({
+	defaultProps: DEFAULT_PROPS,
+	displayName: NAME,
+})
 
 export declare namespace Accordion {
 	export type Context = AccordionContext

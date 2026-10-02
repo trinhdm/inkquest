@@ -62,7 +62,10 @@ export const Header = polymorphic<HeaderSpecs>((_props, { useProps, useStyles })
 	)
 }, { name: NAME, classes })
 
-Header.setDefaults({ props: DEFAULT_PROPS })
+Header.set({
+	defaultProps: DEFAULT_PROPS,
+	displayName: NAME,
+})
 
 export declare namespace Header {
 	export type Props = HeaderProps

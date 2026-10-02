@@ -53,7 +53,10 @@ export const Timeline = polymorphic<TimelineSpecs>((_props, { useProps, useStyle
 }, { name: NAME, classes })
 
 Timeline.Item = TimelineItem
-Timeline.setDefaults({ props: DEFAULT_PROPS })
+Timeline.set({
+	defaultProps: DEFAULT_PROPS,
+	displayName: NAME,
+})
 
 export declare namespace Timeline {
 	export type Props = TimelineProps

@@ -33,7 +33,7 @@ export const GridItem = polymorphic<GridItemSpecs>((_props, { useProps, useStyle
 	)
 }, { name: NAME, classes })
 
-GridItem.setDefaults({})
+GridItem.set({ displayName: NAME })
 
 export declare namespace GridItem {
 	export type Props = GridItemProps

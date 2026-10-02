@@ -64,7 +64,10 @@ export const Subnav = polymorphic<SubnavSpecs>((_props, { useProps, useStyles })
 	)
 }, { name: NAME, classes })
 
-Subnav.setDefaults({ props: DEFAULT_PROPS })
+Subnav.set({
+	defaultProps: DEFAULT_PROPS,
+	displayName: NAME,
+})
 
 export declare namespace Subnav {
 	export type Props = SubnavProps

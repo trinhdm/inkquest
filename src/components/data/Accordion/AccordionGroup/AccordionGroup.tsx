@@ -112,7 +112,10 @@ export const AccordionGroup = polymorphic<AccordionGroupSpecs>((_props, { usePro
 	)
 }, { name: NAME, classes })
 
-AccordionGroup.setDefaults({ props: DEFAULT_PROPS })
+AccordionGroup.set({
+	defaultProps: DEFAULT_PROPS,
+	displayName: NAME,
+})
 
 export declare namespace AccordionGroup {
 	export type Context = AccordionGroupContext

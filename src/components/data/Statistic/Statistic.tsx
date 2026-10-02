@@ -134,7 +134,10 @@ export const Statistic = polymorphic<StatisticSpecs>((_props, { useProps, useSty
 }, { name: NAME, classes })
 
 Statistic.Group = StatisticGroup
-Statistic.setDefaults({ props: DEFAULT_PROPS })
+Statistic.set({
+	defaultProps: DEFAULT_PROPS,
+	displayName: NAME,
+})
 
 export declare namespace Statistic {
 	export type Props = StatisticProps
