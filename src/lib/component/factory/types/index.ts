@@ -1,7 +1,8 @@
 export type {
 	AsPolymorphic, IsPolymorphic,
-	SpecDefaultAs, SpecDefaultProps,
-	Specs, SpecsConstraint, SpecsContract,
+	Specs, SpecsContract,
+	SpecsContext, SpecDefaultAs, SpecDefaultProps,
+	SpecsTokens, TokensList,
 } from './specs.types'
 
 export type { PolymorphicProps, PropsDefaultList } from './props.types'

@@ -6,13 +6,14 @@ import { keyHasValue, pluralizeKeys } from '@/utils/helpers'
 import type { ClassValue } from 'clsx'
 import type { PluralizeKeys } from '@/types/utils'
 import type { SiteThemeConfig } from '@/lib/theme/types'
-import type { TokensConfig } from '@/lib/component/tokens'
+import type { SpecsContext, SpecsContract, TokensConfig } from '@/lib/component'
 
-interface StyleOptions<P extends object, V extends object = object> {
+interface StyleOptions<S extends SpecsContract> {
 	readonly classes?: Record<string, string>
+	context?: SpecsContext<S>
 	prefix?: string
-	props: P
-	tokens?: TokensConfig<P, V>
+	props: S['props']
+	tokens?: TokensConfig<S>
 }
 
 interface SelectorConfigScope {
@@ -30,8 +31,8 @@ interface SelectorArgs {
 	selector: string
 }
 
-export interface SharedConfig<P extends object, V extends object = object>
-	extends SelectorArgs, StyleOptions<P, V> {
+export interface SharedConfig<S extends SpecsContract>
+	extends SelectorArgs, StyleOptions<S> {
 	name: string
 	theme: SiteThemeConfig
 }
@@ -53,12 +54,12 @@ type StyleFn = <S extends SelectorArgs['selector']>(
 
 const ROOT_SELECTOR = 'root'
 
-const isUnstyled = <P extends object>(props: StyleOptions<P>['props']): boolean =>
+const isUnstyled = <S extends SpecsContract>(props: StyleOptions<S>['props']): boolean =>
 	keyHasValue(props, { unstyled: true })
 
-export const useStyles = <P extends object, V extends object = object>(
+export const useStyles = <S extends SpecsContract>(
 	name: string,
-	opts: StyleOptions<P, V>
+	opts: StyleOptions<S>
 ): StyleFn => {
 	const theme = useTheme()
 
@@ -79,11 +80,11 @@ export const useStyles = <P extends object, V extends object = object>(
 				isUnstyled: isUnstyled(opts.props),
 			}
 
-			const args: SharedConfig<P, V> = { ...sharedArgs, check, config, selector }
+			const args: SharedConfig<S> = { ...sharedArgs, check, config, selector }
 
 			const values: ReturnType<StyleFn> = {
-				className: getClassName(args),
-				style: getStyle(args),
+				className: getClassName<S>(args),
+				style: getStyle<S>(args),
 			}
 
 			const result: ReturnType<StyleFn> = check.isRoot
@@ -94,5 +95,8 @@ export const useStyles = <P extends object, V extends object = object>(
 			return result
 		})
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [name, opts.props, opts.classes, opts.prefix, opts.tokens, theme])
+	}, [
+		name, theme,
+		opts.classes, opts.context, opts.prefix, opts.props, opts.tokens,
+	])
 }

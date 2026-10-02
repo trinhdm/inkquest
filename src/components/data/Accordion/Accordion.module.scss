@@ -78,7 +78,7 @@
 		text-align: left;
 
 		&:first-child {
-			margin-inline-start: var(--accordion-title-indent);
+			margin-inline-start: var(--accordion-title-indent, var(--accordion-indent));
 		}
 	}
 
@@ -137,7 +137,7 @@
 	}
 
 	&__inner {
-		margin-inline: var(--accordion-content-indent);
+		margin-inline: var(--accordion-content-indent, var(--accordion-indent));
 		max-width: var(--inkq-container-block);
 		padding-block-end: var(--space-6);
 	}

@@ -1,22 +1,16 @@
 import { rem } from '@/lib/general'
 import type { Accordion } from './Accordion'
 import type { HeadingOrder } from '@/types/shared'
-import type { TokensList } from '@/lib/component/tokens/defineTokens'
+import type { TokensList } from '@/lib/component/factory/types'
 
 export type AccordionTokens = {
 	root:
 		| '--accordion-column-width'
-		| '--accordion-content-indent'
 		| '--accordion-gap'
 		| '--accordion-indicator-size'
 		| '--accordion-padding'
 		| '--accordion-step-size'
 		| '--accordion-text-size'
-		| '--accordion-title-indent'
-	title:
-		| '--accordion-indent'
-	content:
-		| '--accordion-indent'
 }
 
 interface AccordionTokenConfig {
@@ -60,20 +54,12 @@ const tokensBySize = (
 	return getTokenGroup(step, base)
 }
 
-export const getSharedTokens = (
-	props: AccordionPropsList
-): TokensList<AccordionTokens> => {
-	const { layout, order, size } = props
+export const getSharedTokens = ({
+	order,
+	size,
+}: AccordionPropsList): TokensList<AccordionTokens> => {
 	if (!size) return {}
-
-	const config = tokensBySize(size, order),
-		hasSteps = layout === 'steps'
-
-	const indents = {
-		base: 'var(--accordion-indent)',
-		content: 'calc(var(--accordion-column-width) + var(--accordion-gap))',
-		title: 0,
-	}
+	const config = tokensBySize(size, order)
 
 	return {
 		root: {
@@ -83,15 +69,6 @@ export const getSharedTokens = (
 			'--accordion-indicator-size': `var(--font-size-${config.indicator})`,
 			'--accordion-step-size': config.step,
 			'--accordion-text-size': `var(--inkq-font-size-heading-h${config.order})`,
-
-			'--accordion-content-indent': hasSteps ? indents.content : indents.base,
-			'--accordion-title-indent': hasSteps ? indents.title : indents.base,
-		},
-		title: {
-			'--accordion-indent': hasSteps ? indents.title : undefined,
-		},
-		content: {
-			'--accordion-indent': hasSteps ? indents.content : undefined,
 		},
 	}
 }

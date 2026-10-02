@@ -1,33 +1,35 @@
 import { keyHasValue } from '@/utils/helpers'
 import type { CSSProperties } from 'react'
 import type { SharedConfig } from './useStyles'
+import type { RootCtxValue, SpecsContract } from '@/lib/component'
 
-type InheritConfig<P extends object, V extends object> =
-	Omit<SharedConfig<P, V>, 'props'>
-	& { props: P & Record<'style', CSSProperties> }
+type InheritConfig<S extends SpecsContract> =
+	Omit<SharedConfig<S>, 'props'>
+	& { props: S['props'] & Record<'style', CSSProperties> }
 
-const canInherit = <P extends object, V extends object>(
-	args: SharedConfig<P, V>
-): args is InheritConfig<P, V> =>
+const canInherit = <S extends SpecsContract>(
+	args: SharedConfig<S>
+): args is InheritConfig<S> =>
 	'style' in args.props && keyHasValue(args.props, 'style')
 
-const inheritStyles = <P extends object, V extends object>({
+const inheritStyles = <S extends SpecsContract>({
 	check,
 	props,
-}: InheritConfig<P, V>): CSSProperties => (
+}: InheritConfig<S>): CSSProperties => (
 	check.isRoot && keyHasValue(props, 'style')
 		? props.style
 		: {}
 )
 
-export const getStyle = <P extends object, V extends object>(
-	args: SharedConfig<P, V>
+export const getStyle = <S extends SpecsContract>(
+	args: SharedConfig<S>
 ): CSSProperties => {
 	const inherited = canInherit(args)
 		? inheritStyles(args)
 		: {}
 
 	const {
+		context,
 		props,
 		selector,
 		theme,
@@ -35,8 +37,7 @@ export const getStyle = <P extends object, V extends object>(
 	} = args
 
 	if (typeof tokens === 'function') {
-		const stylesCtx = {}
-		const variables = tokens?.(props, theme, stylesCtx)
+		const variables = tokens(props, theme, context as RootCtxValue<S['context']>)
 
 		if (keyHasValue(variables, selector)) {
 			const styles = variables[selector]

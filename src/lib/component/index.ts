@@ -1,3 +1,3 @@
 export * from './context'
 export * from './factory'
-export { defineTokens } from './tokens'
+export { defineTokens, type TokensConfig } from './tokens'

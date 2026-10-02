@@ -7,12 +7,15 @@ import {
 import type {
 	IsPolymorphic,
 	PolymorphicProps,
+	Specs,
 	SpecDefaultAs,
-	SpecsConstraint,
 } from './types'
 
 import type { BaseProps } from './definePolymorphic'
 import type { ElementType, ReactElement } from 'react'
+
+export type SpecsConstraint<T extends { props: object }> =
+	Specs & { defaults?: { props?: keyof T['props'] } }
 
 const polymorphicFactory = <T extends SpecsConstraint<T>>(
 	target: Parameters<typeof createFactory<T>>[0],

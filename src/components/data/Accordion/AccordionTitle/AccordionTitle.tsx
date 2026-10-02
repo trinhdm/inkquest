@@ -1,10 +1,12 @@
 import { useAccordionCtx } from '../Accordion.context'
 import { useProps, extractOtherProps } from '@/hooks/useProps'
 import { useStyles } from '@/hooks/useStyles'
-import { polymorphic } from '@/lib/component'
+import { defineTokens, polymorphic } from '@/lib/component'
+import { keyHasValue } from '@/utils/helpers'
 import { Box } from '@/components/polymorphic/Box'
 import { Icon } from '@/components/core/Icon'
-import type { ElementType, KeyboardEvent, ReactNode } from 'react'
+import type { Accordion } from '../Accordion'
+import type { KeyboardEvent, ReactNode } from 'react'
 import classes from '../Accordion.module.scss'
 
 const NAME = 'Accordion.Title' as const
@@ -14,11 +16,26 @@ interface AccordionTitleProps {
 }
 
 interface AccordionTitleSpecs {
+	context: Accordion.Context
 	isCompound: true
 	props: AccordionTitleProps
+	tokens: AccordionTitleTokens
 }
 
+type AccordionTitleTokens = {
+	root:
+		| '--accordion-title-indent'
+}
+
+const tokens = defineTokens<AccordionTitleSpecs>((props, theme, context) => ({
+	root: { '--accordion-title-indent': keyHasValue(context, 'step') ? 0 : undefined },
+}))
+
 export const AccordionTitle = polymorphic<AccordionTitleSpecs>(_props => {
+	const context = useAccordionCtx(NAME)
+	const props = useProps(NAME, _props)
+	const styles = useStyles(NAME, { classes, context, props, tokens })
+
 	const {
 		collapsible,
 		disabled,
@@ -28,10 +45,7 @@ export const AccordionTitle = polymorphic<AccordionTitleSpecs>(_props => {
 		isOpen,
 		order,
 		step,
-	} = useAccordionCtx(NAME)
-
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props })
+	} = context
 
 	const { children, ...rest } = props
 	const others = extractOtherProps(rest)

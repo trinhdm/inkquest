@@ -15,13 +15,14 @@ export interface RootProviderProps<T, V extends T = T> {
 export type RootProviderFn<T> =
 	<V extends T>(props: RootProviderProps<T, V>) => ReactElement
 
-export const createRootCtx = <T extends object>(name: string) => {
-	type RootCtxProps = RootProviderProps<T>
-	type RootCtxValue = T & Required<Pick<RootCtxProps, 'rootName'>>
-	type RootCtxOptions = RootCtxValue | null
+export type RootCtxValue<T> =
+	T & Required<Pick<RootProviderProps<T>, 'baseName' | 'rootName'>>
 
-	const RootCtx = createContext<RootCtxOptions>(null)
-	const uninherited: (keyof T)[] = ['rootName'] as (keyof T)[]
+export type SafeRootCtxValue<T> =
+	(T & Required<Pick<RootProviderProps<T>, 'rootName'>>) | null
+
+export const createRootCtx = <T extends object>(name: string) => {
+	const RootCtx = createContext<SafeRootCtxValue<T>>(null)
 
 	const RootProvider = <V extends T>({
 		children,
@@ -36,7 +37,7 @@ export const createRootCtx = <T extends object>(name: string) => {
 		return <RootCtx value={ ctxValue }>{ children }</RootCtx>
 	}
 
-	const useRootCtx = (componentName: string): RootCtxValue & Required<Pick<RootCtxProps, 'baseName'>> => {
+	const useRootCtx = (componentName: string): RootCtxValue<T> => {
 		const ctx = use(RootCtx)
 
 		if (ctx === null)
@@ -56,7 +57,7 @@ export const createRootCtx = <T extends object>(name: string) => {
 		return { ...ctx, baseName }
 	}
 
-	const useSafeRootCtx = (): RootCtxOptions =>
+	const useSafeRootCtx = (): SafeRootCtxValue<T> =>
 		use(RootCtx)
 
 	/** Fills keys absent from `_props` with context values. Own prop always wins. */
@@ -67,10 +68,12 @@ export const createRootCtx = <T extends object>(name: string) => {
 	// invert the precedence — `useRootProps` below is the only door in.
 	const inheritProps = <P extends object>(
 		_props: P,
-		ctx: RootCtxOptions
+		ctx: SafeRootCtxValue<T>
 	): P => {
 		if (!ctx) return _props
-		const inherited = {} as Partial<T>
+
+		const inherited = {} as Partial<T>,
+			uninherited = ['rootName'] as (keyof T)[]
 
 		// `Object.hasOwn` on the RAW `_props` — not a `useProps`-merged result —
 		// is what keeps "unset" and "explicitly set to the registry default" distinguishable.

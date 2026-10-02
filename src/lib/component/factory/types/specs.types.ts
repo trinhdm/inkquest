@@ -1,5 +1,6 @@
 import type { CSSProperties, ElementType, Ref } from 'react'
-import type { CSSVars, SpecAttributes } from '@/types/shared'
+import type { CSSVariable, SpecAttributes } from '@/types/shared'
+import type { RootCtxValue } from '../../context'
 
 // specs
 export interface SpecsContract {
@@ -7,19 +8,21 @@ export interface SpecsContract {
 	classNames?: string
 	context?: any
 	id?: string
-	props: Record<string, unknown>
+	props: Record<string, any>
 	ref?: any
+	selectors?: string
 	styles?: CSSProperties
 	unstyled?: boolean
 }
 
 interface _BaseSpecs<T = unknown, P extends object = object> {
 	attributes?: SpecAttributes
-	context?: unknown
+	context?: any
 	id?: string
 	props: P
 	ref?: Ref<TagElement<T>>
-	tokens?: CSSVars
+	selectors?: string
+	tokens?: Record<string, CSSVariable>
 }
 
 interface _CompoundSpecs<P extends object = object>
@@ -28,6 +31,7 @@ interface _CompoundSpecs<P extends object = object>
 	defaults?: {
 		as?: never
 		props?: PropertyKey
+		// unstyled?: boolean
 	}
 	isCompound: true
 	styles?: never
@@ -40,10 +44,11 @@ interface _RootSpecs<T = unknown, P extends object = object>
 	defaults?: {
 		as?: any
 		props?: PropertyKey
+		// unstyled?: boolean
 	}
 	isCompound?: false
 	styles?: SpecsContract['styles']
-	subcomponents?: Record<string, unknown>
+	subcomponents?: Record<string, any>
 }
 
 export type Specs<T = unknown, P extends object = object> =
@@ -51,20 +56,12 @@ export type Specs<T = unknown, P extends object = object> =
 	| _CompoundSpecs<P>
 
 
-// polymorphism
+//	individual specs
 
-export type IsPolymorphic<S> =
-	S extends { defaults: { as: ElementType } }
-		? true
-		: false
-
-export type AsPolymorphic<S> =
-	IsPolymorphic<S> extends true
-		? { as?: SpecDefaultAs<S> }
-		: { as?: never }
-
-export type SpecsConstraint<T extends { props: object }> =
-	Specs & { defaults?: { props?: keyof T['props'] } }
+export type SpecsContext<S> =
+	'context' extends keyof S
+		? RootCtxValue<S['context']>
+		: undefined
 
 export type SpecDefaultAs<S, Fallback = never> =
 	S extends { defaults: { as: infer C extends ElementType } }
@@ -78,6 +75,34 @@ export type SpecDefaultProps<S> =
 	}
 		? Extract<K, keyof P>
 		: never
+
+type _TokensGroup<V> = {
+	[K in keyof V]: V[K] extends CSSVariable
+		? Record<V[K], number | string | undefined>
+		: never
+}
+
+export type TokensList<V> =
+	| _TokensGroup<V>
+	| Record<PropertyKey, never>
+
+export type SpecsTokens<S> =
+	'tokens' extends keyof S
+		? TokensList<S['tokens']>
+		: Record<PropertyKey, never>
+
+
+// polymorphism
+
+export type IsPolymorphic<S> =
+	S extends { defaults: { as: ElementType } }
+		? true
+		: false
+
+export type AsPolymorphic<S> =
+	IsPolymorphic<S> extends true
+		? { as?: SpecDefaultAs<S> }
+		: { as?: never }
 
 
 type _CommonTag =

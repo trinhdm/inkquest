@@ -1,4 +1,1 @@
-export {
-	defineTokens,
-	type TokensConfig, type TokensList,
-} from './defineTokens'
+export { defineTokens, type TokensConfig } from './defineTokens'

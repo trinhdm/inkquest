@@ -1,11 +1,5 @@
-import type { CSSVariable, CSSVars } from '@/types/shared'
 import type { SiteThemeConfig } from '@/lib/theme/types'
-
-export type TokensList<V = CSSVars> = {
-	[K in keyof V]: V[K] extends CSSVariable
-		? Record<V[K], number | string | undefined>
-		: never
-} | Record<PropertyKey, never>
+import type { SpecsContext, SpecsTokens } from '../factory'
 
 interface TokensArgs {
 	context?: unknown
@@ -13,12 +7,15 @@ interface TokensArgs {
 	tokens?: unknown
 }
 
-export type TokensConfig<
+type TokensFn<
 	P = unknown,
 	V extends object = object,
 	C = unknown,
 > = (props: P, theme: SiteThemeConfig, context: C) => V
 
+export type TokensConfig<S extends TokensArgs> =
+	TokensFn<S['props'], SpecsTokens<S>, SpecsContext<S>>
+
 export const defineTokens = <S extends TokensArgs>(
-	settings: TokensConfig<S['props'], TokensList<S['tokens']>, S['context']>
+	settings: TokensConfig<S>
 ) => settings

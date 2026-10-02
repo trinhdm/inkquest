@@ -1,8 +1,10 @@
 import { useAccordionCtx } from '../Accordion.context'
 import { useProps, extractOtherProps } from '@/hooks/useProps'
 import { useStyles } from '@/hooks/useStyles'
-import { polymorphic } from '@/lib/component'
+import { defineTokens, polymorphic } from '@/lib/component'
+import { keyHasValue } from '@/utils/helpers'
 import { Box } from '@/components/polymorphic/Box'
+import type { Accordion } from '../Accordion'
 import type { ReactNode } from 'react'
 import classes from '../Accordion.module.scss'
 
@@ -13,15 +15,30 @@ interface AccordionContentProps {
 }
 
 interface AccordionContentSpecs {
+	context: Accordion.Context
 	isCompound: true
 	props: AccordionContentProps
+	tokens: AccordionContentTokens
 }
 
-export const AccordionContent = polymorphic<AccordionContentSpecs>(_props => {
-	const { idx, isOpen } = useAccordionCtx(NAME)
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props })
+type AccordionContentTokens = {
+	root:
+		| '--accordion-content-indent'
+}
 
+const tokens = defineTokens<AccordionContentSpecs>((props, theme, context) => ({
+	root: { '--accordion-content-indent': keyHasValue(context, 'step')
+		? 'calc(var(--accordion-column-width) + var(--accordion-gap))'
+		: undefined
+	},
+}))
+
+export const AccordionContent = polymorphic<AccordionContentSpecs>(_props => {
+	const context = useAccordionCtx(NAME)
+	const props = useProps(NAME, _props)
+	const styles = useStyles(NAME, { classes, context, props, tokens })
+
+	const { idx, isOpen } = useAccordionCtx(NAME)
 	const { children, ...rest } = props
 	const others = extractOtherProps(rest)
 
