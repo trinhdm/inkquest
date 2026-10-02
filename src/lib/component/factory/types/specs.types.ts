@@ -5,6 +5,7 @@ import type { CSSVars, SpecAttributes } from '@/types/shared'
 export interface SpecsContract {
 	attributes?: SpecAttributes
 	classNames?: string
+	context?: any
 	id?: string
 	props: Record<string, unknown>
 	ref?: any
@@ -14,10 +15,11 @@ export interface SpecsContract {
 
 interface _BaseSpecs<T = unknown, P extends object = object> {
 	attributes?: SpecAttributes
-	ctx?: unknown
+	context?: unknown
 	id?: string
 	props: P
 	ref?: Ref<TagElement<T>>
+	tokens?: CSSVars
 }
 
 interface _CompoundSpecs<P extends object = object>
@@ -30,7 +32,6 @@ interface _CompoundSpecs<P extends object = object>
 	isCompound: true
 	styles?: never
 	subcomponents?: never
-	tokens?: never
 }
 
 interface _RootSpecs<T = unknown, P extends object = object>
@@ -43,7 +44,6 @@ interface _RootSpecs<T = unknown, P extends object = object>
 	isCompound?: false
 	styles?: SpecsContract['styles']
 	subcomponents?: Record<string, unknown>
-	tokens?: CSSVars
 }
 
 export type Specs<T = unknown, P extends object = object> =

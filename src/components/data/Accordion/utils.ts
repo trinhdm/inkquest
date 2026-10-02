@@ -1,8 +1,25 @@
 import { rem } from '@/lib/general'
 import type { Accordion } from './Accordion'
 import type { HeadingOrder } from '@/types/shared'
+import type { TokensList } from '@/lib/component/tokens/defineTokens'
 
-interface AccordionTokens {
+export type AccordionTokens = {
+	root:
+		| '--accordion-column-width'
+		| '--accordion-content-indent'
+		| '--accordion-gap'
+		| '--accordion-indicator-size'
+		| '--accordion-padding'
+		| '--accordion-step-size'
+		| '--accordion-text-size'
+		| '--accordion-title-indent'
+	title:
+		| '--accordion-indent'
+	content:
+		| '--accordion-indent'
+}
+
+interface AccordionTokenConfig {
 	colWidth: number
 	gap: number
 	indicator: number
@@ -11,38 +28,27 @@ interface AccordionTokens {
 	step?: string
 }
 
-type AccordionComponentProps =
+type AccordionPropsList =
 	Accordion.Props | Accordion.Group.Props
-
-type AccordionKeys =
-	keyof AccordionComponentProps
-
-type PickAccordionProps<K extends AccordionKeys> =
-	Pick<AccordionComponentProps, K | 'size'>
-
-type ListAccordionProps<K extends AccordionKeys, RK extends AccordionKeys | null = null> =
-	RK extends string
-		? PickAccordionProps<K> & Required<PickAccordionProps<RK>>
-		: PickAccordionProps<K>
 
 const getTokenGroup = (
 	step: number,
-	base: AccordionTokens,
-): AccordionTokens => ({
+	base: AccordionTokenConfig,
+): AccordionTokenConfig => ({
 	colWidth: base.colWidth - (3 * step),
 	gap: base.gap - (3 * step),
 	indicator: base.indicator - (4 * step),
-	order: base.order + step as AccordionTokens['order'],
+	order: base.order + step as AccordionTokenConfig['order'],
 	padding: base.padding - step,
 	step: `calc((var(--accordion-text-size) - var(--accordion-indicator-size)) + (${base.step} * ${step + 1}) )`,
 })
 
-const setupAccordionTokens = ({
-	order,
-	size,
-}: ListAccordionProps<'order', 'size'>): AccordionTokens => {
+const tokensBySize = (
+	size: NonNullable<AccordionPropsList['size']>,
+	order: AccordionPropsList['order'],
+): AccordionTokenConfig => {
 	const step = { sm: 2, md: 1, lg: 0 }[size]
-	const base: AccordionTokens = {
+	const base: AccordionTokenConfig = {
 		colWidth: 11,
 		gap: 9,
 		indicator: 24,
@@ -54,11 +60,13 @@ const setupAccordionTokens = ({
 	return getTokenGroup(step, base)
 }
 
-export const getSharedTokens = (props: ListAccordionProps<'layout' | 'order'>) => {
-	const { layout, size } = props
+export const getSharedTokens = (
+	props: AccordionPropsList
+): TokensList<AccordionTokens> => {
+	const { layout, order, size } = props
 	if (!size) return {}
 
-	const config = setupAccordionTokens({ ...props, size }),
+	const config = tokensBySize(size, order),
 		hasSteps = layout === 'steps'
 
 	const indents = {
@@ -80,10 +88,10 @@ export const getSharedTokens = (props: ListAccordionProps<'layout' | 'order'>) =
 			'--accordion-title-indent': hasSteps ? indents.title : indents.base,
 		},
 		title: {
-			...(hasSteps ? { '--accordion-indent': indents.title } : {}),
+			'--accordion-indent': hasSteps ? indents.title : undefined,
 		},
 		content: {
-			...(hasSteps ? { '--accordion-indent': indents.content } : {}),
+			'--accordion-indent': hasSteps ? indents.content : undefined,
 		},
 	}
 }

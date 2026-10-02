@@ -14,4 +14,5 @@ export {
 	type AnimateInViewConfig,
 	type AnimationOptions,
 	type MaybeAnimationProps,
+	type ReplayAnimateInViewConfig,
 } from './constants'

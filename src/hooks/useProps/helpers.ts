@@ -1,15 +1,17 @@
 import cx from 'clsx'
 import type { CSSProperties, ElementType, ReactNode } from 'react'
 import type { DistributiveOmit } from '@/types/utils'
-import type { SpecsContract } from '@/lib/component/factory/types'
+import type { ReplayAnimateInViewConfig } from '../animation'
 
 interface DOMStyleProps {
 	className?: string
 	style?: CSSProperties
 }
 
-type SpecStyleProps =
-	Pick<SpecsContract, 'classNames' | 'styles'>
+type SpecStyleProps = {
+	classNames?: string
+	styles?: CSSProperties
+}
 
 interface StyleAliasInput
 	extends SpecStyleProps, DOMStyleProps {}
@@ -64,24 +66,25 @@ export const styleProps = <T extends object>(
 	return filterProps(aliasedProps)
 }
 
-type OtherPropsList<E extends ElementType> = {
+type OtherPropsList<E extends ElementType = ElementType> = {
 	as?: E
 	childName?: string
 	children?: ReactNode
 	displayName?: string
 	loading?: boolean
-	revealFrom?: number
-	withinView?: boolean
 }
 
-type OtherProps<E extends ElementType> =
-	StyleAliasInput & OtherPropsList<E>
+type OtherProps<E extends ElementType = ElementType> =
+	StyleAliasInput
+	& ReplayAnimateInViewConfig
+	& OtherPropsList<E>
 
 function extractOthers<T extends object, E extends ElementType = ElementType>(
 	rest: T & OtherProps<E>
 ): DistributiveOmit<T, keyof OtherProps<E>>
 function extractOthers(rest: OtherProps<ElementType>) {
 	const {
+		animated,
 		as,
 		childName,
 		children,
@@ -99,10 +102,4 @@ function extractOthers(rest: OtherProps<ElementType>) {
 	return filterProps(props)
 }
 
-interface ExtractOtherPropsFn {
-	<T extends object, E extends ElementType = ElementType>(
-		rest: T & OtherProps<E>
-	): DistributiveOmit<T, keyof OtherProps<E>>
-}
-
-export const extractOtherProps: ExtractOtherPropsFn = extractOthers
+export const extractOtherProps = extractOthers

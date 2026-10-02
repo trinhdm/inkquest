@@ -69,6 +69,13 @@ interface SidebarSpecs {
 		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: SidebarProps
+	tokens: SidebarTokens
+}
+
+type SidebarTokens = {
+	rail:
+		| '--sidebar-rail-height'
+		| '--sidebar-rail-position'
 }
 
 const tokens = defineTokens<SidebarSpecs>(({ active, items }) => {

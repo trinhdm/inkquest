@@ -3,7 +3,7 @@ import { useAccordionGroupProps, AccordionGroup } from './AccordionGroup'
 import { useProps, extractOtherProps } from '@/hooks/useProps'
 import { useStyles } from '@/hooks/useStyles'
 import { defineTokens, filterChildren, polymorphic } from '@/lib/component'
-import { getSharedTokens } from './utils'
+import { getSharedTokens, type AccordionTokens } from './utils'
 import { toKebabCase } from '@/utils/helpers'
 import { AccordionContent } from './AccordionContent'
 import { AccordionProvider } from './Accordion.context'
@@ -52,6 +52,7 @@ interface AccordionSpecs {
 		Content: typeof AccordionContent
 		Title: typeof AccordionTitle
 	}
+	tokens: AccordionTokens
 }
 
 const buildAccordion = (children: AccordionProps['children']) => {

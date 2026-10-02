@@ -76,6 +76,12 @@ type GroupSpecs = {
 	subcomponents: {
 		Item: typeof GroupItem
 	}
+	tokens: GroupTokens
+}
+
+type GroupTokens = {
+	root:
+		| '--group-item-count'
 }
 
 const tokens = defineTokens<GroupSpecs>(props => {

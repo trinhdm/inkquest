@@ -33,7 +33,7 @@ interface BaseButtonProps {
 	fullWidth?: boolean
 	loading?: boolean
 	priority?: ThemePriority
-	size?: Extract<Size, 'sm' | 'md' | 'lg'>
+	size?: Size
 	showLabel?: boolean
 	variant?: ThemeVariant
 }

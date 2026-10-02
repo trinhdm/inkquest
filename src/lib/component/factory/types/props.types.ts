@@ -14,9 +14,17 @@ type _TagName<C> =
 		? typeof DEFAULT_TAG
 		: NonNullable<C>
 
+interface FactoryContract {
+	attributes?: SpecsContract['attributes']
+	classNames?: SpecsContract['classNames']
+	id?: SpecsContract['id']
+	ref?: SpecsContract['ref']
+	styles?: SpecsContract['styles']
+	unstyled?: SpecsContract['unstyled']
+}
 
 export type PolymorphicProps<P, C> =
-	& Omit<SpecsContract, 'props'>
+	& FactoryContract
 	& {
 		as?: 'as' extends keyof P ? P['as'] : C
 		children?: ReactNode

@@ -1,16 +1,14 @@
 import { createRootCtx } from '@/lib/component'
 import type { AnimationOptions } from '@/hooks/animation'
+import type { Size } from '@/types/shared'
 
-export type StatisticGroupOrder =
+type StatisticGroupOrder =
 	'ascend' | 'descend'
-
-export type StatisticGroupSize =
-	'sm' | 'lg'
 
 export interface StatisticGroupContext
 	extends AnimationOptions {
 	order?: StatisticGroupOrder
-	size?: StatisticGroupSize
+	size?: Exclude<Size, 'md'>
 }
 
 export const {

@@ -16,6 +16,7 @@ export interface AnimationOptions {
 
 export interface AnimateInViewConfig
 	extends AnimationOptions {
+	revealFrom?: number
 	withinView?: boolean
 }
 
@@ -28,22 +29,29 @@ export interface ReplayAnimateInViewConfig
 	extends AnimateInViewConfig,
 		ReplayInViewConfig {}
 
+interface MaybeAnimateInViewConfig
+	extends Omit<AnimateInViewConfig, 'animated' | 'duration' | 'unstyled'> {}
+
+
 interface AnimatedComponentProps
-	extends ReplayInViewConfig {
+	extends MaybeAnimateInViewConfig, ReplayInViewConfig {
 	animated: true
 	duration: number
-	index?: number
-	stagger?: number
-	withinView?: boolean
+	// index?: number
+	// revealFrom?: number
+	// stagger?: number
+	// withinView?: boolean
 }
 
 interface StaticComponentProps
-	extends Partial<Record<keyof ReplayInViewConfig, never>> {
+	extends Partial<Record<keyof MaybeAnimateInViewConfig, never>>,
+		Partial<Record<keyof ReplayInViewConfig, never>> {
 	animated?: false | never
 	duration?: never
-	index?: never
-	stagger?: never
-	withinView?: never
+	// index?: never
+	// revealFrom?: never
+	// stagger?: never
+	// withinView?: never
 }
 
 export type MaybeAnimationProps =

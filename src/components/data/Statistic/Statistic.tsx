@@ -44,6 +44,15 @@ interface StatisticSpecs {
 	subcomponents: {
 		Group: typeof StatisticGroup
 	}
+	tokens: StatisticTokens
+}
+
+type StatisticTokens = {
+	root:
+		| '--statistic-align'
+		| '--statistic-direction'
+		| '--statistic-font-caption'
+		| '--statistic-font-value'
 }
 
 const tokens = defineTokens<StatisticSpecs>((props, theme) => {
@@ -80,6 +89,7 @@ export const Statistic = polymorphic<StatisticSpecs>(_props => {
 		highlight,
 		icon,
 		index,
+		order,
 		size,
 		stagger,
 		value,

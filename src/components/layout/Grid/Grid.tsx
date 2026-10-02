@@ -34,6 +34,13 @@ interface GridSpecs {
 	subcomponents: {
 		Item: typeof GridItem
 	}
+	tokens: GridTokens
+}
+
+type GridTokens = {
+	root:
+		| '--grid-cols'
+		| '--grid-gap'
 }
 
 const tokens = defineTokens<GridSpecs>((props, theme) => {

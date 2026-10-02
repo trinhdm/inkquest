@@ -1,5 +1,5 @@
-import { rem } from '@/lib/general'
 import { getSharedTokens } from '../utils'
+import { rem } from '@/lib/general'
 
 describe('getSharedTokens', () => {
 	it('returns an empty object when no size is given', () => {

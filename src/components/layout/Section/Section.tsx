@@ -56,6 +56,13 @@ interface SectionSpecs {
 	subcomponents: {
 		Button: typeof Button
 	}
+	tokens: SectionTokens
+}
+
+type SectionTokens = {
+	root:
+		| '--reveal-duration'
+		| '--reveal-stagger'
 }
 
 const tokens = defineTokens<SectionSpecs>(({ duration, stagger }) => ({
