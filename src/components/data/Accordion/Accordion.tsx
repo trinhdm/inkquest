@@ -25,6 +25,12 @@ const DEFAULT_PROPS = {
 	size: 'md',
 } as const
 
+const SUBCOMPONENTS = {
+	Group: AccordionGroup,
+	Content: AccordionContent,
+	Title: AccordionTitle,
+} as const
+
 interface AccordionProps
 	extends Omit<AccordionGroup.Context, 'withinView'> {
 	children: ReactNode
@@ -47,11 +53,7 @@ interface AccordionSpecs {
 	}
 	props: AccordionProps
 	selectors: AccordionSelectors
-	subcomponents: {
-		Group: typeof AccordionGroup
-		Content: typeof AccordionContent
-		Title: typeof AccordionTitle
-	}
+	subcomponents: typeof SUBCOMPONENTS
 	tokens: AccordionTokens
 }
 
@@ -176,12 +178,10 @@ export const Accordion = polymorphic<AccordionSpecs>((_props, { useProps, useSty
 	)
 }, { name: NAME, classes })
 
-Accordion.Group = AccordionGroup
-Accordion.Title = AccordionTitle
-Accordion.Content = AccordionContent
 Accordion.set({
 	defaultProps: DEFAULT_PROPS,
 	displayName: NAME,
+	subcomponents: SUBCOMPONENTS,
 })
 
 export declare namespace Accordion {

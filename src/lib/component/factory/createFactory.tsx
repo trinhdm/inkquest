@@ -44,8 +44,14 @@ type _SetDefaultProps<S extends Specs> =
 		? { defaultProps?: _DefaultProps<S> }
 		: { defaultProps: _DefaultProps<S> }
 
+type _SetSubcomponents<S extends Specs> =
+	S extends { subcomponents: Record<string, unknown> }
+		? { subcomponents: S['subcomponents'] }
+		: { subcomponents?: never }
+
 type _MethodSet<S extends Specs> =
 	& _SetDefaultProps<S>
+	& _SetSubcomponents<S>
 	& { displayName?: string }
 
 type _Component<S extends Specs> =
@@ -129,6 +135,9 @@ export const createFactory = <
 			BaseComponent.displayName = args.displayName
 			;({ displayName } = BaseComponent)
 		}
+
+		if (keyHasValue(args, 'subcomponents'))
+			Object.assign(BaseComponent, args.subcomponents)
 
 		if (keyHasValue(args, 'defaultProps') && !!displayName)
 			setDefaultProps(displayName, args.defaultProps)

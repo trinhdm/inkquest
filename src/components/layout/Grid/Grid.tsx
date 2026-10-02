@@ -15,6 +15,10 @@ const DEFAULT_PROPS = {
 	as: TAG,
 } as const
 
+const SUBCOMPONENTS = {
+	Item: GridItem,
+} as const
+
 interface GridProps {
 	children: ReactNode
 	columns?: number
@@ -31,9 +35,7 @@ interface GridSpecs {
 	}
 	props: GridProps
 	selectors: GridSelectors
-	subcomponents: {
-		Item: typeof GridItem
-	}
+	subcomponents: typeof SUBCOMPONENTS
 	tokens: GridTokens
 }
 
@@ -78,10 +80,10 @@ export const Grid = polymorphic<GridSpecs>((_props, { useProps, useStyles }) => 
 	)
 }, { name: NAME, classes })
 
-Grid.Item = GridItem
 Grid.set({
 	defaultProps: DEFAULT_PROPS,
 	displayName: NAME,
+	subcomponents: SUBCOMPONENTS,
 })
 
 export declare namespace Grid {

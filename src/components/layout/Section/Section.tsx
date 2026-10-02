@@ -9,11 +9,16 @@ import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Section.module.scss'
 
 const NAME = 'Section' as const
+
 const DEFAULT_PROPS = {
 	animated: true,
 	duration: 600,
 	layout: 'default',
 	stagger: 150,
+} as const
+
+const SUBCOMPONENTS = {
+	Button,
 } as const
 
 type SectionLayout =
@@ -52,9 +57,7 @@ interface SectionSpecs {
 	defaults: { props: PropsDefaultList<typeof DEFAULT_PROPS> }
 	props: SectionProps
 	selectors: SectionSelectors
-	subcomponents: {
-		Button: typeof Button
-	}
+	subcomponents: typeof SUBCOMPONENTS
 	tokens: SectionTokens
 }
 
@@ -111,10 +114,10 @@ export const Section = polymorphic<SectionSpecs>((_props, { useProps, useStyles 
 	)
 }, { name: NAME, classes })
 
-Section.Button = Button
 Section.set({
 	defaultProps: DEFAULT_PROPS,
 	displayName: NAME,
+	subcomponents: SUBCOMPONENTS,
 })
 
 export declare namespace Section {

@@ -21,6 +21,10 @@ const DEFAULT_PROPS = {
 	socials: ['instagram', 'tiktok', 'x'],
 } as const
 
+const SUBCOMPONENTS = {
+	Area: FooterArea,
+} as const
+
 interface FooterProps {
 	items?: FooterArea.Props['items']
 	socials?: readonly SocialBrand[]
@@ -33,9 +37,7 @@ interface FooterSpecs {
 	}
 	props: FooterProps
 	selectors: FooterSelectors
-	subcomponents: {
-		Area: typeof FooterArea
-	}
+	subcomponents: typeof SUBCOMPONENTS
 }
 
 type FooterSelectors =
@@ -92,10 +94,10 @@ export const Footer = polymorphic<FooterSpecs>((_props, { useProps, useStyles })
 	)
 }, { name: NAME, classes })
 
-Footer.Area = FooterArea
 Footer.set({
 	defaultProps: DEFAULT_PROPS,
 	displayName: NAME,
+	subcomponents: SUBCOMPONENTS,
 })
 
 export declare namespace Footer {

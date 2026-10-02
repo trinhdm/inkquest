@@ -36,6 +36,10 @@ const DEFAULT_PROPS = {
 	valuesCtx: {},
 } as const
 
+const SUBCOMPONENTS = {
+	Item: GroupItem,
+} as const
+
 export const GROUP_CASCADE_PROPS = [
 	'amount', 'initial', 'once', 'root',
 	'animated', 'delay', 'duration', 'index', 'stagger',
@@ -88,9 +92,7 @@ type GroupSpecs = {
 	}
 	props: GroupProps<GroupContext, typeof NAME>
 	selectors: GroupSelectors
-	subcomponents: {
-		Item: typeof GroupItem
-	}
+	subcomponents: typeof SUBCOMPONENTS
 	tokens: GroupTokens
 }
 
@@ -192,10 +194,10 @@ type GroupComponent =
 
 export const Group = GroupBase as unknown as GroupComponent
 
-Group.Item = GroupItem
 Group.set({
 	defaultProps: DEFAULT_PROPS,
 	displayName: NAME,
+	subcomponents: SUBCOMPONENTS,
 })
 
 export declare namespace Group {

@@ -21,6 +21,10 @@ const DEFAULT_PROPS = {
 	stagger: 0,
 } as const
 
+const SUBCOMPONENTS = {
+	Group: StatisticGroup,
+} as const
+
 interface BaseStatisticProps {
 	caption?: string
 	highlight?: boolean
@@ -41,9 +45,7 @@ interface StatisticSpecs {
 	}
 	props: StatisticProps
 	selectors: StatisticSelectors
-	subcomponents: {
-		Group: typeof StatisticGroup
-	}
+	subcomponents: typeof SUBCOMPONENTS
 	tokens: StatisticTokens
 }
 
@@ -133,10 +135,10 @@ export const Statistic = polymorphic<StatisticSpecs>((_props, { useProps, useSty
 	)
 }, { name: NAME, classes })
 
-Statistic.Group = StatisticGroup
 Statistic.set({
 	defaultProps: DEFAULT_PROPS,
 	displayName: NAME,
+	subcomponents: SUBCOMPONENTS,
 })
 
 export declare namespace Statistic {

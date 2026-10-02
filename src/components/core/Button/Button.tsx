@@ -26,6 +26,11 @@ const DEFAULT_PROPS = {
 	variant: 'solid',
 } as const
 
+const SUBCOMPONENTS = {
+	Group: ButtonGroup,
+	Section: ButtonSection,
+} as const
+
 interface BaseButtonProps {
 	children: ReactNode
 	disabled?: boolean
@@ -66,10 +71,7 @@ interface ButtonSpecs {
 	}
 	props: ButtonProps
 	selectors: ButtonSelectors
-	subcomponents: {
-		Group: typeof ButtonGroup
-		Section: typeof ButtonSection
-	}
+	subcomponents: typeof SUBCOMPONENTS
 }
 
 type ButtonSelectors =
@@ -205,11 +207,10 @@ export const Button = polymorphic<ButtonSpecs>((_props, { useProps, useStyles, u
 	)
 }, { name: NAME, classes })
 
-Button.Group = ButtonGroup
-Button.Section = ButtonSection
 Button.set({
 	defaultProps: DEFAULT_PROPS,
 	displayName: NAME,
+	subcomponents: SUBCOMPONENTS,
 })
 
 export declare namespace Button {

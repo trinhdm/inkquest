@@ -14,6 +14,10 @@ const DEFAULT_PROPS = {
 	as: TAG,
 } as const
 
+const SUBCOMPONENTS = {
+	Item: TimelineItem,
+} as const
+
 interface TimelineProps {
 	children: ReactNode
 }
@@ -25,9 +29,7 @@ interface TimelineSpecs {
 	}
 	props: TimelineProps
 	selectors: TimelineSelectors
-	subcomponents: {
-		Item: typeof TimelineItem
-	}
+	subcomponents: typeof SUBCOMPONENTS
 }
 
 type TimelineSelectors =
@@ -52,10 +54,10 @@ export const Timeline = polymorphic<TimelineSpecs>((_props, { useProps, useStyle
 	)
 }, { name: NAME, classes })
 
-Timeline.Item = TimelineItem
 Timeline.set({
 	defaultProps: DEFAULT_PROPS,
 	displayName: NAME,
+	subcomponents: SUBCOMPONENTS,
 })
 
 export declare namespace Timeline {

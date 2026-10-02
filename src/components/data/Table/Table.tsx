@@ -14,6 +14,11 @@ const DEFAULT_PROPS = {
 	as: TAG,
 } as const
 
+const SUBCOMPONENTS = {
+	Cell: TableCell,
+	Row: TableRow,
+} as const
+
 interface TableProps {
 	children: ReactNode
 }
@@ -25,10 +30,7 @@ interface TableSpecs {
 	}
 	props: TableProps
 	selectors: TableSelectors
-	subcomponents: {
-		Cell: typeof TableCell
-		Row: typeof TableRow
-	}
+	subcomponents: typeof SUBCOMPONENTS
 }
 
 type TableSelectors =
@@ -52,11 +54,10 @@ export const Table = polymorphic<TableSpecs>((_props, { useProps, useStyles }) =
 	)
 }, { name: NAME, classes })
 
-Table.Cell = TableCell
-Table.Row = TableRow
 Table.set({
 	defaultProps: DEFAULT_PROPS,
 	displayName: NAME,
+	subcomponents: SUBCOMPONENTS,
 })
 
 export declare namespace Table {
