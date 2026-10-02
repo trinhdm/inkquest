@@ -18,6 +18,7 @@
 
 	&__body {
 		margin-top: var(--inkq-stack-gap-lede);
+		width: 100%;
 
 		& > :first-child {
 			margin-top: 0;
@@ -27,6 +28,7 @@
 	&__cta {
 		justify-self: center;
 		margin-top: var(--inkq-stack-gap-cta);
+		width: 100%;
 	}
 
 	&:not(:last-child) {

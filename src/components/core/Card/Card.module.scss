@@ -22,7 +22,7 @@
 		width: 100%;
 
 		&::after {
-			background-color: var(--inkq-background-gradient);
+			background: var(--inkq-background-gradient);
 			content: '';
 			display: block;
 			height: 100%;

@@ -47,6 +47,15 @@ h6,
 	text-wrap: pretty;
 }
 
+a,
+button {
+	&:focus-visible {
+		border-radius: var(--inkq-border-radius-chip);
+		outline: 2px solid var(--inkq-color-action);
+		outline-offset: .125rem;
+	}
+}
+
 a {
 	color: var(--inkq-color-link);
 	text-decoration: none;
@@ -56,11 +65,38 @@ a {
 		color: var(--inkq-color-link-hover);
 	}
 
-	&:where([data-action]) {
+	&:where(.inkq-cta, [data-cta]) {
 		color: var(--inkq-color-action);
 
 		&:hover {
 			color: var(--inkq-color-action-hover);
+		}
+	}
+
+	&:where([data-cta]) {
+		display: inline-flex;
+		overflow: hidden clip;
+		position: relative;
+		text-wrap: pretty;
+
+		&::after {
+			background-color: var(--inkq-color-action-hover);
+			content: '';
+			display: block;
+			height: 1px;
+			inset: 0;
+			inset-block-start: auto;
+			position: absolute;
+			transform: translatex(-101%);
+			transition: opacity var(--reveal-motion), transform var(--reveal-motion);
+			width: 100%;
+			will-change: opacity, transform;
+		}
+
+		&:hover {
+			&::after {
+				transform: translatex(0);
+			}
 		}
 	}
 }
@@ -85,11 +121,6 @@ ul {
 			display: inline-block;
 		}
 	}
-}
-
-::selection {
-	background-color: var(--inkq-color-action-select, var(--inkq-color-action));
-	color: var(--inkq-color-text-on-accent);
 }
 
 input,
@@ -121,13 +152,9 @@ textarea {
 	}
 }
 
-a,
-button {
-	&:focus-visible {
-		border-radius: var(--inkq-border-radius-chip);
-		outline: 2px solid var(--inkq-color-action);
-		outline-offset: .125rem;
-	}
+::selection {
+	background-color: var(--inkq-color-action-select, var(--inkq-color-action));
+	color: var(--inkq-color-text-on-accent);
 }
 
 :disabled,
@@ -227,8 +254,8 @@ button {
 	height: .125rem;
 	inset: 0 0 auto 0;
 	position: absolute;
-	transform-origin: left center;
 	transform: scale_x(1);
+	transform-origin: left center;
 	transition: transform 620ms var(--easing-out) 274ms;
 	z-index: 5;
 }

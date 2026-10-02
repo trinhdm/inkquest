@@ -21,7 +21,7 @@ export default function Press() {
 				layout="hero"
 				title="Writing about us?"
 			>
-				<>Everything you need — boilerplate, facts, logos, and photography. For interviews and anything not covered here, email <a href="press@inkquest.com" data-action>press@inkquest.com</a>.</>
+				<>Everything you need — boilerplate, facts, logos, and photography. For interviews and anything not covered here, email <a href="press@inkquest.com" data-cta>press@inkquest.com</a>.</>
 
 				<Section.Button>Download full kit (ZIP)</Section.Button>
 			</Section>
