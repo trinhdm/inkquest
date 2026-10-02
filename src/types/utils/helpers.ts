@@ -91,10 +91,3 @@ export type OneKeyOf<E> =
 // object (keyof a union is the intersection of its keys), which kills `Extract`/`in` narrowing.
 export type DistributiveOmit<T, K extends PropertyKey> =
 	T extends unknown ? Omit<T, K> : never
-
-export type WithDefaults<P, K extends PropertyKey> =
-	[K] extends [never]
-		? P
-		: P extends unknown
-			? Omit<P, K> & Required<Pick<P, K & keyof P>>
-			: never

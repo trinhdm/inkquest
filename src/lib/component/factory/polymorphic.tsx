@@ -1,18 +1,10 @@
-import {
-	createFactory,
-	type MethodsBase,
-	type SubcomponentsBase,
-} from './createFactory'
-
-import type {
-	IsPolymorphic,
-	PolymorphicProps,
-	Specs,
-	SpecsDefaultAs,
-} from './types'
-
-import type { BaseProps } from './definePolymorphic'
+import { createFactory } from './createFactory'
 import type { ElementType, ReactElement } from 'react'
+import type {
+	FactoryMethods, FactorySubcomponents,
+	IsPolymorphic, PolymorphicProps,
+	Specs, SpecsDefaultAs,
+} from './types'
 
 type SpecsConstraint<T extends { props: object }> =
 	Specs & { defaults?: { props?: keyof T['props'] } }
@@ -29,15 +21,13 @@ const polymorphicFactory = <
 		? <U extends ElementType = C>(props: P<U>) => ReactElement
 		: (props: P<never>) => ReactElement
 
-	type _Subcomponents = SubcomponentsBase<S>
-	type _Methods = MethodsBase<S, _Component, P<C>>
-	type _Properties = BaseProps<P<unknown>>
+	type _Subcomponents = FactorySubcomponents<S>
+	type _Methods = FactoryMethods<S, _Component, P<C>>
 
 	type PolymorphicComponent =
 		& _Component
 		& _Subcomponents
 		& _Methods
-		& _Properties
 
 	return createFactory<S, PolymorphicComponent>(target, config)
 }

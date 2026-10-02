@@ -1,15 +1,6 @@
-import type {
-	ComponentProps,
-	ElementType,
-	FunctionComponent,
-	ReactElement,
-} from 'react'
-
-import type { PolymorphicProps } from './types'
+import type { ComponentProps, ElementType, ReactElement } from 'react'
+import type { FactoryDisplayName, PolymorphicProps } from './types'
 import type { DEFAULT_TAG } from './constants'
-
-export type BaseProps<P = object> =
-	Required<Pick<FunctionComponent<P>, 'displayName'>>
 
 export const definePolymorphic = <
 	P0 extends object,
@@ -23,7 +14,7 @@ export const definePolymorphic = <
 
 	type PolymorphicBase =
 		& _Component
-		& BaseProps<ComponentProps<C0>>
+		& Required<FactoryDisplayName<ComponentProps<C0>>>
 
 	return target as unknown as PolymorphicBase
 }
