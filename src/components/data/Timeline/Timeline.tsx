@@ -34,8 +34,8 @@ type TimelineSelectors =
 	| 'root'
 
 export const Timeline = polymorphic<TimelineSpecs>((_props, { useProps, useStyles }) => {
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { props })
+	const props = useProps(_props)
+	const styles = useStyles({ props })
 
 	const { as, children, ...rest } = props
 	const others = extractOthers(rest)
@@ -50,7 +50,7 @@ export const Timeline = polymorphic<TimelineSpecs>((_props, { useProps, useStyle
 			{ filterChildren(children, TimelineItem.displayName).map(child => child) }
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
 Timeline.displayName = NAME
 Timeline.Item = TimelineItem

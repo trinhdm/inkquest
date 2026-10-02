@@ -73,15 +73,18 @@ type _FactoryProps<S extends Specs> =
 	WithDefaults<_ComponentProps<S>, SpecsDefaultProps<S>>
 
 type _FactoryStyles<S extends Specs> =
-	Omit<StyleOptions<S>, 'classes'>
-
-type _PropsName =
-	Parameters<typeof usePropsHook>[0]
+	& Omit<StyleOptions<S>, 'classes'>
+	& Partial<Pick<FactoryConfig<S>, 'name'>>
 
 interface _FactoryTools<S extends Specs> {
-	useProps: <P extends object = _FactoryProps<S>>(name: _PropsName, _props?: P) => P
-	useStyles: (name: string, opts: _FactoryStyles<S>) => ReturnType<typeof useStylesHook<S>>
-	useVariants: (name: string) => void
+	useProps: <P extends object = _FactoryProps<S>>(_props?: P) => P
+	useStyles: (options: _FactoryStyles<S>) => ReturnType<typeof useStylesHook<S>>
+	useVariants: () => void
+}
+
+export interface FactoryConfig<S extends Specs> {
+	readonly classes?: StyleOptions<S>['classes']
+	name: string
 }
 
 type _FactoryTarget<S extends Specs> =
@@ -92,19 +95,19 @@ export const createFactory = <
 	C extends object = _FactoryComponent<S>
 >(
 	target: _FactoryTarget<S>,
-	classes?: Record<string, string>,
+	{ classes, name }: FactoryConfig<S>,
 ) => {
 	type FC = _FactoryComponent<S>
 
 	const tooling = (_props: _FactoryProps<S>): _FactoryTools<S> => ({
-		useProps: function useProps(name, props) {
+		useProps: function useProps(props) {
 			return usePropsHook(name, (props ?? _props) as NonNullable<typeof props>)
 		},
-		useStyles: function useStyles(name, opts) {
-			const args = { ...opts, classes: classes as StyleOptions<S>['classes'] }
-			return useStylesHook<S>(name, args)
+		useStyles: function useStyles({ name: scope = name, ...options }) {
+			const args = { ...options, classes: classes as StyleOptions<S>['classes'] }
+			return useStylesHook<S>(scope, args)
 		},
-		useVariants: function useVariants(name) {
+		useVariants: function useVariants() {
 			return useVariantsHook(name)
 		},
 	})

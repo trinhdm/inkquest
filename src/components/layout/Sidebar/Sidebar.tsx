@@ -96,8 +96,8 @@ const tokens = defineTokens<SidebarSpecs>(({ props }) => {
 })
 
 export const Sidebar = polymorphic<SidebarSpecs>((_props, { useProps, useStyles }) => {
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { props, tokens })
+	const props = useProps(_props)
+	const styles = useStyles({ props, tokens })
 
 	const {
 		as,
@@ -160,7 +160,7 @@ export const Sidebar = polymorphic<SidebarSpecs>((_props, { useProps, useStyles 
 			{ children }
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
 Sidebar.displayName = NAME
 Sidebar.setDefaults({ props: DEFAULT_PROPS })

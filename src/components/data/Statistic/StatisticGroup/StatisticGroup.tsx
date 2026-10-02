@@ -30,8 +30,8 @@ type StatisticGroupSelectors =
 	| 'root'
 
 export const StatisticGroup = polymorphic<StatisticGroupSpecs>((_props, { useProps, useStyles }) => {
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { props })
+	const props = useProps(_props)
+	const styles = useStyles({ props })
 
 	const { children, order, size, ...rest } = props
 	const others = extractOthers(rest, GROUP_CASCADE_PROPS)
@@ -47,7 +47,7 @@ export const StatisticGroup = polymorphic<StatisticGroupSpecs>((_props, { usePro
 			{ children }
 		</Group>
 	)
-}, classes)
+}, { name: NAME, classes })
 
 StatisticGroup.displayName = NAME
 StatisticGroup.setDefaults({ props: DEFAULT_PROPS })

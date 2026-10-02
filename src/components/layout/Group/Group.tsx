@@ -120,8 +120,8 @@ const tokens = defineTokens<GroupSpecs>(({ props }) => {
 })
 
 export const GroupBase = polymorphic<GroupSpecs>((_props, { useProps, useStyles }) => {
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { props, tokens })
+	const props = useProps(_props)
+	const styles = useStyles({ props, tokens })
 
 	const {
 		as,
@@ -180,7 +180,7 @@ export const GroupBase = polymorphic<GroupSpecs>((_props, { useProps, useStyles 
 			{ withProvider(items, Provider, ctxValues) }
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
 type GroupComponent =
 	& (<

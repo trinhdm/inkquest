@@ -30,8 +30,8 @@ type QuoteSelectors =
 	| 'content' | 'caption'
 
 export const Quote = polymorphic<QuoteSpecs>((_props, { useProps, useStyles }) => {
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { props })
+	const props = useProps(_props)
+	const styles = useStyles({ props })
 
 	const { as, author, content, ...rest } = props
 	const others = extractOthers(rest)
@@ -51,7 +51,7 @@ export const Quote = polymorphic<QuoteSpecs>((_props, { useProps, useStyles }) =
 			</span>
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
 Quote.displayName = NAME
 Quote.setDefaults({ props: DEFAULT_PROPS })

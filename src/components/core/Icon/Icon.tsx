@@ -158,8 +158,8 @@ const buildIcon = (
 }
 
 export const Icon = polymorphic<IconSpecs>((_props, { useProps, useStyles }) => {
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { props })
+	const props = useProps(_props)
+	const styles = useStyles({ props })
 
 	const iconEl = buildIcon(props, styles)
 	if (!iconEl) return null
@@ -176,7 +176,7 @@ export const Icon = polymorphic<IconSpecs>((_props, { useProps, useStyles }) => 
 	}
 
 	return <Box { ...styles('root') } as="div">{ iconEl }</Box>
-}, classes)
+}, { name: NAME, classes })
 
 Icon.displayName = NAME
 Icon.setDefaults({ props: DEFAULT_PROPS })

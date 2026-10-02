@@ -26,8 +26,8 @@ type TimelineItemSelectors =
 export const TimelineItem = polymorphic<TimelineItemSpecs>((_props, { useProps, useStyles }) => {
 	const itemRef = useRef<HTMLDivElement>(null)
 
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { props })
+	const props = useProps(_props)
+	const styles = useStyles({ props })
 
 	const { bullet, content, title, ...rest } = props
 	const others = extractOthers(rest)
@@ -55,7 +55,7 @@ export const TimelineItem = polymorphic<TimelineItemSpecs>((_props, { useProps, 
 			</div>
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
 TimelineItem.displayName = NAME
 TimelineItem.setDefaults({})

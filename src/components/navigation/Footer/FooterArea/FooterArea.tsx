@@ -32,8 +32,8 @@ type FooterSelectors =
 	| 'navigation' | 'group' | 'label' | 'menu'
 
 export const FooterArea = polymorphic<FooterAreaSpecs>((_props, { useProps, useStyles }) => {
-	const props = useProps(NAME, _props)
-	const styles = useStyles('footer', { props })
+	const props = useProps(_props)
+	const styles = useStyles({ name: 'footer', props })
 
 	const { children, items, ...rest } = props
 	const others = extractOthers(rest)
@@ -71,7 +71,7 @@ export const FooterArea = polymorphic<FooterAreaSpecs>((_props, { useProps, useS
 			) }
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
 FooterArea.displayName = NAME
 FooterArea.setDefaults({})

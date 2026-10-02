@@ -49,8 +49,8 @@ const derivePriority = (index: number): Button.Priority => {
 }
 
 export const ButtonGroup = polymorphic<ButtonGroupSpecs>((_props, { useProps, useStyles }) => {
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { props })
+	const props = useProps(_props)
+	const styles = useStyles({ props })
 
 	const {
 		children,
@@ -98,7 +98,7 @@ export const ButtonGroup = polymorphic<ButtonGroupSpecs>((_props, { useProps, us
 			{ withProvider(items, ButtonGroupProvider, ctxValues) }
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
 ButtonGroup.displayName = NAME
 ButtonGroup.setDefaults({ props: DEFAULT_PROPS })

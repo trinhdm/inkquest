@@ -90,8 +90,8 @@ const tokens = defineTokens<AccordionSpecs>(({ props }) => {
 })
 
 export const Accordion = polymorphic<AccordionSpecs>((_props, { useProps, useStyles }) => {
-	const props = useProps(NAME, useAccordionGroupProps(_props))
-	const styles = useStyles(NAME, { props, tokens })
+	const props = useProps(useAccordionGroupProps(_props))
+	const styles = useStyles({ props, tokens })
 
 	const {
 		as,
@@ -174,7 +174,7 @@ export const Accordion = polymorphic<AccordionSpecs>((_props, { useProps, useSty
 			</AccordionProvider>
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
 Accordion.displayName = NAME
 Accordion.Group = AccordionGroup

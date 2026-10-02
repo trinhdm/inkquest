@@ -82,8 +82,8 @@ const tokens = defineTokens<StatisticSpecs>(({ props, theme }) => {
 })
 
 export const Statistic = polymorphic<StatisticSpecs>((_props, { useProps, useStyles }) => {
-	const props = useProps(NAME, useStatisticGroupProps(_props))
-	const styles = useStyles(NAME, { props, tokens })
+	const props = useProps(useStatisticGroupProps(_props))
+	const styles = useStyles({ props, tokens })
 
 	const {
 		animated,
@@ -131,7 +131,7 @@ export const Statistic = polymorphic<StatisticSpecs>((_props, { useProps, useSty
 			<span { ...styles('caption', true) }>{ caption }</span>
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
 Statistic.displayName = NAME
 Statistic.Group = StatisticGroup

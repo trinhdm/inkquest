@@ -35,8 +35,8 @@ type NavbarSelectors =
 	| 'col' | 'menu'
 
 export const Navbar = polymorphic<NavbarSpecs>((_props, { useProps, useStyles }) => {
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { props })
+	const props = useProps(_props)
+	const styles = useStyles({ props })
 
 	const { as, routes, ...rest } = props
 	const others = extractOthers(rest)
@@ -72,7 +72,7 @@ export const Navbar = polymorphic<NavbarSpecs>((_props, { useProps, useStyles })
 			</div>
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
 Navbar.displayName = NAME
 Navbar.setDefaults({ props: DEFAULT_PROPS })

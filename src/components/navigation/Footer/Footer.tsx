@@ -44,8 +44,8 @@ type FooterSelectors =
 	| 'legal'
 
 export const Footer = polymorphic<FooterSpecs>((_props, { useProps, useStyles }) => {
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { props })
+	const props = useProps(_props)
+	const styles = useStyles({ props })
 
 	const { as, children, items, socials, ...rest } = props
 	const others = extractOthers(rest)
@@ -90,7 +90,7 @@ export const Footer = polymorphic<FooterSpecs>((_props, { useProps, useStyles })
 			</div>
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
 Footer.displayName = NAME
 Footer.setDefaults({ props: DEFAULT_PROPS })

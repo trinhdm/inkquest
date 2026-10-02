@@ -32,8 +32,8 @@ type SubnavSelectors =
 	| 'label' | 'menu'
 
 export const Subnav = polymorphic<SubnavSpecs>((_props, { useProps, useStyles }) => {
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { props })
+	const props = useProps(_props)
+	const styles = useStyles({ props })
 
 	const { as, category, routes, ...rest } = props
 	const others = extractOthers(rest)
@@ -62,7 +62,7 @@ export const Subnav = polymorphic<SubnavSpecs>((_props, { useProps, useStyles })
 			</div>
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
 Subnav.displayName = NAME
 Subnav.setDefaults({ props: DEFAULT_PROPS })

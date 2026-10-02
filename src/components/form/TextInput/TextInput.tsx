@@ -51,8 +51,8 @@ type TextInputSelectors =
 	| 'root'
 
 export const TextInput = polymorphic<TextInputSpecs>((_props, { useProps, useStyles }) => {
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { props })
+	const props = useProps(_props)
+	const styles = useStyles({ props })
 
 	const {
 		disabled,
@@ -98,7 +98,7 @@ export const TextInput = polymorphic<TextInputSpecs>((_props, { useProps, useSty
 
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
 TextInput.displayName = NAME
 TextInput.setDefaults({ props: DEFAULT_PROPS })

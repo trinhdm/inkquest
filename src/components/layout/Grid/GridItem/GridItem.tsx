@@ -20,8 +20,8 @@ type GridItemSelectors =
 	| 'root'
 
 export const GridItem = polymorphic<GridItemSpecs>((_props, { useProps, useStyles }) => {
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { props })
+	const props = useProps(_props)
+	const styles = useStyles({ props })
 
 	const { children, ...rest } = props
 	const others = extractOthers(rest)
@@ -31,7 +31,7 @@ export const GridItem = polymorphic<GridItemSpecs>((_props, { useProps, useStyle
 			{ children }
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
 GridItem.displayName = NAME
 GridItem.setDefaults({})

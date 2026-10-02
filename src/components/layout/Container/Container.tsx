@@ -28,8 +28,8 @@ type ContainerSelectors =
 	| 'root' | 'wrapper'
 
 export const Container = polymorphic<ContainerSpecs>((_props, { useProps, useStyles }) => {
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { props })
+	const props = useProps(_props)
+	const styles = useStyles({ props })
 
 	const { as, children, fullWidth, ...rest } = props
 	const others = extractOthers(rest)
@@ -47,7 +47,7 @@ export const Container = polymorphic<ContainerSpecs>((_props, { useProps, useSty
 			</div>
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
 Container.displayName = NAME
 Container.setDefaults({ props: DEFAULT_PROPS })

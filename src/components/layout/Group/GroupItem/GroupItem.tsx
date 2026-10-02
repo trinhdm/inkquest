@@ -22,8 +22,8 @@ type GroupItemSelectors =
 
 export const GroupItem = polymorphic<GroupItemSpecs>((_props, { useProps, useStyles }) => {
 	const { baseName, rootName } = useGroupCtx(NAME)
-	const props = useProps(NAME, _props)
-	const styles = useStyles(rootName, { props })
+	const props = useProps(_props)
+	const styles = useStyles({ name: rootName, props })
 
 	const { children, ...rest } = props
 	const others = extractOthers(rest)
@@ -33,7 +33,7 @@ export const GroupItem = polymorphic<GroupItemSpecs>((_props, { useProps, useSty
 			{ children }
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
 GroupItem.displayName = NAME
 GroupItem.setDefaults({})

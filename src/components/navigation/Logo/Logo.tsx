@@ -58,8 +58,8 @@ type LogoSelectors =
 
 export const Logo = polymorphic<LogoSpecs>((_props, { useProps, useStyles }) => {
 	const { colorScheme } = useColorScheme()
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { props })
+	const props = useProps(_props)
+	const styles = useStyles({ props })
 
 	const {
 		alt,
@@ -95,7 +95,7 @@ export const Logo = polymorphic<LogoSpecs>((_props, { useProps, useStyles }) => 
 			/>
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
 Logo.displayName = NAME
 Logo.setDefaults({ props: DEFAULT_PROPS })

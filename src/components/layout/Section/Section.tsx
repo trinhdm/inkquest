@@ -82,8 +82,8 @@ const tokens = defineTokens<SectionSpecs>(({ props }) => {
 })
 
 export const Section = polymorphic<SectionSpecs>((_props, { useProps, useStyles }) => {
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { props, tokens })
+	const props = useProps(_props)
+	const styles = useStyles({ props, tokens })
 
 	const {
 		children,
@@ -109,7 +109,7 @@ export const Section = polymorphic<SectionSpecs>((_props, { useProps, useStyles 
 			{ buildSection({ props, reveal: reveal(), styles }) }
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
 Section.displayName = NAME
 Section.Button = Button

@@ -39,8 +39,8 @@ type MenuSelectors =
 
 export const Menu = polymorphic<MenuSpecs>((_props, { useProps, useStyles }) => {
 	const pathname = usePathname()
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { props })
+	const props = useProps(_props)
+	const styles = useStyles({ props })
 
 	const {
 		activeItem,
@@ -75,7 +75,7 @@ export const Menu = polymorphic<MenuSpecs>((_props, { useProps, useStyles }) => 
 			)) }
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
 Menu.displayName = NAME
 Menu.setDefaults({ props: DEFAULT_PROPS })

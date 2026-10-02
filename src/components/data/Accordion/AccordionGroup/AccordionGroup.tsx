@@ -46,8 +46,8 @@ const handleOpenItems = (value?: AccordionGroupProps['defaultOpen']): number[] =
 const tokens = defineTokens<AccordionGroupSpecs>(({ props }) => getSharedTokens(props))
 
 export const AccordionGroup = polymorphic<AccordionGroupSpecs>((_props, { useProps, useStyles }) => {
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { props, tokens })
+	const props = useProps(_props)
+	const styles = useStyles({ props, tokens })
 
 	const {
 		children,
@@ -110,7 +110,7 @@ export const AccordionGroup = polymorphic<AccordionGroupSpecs>((_props, { usePro
 			{ withProvider(items, AccordionGroupProvider, ctxValues) }
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
 AccordionGroup.displayName = NAME
 AccordionGroup.setDefaults({ props: DEFAULT_PROPS })

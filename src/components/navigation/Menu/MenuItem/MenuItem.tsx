@@ -84,8 +84,8 @@ const MenuLabel = (
 }
 
 export const MenuItem = polymorphic<MenuItemSpecs>((_props, { useProps, useStyles }) => {
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { props })
+	const props = useProps(_props)
+	const styles = useStyles({ props })
 
 	const timeoutRef = useRef<NodeJS.Timeout>(null)
 	const itemRef = useRef<HTMLLIElement>(null)
@@ -258,7 +258,7 @@ export const MenuItem = polymorphic<MenuItemSpecs>((_props, { useProps, useStyle
 			) }
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
 MenuItem.displayName = NAME
 MenuItem.setDefaults({ props: DEFAULT_PROPS })

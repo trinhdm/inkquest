@@ -35,8 +35,8 @@ type TableSelectors =
 	| 'root'
 
 export const Table = polymorphic<TableSpecs>((_props, { useProps, useStyles }) => {
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { props })
+	const props = useProps(_props)
+	const styles = useStyles({ props })
 
 	const { children, ...rest } = props
 	const others = extractOthers(rest)
@@ -50,7 +50,7 @@ export const Table = polymorphic<TableSpecs>((_props, { useProps, useStyles }) =
 			<tbody>{ children }</tbody>
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
 Table.displayName = NAME
 Table.Cell = TableCell

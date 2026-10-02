@@ -61,8 +61,8 @@ const tokens = defineTokens<GridSpecs>(({ props, theme }) => {
 })
 
 export const Grid = polymorphic<GridSpecs>((_props, { useProps, useStyles }) => {
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { props, tokens })
+	const props = useProps(_props)
+	const styles = useStyles({ props, tokens })
 
 	const { as, children, columns, ...rest } = props
 	const others = extractOthers(rest)
@@ -76,7 +76,7 @@ export const Grid = polymorphic<GridSpecs>((_props, { useProps, useStyles }) => 
 			{ children }
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
 Grid.displayName = NAME
 Grid.Item = GridItem

@@ -45,9 +45,9 @@ type BadgeSelectors =
 	| 'root' | 'inner'
 
 export const Badge = polymorphic<BadgeSpecs>((_props, { useProps, useStyles, useVariants }) => {
-	useVariants(NAME)
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { props })
+	useVariants()
+	const props = useProps(_props)
+	const styles = useStyles({ props })
 
 	const {
 		as,
@@ -75,7 +75,7 @@ export const Badge = polymorphic<BadgeSpecs>((_props, { useProps, useStyles, use
 			</Box>
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
 Badge.displayName = NAME
 Badge.setDefaults({ props: DEFAULT_PROPS })

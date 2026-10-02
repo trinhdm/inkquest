@@ -20,8 +20,8 @@ type TableRowSelectors =
 	| 'root'
 
 export const TableRow = polymorphic<TableRowSpecs>((_props, { useProps, useStyles }) => {
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { props })
+	const props = useProps(_props)
+	const styles = useStyles({ props })
 
 	const { children, ...rest } = props
 	const others = extractOthers(rest)
@@ -35,7 +35,7 @@ export const TableRow = polymorphic<TableRowSpecs>((_props, { useProps, useStyle
 			{ children }
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
 TableRow.displayName = NAME
 TableRow.setDefaults({})

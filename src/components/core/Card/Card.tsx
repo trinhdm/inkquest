@@ -37,8 +37,8 @@ type CardSelectors =
 	| 'info' | 'title' | 'caption'
 
 export const Card = polymorphic<CardSpecs>((_props, { useProps, useStyles }) => {
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { props })
+	const props = useProps(_props)
+	const styles = useStyles({ props })
 
 	const {
 		as,
@@ -71,7 +71,7 @@ export const Card = polymorphic<CardSpecs>((_props, { useProps, useStyles }) => 
 			</div>
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
 Card.displayName = NAME
 Card.setDefaults({ props: DEFAULT_PROPS })

@@ -37,8 +37,8 @@ const tokens = defineTokens<AccordionTitleSpecs>(({ context }) => ({
 
 export const AccordionTitle = polymorphic<AccordionTitleSpecs>((_props, { useProps, useStyles }) => {
 	const context = useAccordionCtx(NAME)
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { context, props, tokens })
+	const props = useProps(_props)
+	const styles = useStyles({ context, props, tokens })
 
 	const {
 		collapsible,
@@ -116,7 +116,7 @@ export const AccordionTitle = polymorphic<AccordionTitleSpecs>((_props, { usePro
 			{ titleItems }
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
 AccordionTitle.displayName = NAME
 AccordionTitle.setDefaults({})

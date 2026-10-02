@@ -37,8 +37,8 @@ type HeaderSelectors =
 
 export const Header = polymorphic<HeaderSpecs>((_props, { useProps, useStyles }) => {
 	const pathname = usePathname()
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { props })
+	const props = useProps(_props)
+	const styles = useStyles({ props })
 
 	const {
 		as,
@@ -60,7 +60,7 @@ export const Header = polymorphic<HeaderSpecs>((_props, { useProps, useStyles })
 			<Subnav category={ subnav?.category } routes={ subnavRoutes } />
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
 Header.displayName = NAME
 Header.setDefaults({ props: DEFAULT_PROPS })

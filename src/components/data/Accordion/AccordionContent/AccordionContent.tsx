@@ -38,8 +38,8 @@ const tokens = defineTokens<AccordionContentSpecs>(({ context }) => ({
 
 export const AccordionContent = polymorphic<AccordionContentSpecs>((_props, { useProps, useStyles }) => {
 	const context = useAccordionCtx(NAME)
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { context, props, tokens })
+	const props = useProps(_props)
+	const styles = useStyles({ context, props, tokens })
 
 	const { idx, isOpen } = useAccordionCtx(NAME)
 	const { children, ...rest } = props
@@ -61,7 +61,7 @@ export const AccordionContent = polymorphic<AccordionContentSpecs>((_props, { us
 			</div>
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
 AccordionContent.displayName = NAME
 AccordionContent.setDefaults({})

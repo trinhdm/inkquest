@@ -108,9 +108,9 @@ const buildSections = (
 }
 
 export const Button = polymorphic<ButtonSpecs>((_props, { useProps, useStyles, useVariants }) => {
-	useVariants(NAME)
-	const props = useProps(NAME, useButtonGroupProps(_props))
-	const styles = useStyles(NAME, { props })
+	useVariants()
+	const props = useProps(useButtonGroupProps(_props))
+	const styles = useStyles({ props })
 
 	const {
 		as,
@@ -203,7 +203,7 @@ export const Button = polymorphic<ButtonSpecs>((_props, { useProps, useStyles, u
 			{ inner }
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
 Button.displayName = NAME
 Button.Group = ButtonGroup
