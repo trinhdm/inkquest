@@ -1,4 +1,4 @@
-import { useProps, extractOtherProps } from '@/hooks/useProps'
+import { extractOtherProps } from '@/hooks/useProps'
 import { polymorphic } from '@/lib/component'
 import { Group, GROUP_CASCADE_PROPS } from '@/components/layout/Group'
 import { StatisticGroupProvider, type StatisticGroupContext } from './StatisticGroup.context'
@@ -29,7 +29,7 @@ type StatisticGroupSpecs = {
 type StatisticGroupSelectors =
 	| 'root'
 
-export const StatisticGroup = polymorphic<StatisticGroupSpecs>((_props, { useStyles }) => {
+export const StatisticGroup = polymorphic<StatisticGroupSpecs>((_props, { useProps, useStyles }) => {
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { props })
 

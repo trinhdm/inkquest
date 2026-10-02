@@ -1,6 +1,6 @@
 'use client'
 
-import { useProps, extractOtherProps } from '@/hooks/useProps'
+import { extractOtherProps } from '@/hooks/useProps'
 import { filterNavigation, type NavigationGroup } from '@/utils/navigation'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
@@ -31,7 +31,7 @@ type FooterSelectors =
 	| 'content'
 	| 'navigation' | 'group' | 'label' | 'menu'
 
-export const FooterArea = polymorphic<FooterAreaSpecs>((_props, { useStyles }) => {
+export const FooterArea = polymorphic<FooterAreaSpecs>((_props, { useProps, useStyles }) => {
 	const props = useProps(NAME, _props)
 	const styles = useStyles('footer', { props })
 

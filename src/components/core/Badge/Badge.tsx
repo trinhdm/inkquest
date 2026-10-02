@@ -1,5 +1,5 @@
-import { useProps, extractOtherProps } from '@/hooks/useProps'
 import { useVariants } from '@/hooks/useVariants'
+import { extractOtherProps } from '@/hooks/useProps'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import type { ReactNode } from 'react'
@@ -45,7 +45,7 @@ interface BadgeSpecs {
 type BadgeSelectors =
 	| 'root' | 'inner'
 
-export const Badge = polymorphic<BadgeSpecs>((_props, { useStyles }) => {
+export const Badge = polymorphic<BadgeSpecs>((_props, { useProps, useStyles }) => {
 	useVariants(NAME)
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { props })

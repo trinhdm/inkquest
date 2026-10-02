@@ -1,5 +1,5 @@
-import { useProps, extractOtherProps } from '@/hooks/useProps'
 import { defineTokens, polymorphic } from '@/lib/component'
+import { extractOtherProps } from '@/hooks/useProps'
 import { rem } from '@/lib/general'
 import { Box } from '@/components/polymorphic/Box'
 import { Button } from '@/components/core/Button'
@@ -95,7 +95,7 @@ const tokens = defineTokens<SidebarSpecs>(({ props }) => {
 	}
 })
 
-export const Sidebar = polymorphic<SidebarSpecs>((_props, { useStyles }) => {
+export const Sidebar = polymorphic<SidebarSpecs>((_props, { useProps, useStyles }) => {
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { props, tokens })
 

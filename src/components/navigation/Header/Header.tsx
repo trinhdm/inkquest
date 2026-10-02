@@ -1,7 +1,7 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { useProps, extractOtherProps } from '@/hooks/useProps'
+import { extractOtherProps } from '@/hooks/useProps'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import { Navbar } from '../Navbar'
@@ -35,7 +35,7 @@ interface HeaderSpecs {
 type HeaderSelectors =
 	| 'root'
 
-export const Header = polymorphic<HeaderSpecs>((_props, { useStyles }) => {
+export const Header = polymorphic<HeaderSpecs>((_props, { useProps, useStyles }) => {
 	const pathname = usePathname()
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { props })

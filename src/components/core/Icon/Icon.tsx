@@ -1,4 +1,4 @@
-import { useProps, extractOtherProps } from '@/hooks/useProps'
+import { extractOtherProps } from '@/hooks/useProps'
 import { isExternalLink, keyHasValue } from '@/utils/helpers'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
@@ -157,7 +157,7 @@ const buildIcon = (
 	}
 }
 
-export const Icon = polymorphic<IconSpecs>((_props, { useStyles }) => {
+export const Icon = polymorphic<IconSpecs>((_props, { useProps, useStyles }) => {
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { props })
 

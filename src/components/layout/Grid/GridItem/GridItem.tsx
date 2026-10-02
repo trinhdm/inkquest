@@ -1,4 +1,4 @@
-import { useProps, extractOtherProps } from '@/hooks/useProps'
+import { extractOtherProps } from '@/hooks/useProps'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import type { ReactNode } from 'react'
@@ -19,7 +19,7 @@ interface GridItemSpecs {
 type GridItemSelectors =
 	| 'root'
 
-export const GridItem = polymorphic<GridItemSpecs>((_props, { useStyles }) => {
+export const GridItem = polymorphic<GridItemSpecs>((_props, { useProps, useStyles }) => {
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { props })
 

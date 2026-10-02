@@ -1,4 +1,4 @@
-import { useProps, extractOtherProps } from '@/hooks/useProps'
+import { extractOtherProps } from '@/hooks/useProps'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import type { ChangeEventHandler } from 'react'
@@ -50,7 +50,7 @@ interface TextInputSpecs {
 type TextInputSelectors =
 	| 'root'
 
-export const TextInput = polymorphic<TextInputSpecs>((_props, { useStyles }) => {
+export const TextInput = polymorphic<TextInputSpecs>((_props, { useProps, useStyles }) => {
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { props })
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useProps, extractOtherProps } from '@/hooks/useProps'
+import { extractOtherProps } from '@/hooks/useProps'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import { FooterArea } from './FooterArea'
@@ -43,7 +43,7 @@ type FooterSelectors =
 	| 'info' | 'tagline' | 'socials'
 	| 'legal'
 
-export const Footer = polymorphic<FooterSpecs>((_props, { useStyles }) => {
+export const Footer = polymorphic<FooterSpecs>((_props, { useProps, useStyles }) => {
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { props })
 

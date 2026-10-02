@@ -1,5 +1,5 @@
 import { useButtonCtx } from '../Button.context'
-import { useProps, extractOtherProps } from '@/hooks/useProps'
+import { extractOtherProps } from '@/hooks/useProps'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import classes from '../Button.module.scss'
@@ -29,7 +29,7 @@ type ButtonSectionSpecs = {
 type ButtonSectionSelectors =
 	| 'section'
 
-export const ButtonSection = polymorphic<ButtonSectionSpecs>((_props, { useStyles }) => {
+export const ButtonSection = polymorphic<ButtonSectionSpecs>((_props, { useProps, useStyles }) => {
 	const { baseName, rootName } = useButtonCtx(NAME)
 	const props = useProps(NAME, _props)
 	const styles = useStyles(rootName, { props })

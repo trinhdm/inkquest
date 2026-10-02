@@ -1,5 +1,5 @@
 import { usePathname } from 'next/navigation'
-import { useProps, extractOtherProps } from '@/hooks/useProps'
+import { extractOtherProps } from '@/hooks/useProps'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import { MenuItem } from './MenuItem'
@@ -37,7 +37,7 @@ interface MenuSpecs {
 type MenuSelectors =
 	| 'root'
 
-export const Menu = polymorphic<MenuSpecs>((_props, { useStyles }) => {
+export const Menu = polymorphic<MenuSpecs>((_props, { useProps, useStyles }) => {
 	const pathname = usePathname()
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { props })

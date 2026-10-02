@@ -1,7 +1,7 @@
 import { useCallback, useId, useMemo, useState, Children, type ReactNode } from 'react'
 import { useAccordionGroupProps, AccordionGroup } from './AccordionGroup'
-import { useProps, extractOtherProps } from '@/hooks/useProps'
 import { defineTokens, filterChildren, polymorphic } from '@/lib/component'
+import { extractOtherProps } from '@/hooks/useProps'
 import { getSharedTokens, type AccordionTokens } from './utils'
 import { toKebabCase } from '@/utils/helpers'
 import { AccordionContent } from './AccordionContent'
@@ -89,7 +89,7 @@ const tokens = defineTokens<AccordionSpecs>(({ props }) => {
 	return getSharedTokens(props)
 })
 
-export const Accordion = polymorphic<AccordionSpecs>((_props, { useStyles }) => {
+export const Accordion = polymorphic<AccordionSpecs>((_props, { useProps, useStyles }) => {
 	const props = useProps(NAME, useAccordionGroupProps(_props))
 	const styles = useStyles(NAME, { props, tokens })
 

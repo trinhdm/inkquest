@@ -1,5 +1,5 @@
 import { useGroupCtx } from '../Group.context'
-import { useProps, extractOtherProps } from '@/hooks/useProps'
+import { extractOtherProps } from '@/hooks/useProps'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import type { ReactNode } from 'react'
@@ -20,7 +20,7 @@ interface GroupItemSpecs {
 type GroupItemSelectors =
 	| 'item'
 
-export const GroupItem = polymorphic<GroupItemSpecs>((_props, { useStyles }) => {
+export const GroupItem = polymorphic<GroupItemSpecs>((_props, { useProps, useStyles }) => {
 	const { baseName, rootName } = useGroupCtx(NAME)
 	const props = useProps(NAME, _props)
 	const styles = useStyles(rootName, { props })

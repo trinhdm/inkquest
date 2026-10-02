@@ -1,6 +1,6 @@
 'use client'
 
-import { useProps, extractOtherProps } from '@/hooks/useProps'
+import { extractOtherProps } from '@/hooks/useProps'
 import { filterNavigation, NavRoute } from '@/utils/navigation'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
@@ -34,7 +34,7 @@ type NavbarSelectors =
 	| 'root' | 'wrapper' | 'inner'
 	| 'col' | 'menu'
 
-export const Navbar = polymorphic<NavbarSpecs>((_props, { useStyles }) => {
+export const Navbar = polymorphic<NavbarSpecs>((_props, { useProps, useStyles }) => {
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { props })
 

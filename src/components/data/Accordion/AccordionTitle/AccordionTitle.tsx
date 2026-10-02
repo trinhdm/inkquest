@@ -1,7 +1,7 @@
 import { ChevronDown, Plus } from 'lucide-react'
 import { useAccordionCtx } from '../Accordion.context'
-import { useProps, extractOtherProps } from '@/hooks/useProps'
 import { defineTokens, polymorphic } from '@/lib/component'
+import { extractOtherProps } from '@/hooks/useProps'
 import { keyHasValue } from '@/utils/helpers'
 import { Box } from '@/components/polymorphic/Box'
 import { Icon } from '@/components/core/Icon'
@@ -35,7 +35,7 @@ const tokens = defineTokens<AccordionTitleSpecs>(({ context }) => ({
 	root: { '--accordion-title-indent': keyHasValue(context, 'step') ? 0 : undefined },
 }))
 
-export const AccordionTitle = polymorphic<AccordionTitleSpecs>((_props, { useStyles }) => {
+export const AccordionTitle = polymorphic<AccordionTitleSpecs>((_props, { useProps, useStyles }) => {
 	const context = useAccordionCtx(NAME)
 	const props = useProps(NAME, _props)
 	const styles = useStyles(NAME, { context, props, tokens })

@@ -1,8 +1,8 @@
 import { LoaderCircle } from 'lucide-react'
 import { isValidElement, useMemo, Children } from 'react'
-import { useProps, extractOtherProps } from '@/hooks/useProps'
 import { useVariants } from '@/hooks/useVariants'
 import { extractChildrenText } from '@/lib/component'
+import { extractOtherProps } from '@/hooks/useProps'
 import { isExternalLink, keyHasValue } from '@/utils/helpers'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
@@ -108,7 +108,7 @@ const buildSections = (
 	return <>{ left }{ content }{ right }</>
 }
 
-export const Button = polymorphic<ButtonSpecs>((_props, { useStyles }) => {
+export const Button = polymorphic<ButtonSpecs>((_props, { useProps, useStyles }) => {
 	useVariants(NAME)
 	const props = useProps(NAME, useButtonGroupProps(_props))
 	const styles = useStyles(NAME, { props })

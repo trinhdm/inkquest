@@ -1,5 +1,5 @@
 import { useRef, type ReactNode } from 'react'
-import { useProps, extractOtherProps } from '@/hooks/useProps'
+import { extractOtherProps } from '@/hooks/useProps'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import classes from '../Timeline.module.scss'
@@ -23,7 +23,7 @@ type TimelineItemSelectors =
 	| 'body' | 'title' | 'content'
 	| 'marker' | 'bullet' | 'rail'
 
-export const TimelineItem = polymorphic<TimelineItemSpecs>((_props, { useStyles }) => {
+export const TimelineItem = polymorphic<TimelineItemSpecs>((_props, { useProps, useStyles }) => {
 	const itemRef = useRef<HTMLDivElement>(null)
 
 	const props = useProps(NAME, _props)
