@@ -2,8 +2,7 @@ import { useCountUp, type MaybeAnimationProps } from '@/hooks/animation'
 import { useProps, extractOtherProps } from '@/hooks/useProps'
 import { useStatisticGroupProps } from './StatisticGroup'
 import { useStyles } from '@/hooks/useStyles'
-import { polymorphic } from '@/lib/component'
-import { setThemeCSS } from '@/lib/theme'
+import { defineTokens, polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import { StatisticGroup } from './StatisticGroup'
 import type { ReactNode } from 'react'
@@ -47,7 +46,7 @@ interface StatisticSpecs {
 	}
 }
 
-const tokens = setThemeCSS<StatisticSpecs>((theme, props) => {
+const tokens = defineTokens<StatisticSpecs>((props, theme) => {
 	const { order, size } = props
 	const isDescend = order === 'descend'
 

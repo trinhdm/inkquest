@@ -6,13 +6,13 @@ import { keyHasValue, pluralizeKeys } from '@/utils/helpers'
 import type { ClassValue } from 'clsx'
 import type { PluralizeKeys } from '@/types/utils'
 import type { SiteThemeConfig } from '@/lib/theme/types'
-import type { ThemeCSSConfig } from '@/lib/theme'
+import type { TokensConfig } from '@/lib/component/tokens'
 
 interface StyleOptions<P extends object, V extends object = object> {
 	readonly classes?: Record<string, string>
 	prefix?: string
 	props: P
-	tokens?: ThemeCSSConfig<P, V>
+	tokens?: TokensConfig<P, V>
 }
 
 interface SelectorConfigScope {

@@ -2,10 +2,8 @@ import { useCallback, useId, useMemo, useState, Children, type ReactNode } from 
 import { useAccordionGroupProps, AccordionGroup } from './AccordionGroup'
 import { useProps, extractOtherProps } from '@/hooks/useProps'
 import { useStyles } from '@/hooks/useStyles'
-import { filterChildren } from '@/lib/component'
+import { defineTokens, filterChildren, polymorphic } from '@/lib/component'
 import { getSharedTokens } from './utils'
-import { polymorphic } from '@/lib/component'
-import { setThemeCSS } from '@/lib/theme'
 import { toKebabCase } from '@/utils/helpers'
 import { AccordionContent } from './AccordionContent'
 import { AccordionProvider } from './Accordion.context'
@@ -82,7 +80,7 @@ const buildAccordion = (children: AccordionProps['children']) => {
 	return <>{ title }{ content }</>
 }
 
-const tokens = setThemeCSS<AccordionSpecs>((theme, props) => {
+const tokens = defineTokens<AccordionSpecs>(props => {
 	if (typeof props.onItemToggle === 'function') return {}
 	return getSharedTokens(props)
 })

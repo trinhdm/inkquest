@@ -36,7 +36,7 @@ export const getStyle = <P extends object, V extends object>(
 
 	if (typeof tokens === 'function') {
 		const stylesCtx = {}
-		const variables = tokens?.(theme, props, stylesCtx)
+		const variables = tokens?.(props, theme, stylesCtx)
 
 		if (keyHasValue(variables, selector)) {
 			const styles = variables[selector]

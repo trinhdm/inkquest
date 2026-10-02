@@ -2,10 +2,8 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import { useProps, extractOtherProps } from '@/hooks/useProps'
 import { useReplayInView } from '@/hooks/animation'
 import { useStyles } from '@/hooks/useStyles'
-import { filterChildren, withProvider } from '@/lib/component'
+import { defineTokens, filterChildren, polymorphic, withProvider } from '@/lib/component'
 import { getSharedTokens } from '../utils'
-import { polymorphic } from '@/lib/component'
-import { setThemeCSS } from '@/lib/theme'
 import { AccordionGroupProvider } from './AccordionGroup.context'
 import { Box } from '@/components/polymorphic/Box'
 import type { AccordionGroupContext, AccordionGroupType } from './AccordionGroup.context'
@@ -41,7 +39,7 @@ const handleOpenItems = (value?: AccordionGroupProps['defaultOpen']): number[] =
 		: Array.isArray(value)
 			? value : []
 
-const tokens = setThemeCSS<AccordionGroupSpecs>((theme, props) => getSharedTokens(props))
+const tokens = defineTokens<AccordionGroupSpecs>(props => getSharedTokens(props))
 
 export const AccordionGroup = polymorphic<AccordionGroupSpecs>(_props => {
 	const props = useProps(NAME, _props)

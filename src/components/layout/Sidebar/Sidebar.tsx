@@ -1,8 +1,7 @@
 import { useProps, extractOtherProps } from '@/hooks/useProps'
 import { useStyles } from '@/hooks/useStyles'
-import { polymorphic } from '@/lib/component'
+import { defineTokens, polymorphic } from '@/lib/component'
 import { rem } from '@/lib/general'
-import { setThemeCSS } from '@/lib/theme'
 import { Box } from '@/components/polymorphic/Box'
 import { Button } from '@/components/core/Button'
 import type { ReactNode } from 'react'
@@ -72,9 +71,7 @@ interface SidebarSpecs {
 	props: SidebarProps
 }
 
-const tokens = setThemeCSS<SidebarSpecs>((theme, props) => {
-	const { active, items } = props
-
+const tokens = defineTokens<SidebarSpecs>(({ active, items }) => {
 	const activeIndex = items.findIndex(item => active === item.id)
 	const height = 48
 

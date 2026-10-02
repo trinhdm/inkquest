@@ -2,8 +2,7 @@ import { useProps } from '@/hooks/useProps'
 import { useReveal, type MaybeAnimationProps } from '@/hooks/animation'
 import { useStyles } from '@/hooks/useStyles'
 import { buildSection } from './builder'
-import { polymorphic } from '@/lib/component'
-import { setThemeCSS } from '@/lib/theme'
+import { defineTokens, polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import { Button } from '@/components/core/Button'
 import { Container } from '../Container'
@@ -59,16 +58,12 @@ interface SectionSpecs {
 	}
 }
 
-const tokens = setThemeCSS<SectionSpecs>((theme, props) => {
-	const { duration, stagger } = props
-
-	return {
-		root: {
-			'--reveal-duration': duration ? `${duration}ms` : undefined,
-			'--reveal-stagger': stagger ? `${stagger}ms` : undefined,
-		},
-	}
-})
+const tokens = defineTokens<SectionSpecs>(({ duration, stagger }) => ({
+	root: {
+		'--reveal-duration': duration ? `${duration}ms` : undefined,
+		'--reveal-stagger': stagger ? `${stagger}ms` : undefined,
+	},
+}))
 
 export const Section = polymorphic<SectionSpecs>(_props => {
 	const props = useProps(NAME, _props)

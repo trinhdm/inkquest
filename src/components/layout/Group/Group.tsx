@@ -8,12 +8,17 @@ import {
 	type ReactNode,
 } from 'react'
 
+import {
+	defineTokens,
+	filterChildren,
+	polymorphic,
+	withProvider,
+	type RootProviderFn,
+} from '@/lib/component'
+
 import { useProps, extractOtherProps } from '@/hooks/useProps'
-import { useReplayInView, type MaybeAnimationProps, } from '@/hooks/animation'
+import { useReplayInView, type MaybeAnimationProps } from '@/hooks/animation'
 import { useStyles } from '@/hooks/useStyles'
-import { filterChildren, withProvider, type RootProviderFn } from '@/lib/component'
-import { polymorphic } from '@/lib/component'
-import { setThemeCSS } from '@/lib/theme'
 import { Box } from '@/components/polymorphic/Box'
 import { GroupItem } from './GroupItem'
 import { GroupProvider, type GroupContext } from './Group.context'
@@ -73,7 +78,7 @@ type GroupSpecs = {
 	}
 }
 
-const tokens = setThemeCSS<GroupSpecs>((theme, props) => {
+const tokens = defineTokens<GroupSpecs>(props => {
 	const { columns, children, orientation } = props
 	const hasColumns = !!(columns && columns > 0)
 	let numCols: number | undefined = hasColumns ? columns : undefined

@@ -1,7 +1,6 @@
 import { useProps, extractOtherProps } from '@/hooks/useProps'
 import { useStyles } from '@/hooks/useStyles'
-import { polymorphic } from '@/lib/component'
-import { setThemeCSS } from '@/lib/theme'
+import { defineTokens, polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import { GridItem } from './GridItem'
 import type { ReactNode } from 'react'
@@ -37,7 +36,7 @@ interface GridSpecs {
 	}
 }
 
-const tokens = setThemeCSS<GridSpecs>((theme, props) => {
+const tokens = defineTokens<GridSpecs>((props, theme) => {
 	const { columns, gap } = props
 
 	const gridGap = ['grid']
