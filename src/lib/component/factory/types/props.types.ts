@@ -1,5 +1,5 @@
 import type { JSX, JSXElementConstructor, ReactNode } from 'react'
-import type { AsPolymorphic, SpecDefaultAs, SpecsContract } from './specs.types'
+import type { AsPolymorphic, SpecsContract, SpecsDefaultAs } from './specs.types'
 import type { DEFAULT_TAG } from '../constants'
 
 type _ElementProps<C> =
@@ -33,6 +33,6 @@ export type PolymorphicProps<P, C> =
 	& Omit<_ElementProps<_TagName<C>>, 'as' | keyof P>
 
 export type PropsDefaultList<S> =
-	AsPolymorphic<S> extends { as?: SpecDefaultAs<S> }
+	AsPolymorphic<S> extends { as?: SpecsDefaultAs<S> }
 		? Exclude<keyof S, 'as'>
 		: keyof S

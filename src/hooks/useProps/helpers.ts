@@ -1,6 +1,6 @@
 import cx from 'clsx'
 import type { CSSProperties, ElementType, ReactNode } from 'react'
-import type { DistributiveOmit } from '@/types/utils'
+import type { DistributiveOmit, PluralizeKeys } from '@/types/utils'
 import type { ReplayAnimateInViewConfig } from '../animation'
 
 interface DOMStyleProps {
@@ -8,13 +8,8 @@ interface DOMStyleProps {
 	style?: CSSProperties
 }
 
-type SpecStyleProps = {
-	classNames?: string
-	styles?: CSSProperties
-}
-
 interface StyleAliasInput
-	extends SpecStyleProps, DOMStyleProps {}
+	extends DOMStyleProps, PluralizeKeys<DOMStyleProps> {}
 
 type RenamedProps<T> =
 	Omit<T, keyof StyleAliasInput> & DOMStyleProps

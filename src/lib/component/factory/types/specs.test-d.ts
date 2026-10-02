@@ -17,9 +17,9 @@
 import type {
 	AsPolymorphic,
 	IsPolymorphic,
-	SpecDefaultAs,
-	SpecDefaultProps,
 	Specs,
+	SpecsDefaultAs,
+	SpecsDefaultProps,
 } from './specs.types'
 
 /** Exact equality — defeats the usual bidirectional-assignability fudge. */
@@ -46,21 +46,21 @@ type PlainSpec = {
 }
 
 
-// ---- SpecDefaultAs ---------------------------------------------------
+// ---- SpecsDefaultAs ---------------------------------------------------
 
 // resolves to the literal tag, not the widened `string` or `ElementType`
-type _AsResolves = Expect<Equal<SpecDefaultAs<ButtonSpec>, 'button'>>
+type _AsResolves = Expect<Equal<SpecsDefaultAs<ButtonSpec>, 'button'>>
 
 // falls back to `never` when the spec declares no `defaults`
-type _AsFallsBack = Expect<Equal<SpecDefaultAs<PlainSpec>, never>>
+type _AsFallsBack = Expect<Equal<SpecsDefaultAs<PlainSpec>, never>>
 
 // the Fallback type parameter is honored over the default `never`
-type _AsFallbackParam = Expect<Equal<SpecDefaultAs<PlainSpec, 'div'>, 'div'>>
+type _AsFallbackParam = Expect<Equal<SpecsDefaultAs<PlainSpec, 'div'>, 'div'>>
 
 // a spec whose `defaults` is OPTIONAL does not satisfy the constraint —
 // pinning the trap that made the previous assertion here vacuous
 type _AsOptionalDefaults = Expect<
-	Equal<SpecDefaultAs<{ defaults?: { as: 'button' }; props: object }>, never>
+	Equal<SpecsDefaultAs<{ defaults?: { as: 'button' }; props: object }>, never>
 >
 
 
@@ -76,17 +76,17 @@ type _AsPropOpen = Expect<Equal<AsPolymorphic<ButtonSpec>, { as?: 'button' }>>
 type _AsPropClosed = Expect<Equal<AsPolymorphic<PlainSpec>, { as?: never }>>
 
 
-// ---- SpecDefaultProps ------------------------------------------------
+// ---- SpecsDefaultProps ------------------------------------------------
 
 // only keys that actually exist on `props` survive
 type _DefaultPropsNarrow = Expect<
-	Equal<SpecDefaultProps<ButtonSpec>, 'size' | 'variant'>
+	Equal<SpecsDefaultProps<ButtonSpec>, 'size' | 'variant'>
 >
 
 // a declared default key that isn't a real prop is dropped, not surfaced
 type _DefaultPropsDropsUnknown = Expect<
 	Equal<
-		SpecDefaultProps<{
+		SpecsDefaultProps<{
 			defaults: { as: 'div'; props: 'size' | 'notAProp' }
 			props: { size?: string }
 		}>,
@@ -95,7 +95,7 @@ type _DefaultPropsDropsUnknown = Expect<
 >
 
 // no `defaults` means no default-able keys
-type _DefaultPropsNone = Expect<Equal<SpecDefaultProps<PlainSpec>, never>>
+type _DefaultPropsNone = Expect<Equal<SpecsDefaultProps<PlainSpec>, never>>
 
 
 // ---- Compound specs --------------------------------------------------

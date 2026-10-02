@@ -9,7 +9,7 @@ import {
 import { keyHasValue } from '@/utils/helpers'
 import { setDefaultProps } from '@/hooks/useProps'
 import { POLYMORPHIC_MARKER } from './constants'
-import type { AsPolymorphic, SpecDefaultProps, Specs } from './types'
+import type { AsPolymorphic, Specs, SpecsDefaultProps } from './types'
 import type { DistributiveOmit, WithDefaults } from '@/types/utils'
 import type { SpecAttributes } from '@/types/shared'
 
@@ -34,11 +34,11 @@ type _AsDefaultProps<S extends Specs> =
 
 type _DefaultProps<S extends Specs> =
 	Partial<DistributiveOmit<S['props'], 'as'>>
-	& Required<Pick<S['props'], SpecDefaultProps<S> & keyof S['props']>>
+	& Required<Pick<S['props'], SpecsDefaultProps<S> & keyof S['props']>>
 	& _AsDefaultProps<S>
 
 type _MethodSetDefault<S extends Specs> =
-	[SpecDefaultProps<S>] extends [never]
+	[SpecsDefaultProps<S>] extends [never]
 		? { props?: _DefaultProps<S> }
 		: { props: _DefaultProps<S> }
 
@@ -69,7 +69,7 @@ type _FactoryComponent<S extends Specs> =
 	& MethodsBase<S>
 
 type _FactoryProps<S extends Specs> =
-	WithDefaults<_ComponentProps<S>, SpecDefaultProps<S>>
+	WithDefaults<_ComponentProps<S>, SpecsDefaultProps<S>>
 
 export const createFactory = <
 	T extends Specs,

@@ -1,7 +1,7 @@
 export type {
 	AsPolymorphic, IsPolymorphic,
 	Specs, SpecsContract,
-	SpecsContext, SpecDefaultAs, SpecDefaultProps,
+	SpecsContext, SpecsDefaultAs, SpecsDefaultProps,
 	SpecsTokens, TokensList,
 } from './specs.types'
 

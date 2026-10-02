@@ -63,12 +63,12 @@ export type SpecsContext<S> =
 		? RootCtxValue<S['context']>
 		: undefined
 
-export type SpecDefaultAs<S, Fallback = never> =
+export type SpecsDefaultAs<S, Fallback = never> =
 	S extends { defaults: { as: infer C extends ElementType } }
 		? C
 		: Fallback
 
-export type SpecDefaultProps<S> =
+export type SpecsDefaultProps<S> =
 	S extends {
 		defaults: { props: infer K },
 		props: infer P
@@ -101,7 +101,7 @@ export type IsPolymorphic<S> =
 
 export type AsPolymorphic<S> =
 	IsPolymorphic<S> extends true
-		? { as?: SpecDefaultAs<S> }
+		? { as?: SpecsDefaultAs<S> }
 		: { as?: never }
 
 

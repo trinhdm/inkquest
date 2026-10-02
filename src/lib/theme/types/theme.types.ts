@@ -91,32 +91,32 @@ type ThemeEasing =
 type StyleValues<
 	Keys extends PropertyKey,
 	V,
-	Name extends PropertyKey = PropertyKey,
+	UnitName extends PropertyKey = PropertyKey,
 > =
 	V extends `${number}${Unit}`
 		? ConsistentValues<Keys, true>
-		: Name extends ConsistentProperty
+		: UnitName extends ConsistentProperty
 			? ConsistentValues<Keys, true, number extends V ? V : undefined>
 			: AtLeastOneKeyOf<Keys, V>
 
 type BaseStyleValues<
 	V,
 	Keys extends PropertyKey,
-	RK extends Keys | undefined = undefined,
-	Name extends PropertyKey = PropertyKey,
+	ReqKey extends Keys | undefined = undefined,
+	UnitName extends PropertyKey = PropertyKey,
 > =
 	| V
-	| (RK extends Keys
-		? Extract<StyleValues<Keys, V, Name>, Record<RK, unknown>>
-		: StyleValues<Keys, V, Name>)
+	| (ReqKey extends Keys
+		? Extract<StyleValues<Keys, V, UnitName>, Record<ReqKey, unknown>>
+		: StyleValues<Keys, V, UnitName>)
 
 type StyleList<
 	P extends keyof CSSProperties,
 	Keys extends PropertyKey,
-	RK extends Keys | undefined = undefined,
-	Name extends PropertyKey = PropertyKey,
+	ReqKey extends Keys | undefined = undefined,
+	UnitName extends PropertyKey = PropertyKey,
 > =
-	BaseStyleValues<CSSProperties[P], Keys, RK, Name>
+	BaseStyleValues<CSSProperties[P], Keys, ReqKey, UnitName>
 
 // consistent value helpers
 

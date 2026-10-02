@@ -8,7 +8,7 @@ import type {
 	IsPolymorphic,
 	PolymorphicProps,
 	Specs,
-	SpecDefaultAs,
+	SpecsDefaultAs,
 } from './types'
 
 import type { BaseProps } from './definePolymorphic'
@@ -21,7 +21,7 @@ const polymorphicFactory = <T extends SpecsConstraint<T>>(
 	target: Parameters<typeof createFactory<T>>[0],
 	classes?: Record<string, string>
 ) => {
-	type C = SpecDefaultAs<T, ElementType>
+	type C = SpecsDefaultAs<T, ElementType>
 	type P<U> = PolymorphicProps<T['props'], U>
 
 	type _Component = IsPolymorphic<T> extends true
