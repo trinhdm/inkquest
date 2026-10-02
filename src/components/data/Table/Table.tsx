@@ -1,5 +1,4 @@
 import { useProps, extractOtherProps } from '@/hooks/useProps'
-import { useStyles } from '@/hooks/useStyles'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import { TableCell } from './TableCell'
@@ -35,9 +34,9 @@ interface TableSpecs {
 type TableSelectors =
 	| 'root'
 
-export const Table = polymorphic<TableSpecs>(_props => {
+export const Table = polymorphic<TableSpecs>((_props, { useStyles }) => {
 	const props = useProps(NAME, _props)
-	const styles = useStyles<TableSpecs>(NAME, { classes, props })
+	const styles = useStyles(NAME, { props })
 
 	const { children, ...rest } = props
 	const others = extractOtherProps(rest)

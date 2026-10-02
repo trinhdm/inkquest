@@ -1,6 +1,5 @@
 import { useProps } from '@/hooks/useProps'
 import { useReveal, type MaybeAnimationProps } from '@/hooks/animation'
-import { useStyles } from '@/hooks/useStyles'
 import { buildSection } from './builder'
 import { defineTokens, polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
@@ -83,9 +82,9 @@ const tokens = defineTokens<SectionSpecs>(({ props }) => {
 	}
 })
 
-export const Section = polymorphic<SectionSpecs>(_props => {
+export const Section = polymorphic<SectionSpecs>((_props, { useStyles }) => {
 	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props, tokens })
+	const styles = useStyles(NAME, { props, tokens })
 
 	const {
 		children,

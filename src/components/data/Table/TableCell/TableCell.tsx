@@ -1,5 +1,4 @@
 import { useProps, extractOtherProps } from '@/hooks/useProps'
-import { useStyles } from '@/hooks/useStyles'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import type { ReactNode } from 'react'
@@ -20,9 +19,9 @@ interface TableCellSpecs {
 type TableCellSelectors =
 	| 'root'
 
-export const TableCell = polymorphic<TableCellSpecs>(_props => {
+export const TableCell = polymorphic<TableCellSpecs>((_props, { useStyles }) => {
 	const props = useProps(NAME, _props)
-	const styles = useStyles<TableCellSpecs>(NAME, { classes, props })
+	const styles = useStyles(NAME, { props })
 
 	const { children, ...rest } = props
 	const others = extractOtherProps(rest)

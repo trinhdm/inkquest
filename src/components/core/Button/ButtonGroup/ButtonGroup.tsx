@@ -1,6 +1,5 @@
 import { useMemo, type CSSProperties, type ReactNode } from 'react'
 import { useProps, extractOtherProps } from '@/hooks/useProps'
-import { useStyles } from '@/hooks/useStyles'
 import { filterChildren, withProvider } from '@/lib/component'
 import { polymorphic } from '@/lib/component'
 import { revealItemFrom } from '@/hooks/animation'
@@ -49,9 +48,9 @@ const derivePriority = (index: number): Button.Priority => {
 	return PRIORITY_ROLES[i]
 }
 
-export const ButtonGroup = polymorphic<ButtonGroupSpecs>(_props => {
+export const ButtonGroup = polymorphic<ButtonGroupSpecs>((_props, { useStyles }) => {
 	const props = useProps(NAME, _props)
-	const styles = useStyles<ButtonGroupSpecs>(NAME, { classes, props })
+	const styles = useStyles(NAME, { props })
 
 	const {
 		children,

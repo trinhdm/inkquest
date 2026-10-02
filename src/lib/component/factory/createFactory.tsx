@@ -6,6 +6,7 @@ import {
 	type ReactNode,
 } from 'react'
 
+import { useStyles as useStylesHook, type StyleFn, type StyleOptions } from '@/hooks/useStyles'
 import { keyHasValue } from '@/utils/helpers'
 import { setDefaultProps } from '@/hooks/useProps'
 import { POLYMORPHIC_MARKER } from './constants'
@@ -71,16 +72,35 @@ type _FactoryComponent<S extends Specs> =
 type _FactoryProps<S extends Specs> =
 	WithDefaults<_ComponentProps<S>, SpecsDefaultProps<S>>
 
+type _FactoryStyles<S extends Specs> =
+	Omit<StyleOptions<S>, 'classes'>
+
+interface _FactoryTools<S extends Specs> {
+	useStyles: (name: string, opts: _FactoryStyles<S>) => StyleFn<S>
+}
+
+type _FactoryTarget<S extends Specs> =
+	(_props: _FactoryProps<S>, tools: _FactoryTools<S>) => ReactNode
+
 export const createFactory = <
 	T extends Specs,
 	C extends object = _FactoryComponent<T>
 >(
-	target: (props: _FactoryProps<T>) => ReactNode,
-	classes?: Record<string, string>
+	target: _FactoryTarget<T>,
+	classes?: Record<string, string>,
 ) => {
 	type FC = _FactoryComponent<T>
 
-	const BaseComponent = memo(target) as unknown as FC
+	const tools: _FactoryTools<T> = {
+		useStyles: function useStyles(name, opts) {
+			const args = { ...opts, classes: classes as StyleOptions<T>['classes'] }
+			return useStylesHook<T>(name, args)
+		},
+	}
+
+	const Render = (_props: _FactoryProps<T>) => target(_props, tools)
+	const BaseComponent = memo(Render) as unknown as FC
+
 	Object.defineProperty(BaseComponent, POLYMORPHIC_MARKER, { value: true })
 
 	if (classes) BaseComponent.classes = classes

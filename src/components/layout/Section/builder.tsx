@@ -9,15 +9,15 @@ import {
 import { Button } from '@/components/core/Button'
 import { Grid } from '../Grid'
 import { TextInput } from '@/components/form/TextInput'
-import type { useStyles } from '@/hooks/useStyles'
 import type { RevealCounter } from '@/hooks/animation'
 import type { Section } from './Section'
+import type { StyleFn } from '@/hooks/useStyles'
 
 interface BuildSectionConfig {
 	id: string
 	props: Section.Props & { id?: string }
 	reveal: RevealCounter
-	styles: ReturnType<typeof useStyles<Section.Specs>>
+	styles: StyleFn<Section.Specs>
 }
 
 const buildHeader = ({ id, props, reveal, styles }: BuildSectionConfig): ReactNode[] => {

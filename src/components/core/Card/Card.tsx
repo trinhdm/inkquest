@@ -1,6 +1,5 @@
 import Image from 'next/image'
 import { useProps, extractOtherProps } from '@/hooks/useProps'
-import { useStyles } from '@/hooks/useStyles'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import type { ComponentProps } from 'react'
@@ -37,9 +36,9 @@ type CardSelectors =
 	| 'image' | 'image-caption'
 	| 'info' | 'title' | 'caption'
 
-export const Card = polymorphic<CardSpecs>(_props => {
+export const Card = polymorphic<CardSpecs>((_props, { useStyles }) => {
 	const props = useProps(NAME, _props)
-	const styles = useStyles<CardSpecs>(NAME, { classes, props })
+	const styles = useStyles(NAME, { props })
 
 	const {
 		as,

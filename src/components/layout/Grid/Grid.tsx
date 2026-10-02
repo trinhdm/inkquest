@@ -1,5 +1,4 @@
 import { useProps, extractOtherProps } from '@/hooks/useProps'
-import { useStyles } from '@/hooks/useStyles'
 import { defineTokens, polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import { GridItem } from './GridItem'
@@ -61,9 +60,9 @@ const tokens = defineTokens<GridSpecs>(({ props, theme }) => {
 	}
 })
 
-export const Grid = polymorphic<GridSpecs>(_props => {
+export const Grid = polymorphic<GridSpecs>((_props, { useStyles }) => {
 	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props, tokens })
+	const styles = useStyles(NAME, { props, tokens })
 
 	const { as, children, columns, ...rest } = props
 	const others = extractOtherProps(rest)

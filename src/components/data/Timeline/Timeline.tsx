@@ -1,5 +1,4 @@
 import { useProps, extractOtherProps } from '@/hooks/useProps'
-import { useStyles } from '@/hooks/useStyles'
 import { filterChildren } from '@/lib/component'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
@@ -34,9 +33,9 @@ interface TimelineSpecs {
 type TimelineSelectors =
 	| 'root'
 
-export const Timeline = polymorphic<TimelineSpecs>(_props => {
+export const Timeline = polymorphic<TimelineSpecs>((_props, { useStyles }) => {
 	const props = useProps(NAME, _props)
-	const styles = useStyles<TimelineSpecs>(NAME, { classes, props })
+	const styles = useStyles(NAME, { props })
 
 	const { as, children, ...rest } = props
 	const others = extractOtherProps(rest)

@@ -1,7 +1,6 @@
 import { LoaderCircle } from 'lucide-react'
 import { isValidElement, useMemo, Children } from 'react'
 import { useProps, extractOtherProps } from '@/hooks/useProps'
-import { useStyles } from '@/hooks/useStyles'
 import { useVariants } from '@/hooks/useVariants'
 import { extractChildrenText } from '@/lib/component'
 import { isExternalLink, keyHasValue } from '@/utils/helpers'
@@ -15,6 +14,7 @@ import type { Route } from 'next'
 import type { Priority as ThemePriority, Variant as ThemeVariant } from '@/lib/theme/types'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import type { Size } from '@/types/shared'
+import type { StyleFn } from '@/hooks/useStyles'
 import Link, { type LinkProps } from 'next/link'
 import classes from './Button.module.scss'
 
@@ -79,7 +79,7 @@ type ButtonSelectors =
 
 const buildSections = (
 	children: ButtonProps['children'],
-	styles: ReturnType<typeof useStyles<ButtonSpecs>>,
+	styles: StyleFn<ButtonSpecs>,
 ) => {
 	const label: ReactNode[] = []
 	let left: ReactNode = null,
@@ -108,10 +108,10 @@ const buildSections = (
 	return <>{ left }{ content }{ right }</>
 }
 
-export const Button = polymorphic<ButtonSpecs>(_props => {
+export const Button = polymorphic<ButtonSpecs>((_props, { useStyles }) => {
 	useVariants(NAME)
 	const props = useProps(NAME, useButtonGroupProps(_props))
-	const styles = useStyles<ButtonSpecs>(NAME, { classes, props })
+	const styles = useStyles(NAME, { props })
 
 	const {
 		as,

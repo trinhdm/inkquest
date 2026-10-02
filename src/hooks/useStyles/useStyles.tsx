@@ -8,8 +8,8 @@ import type { PluralizeKeys } from '@/types/utils'
 import type { SiteThemeConfig } from '@/lib/theme/types'
 import type { SpecsContext, SpecsContract, SpecsSelectors, TokensConfig } from '@/lib/component'
 
-interface StyleOptions<S extends SpecsContract> {
-	readonly classes?: Record<string, string>
+export interface StyleOptions<S extends SpecsContract> {
+	readonly classes?: S['selectors'] extends string ? Record<string, string> : never
 	context?: SpecsContext<S>
 	prefix?: string
 	props: S['props']

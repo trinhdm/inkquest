@@ -1,5 +1,4 @@
 import { useProps, extractOtherProps } from '@/hooks/useProps'
-import { useStyles } from '@/hooks/useStyles'
 import { useVariants } from '@/hooks/useVariants'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
@@ -46,10 +45,10 @@ interface BadgeSpecs {
 type BadgeSelectors =
 	| 'root' | 'inner'
 
-export const Badge = polymorphic<BadgeSpecs>(_props => {
+export const Badge = polymorphic<BadgeSpecs>((_props, { useStyles }) => {
 	useVariants(NAME)
 	const props = useProps(NAME, _props)
-	const styles = useStyles<BadgeSpecs>(NAME, { classes, props })
+	const styles = useStyles(NAME, { props })
 
 	const {
 		as,

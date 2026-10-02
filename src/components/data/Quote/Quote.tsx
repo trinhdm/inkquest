@@ -1,5 +1,4 @@
 import { useProps, extractOtherProps } from '@/hooks/useProps'
-import { useStyles } from '@/hooks/useStyles'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
@@ -30,9 +29,9 @@ type QuoteSelectors =
 	| 'root' | 'rail'
 	| 'content' | 'caption'
 
-export const Quote = polymorphic<QuoteSpecs>(_props => {
+export const Quote = polymorphic<QuoteSpecs>((_props, { useStyles }) => {
 	const props = useProps(NAME, _props)
-	const styles = useStyles<QuoteSpecs>(NAME, { classes, props })
+	const styles = useStyles(NAME, { props })
 
 	const { as, author, content, ...rest } = props
 	const others = extractOtherProps(rest)

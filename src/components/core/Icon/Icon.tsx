@@ -1,5 +1,4 @@
 import { useProps, extractOtherProps } from '@/hooks/useProps'
-import { useStyles } from '@/hooks/useStyles'
 import { isExternalLink, keyHasValue } from '@/utils/helpers'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
@@ -9,6 +8,7 @@ import type { LucideProps } from 'lucide-react'
 import type { Route } from 'next'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import type { SocialBrand } from '@/types/shared'
+import type { StyleFn } from '@/hooks/useStyles'
 import Link from 'next/link'
 import classes from './Icon.module.scss'
 
@@ -113,7 +113,7 @@ const configSocialIcon = ({ color, strokeWidth, type }: IconProps): SvgProps | u
 
 const buildIcon = (
 	props: IconProps,
-	styles: ReturnType<typeof useStyles<IconSpecs>>,
+	styles: StyleFn<IconSpecs>,
 ) => {
 	const { color, filled, href, size, type, ...rest } = props
 	const others = extractOtherProps(rest)
@@ -157,9 +157,9 @@ const buildIcon = (
 	}
 }
 
-export const Icon = polymorphic<IconSpecs>(_props => {
+export const Icon = polymorphic<IconSpecs>((_props, { useStyles }) => {
 	const props = useProps(NAME, _props)
-	const styles = useStyles<IconSpecs>(NAME, { classes, props })
+	const styles = useStyles(NAME, { props })
 
 	const iconEl = buildIcon(props, styles)
 	if (!iconEl) return null

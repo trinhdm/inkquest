@@ -1,6 +1,5 @@
 import { useColorScheme } from '@/hooks/useColorScheme'
 import { useProps, extractOtherProps } from '@/hooks/useProps'
-import { useStyles } from '@/hooks/useStyles'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import { COMPANY_NAME } from '@/utils/constants'
@@ -57,10 +56,10 @@ interface LogoSpecs {
 type LogoSelectors =
 	| 'root' | 'image'
 
-export const Logo = polymorphic<LogoSpecs>(_props => {
+export const Logo = polymorphic<LogoSpecs>((_props, { useStyles }) => {
 	const { colorScheme } = useColorScheme()
 	const props = useProps(NAME, _props)
-	const styles = useStyles<LogoSpecs>(NAME, { classes, props })
+	const styles = useStyles(NAME, { props })
 
 	const {
 		alt,

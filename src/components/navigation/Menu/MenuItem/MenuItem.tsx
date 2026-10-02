@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useOutsideClick } from '@/hooks/useOutsideClick'
 import { useProps, extractOtherProps } from '@/hooks/useProps'
-import { useStyles } from '@/hooks/useStyles'
 import { polymorphic } from '@/lib/component'
 import { toKebabCase } from '@/utils/helpers'
 import { Box } from '@/components/polymorphic/Box'
@@ -11,6 +10,7 @@ import { Menu } from '../Menu'
 import type { NavigationItem } from '@/utils/navigation'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import type { SpecAttributes } from '@/types/shared'
+import type { StyleFn } from '@/hooks/useStyles'
 import Link from 'next/link'
 import classes from '../Menu.module.scss'
 
@@ -55,7 +55,7 @@ const isCurrentRoute = (
 
 const MenuLabel = (
 	item: NavigationItem,
-	styles: ReturnType<typeof useStyles<MenuItemSpecs>>,
+	styles: StyleFn<MenuItemSpecs>,
 	isActive = false,
 ) => {
 	const sharedProps = {
@@ -83,9 +83,9 @@ const MenuLabel = (
 	)
 }
 
-export const MenuItem = polymorphic<MenuItemSpecs>(_props => {
+export const MenuItem = polymorphic<MenuItemSpecs>((_props, { useStyles }) => {
 	const props = useProps(NAME, _props)
-	const styles = useStyles<MenuItemSpecs>(NAME, { classes, props })
+	const styles = useStyles(NAME, { props })
 
 	const timeoutRef = useRef<NodeJS.Timeout>(null)
 	const itemRef = useRef<HTMLLIElement>(null)

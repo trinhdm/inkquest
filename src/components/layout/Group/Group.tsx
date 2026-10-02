@@ -18,7 +18,6 @@ import {
 
 import { useProps, extractOtherProps, type ReservedProp } from '@/hooks/useProps'
 import { useReplayInView, type MaybeAnimationProps } from '@/hooks/animation'
-import { useStyles } from '@/hooks/useStyles'
 import { Box } from '@/components/polymorphic/Box'
 import { GroupItem } from './GroupItem'
 import { GroupProvider, type GroupContext } from './Group.context'
@@ -120,9 +119,9 @@ const tokens = defineTokens<GroupSpecs>(({ props }) => {
 	}
 })
 
-export const GroupBase = polymorphic<GroupSpecs>(_props => {
+export const GroupBase = polymorphic<GroupSpecs>((_props, { useStyles }) => {
 	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props, tokens })
+	const styles = useStyles(NAME, { props, tokens })
 
 	const {
 		as,

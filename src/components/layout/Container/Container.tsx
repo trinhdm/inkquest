@@ -1,5 +1,4 @@
 import { useProps, extractOtherProps } from '@/hooks/useProps'
-import { useStyles } from '@/hooks/useStyles'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
@@ -28,9 +27,9 @@ interface ContainerSpecs {
 type ContainerSelectors =
 	| 'root' | 'wrapper'
 
-export const Container = polymorphic<ContainerSpecs>(_props => {
+export const Container = polymorphic<ContainerSpecs>((_props, { useStyles }) => {
 	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props })
+	const styles = useStyles(NAME, { props })
 
 	const { as, children, fullWidth, ...rest } = props
 	const others = extractOtherProps(rest)
