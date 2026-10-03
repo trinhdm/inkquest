@@ -11,6 +11,7 @@ export interface FieldContext
 	extends Pick<AnimationOptions, 'unstyled'>  {
 	disabled?: boolean
 	hasError: boolean
+	hasIcon: boolean
 	idx: FieldIds
 	loading?: boolean
 	required?: boolean

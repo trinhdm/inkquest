@@ -6,4 +6,15 @@
     &__control {
         position: relative;
     }
+
+    &__icon {
+        --icon-size: 1.125rem;
+
+        inset-inline-start: var(--space-4);
+        inset-block: 0;
+        margin-block: auto;
+        max-height: fit-content;
+        position: absolute;
+        z-index: 5;
+    }
 }

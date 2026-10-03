@@ -88,21 +88,18 @@ export const createRootCtx = <
 	const inheritProps = <P extends object>(
 		_props: P,
 		ctx: SafeRootCtxValue<T, N>,
+		selected?: (keyof T)[],
 	): P => {
 		if (!ctx) return _props
 
 		const inherited = {} as Partial<T>,
 			uninherited = ['rootName'] as (keyof T)[]
 
-		// `Object.hasOwn` on the RAW `_props` — not a `useProps`-merged result —
-		// is what keeps "unset" and "explicitly set to the registry default" distinguishable.
-		// `filterProps` (hooks/useProps/helpers.ts) treats any *present* key as valid,
-		// `undefined` value included, so a naive `{ ...ctx, ..._props }` spread
-		// would let an explicit `size={undefined}` silently clobber a registry default
-		// like `Icon`'s `size: 24`.
 		;(Object.keys(ctx) as (keyof T)[]).forEach(key => {
 			const propsHasKey = ctx[key] !== undefined && !Object.hasOwn(_props, key as string)
-			if (!uninherited.includes(key) && propsHasKey)
+			const isSelected = !!selected?.length ? selected.includes(key) : true
+
+			if (!uninherited.includes(key) && propsHasKey && isSelected)
 				Object.assign(inherited, { [key]: ctx[key] })
 		})
 
@@ -112,8 +109,8 @@ export const createRootCtx = <
 	// reads the context AND applies the guarded merge in one call,
 	// so a consumer just does `useProps(NAME, useRootProps(_props))`
 	// with no way to get the precedence or the guard wrong
-	const useRootProps = <P extends object>(_props: P): P =>
-		inheritProps(_props, use(RootCtx))
+	const useRootProps = <P extends object>(_props: P, ...selected: (keyof T)[]): P =>
+		inheritProps(_props, use(RootCtx), selected)
 
 	return {
 		RootProvider,

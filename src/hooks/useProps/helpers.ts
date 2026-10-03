@@ -66,6 +66,7 @@ type OtherPropsList<E extends ElementType = ElementType> = {
 	childName?: string
 	children?: ReactNode
 	displayName?: string
+	idx?: Record<string, string>
 	loading?: boolean
 }
 
@@ -85,6 +86,7 @@ const RESERVED_PROPS = [
 	'displayName',
 	'delay',
 	'duration',
+	'idx',
 	'index',
 	'initial',
 	'lead',

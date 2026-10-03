@@ -6,12 +6,13 @@ import {
 	Ban, Globe, LoaderCircle, RotateCw,
 	Bell, Bookmark, Calendar, Camera, Clock, MapPin,
 	CircleAlert, MessageCircle, MessageCircleQuestionMark, TriangleAlert,
-	ClipboardList, Copy, Funnel, Search, Trash,
-	Cog, Lock, Ruler, Settings, Wrench,
-	Download, Image, Link, Share, Tag,
-	Ellipse, GripVertical, LayoutGrid, List, Rows3, StretchHorizontal,
+	ClipboardList, Copy, File, Funnel, Search, Trash,
+	Cog, Lock, Pipette, Ruler, Wrench,
+	Download, Hash, Image, Link, Share, Tag,
+	Ellipse, GripVertical, LayoutGrid, List, StretchHorizontal,
 	Flag, Mail, MailPlus, Paperclip, Pen, Phone, Send,
 	Heart, Moon, Star, Sun,
+	// Rows3, Settings,
 } from 'lucide-react'
 
 const ARROW_ICON_MAP = {
@@ -77,10 +78,13 @@ const ACTION_MAP = {
 
 const CONTROL_ICON_MAP = {
 	calendar: Calendar,
+	color: Pipette,
+	file: File,
 	filter: Funnel,
 	grid: LayoutGrid,
 	hidden: EyeOff,
 	list: List,
+	number: Hash,
 	price: Tag,
 	row: StretchHorizontal,
 	search: Search,

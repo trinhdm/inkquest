@@ -1,24 +1,12 @@
 .inkq-text-input {
 	$name: &;
 
+    --field-control-padding: 0 var(--space-4);
+
     align-items: center;
     display: flex;
     gap: .5rem;
-    // height: var(--control-xl);
-	height: 3rem;
-    padding: 0 1rem;
+    padding: var(--field-control-padding);
     position: relative;
 	width: 100%;
-
-    &__icon {
-        // inset-block: auto;
-        // margin-block: 0;
-
-        inset-block: 0;
-        margin-block: auto;
-        max-height: fit-content;
-
-        position: absolute;
-        z-index: 5;
-    }
 }

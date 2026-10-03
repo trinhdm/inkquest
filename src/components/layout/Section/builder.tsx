@@ -8,7 +8,7 @@ import {
 
 import { Button } from '@/components/core/Button'
 import { Grid } from '../Grid'
-import { TextInput } from '@/components/form/TextInput'
+// import { TextInput } from '@/components/form/TextInput'
 import type { RevealCounter } from '@/hooks/animation'
 import type { Section } from './Section'
 import type { StyleFn } from '@/hooks/useStyles'
@@ -21,8 +21,8 @@ interface BuildSectionConfig {
 }
 
 const buildHeader = ({ id, props, reveal, styles }: BuildSectionConfig): ReactNode[] => {
-	const { eyebrow, layout, title } = props
-	const header: ReactNode[] = []
+	const { eyebrow, layout, title } = props,
+		header: ReactNode[] = []
 
 	if (layout === 'blocks')
 		return header
@@ -49,11 +49,8 @@ const buildHeader = ({ id, props, reveal, styles }: BuildSectionConfig): ReactNo
 	return header
 }
 
-const orderSection = ({
-	id,
-	props: { children },
-	reveal,
-}: Omit<BuildSectionConfig, 'styles'>) => {
+const orderSection = ({ id, props, reveal }: Omit<BuildSectionConfig, 'styles'>) => {
+	const { children } = props
 	const buttons: ReactNode[] = [],
 		cta: ReactNode[] = [],
 		items: ReactNode[] = []
@@ -69,7 +66,7 @@ const orderSection = ({
 
 			if (isValidElement(child)) {
 				if (child.type === Fragment) items.push(desc)
-				else if (child.type === TextInput) cta.push(child)
+				// else if (child.type === TextInput) cta.push(child)
 				else if (child.type !== Button) items.push(child)
 				else if (buttons.length < 2) buttons.push(child)
 			}
@@ -80,8 +77,11 @@ const orderSection = ({
 }
 
 const buildContent = ({ id, props, reveal, styles }: BuildSectionConfig): ReactNode[] => {
-	const { buttons, cta, items } = orderSection({ id, props, reveal })
-	const content: ReactNode[] = []
+	const { buttons, cta, items } = orderSection({ id, props, reveal }),
+		content: ReactNode[] = []
+
+	const { eyebrow, layout, title } = props,
+		hasSiblings = !!(title || eyebrow || buttons?.length)
 
 	if (!!items?.length) {
 		const clsx = { global: { prose: true } },
@@ -97,9 +97,12 @@ const buildContent = ({ id, props, reveal, styles }: BuildSectionConfig): ReactN
 			DescTag = 'p'
 		}
 
-		const description = !!DescTag ? <DescTag { ...args }>{ items }</DescTag> : items
+		const description = !!DescTag && hasSiblings
+			? <DescTag { ...args }>{ items }</DescTag>
+			: items
+
 		const key = `${id}-body`,
-			body = !!(props.title || props.eyebrow || buttons?.length)
+			body = hasSiblings
 				? <div key={ key } { ...styles('body') }>{ description }</div>
 				: <Fragment key={ key }>{ description }</Fragment>
 
@@ -118,7 +121,7 @@ const buildContent = ({ id, props, reveal, styles }: BuildSectionConfig): ReactN
 				{ ...styles('cta') }
 				hasPriority={ buttons.length > 1 }
 				revealFrom={ reveal.reserve(buttons.length) }
-				size={ props.layout === 'hero' ? 'lg' : 'md' }
+				size={ layout === 'hero' ? 'lg' : 'md' }
 			>
 				{ buttons }
 			</Button.Group>

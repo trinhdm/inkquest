@@ -1,9 +1,8 @@
-import { Globe, Mail, Phone, Search } from 'lucide-react'
 import { useFieldCtx, useFieldProps, type Field } from '../Field'
 import { extractOthers } from '@/hooks/useProps'
-import { polymorphic } from '@/lib/component'
+import { defineTokens, polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
-import type { ChangeEventHandler } from 'react'
+import type { ChangeEventHandler, ComponentPropsWithoutRef } from 'react'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import type { Size } from '@/types/shared'
 import classes from './TextInput.module.scss'
@@ -19,8 +18,6 @@ const DEFAULT_PROPS = {
 
 interface TextInputProps {
 	disabled?: boolean
-	// error?: string
-	// label?: string
 	loading?: boolean
 	name?: string
 	onChange?: ChangeEventHandler<HTMLInputElement>
@@ -28,17 +25,9 @@ interface TextInputProps {
 	readOnly?: boolean
 	required?: boolean
 	size?: Size
-	type?: TextInputType
+	type?: ComponentPropsWithoutRef<'input'>['type']
 	value?: string
 }
-
-type TextInputType =
-	| 'email'
-	| 'password'
-	| 'search'
-	| 'tel'
-	| 'text'
-	| 'url'
 
 interface TextInputSpecs {
 	context: Field.Context
@@ -48,37 +37,38 @@ interface TextInputSpecs {
 	}
 	props: TextInputProps
 	selectors: TextInputSelectors
+	tokens: TextInputTokens
 }
 
 type TextInputSelectors =
-	| 'root' | 'icon'
+	| 'root'
 
-const getInputIcon = ({ type }: TextInputProps) => {
-	switch (type) {
-		case 'email':	return <Mail />
-		case 'search':	return <Search />
-		case 'tel':		return <Phone />
-		case 'url':		return <Globe />
-		default:		return null
-	}
+type TextInputTokens = {
+	root:
+		| '--field-control-padding'
 }
+
+const tokens = defineTokens<TextInputSpecs>(({ context }) => {
+	const { hasIcon } = context
+
+	return {
+		root: {
+			'--field-control-padding': hasIcon ? `var(--space-4) var(--space-4) var(--space-4) var(--space-11)` : undefined,
+		},
+	}
+})
 
 export const TextInput = polymorphic<TextInputSpecs>((_props, { useProps, useStyles }) => {
 	const context = useFieldCtx(NAME)
-	const props = useProps(useFieldProps(_props))
-	const styles = useStyles({ context, props })
+	const props = useProps(useFieldProps(_props, 'disabled', 'loading', 'required'))
+	const styles = useStyles({ context, props, tokens })
 
-	// const { hasError, idx } = context
-	const { idx } = context
+	const { hasError, idx } = context
 
 	const {
 		disabled,
-		// error,
-		hasError,
-		// label,
 		loading,
 		onChange,
-		// placeholder,
 		readOnly,
 		required,
 		size,
@@ -87,7 +77,6 @@ export const TextInput = polymorphic<TextInputSpecs>((_props, { useProps, useSty
 	} = props
 
 	const others = extractOthers(rest)
-	const icon = getInputIcon(props)
 
 	const aria = {
 		busy: !!loading || undefined,
@@ -104,21 +93,17 @@ export const TextInput = polymorphic<TextInputSpecs>((_props, { useProps, useSty
 	}
 
 	return (
-		<>
-			<div { ...styles('icon') }>{ icon }</div>
-
-			<Box
-				{ ...styles('root') }
-				{ ...others }
-				as={ TAG }
-				attributes={ { aria, data } }
-				disabled={ disabled }
-				id={ idx.control }
-				onChange={ onChange }
-				readOnly={ readOnly || !!loading || (value !== undefined && !onChange) }
-				value={ value }
-			/>
-		</>
+		<Box
+			{ ...styles('root') }
+			{ ...others }
+			as={ TAG }
+			attributes={ { aria, data } }
+			disabled={ disabled }
+			id={ idx.control }
+			onChange={ onChange }
+			readOnly={ readOnly || !!loading || (value !== undefined && !onChange) }
+			value={ value }
+		/>
 	)
 }, { name: NAME, classes })
 

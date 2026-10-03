@@ -27,7 +27,7 @@ type SvgProps =
 
 interface BaseIconProps<T extends SvgProps | LucideProps> {
 	color?: T['color']
-	href?: string
+	href?: Route<string>
 	strokeWidth?: T['strokeWidth']
 }
 
@@ -164,8 +164,8 @@ export const Icon = polymorphic<IconSpecs>((_props, { useProps, useStyles }) => 
 	const iconEl = buildIcon(props, styles)
 	if (!iconEl) return null
 
-	if ('href' in props) {
-		let linkProps = { ...styles('root'), href: props.href as Route<string> }
+	if (keyHasValue(props, 'href')) {
+		let linkProps = { ...styles('root'), href: props.href }
 
 		if (isExternalLink(props.href)) {
 			const external = { target: '_blank', rel: 'noopener noreferrer' }

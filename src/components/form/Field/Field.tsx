@@ -1,5 +1,15 @@
-import { useId, useMemo, type ReactNode } from 'react'
-import { LoaderCircle } from 'lucide-react'
+import {
+	isValidElement,
+	useId, useMemo,
+	type ReactNode,
+} from 'react'
+
+import {
+	Calendar, Calendar1, CalendarDays,
+	Clock, Globe, Hash, LoaderCircle,
+	Mail, Paperclip, Phone, Pipette, Search,
+} from 'lucide-react'
+
 import { extractOthers } from '@/hooks/useProps'
 import { filterChildren, polymorphic, verifyChildren } from '@/lib/component'
 import { toKebabCase } from '@/utils/helpers'
@@ -8,6 +18,7 @@ import { FieldProvider, type FieldContext } from './Field.context'
 import { TextInput } from '../TextInput'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import type { Size } from '@/types/shared'
+import type { StyleFn } from '@/hooks/useStyles'
 import classes from './Field.module.scss'
 
 const NAME = 'Field' as const,
@@ -47,16 +58,54 @@ interface FieldSpecs {
 
 type FieldSelectors =
 	| 'root' | 'label' | 'control'
-	| 'required' | 'indicator' | 'error'
+	| 'required' | 'icon' | 'indicator' | 'error'
 
-const buildField = (children: FieldProps['children']) => {
+interface FieldParts {
+	control: ReactNode | null
+	icon: ReactNode | null
+	label: ReactNode  | null
+}
+
+const getIcon = (type?: TextInput.Props['type']) => {
+	switch (type) {
+		case 'color':	return <Pipette />
+		case 'date':	return <Calendar />
+		case 'email':	return <Mail />
+		case 'file':	return <Paperclip />
+		case 'month':	return <Calendar1 />
+		case 'number':	return <Hash />
+		case 'search':	return <Search />
+		case 'tel':		return <Phone />
+		case 'time':	return <Clock />
+		case 'url':		return <Globe />
+		case 'week':	return <CalendarDays />
+		default:		return null
+	}
+}
+
+const buildField = (
+	children: FieldProps['children'],
+	styles: StyleFn<FieldSpecs>,
+): FieldParts => {
 	const childNames = [TextInput.displayName]
-	const [field] = filterChildren(children, childNames)
+	const [control] = filterChildren(children, childNames)
 
 	verifyChildren({ children, name: NAME, total: 1 })
 
-	if (!field) return null
-	return <>{ field }</>
+	const items = {
+		control,
+		icon: null,
+		label: null,
+	} as FieldParts
+
+	if (isValidElement<TextInput.Props>(control)) {
+		const { props: { type } } = control
+		const icon = getIcon(type)
+
+		if (icon) items.icon = <div { ...styles('icon') }>{ icon }</div>
+	}
+
+	return items
 }
 
 export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) => {
@@ -79,6 +128,7 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 
 	const others = extractOthers(rest)
 	const hasError = !!error?.trim()
+	const { control, icon } = buildField(children, styles)
 
 	const uid = useId()
 	const idx = useMemo(() => {
@@ -90,10 +140,12 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 
 	const ctxValues = useMemo(() => ({
 		disabled, loading, required,
-		hasError, idx, size, unstyled,
+		hasError, hasIcon: icon !== null,
+		idx, size, unstyled,
 	}), [
 		disabled, loading, required,
 		hasError, idx, size, unstyled,
+		icon,
 	])
 
 	const data = {
@@ -118,7 +170,7 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 
 			<FieldProvider value={ ctxValues }>
 				<div { ...styles('control') }>
-					{ buildField(children) }
+					{ icon }{ control }
 					{ !!loading && <Box { ...styles('indicator') } as={ LoaderCircle } /> }
 				</div>
 			</FieldProvider>
