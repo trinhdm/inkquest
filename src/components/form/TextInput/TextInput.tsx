@@ -1,3 +1,5 @@
+import { Globe, Mail, Phone, Search } from 'lucide-react'
+import { useFieldCtx, useFieldProps, type Field } from '../Field'
 import { extractOthers } from '@/hooks/useProps'
 import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
@@ -17,8 +19,8 @@ const DEFAULT_PROPS = {
 
 interface TextInputProps {
 	disabled?: boolean
-	error?: string
-	label?: string
+	// error?: string
+	// label?: string
 	loading?: boolean
 	name?: string
 	onChange?: ChangeEventHandler<HTMLInputElement>
@@ -39,6 +41,7 @@ type TextInputType =
 	| 'url'
 
 interface TextInputSpecs {
+	context: Field.Context
 	defaults: {
 		as: typeof TAG
 		props: PropsDefaultList<typeof DEFAULT_PROPS>
@@ -48,16 +51,31 @@ interface TextInputSpecs {
 }
 
 type TextInputSelectors =
-	| 'root'
+	| 'root' | 'icon'
+
+const getInputIcon = ({ type }: TextInputProps) => {
+	switch (type) {
+		case 'email':	return <Mail />
+		case 'search':	return <Search />
+		case 'tel':		return <Phone />
+		case 'url':		return <Globe />
+		default:		return null
+	}
+}
 
 export const TextInput = polymorphic<TextInputSpecs>((_props, { useProps, useStyles }) => {
-	const props = useProps(_props)
-	const styles = useStyles({ props })
+	const context = useFieldCtx(NAME)
+	const props = useProps(useFieldProps(_props))
+	const styles = useStyles({ context, props })
+
+	// const { hasError, idx } = context
+	const { idx } = context
 
 	const {
 		disabled,
-		error,
-		label,
+		// error,
+		hasError,
+		// label,
 		loading,
 		onChange,
 		// placeholder,
@@ -69,34 +87,38 @@ export const TextInput = polymorphic<TextInputSpecs>((_props, { useProps, useSty
 	} = props
 
 	const others = extractOthers(rest)
-
-	const hasError = !!error?.trim()
-
-	const data = {
-		disabled: !!disabled || null,
-		invalid: hasError || null,
-		loading: !!loading || null,
-		required: !!required || null,
-	}
+	const icon = getInputIcon(props)
 
 	const aria = {
-		// describedby: hasError ? errorID : undefined,
+		busy: !!loading || undefined,
+		describedby: idx.error,
 		invalid: hasError || undefined,
+		required: !!required || undefined,
+	}
+
+	const data = {
+		// disabled: !!disabled || null,
+		// invalid: hasError || null,
+		loading: !!loading || null,
+		// required: !!required || null,
 	}
 
 	return (
-		<Box
-			{ ...styles('root') }
-			{ ...others }
-			as={ TAG }
-			attributes={ { aria, data } }
-			disabled={ disabled }
-			onChange={ onChange }
-			readOnly={ readOnly || (value !== undefined && !onChange) }
-			value={ value }
-		>
+		<>
+			<div { ...styles('icon') }>{ icon }</div>
 
-		</Box>
+			<Box
+				{ ...styles('root') }
+				{ ...others }
+				as={ TAG }
+				attributes={ { aria, data } }
+				disabled={ disabled }
+				id={ idx.control }
+				onChange={ onChange }
+				readOnly={ readOnly || !!loading || (value !== undefined && !onChange) }
+				value={ value }
+			/>
+		</>
 	)
 }, { name: NAME, classes })
 

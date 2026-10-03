@@ -1,0 +1,9 @@
+.inkq-field {
+	$name: &;
+
+    position: relative;
+
+    &__control {
+        position: relative;
+    }
+}

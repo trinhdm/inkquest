@@ -7,7 +7,6 @@
 		align-items: baseline;
 		column-gap: var(--space-5);
 		display: flex;
-		// justify-content: space-between;
 		margin-block-end: var(--inkq-stack-gap-lede);
 
 		h2 {
@@ -21,10 +20,6 @@
 
 	.faq-category-group {
 		padding-block: var(--inkq-stack-gap-lede);
-
-		&:first-child {
-			padding-block-start: 0;
-		}
 
 		&:last-child {
 			padding-block-end: 0;

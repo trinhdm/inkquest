@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useDebounce } from '@/hooks/useDebounce'
-import { TextInput } from '@/components/form/TextInput'
+import { Field } from '@/components/form/Field'
 import { FAQ_CATEGORY_PARAM, FAQ_QUERY_PARAM } from '../faqs.data'
 import type { ChangeEventHandler } from 'react'
 import type { Route } from 'next'
@@ -58,13 +58,14 @@ export const FaqSearch = () => {
 	}
 
 	return (
-		<TextInput
-			label="Search FAQs"
-			onChange={ handleChange }
-			placeholder="Search all FAQs…"
-			type="search"
-			value={ draft }
-		/>
+		<Field id="faq-search">
+			<Field.Input
+				onChange={ handleChange }
+				placeholder="Search all FAQs…"
+				type="search"
+				value={ draft }
+			/>
+		</Field>
 	)
 }
 

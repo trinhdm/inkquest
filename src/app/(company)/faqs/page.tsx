@@ -2,11 +2,12 @@
 
 import Link from 'next/link'
 import { Suspense } from 'react'
-import { resolveFaqGroup } from './faqs.data'
 import { FaqBrowser } from './FaqBrowser'
 import { FaqCategory } from './FaqCategory'
+import { FaqSearch } from './FaqSearch'
+import { Field } from '@/components/form/Field'
 import { Section } from '@/components/layout/Section'
-import { TextInput } from '@/components/form/TextInput'
+import { resolveFaqGroup } from './faqs.data'
 import './faqs.scss'
 
 export default function FAQs() {
@@ -20,9 +21,15 @@ export default function FAQs() {
 				layout="hero"
 				title="Questions, answered."
 			>
-				<>Everything about bidding, booking, verification, and payouts — for clients, artists, and studios. Can't find it? <Link href="/messages" data-cta>Message us</Link>.</>
+				<>Everything about bidding, booking, verification, and payouts — for clients, artists, and studios. Can&apos;t find it? <Link href="/messages" data-cta>Message us</Link>.</>
 
-				<TextInput placeholder="Search questions" />
+				<Suspense fallback={ (
+					<Field disabled id="faq-search-disabled" label="Search FAQs">
+						<Field.Input placeholder="Search all FAQs…" type="search" />
+					</Field>
+				) }>
+					<FaqSearch />
+				</Suspense>
 			</Section>
 
 			<Section id={ `${pageID}-list` }>
