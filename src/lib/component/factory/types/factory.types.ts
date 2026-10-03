@@ -5,7 +5,7 @@ import type { SpecAttributes } from '@/types/shared'
 
 //	component + props
 
-type _FactoryContract = {
+export type FactoryContract = {
 	attributes?: SpecAttributes
 	children?: ReactNode
 	className?: string
@@ -17,15 +17,15 @@ type _FactoryContract = {
 export type FactoryPropsList<S extends Specs> =
 	& S['props']
 	& AsPolymorphic<S>
-	& _FactoryContract
+	& FactoryContract
 
 export type FactoryComponent<S extends Specs> =
 	NamedExoticComponent<FactoryPropsList<S>>
 
 //	factory: .set() method
 
-export type FactoryDisplayName<P = object> =
-	Pick<FunctionComponent<P>, 'displayName'>
+export type FactoryDisplayName =
+	Pick<FunctionComponent, 'displayName'>
 
 type _AsDefaultProps<S extends Specs> =
 	AsPolymorphic<S> extends { as?: never }
@@ -48,7 +48,7 @@ type _SetSubcomponents<S extends Specs> =
 		: { subcomponents?: never }
 
 type _MethodSetArgs<S extends Specs> =
-	& FactoryDisplayName<FactoryPropsList<S>>				// & { displayName?: string }
+	& FactoryDisplayName
 	& _SetDefaultProps<S>
 	& _SetSubcomponents<S>
 
@@ -57,7 +57,7 @@ export interface FactoryMethods<
 	C = FactoryComponent<S>,
 	P = FactoryPropsList<S>
 > {
-	set: <T extends _MethodSetArgs<S>>(args: T) => T		// set: (args: T) => T
+	set: (args: _MethodSetArgs<S>) => _MethodSetArgs<S>
 	withProps: (props: P) => C
 }
 
@@ -67,4 +67,4 @@ export type FactorySubcomponents<
 > =
 	C extends Record<string, unknown>
 		? C
-		: Record<string, never>
+		: unknown

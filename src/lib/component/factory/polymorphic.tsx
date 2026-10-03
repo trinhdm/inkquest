@@ -1,6 +1,7 @@
 import { createFactory } from './createFactory'
 import type { ElementType, ReactElement } from 'react'
 import type {
+	FactoryDisplayName,
 	FactoryMethods, FactorySubcomponents,
 	IsPolymorphic, PolymorphicProps,
 	Specs, SpecsDefaultAs,
@@ -23,11 +24,13 @@ const polymorphicFactory = <
 
 	type _Subcomponents = FactorySubcomponents<S>
 	type _Methods = FactoryMethods<S, _Component, P<C>>
+	type _Properties = Required<FactoryDisplayName>
 
 	type PolymorphicComponent =
 		& _Component
 		& _Subcomponents
 		& _Methods
+		& _Properties
 
 	return createFactory<S, PolymorphicComponent>(target, config)
 }

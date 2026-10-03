@@ -1,4 +1,4 @@
-import type { ComponentProps, ElementType, ReactElement } from 'react'
+import type { ElementType, ReactElement } from 'react'
 import type { FactoryDisplayName, PolymorphicProps } from './types'
 import type { DEFAULT_TAG } from './constants'
 
@@ -14,7 +14,7 @@ export const definePolymorphic = <
 
 	type PolymorphicBase =
 		& _Component
-		& Required<FactoryDisplayName<ComponentProps<C0>>>
+		& Required<FactoryDisplayName>
 
 	return target as unknown as PolymorphicBase
 }

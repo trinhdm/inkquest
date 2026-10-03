@@ -1,5 +1,6 @@
-import type { JSX, JSXElementConstructor, ReactNode } from 'react'
+import type { JSX, JSXElementConstructor } from 'react'
 import type { AsPolymorphic, SpecsContract, SpecsDefaultAs } from './specs.types'
+import type { FactoryContract } from './factory.types'
 import type { DEFAULT_TAG } from '../constants'
 
 type _ElementProps<C> =
@@ -14,21 +15,14 @@ type _TagName<C> =
 		? typeof DEFAULT_TAG
 		: NonNullable<C>
 
-interface FactoryContract {
-	attributes?: SpecsContract['attributes']
-	classNames?: SpecsContract['classNames']
-	id?: SpecsContract['id']
+interface _PolymorphicContract
+	extends Omit<FactoryContract, 'children'> {
 	ref?: SpecsContract['ref']
-	styles?: SpecsContract['styles']
-	unstyled?: SpecsContract['unstyled']
 }
 
 export type PolymorphicProps<P, C> =
-	& FactoryContract
-	& {
-		as?: 'as' extends keyof P ? P['as'] : C
-		children?: ReactNode
-	}
+	& _PolymorphicContract
+	& { as?: 'as' extends keyof P ? P['as'] : C }
 	& Omit<P, 'as'>
 	& Omit<_ElementProps<_TagName<C>>, 'as' | keyof P>
 

@@ -12,6 +12,7 @@ export interface SpecsContract {
 	ref?: any
 	selectors?: string
 	styles?: CSSProperties
+	tokens?: Record<string, CSSVariable>
 	unstyled?: boolean
 }
 
@@ -93,7 +94,7 @@ export type TokensList<V> =
 
 export type SpecsTokens<S> =
 	'tokens' extends keyof S
-		? TokensList<S['tokens']>
+		? TokensList<NonNullable<S['tokens']>>
 		: Record<PropertyKey, never>
 
 

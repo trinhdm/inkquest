@@ -1,4 +1,3 @@
-
 export type WithDefaults<P, K extends PropertyKey> =
 	[K] extends [never]
 		? P
