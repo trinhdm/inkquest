@@ -1,0 +1,1 @@
+export { FaqSearch } from './FaqSearch'

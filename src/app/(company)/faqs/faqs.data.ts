@@ -8,7 +8,7 @@ export interface FaqGroup {
 	questions: PageDataItem[]
 }
 
-const FAQ_ITEMS: FaqGroup[] = [
+export const FAQ_ITEMS: FaqGroup[] = [
 	{
 		id: 'general-faqs',
 		category: 'General',
@@ -104,11 +104,12 @@ export const FAQ_CATEGORIES: Sidebar.LinkItem[] = FAQ_ITEMS.map(({ category, id 
 	url: `/faqs?category=${id}`,
 }))
 
-export const FAQ_PARAM = 'category'
+export const FAQ_CATEGORY_PARAM = 'category'
+export const FAQ_QUERY_PARAM = 'q'
 
 export const faqCategoryUrl = (id: string): Route<string> => `/faqs?category=${id}`
 
-export const resolveFaqGroup = (value?: string | string[] | null): FaqGroup => {
+export const resolveFaqGroup = (value?: string | string[]): FaqGroup => {
 	const id = Array.isArray(value) ? value[0] : value
 	return FAQ_ITEMS.find(group => group.id === id) ?? FAQ_ITEMS[0]
 }

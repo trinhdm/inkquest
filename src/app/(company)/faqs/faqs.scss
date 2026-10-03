@@ -3,7 +3,7 @@
 		grid-template-columns: minmax(15rem, auto) minmax(0, 1fr);
 	}
 
-	.inkq-heading {
+	.faq-heading {
 		align-items: baseline;
 		column-gap: var(--space-5);
 		display: flex;
@@ -12,6 +12,22 @@
 
 		h2 {
 			font-size: var(--inkq-font-size-heading-h3);
+		}
+	}
+
+	.faq-content p {
+		color: var(--inkq-color-text-secondary);
+	}
+
+	.faq-category-group {
+		padding-block: var(--inkq-stack-gap-lede);
+
+		&:first-child {
+			padding-block-start: 0;
+		}
+
+		&:last-child {
+			padding-block-end: 0;
 		}
 	}
 }
