@@ -1,8 +1,8 @@
-import { useMemo, type CSSProperties } from 'react'
 import { useTheme } from '@/providers/ThemeProvider'
 import { getClassName } from './getClassName'
 import { getStyle } from './getStyle'
 import { keyHasValue, pluralizeKeys } from '@/utils/helpers'
+import type { CSSProperties } from 'react'
 import type { ClassValue } from 'clsx'
 import type { PluralizeKeys } from '@/types/utils'
 import type { SiteThemeConfig } from '@/lib/theme/types'
@@ -10,7 +10,7 @@ import type { SpecsContext, SpecsContract, SpecsSelectors } from '@/lib/componen
 import type { TokensConfig } from '@/lib/component/tokens'
 
 export interface StyleOptions<S extends SpecsContract> {
-	readonly classes?: S['selectors'] extends string ? Record<string, string> : never
+	readonly classes?: [SpecsSelectors<S>] extends [never] ? never : Record<string, string>
 	context?: SpecsContext<S>
 	prefix?: string
 	props: S['props']
@@ -64,49 +64,33 @@ const isUnstyled = <S extends SpecsContract>(props: StyleOptions<S>['props']): b
 
 export const useStyles = <S extends SpecsContract>(
 	name: string,
-	opts: StyleOptions<S>
+	options: StyleOptions<S>
 ): StyleFn<S> => {
 	const theme = useTheme()
+	const prefix = options.prefix ?? theme.prefix,
+		opts = { ...options, name, prefix, theme }
 
-	return useMemo<StyleFn<S>>(() => {
-		const prefix = opts.prefix ?? theme.prefix,
-			sharedArgs = { ...opts, name, prefix, theme },
-			cache = new Map<string, AnyStyleResult>()
-
-		const styleSelector = <T extends SpecsSelectors<S>>(
-			selector: T,
-			config?: SelectorArgs['config']
-		): StyleResults<T> => {
-			let cacheKey = `${selector}:`
-			if (config) cacheKey += JSON.stringify(config)
-
-			const cached = cache.get(cacheKey)
-			if (cached) return cached as StyleResults<T>
-
-			const check = {
-				isRoot: selector === ROOT_SELECTOR,
-				isUnstyled: isUnstyled(opts.props),
-			}
-
-			const args: SharedConfig<S> = { ...sharedArgs, check, config, selector }
-
-			const values: StyleResult = {
-				className: getClassName<S>(args),
-				style: getStyle<S>(args),
-			}
-
-			const result: AnyStyleResult = check.isRoot
-				? pluralizeKeys(values)
-				: values
-
-			cache.set(cacheKey, result)
-			return result as StyleResults<T>
+	const styleSelector = <T extends SpecsSelectors<S>>(
+		selector: T,
+		config?: SelectorArgs['config']
+	): StyleResults<T> => {
+		const check = {
+			isRoot: selector === ROOT_SELECTOR,
+			isUnstyled: isUnstyled(options.props),
 		}
 
-		return styleSelector
-	}, [
-		name, theme,
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-		opts.classes, opts.context, opts.prefix, opts.props, opts.tokens,
-	])
+		const args: SharedConfig<S> = { ...opts, check, config, selector }
+		const values: StyleResult = {
+			className: getClassName<S>(args),
+			style: getStyle<S>(args),
+		}
+
+		const result: AnyStyleResult = check.isRoot
+			? pluralizeKeys(values)
+			: values
+
+		return result as StyleResults<T>
+	}
+
+	return styleSelector
 }

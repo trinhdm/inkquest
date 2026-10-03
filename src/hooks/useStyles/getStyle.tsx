@@ -25,17 +25,19 @@ const inheritStyles = <S extends SpecsContract>({
 export const getStyle = <S extends SpecsContract>(
 	args: SharedConfig<S>
 ): CSSProperties => {
-	const inherited = canInherit(args)
-		? inheritStyles(args)
-		: {}
-
 	const {
+		check,
 		context,
 		props,
 		selector,
 		theme,
 		tokens,
 	} = args
+
+	const inherited = canInherit(args) ? inheritStyles(args) : {}
+
+	if (check.isUnstyled)
+		return inherited
 
 	if (typeof tokens === 'function') {
 		const variables = tokens({

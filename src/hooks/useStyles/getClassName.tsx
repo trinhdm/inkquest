@@ -103,9 +103,10 @@ const hasConfig = <S extends SpecsContract>(
 const getConfigClasses = <S extends SpecsContract>(
 	args: SharedConfig<S>
 ): string | undefined => {
-	const { config, prefix, selector } = args
+	const { check, config, prefix, selector } = args
 
-	if (typeof config === 'boolean' && config) return getBaseClass(selector, prefix)
+	if (check.isUnstyled) return
+	else if (typeof config === 'boolean' && config) return getBaseClass(selector, prefix)
 	else if (!hasConfig(args)) return
 
 	const classList = [],
@@ -123,6 +124,11 @@ type InheritConfig<S extends SpecsContract> =
 	Omit<SharedConfig<S>, 'props'>
 	& { props: S['props'] & Record<'className', string> }
 
+interface InheritedClasses {
+	passthrough: string[]
+	semantics: string[]
+}
+
 const canInherit = <S extends SpecsContract>(
 	args: SharedConfig<S>
 ): args is InheritConfig<S> =>
@@ -134,26 +140,11 @@ const inheritClasses = <S extends SpecsContract>({
 	prefix,
 	props,
 	selector,
-}: InheritConfig<S>): string[] => {
+}: InheritConfig<S>): InheritedClasses => {
 	const { className } = props,
 		classList = className.split(/\s+/).filter(Boolean)
 
-	if (!classList.length) return []
-
-	const [semantic] = classList,
-		index = semantic.indexOf('__'),
-		slot = index > -1 ? semantic.slice(index + 2) : '',
-		self = toKebabCase(name)
-
-	let suffix = '',
-		element = ''
-
-	// Extend the inherited slot only when this component is a named sub-part of it
-	// (`menu` -> `menu-item`); an unrelated component keeps the parent's slot name.
-	if (slot && self.startsWith(slot)) {
-		suffix = `__${slot}`
-		element = `__${self}`
-	}
+	if (!classList.length) return { passthrough: [], semantics: [] }
 
 	const semanticOf = (cn: string) => {
 		if (!prefix) return ''
@@ -165,19 +156,35 @@ const inheritClasses = <S extends SpecsContract>({
 
 	const isPrefixed = (cn: string) => !!semanticOf(cn)
 	const isExtendable = (cn: string) => isPrefixed(cn) && !semanticOf(cn).includes('--')
+	const isSemantic = (cn: string) => check.isRoot
+		? (!prefix || isPrefixed(cn))
+		: isExtendable(cn)
 
-	return classList
-		.filter(cn => check.isRoot
-			? (!check.isUnstyled || isPrefixed(cn))
-        	: isExtendable(cn)
-		)
-		.map(cn => {
-			const root = suffix && cn.endsWith(suffix)
-				? `${cn.slice(0, -suffix.length)}${element}`
-				: cn
+	const semantics = classList.filter(cn => isSemantic(cn)),
+		passthrough = check.isRoot ? classList.filter(cn => !isSemantic(cn)) : []
 
-			return check.isRoot ? root : `${root}__${selector}`
-		})
+	const [semantic = ''] = semantics,
+		index = semantic.indexOf('__'),
+		slot = index > -1 ? semantic.slice(index + 2) : '',
+		self = toKebabCase(name)
+
+	let suffix = '',
+		element = ''
+
+	if (slot && self.startsWith(slot)) {
+		suffix = `__${slot}`
+		element = `__${self}`
+	}
+
+	const inherited = semantics.map(cn => {
+		const root = suffix && cn.endsWith(suffix)
+			? `${cn.slice(0, -suffix.length)}${element}`
+			: cn
+
+		return check.isRoot ? root : `${root}__${selector}`
+	})
+
+	return { passthrough, semantics: inherited }
 }
 
 export const getClassName = <S extends SpecsContract>(
@@ -187,8 +194,11 @@ export const getClassName = <S extends SpecsContract>(
 		styleName = getStyleClass(baseName, args),
 		configNames = getConfigClasses(args)
 
-	const inherited = canInherit(args) ? inheritClasses(args) : [],
-		[namespace, ...modules] = inherited
+	const { passthrough, semantics } = canInherit(args)
+		? inheritClasses(args)
+		: { passthrough: [], semantics: [] }
+
+	const [namespace, ...modules] = semantics
 
 	const classList = [
 		namespace ?? baseName,
@@ -196,5 +206,5 @@ export const getClassName = <S extends SpecsContract>(
 		configNames,
 	]
 
-	return cx(...classList, ...modules)
+	return cx(...classList, ...modules, ...passthrough)
 }

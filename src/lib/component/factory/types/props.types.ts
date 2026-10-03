@@ -15,9 +15,13 @@ type _TagName<C> =
 		? typeof DEFAULT_TAG
 		: NonNullable<C>
 
-interface _PolymorphicContract
-	extends Omit<FactoryContract, 'children'> {
+interface _PolymorphicContract {
+	attributes?: FactoryContract['attributes']
+	classNames?: SpecsContract['classNames']
+	// id?: FactoryContract['id']
 	ref?: SpecsContract['ref']
+	styles?: SpecsContract['styles']
+	unstyled?: FactoryContract['unstyled']
 }
 
 export type PolymorphicProps<P, C> =
