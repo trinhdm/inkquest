@@ -9,7 +9,7 @@ import { Icon } from '@/components/core/Icon'
 
 export default function Home() {
 	const { setColorScheme } = useColorScheme()
-	const variants = ['danger', 'warning', 'success', 'info'] as Button.Props['variant'][]
+	const tones = ['danger', 'warning', 'success', 'info'] as Button.Props['tone'][]
 	const priorities = ['primary', 'secondary', 'tertiary'] as Button.Props['priority'][]
 
 	return (
@@ -46,14 +46,11 @@ export default function Home() {
 						<Button variant="dark">dark</Button>
 					</Button.Group>
 
-					{ variants.map(variant => (
-						<Button.Group key={ variant }>
+					{ tones.map(tone => (
+						<Button.Group key={ tone }>
 							{ priorities.map(priority => (
-								<Button
-									variant={ variant }
-									key={ `${variant}-${priority}` }
-								>
-									{ variant }: { priority }
+								<Button key={ `${tone}-${priority}` } tone={ tone }>
+									{ tone }: { priority }
 								</Button>
 							)) }
 						</Button.Group>

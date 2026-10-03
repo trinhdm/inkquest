@@ -32,7 +32,7 @@ interface NavbarSpecs {
 
 type NavbarSelectors =
 	| 'root' | 'wrapper' | 'inner'
-	| 'col' | 'menu'
+	| 'col' | 'menu' | 'buttons'
 
 export const Navbar = polymorphic<NavbarSpecs>((_props, { useProps, useStyles }) => {
 	const props = useProps(_props)
@@ -63,9 +63,9 @@ export const Navbar = polymorphic<NavbarSpecs>((_props, { useProps, useStyles })
 					) }
 
 					<div { ...styles('col') }>
-						<Button.Group hasPriority={ false } size="sm">
-							<Button variant="ghost">Log in</Button>
-							<Button>Sign up</Button>
+						<Button.Group { ...styles('buttons') } hasPriority={ false } size="sm">
+							<Button href="/login" variant="text">Log in</Button>
+							<Button href="/signup">Sign up</Button>
 						</Button.Group>
 					</div>
 				</div>

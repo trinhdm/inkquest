@@ -5,8 +5,10 @@
 	--button-border: var(--variant-border);
 	--button-color: var(--variant-color);
 	--button-height: 2.25rem;
-	--button-icon-size: calc((var(--button-height) * .5) - .125rem);
+	// --button-icon-size: calc((var(--button-height) * .5) - .125rem);
+	--button-icon-size: 1rem;
 	--button-padding: var(--inkq-pad-chip);
+	--button-tracking: var(--inkq-font-tracking-display);
 
 	background-color: var(--button-background);
 	border-radius: var(--inkq-border-radius-chip);
@@ -14,7 +16,7 @@
 	color: var(--button-color, inherit);
 	display: inline-block;
 	font: var(--inkq-text-label);
-	letter-spacing: var(--inkq-font-tracking-stat);
+	letter-spacing: var(--button-tracking);
 	max-height: var(--button-height, 'none');
 	overflow: hidden;
 	position: relative;
@@ -105,16 +107,33 @@
 		}
 	}
 
+	&:where([data-variant="text"]) #{$name} {
+		&__inner {
+			padding-inline: 0;
+		}
+	}
+
+	&--sm {
+		--button-icon-size: .875rem;
+		--button-height: 2.375rem;
+		--button-padding: var(--inkq-pad-chip);
+		--button-tracking: var(--inkq-font-tracking-heading);
+	}
+
 	&--md {
+		--button-icon-size: 1rem;
 		--button-height: 2.875rem;
 		--button-padding: var(--space-3) var(--space-5);
+		--button-tracking: var(--inkq-font-tracking-display);
 
 		font-size: var(--inkq-font-size-body);
 	}
 
 	&--lg {
+		--button-icon-size: 1.125rem;
 		--button-height: 3.375rem;
 		--button-padding: var(--inkq-pad-block);
+		--button-tracking: var(--inkq-font-tracking-stat);
 
 		font-size: var(--inkq-font-size-body);
 	}

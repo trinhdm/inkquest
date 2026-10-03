@@ -32,10 +32,17 @@ describe('Button', () => {
 		expect(screen.getByRole('link', { name: 'Go to profile' })).toHaveAttribute('href', '/profile')
 	})
 
-	it('reflects variant and priority as data attributes for CSS targeting', () => {
-		render(<Button variant="danger" priority="primary">Delete</Button>)
+	// FIX: this test passed `variant="danger"`, but "danger" is a `Tone`, not a
+	// `Variant` — `Variant` is solid/outline/ghost/light/dark/text. It only
+	// type-checked because Jest strips types without checking them. Split into
+	// the two props the component actually takes, and added the `data-tone`
+	// assertion the original was reaching for. `variant="outline"` rather than
+	// the default "solid", so the assertion fails if the prop stops forwarding.
+	it('reflects variant, tone and priority as data attributes for CSS targeting', () => {
+		render(<Button variant="outline" tone="danger" priority="primary">Delete</Button>)
 		const button = screen.getByRole('button', { name: 'Delete' })
-		expect(button).toHaveAttribute('data-variant', 'danger')
+		expect(button).toHaveAttribute('data-variant', 'outline')
+		expect(button).toHaveAttribute('data-tone', 'danger')
 		expect(button).toHaveAttribute('data-priority', 'primary')
 	})
 
@@ -133,15 +140,16 @@ describe('Button', () => {
 		// sees `unstyled` on that Box's own incoming props and its `keepStateAttrs`
 		// filtering correctly applies to Button's root element, the same as
 		// `Badge.tsx` (see `Badge.test.tsx`).
-		it('drops decorative data attributes (variant, priority, block) but keeps loading, a state attribute', () => {
+		it('drops decorative data attributes (variant, tone, priority, block) but keeps loading, a state attribute', () => {
 			render(
-				<Button unstyled variant="danger" priority="primary" fullWidth loading>
+				<Button unstyled variant="outline" tone="danger" priority="primary" fullWidth loading>
 					Save
 				</Button>
 			)
 			const button = screen.getByRole('button')
 
 			expect(button).not.toHaveAttribute('data-variant')
+			expect(button).not.toHaveAttribute('data-tone')
 			expect(button).not.toHaveAttribute('data-priority')
 			expect(button).not.toHaveAttribute('data-block')
 			expect(button).toHaveAttribute('data-loading', '')

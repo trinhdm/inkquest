@@ -3,8 +3,8 @@ import type { CSSVariable, CSSVars } from '@/types/shared'
 import type { TokenGroup, TokenStates } from './token.types'
 
 export type Variant =
-	| 'solid' | 'outline' | 'ghost' | 'light' | 'dark'
-	| 'success' | 'warning' | 'danger' | 'info'
+	| 'solid' | 'outline' | 'ghost'
+	| 'light' | 'dark' | 'text'
 
 export type Priority =
 	| 'primary' | 'secondary' | 'tertiary'
@@ -42,12 +42,6 @@ type StateVariable<
 	`--${S}-${T}${StateSuffix<K>}` extends CSSVariable
 		? `--${S}-${T}${StateSuffix<K>}`
 		: never
-
-// type ColorVariable<
-// 	S extends string,
-// 	T extends keyof VariantTokens = keyof VariantTokens
-// > =
-// 	StateVariable<Lowercase<S>, T>
 
 type StateToken<V, K extends StateKey> =
 	V extends Record<K, infer X>

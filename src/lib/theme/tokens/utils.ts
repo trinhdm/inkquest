@@ -5,7 +5,7 @@ import { isObject } from '@/utils/helpers'
 import type { ColorScheme, StaticColorNames, TokenStateHues } from '../types'
 
 const MIXMOD_DEFAULT_PERCENTS: ColorModArgs['percents'] = {
-	tint: 20,
+	tint: 15,
 	shade: 30,
 	bright: 50,
 	dim: 80,
@@ -31,7 +31,7 @@ const colorMod = ({ alt, color, percents, scheme }: ColorModArgs): TokenStateHue
 	const target = isStaticColor(color) ? base[color]() : color,
 		themeMixer = getThemeMixer()
 
-	const lch = { l: -0.0325, c: 0.00575, h: -0.25 }
+	const lch = { l: -0.035, c: 0.0065, h: -0.25 }
 
 	const amount = percents ?? MIXMOD_DEFAULT_PERCENTS
 	const mixer = {

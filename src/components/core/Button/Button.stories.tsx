@@ -4,7 +4,7 @@ import { Button } from './Button'
 import { Icon } from '../Icon'
 import {
 	BOOLEAN_OPTIONS, PRIORITY_OPTIONS,
-	SIZE_OPTIONS, VARIANT_OPTIONS,
+	SIZE_OPTIONS, TONE_OPTIONS, VARIANT_OPTIONS,
 } from './options.story'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
@@ -52,6 +52,12 @@ const meta: Meta<ButtonStoryProps> = {
 		variant: {
 			control: 'select',
 			options: VARIANT_OPTIONS,
+			description: 'The SHAPE axis only — `solid`/`outline`/`ghost`/`light`/`dark`/`text`. Semantic colours (`danger`, `warning`, `success`, `info`) are NOT variants; they are `tone` values, and the two props are fully orthogonal. `Button.tsx` reflects each on its own data attribute (`data = { variant, tone, priority, ... }`), so a red outline button is `variant="outline" tone="danger"`, which renders `data-variant="outline" data-tone="danger"` — not `variant="danger"`. Registered as a default (`DEFAULT_PROPS` in `Button.tsx`, `variant: \'solid\'`), so `data-variant` is always present. See the `Variants` story.',
+		},
+		tone: {
+			control: 'select',
+			options: TONE_OPTIONS,
+			description: 'The semantic COLOUR axis, orthogonal to `variant` (see above) — reflected verbatim as `data-tone`. Unlike `variant`, this is NOT in `Button.tsx`\'s `DEFAULT_PROPS`, so `data-tone` is omitted entirely unless a tone is passed (`prefixAttributes` drops keys that fail `hasValue`, exactly as it does for `priority`). Decorative rather than functional, so `unstyled` strips it — `data-tone` is absent from `buildAttributes`\' `STATE_KEYS` allowlist, alongside `variant`/`priority`/`block`. See the `Tones` story.',
 		},
 		priority: {
 			control: 'select',
@@ -61,7 +67,7 @@ const meta: Meta<ButtonStoryProps> = {
 		size: {
 			control: 'select',
 			options: SIZE_OPTIONS,
-			description: '`Button.module.scss` only declares `&--md` and `&--lg` modifier rules — there is NO `&--sm` rule, even though `\'sm\'` is a valid `SIZE_OPTIONS` value (exercised by the `Sizes` story). `size="sm"` still emits a literal `inkq-button--sm` class (via `clsx.module`), it just carries no styling of its own.',
+			description: '`Button.module.scss` declares `&--sm`, `&--md`, and `&--lg` modifier rules — every `SIZE_OPTIONS` value (exercised by the `Sizes` story) matches a compiled rule. `size` is expressed purely as a `module` modifier class (via `clsx.module`), so for all three sizes it resolves to a hashed CSS-module class rather than a literal `inkq-button--${size}` class.',
 		},
 		disabled: {
 			control: 'boolean',
@@ -77,7 +83,7 @@ const meta: Meta<ButtonStoryProps> = {
 		},
 		showLabel: {
 			control: 'boolean',
-			description: 'Gates whether an `aria-label` is emitted at all: `Button.tsx` derives `ariaLabel` from `extractChildrenText(children)`, then only sets `aria-label` when `!!(showLabel && ariaLabel.length)` — an undefined/falsy `showLabel` (the default; not registered via `setDefaults`) means NO `aria-label` is ever emitted, regardless of children content. See the `ShowLabel` story, and `AriaLabel` (which sets `showLabel` explicitly to exercise the text-extraction logic itself).',
+			description: 'Gates whether an `aria-label` is emitted at all: `Button.tsx` derives `ariaLabel` from `extractChildrenText(children)`, then only sets `aria-label` when `!!(showLabel && ariaLabel.length)` — an undefined/falsy `showLabel` (the default; not registered via `Button.set({ defaultProps: DEFAULT_PROPS, displayName: NAME, subcomponents: SUBCOMPONENTS })`) means NO `aria-label` is ever emitted, regardless of children content. See the `ShowLabel` story, and `AriaLabel` (which sets `showLabel` explicitly to exercise the text-extraction logic itself).',
 		},
 		onClick: { action: 'clicked' },
 	},
@@ -93,7 +99,7 @@ export default meta
 export const Default: Story = {}
 
 export const Variants: Story = {
-	render: (args) => (
+	render: args => (
 		<Row>
 			{ VARIANT_OPTIONS.map(variant => (
 				<Group key={ variant } label={ variant }>
@@ -102,10 +108,52 @@ export const Variants: Story = {
 			)) }
 		</Row>
 	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			buttons = canvas.getAllByRole('button')
+
+		expect(buttons).toHaveLength(VARIANT_OPTIONS.length)
+
+		// Guards `VARIANT_OPTIONS` against regaining the tone names that used
+		// to sit commented out inside it (see `options.story.ts`): a tone
+		// leaking back into this list would render `data-variant="danger"`,
+		// which `Variant` does not describe.
+		for (const [i, variant] of VARIANT_OPTIONS.entries())
+			await expect(buttons[i]).toHaveAttribute('data-variant', variant)
+	},
+}
+
+export const Tones: Story = {
+	render: args => (
+		<Row>
+			{ TONE_OPTIONS.map(tone => (
+				<Group key={ tone } label={ tone }>
+					<Button { ...args as NativeButtonArgs } tone={ tone } />
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ args, canvasElement }) => {
+		const canvas = within(canvasElement),
+			buttons = canvas.getAllByRole('button')
+
+		expect(buttons).toHaveLength(TONE_OPTIONS.length)
+
+		for (const [i, tone] of TONE_OPTIONS.entries()) {
+			await expect(buttons[i]).toHaveAttribute('data-tone', tone)
+
+			// The orthogonality itself: every tone renders under the SAME,
+			// unchanged `variant`, on its own separate attribute. Read off
+			// `args` rather than a literal 'solid' so switching the `variant`
+			// control still holds (the per-button `tone` is what this story
+			// varies, and it never feeds `data-variant`).
+			await expect(buttons[i]).toHaveAttribute('data-variant', `${args.variant}`)
+		}
+	},
 }
 
 export const Priorities: Story = {
-	render: (args) => (
+	render: args => (
 		<Row>
 			{ PRIORITY_OPTIONS.map(priority => (
 				<Group key={ priority } label={ priority }>
@@ -117,7 +165,7 @@ export const Priorities: Story = {
 }
 
 export const Sizes: Story = {
-	render: (args) => (
+	render: args => (
 		<Row>
 			{ SIZE_OPTIONS.map(size => (
 				<Group key={ size } label={ size }>
@@ -141,7 +189,7 @@ export const FullWidth: Story = {
 		layout: 'padded',
 		controls: { exclude: ['fullWidth'] },
 	},
-	render: (args) => (
+	render: args => (
 		<div style={ { display: 'flex', flexDirection: 'column', gap: 24 } }>
 			{ BOOLEAN_OPTIONS.map(fullWidth => (
 				<Group key={ String(fullWidth) } label={ String(fullWidth) }>
@@ -213,7 +261,7 @@ export const AsLink: Story = {
 // story fixes `showLabel: true` on every group to exercise the text
 // extraction itself.
 export const AriaLabel: Story = {
-	render: (args) => (
+	render: args => (
 		<Row>
 			<Group label="plain text">
 				<Button { ...args as NativeButtonArgs } showLabel>Save changes</Button>
@@ -251,7 +299,7 @@ export const AriaLabel: Story = {
 // `aria-label`.
 export const ShowLabel: Story = {
 	parameters: { controls: { exclude: ['showLabel'] } },
-	render: (args) => (
+	render: args => (
 		<Row>
 			{ BOOLEAN_OPTIONS.map(showLabel => (
 				<Group key={ String(showLabel) } label={ String(showLabel) }>
@@ -275,7 +323,7 @@ export const ShowLabel: Story = {
 
 export const LoadingState: Story = {
 	parameters: { controls: { exclude: ['loading'] } },
-	render: (args) => (
+	render: args => (
 		<Row>
 			{ BOOLEAN_OPTIONS.map(loading => (
 				<Group key={ String(loading) } label={ String(loading) }>
@@ -288,7 +336,7 @@ export const LoadingState: Story = {
 
 export const DisabledState: Story = {
 	parameters: { controls: { exclude: ['disabled'] } },
-	render: (args) => (
+	render: args => (
 		<Row>
 			{ BOOLEAN_OPTIONS.map(disabled => (
 				<Group key={ String(disabled) } label={ String(disabled) }>
@@ -335,7 +383,7 @@ export const DisabledState: Story = {
 // wraps a label `<span>` (`inkq-button__label`).
 export const Unstyled: Story = {
 	parameters: { controls: { exclude: ['unstyled'] } },
-	render: (args) => (
+	render: args => (
 		<Row>
 			{ BOOLEAN_OPTIONS.map(unstyled => (
 				<Group key={ String(unstyled) } label={ String(unstyled) }>

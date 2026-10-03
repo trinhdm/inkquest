@@ -10,7 +10,11 @@ import { ButtonProvider, type ButtonContext } from './Button.context'
 import { ButtonSection } from './ButtonSection'
 import type { ComponentPropsWithoutRef, MouseEventHandler, ReactNode, Ref } from 'react'
 import type { Route } from 'next'
-import type { Priority as ThemePriority, Variant as ThemeVariant } from '@/lib/theme/types'
+import type {
+	Priority as ThemePriority,
+	Tone as ThemeTone,
+	Variant as ThemeVariant,
+} from '@/lib/theme/types'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import type { Size } from '@/types/shared'
 import type { StyleFn } from '@/hooks/useStyles'
@@ -39,6 +43,7 @@ interface BaseButtonProps {
 	priority?: ThemePriority
 	size?: Size
 	showLabel?: boolean
+	tone?: ThemeTone
 	variant?: ThemeVariant
 }
 
@@ -46,8 +51,8 @@ type LinkOptions<T extends string = string> =
 	Pick<LinkProps<T>, 'onNavigate' | 'prefetch' | 'replace' | 'scroll'>
 
 interface LinkButtonProps<T extends string = string>
-	extends ComponentPropsWithoutRef<'a'>, LinkOptions {
-	href: T | Route<T>
+	extends ComponentPropsWithoutRef<'a'>, LinkOptions<T> {
+	href: Route<T>
 	onClick?: never
 	ref?: Ref<HTMLAnchorElement>
 }
@@ -126,6 +131,7 @@ export const Button = polymorphic<ButtonSpecs>((_props, { useProps, useStyles, u
 		scroll,
 		size,
 		showLabel,
+		tone,
 		unstyled,
 		variant,
 		...rest
@@ -143,6 +149,7 @@ export const Button = polymorphic<ButtonSpecs>((_props, { useProps, useStyles, u
 
 	const data = {
 		variant,
+		tone,
 		priority,
 		block: !!fullWidth || null,
 		disabled: !!disabled || null,
@@ -219,8 +226,10 @@ export declare namespace Button {
 	export type Specs = ButtonSpecs
 
 	export type Priority = ThemePriority
-	export type Size = NonNullable<Button.Props['size']>
+	export type Tone = ThemeTone
 	export type Variant = ThemeVariant
+
+	export type Size = NonNullable<Button.Props['size']>
 
 	export namespace Group {
 		export type Context = ButtonGroup.Context

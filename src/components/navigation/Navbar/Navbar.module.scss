@@ -37,4 +37,8 @@
 			}
 		}
 	}
+
+	&__buttons {
+		--button-gap: var(--inkq-space-menu);
+	}
 }

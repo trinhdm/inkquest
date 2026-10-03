@@ -64,7 +64,7 @@ export interface SiteThemeConfig
 }
 
 export type ConfigOptions<K extends keyof SiteThemeConfig, T extends string> =
-	SiteThemeConfig[K] extends (...args: any) => any
+	SiteThemeConfig[K] extends (...args: any[]) => unknown
 		? ExtractFrom<Parameters<SiteThemeConfig[K]>, T>
 		: never
 
@@ -127,7 +127,7 @@ type ConsistentProperty =
 type ConsistentType<
 	K extends PropertyKey,
 	Optional extends boolean = false,
-	T extends unknown = undefined,
+	T = undefined,
 > =
 	T extends undefined
 		? never
@@ -149,7 +149,7 @@ type ConsistentUnit<
 type ConsistentValues<
 	K extends PropertyKey,
 	Optional extends boolean = false,
-	T extends unknown = undefined,
+	T = undefined,
 	U extends string = Unit,
 > =
 	| ConsistentType<K, Optional, T>
