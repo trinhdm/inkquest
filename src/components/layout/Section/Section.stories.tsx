@@ -80,7 +80,7 @@ const meta: Meta<SectionStoryProps> = {
 		},
 		eyebrow: {
 			control: 'text',
-			description: '**Re-verified against the live `Section.tsx`/`builder.tsx`/`getClassName.tsx`**: rendered CONDITIONALLY — `buildHeader` pushes `{ eyebrow && <span {...styles(\'eyebrow\', true)} {...reveal.next()}>{eyebrow}</span> }`. The semantic base class (`inkq-section__eyebrow`, from `nameClassBase`, always emitted) is NOT the whole story: the `true` shorthand ALSO runs `getConfigClasses`\' boolean branch (`getClassName.tsx`: `if (typeof config === \'boolean\') return getBaseClass(selector, prefix)`), which computes a SEPARATE, literal, unhashed GLOBAL class — `inkq-eyebrow` (styled by `styles/_base.scss`\'s own `.inkq-eyebrow` rule), stacked alongside the semantic base class. That boolean branch runs unconditionally, before any `unstyled` check, so `inkq-eyebrow` is present regardless of `unstyled` too (same mechanism as `Container`\'s `styles(\'wrapper\', true)`-driven `inkq-wrapper` — see `Container.stories.tsx`\'s `unstyled` argType description for the contrast with an OBJECT config, which behaves oppositely and vanishes entirely under `unstyled`). Not currently exercised by any story here beyond this doc note — `Section`\'s own `Unstyled` story doesn\'t render `eyebrow` at all. When `eyebrow` is falsy (`undefined`/`\'\'`), neither class renders at all — the `<span>` isn\'t rendered. Forbidden entirely (`never`) when `layout: \'blocks\'` — see `SectionBlocksProps`. See the `Eyebrow` story.',
+			description: '**Re-verified against the live `Section.tsx`/`builder.tsx`/`getClassName.tsx`**: rendered CONDITIONALLY — `buildHeader` pushes `{ eyebrow && <span {...styles(\'eyebrow\', true)} {...reveal.next()}>{eyebrow}</span> }`. The semantic base class (`inkq-section__eyebrow`, from `nameClassBase`, always emitted) is NOT the whole story: the `true` shorthand ALSO runs `getConfigClasses`\' boolean branch (`getClassName.tsx`: `if (typeof config === \'boolean\' && config) return getBaseClass(selector, prefix)`), which computes a SEPARATE, literal, unhashed GLOBAL class — `inkq-eyebrow` (styled by `styles/_base.scss`\'s own `.inkq-eyebrow` rule), stacked alongside the semantic base class. `check.isUnstyled` is now checked FIRST in `getConfigClasses`, before that boolean branch, so `inkq-eyebrow` is suppressed entirely when `unstyled` (same mechanism as `Container`\'s `styles(\'wrapper\', true)`-driven `inkq-wrapper` — see `Container.stories.tsx`\'s `unstyled` argType description, which now behaves identically to an OBJECT config). Not currently exercised by any story here beyond this doc note — `Section`\'s own `Unstyled` story doesn\'t render `eyebrow` at all. When `eyebrow` is falsy (`undefined`/`\'\'`), neither class renders at all — the `<span>` isn\'t rendered. Forbidden entirely (`never`) when `layout: \'blocks\'` — see `SectionBlocksProps`. See the `Eyebrow` story.',
 		},
 		layout: {
 			control: 'select',
@@ -101,7 +101,7 @@ const meta: Meta<SectionStoryProps> = {
 		},
 		duration: {
 			control: 'number',
-			description: 'Only valid alongside `animated: true`. Feeds the inline `--reveal-duration` CSS custom property (`setThemeCSS`\'s `tokens`, formatted `${duration}ms`) — computed purely off `props.duration`, independent of whether `animated` is actually `true`. Registered default is `600`. See the `Animated` story.',
+			description: 'Only valid alongside `animated: true`. Feeds the inline `--reveal-duration` CSS custom property (`defineTokens`\'s `tokens`, formatted `${duration}ms`) — computed purely off `props.duration`, independent of whether `animated` is actually `true`. Registered default is `600`. See the `Animated` story.',
 		},
 		stagger: {
 			control: 'number',
@@ -400,7 +400,7 @@ export const MinimalContent: Story = {
 
 /**
  * `duration`/`stagger` feed the inline `--reveal-duration`/`--reveal-stagger`
- * custom properties (`setThemeCSS`'s `tokens`) purely off their own prop
+ * custom properties (`defineTokens`'s `tokens`) purely off their own prop
  * values — computed independently of whether `animated` is actually `true`.
  * The `false` branch never passes `duration`/`stagger` at all (forbidden by
  * `MaybeAnimationProps`'s `StaticComponentProps` branch), so both tokens are

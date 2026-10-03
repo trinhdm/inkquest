@@ -77,7 +77,7 @@ const meta: Meta<AccordionStoryProps> = {
 		indicator: {
 			control: 'select',
 			options: INDICATOR_OPTIONS,
-			description: '`\'none\'` renders no indicator element at all; otherwise an `Icon` (`add` for `\'plus\'`, `caret-down` for `\'chevron\'`) inside a selector-scoped modifier class.',
+			description: '`\'none\'` renders no indicator element at all; otherwise a `lucide-react` icon (`Plus` for `\'plus\'`, `ChevronDown` for `\'chevron\'`) rendered via `<Box as={...}>` inside a selector-scoped modifier class.',
 		},
 		layout: {
 			control: 'select',
@@ -93,7 +93,7 @@ const meta: Meta<AccordionStoryProps> = {
 		order: {
 			control: 'select',
 			options: ORDER_OPTIONS,
-			description: 'Registered default `3`. Published onto `Accordion.context` and read directly by `AccordionTitle`, which renders its text as a literal `h${order}` heading tag — also feeds `getSharedTokens`\' `--accordion-text-size` token, offset by `size` (`config.order = order + step`, where `step` is `{ sm: 2, md: 1, lg: 0 }[size]`). Also inheritable from an enclosing `Accordion.Group` (own prop always wins). See the `Order` story.',
+			description: 'Registered default `3`. Published onto `Accordion.context` and read directly by `AccordionTitle`, which applies it as a global `inkq-h${order}` class name on the title text `<span>` (no actual heading element is rendered) — also feeds `getSharedTokens`\' `--accordion-text-size` token, offset by `size` (`config.order = order + step`, where `step` is `{ sm: 2, md: 1, lg: 0 }[size]`). Also inheritable from an enclosing `Accordion.Group` (own prop always wins). See the `Order` story.',
 		},
 		size: {
 			control: 'select',
@@ -182,9 +182,17 @@ export const Layouts: Story = {
 }
 
 // `HeadingOrder` (`1`-`6`) is read straight off `Accordion.context` by
-// `AccordionTitle`, which renders its text as a literal `h${order}` tag —
-// tested here via the implicit ARIA `heading` role's `level`, not a
-// class/selector heuristic.
+// `AccordionTitle`, which only applies it as a global `inkq-h${order}` class
+// name on the title text `<span>` — no `<hN>` element is ever rendered
+// anywhere in the `Accordion` family, so there's no ARIA `heading` role to
+// query. Asserted instead against the one thing `order` actually drives at
+// the DOM level: `getSharedTokens`' `--accordion-text-size` custom property
+// (`config.order = order + step`, where `step` is `{ sm: 2, md: 1, lg: 0
+// }[size]`) — mirroring the `Size` story's shape below. `onItemToggle` is
+// explicitly cleared back to `undefined` here too, for the same reason as in
+// `Size`: `Accordion.tsx`'s `tokens` function skips computing
+// `getSharedTokens` entirely whenever `onItemToggle` is a function (as every
+// other story's `meta.args` sets it via `fn()`).
 export const Order: Story = {
 	parameters: {
 		layout: 'padded',
@@ -194,17 +202,22 @@ export const Order: Story = {
 		<Row>
 			{ ORDER_OPTIONS.map(order => (
 				<Group key={ order } label={ String(order) }>
-					{ accordionTemplate({ ...args, order }) }
+					{ accordionTemplate({ ...args, order, onItemToggle: undefined }) }
 				</Group>
 			)) }
 		</Row>
 	),
 	play: async ({ canvasElement }) => {
-		const canvas = within(canvasElement)
+		const roots = canvasElement.querySelectorAll('.inkq-accordion') as unknown as HTMLElement[]
 
-		for (const order of ORDER_OPTIONS) {
-			const heading = canvas.getByRole('heading', { level: order })
-			await expect(heading.tagName).toBe(`H${ order }`)
+		expect(roots).toHaveLength(ORDER_OPTIONS.length)
+
+		// Registered default `size: 'md'` → `step` is `1`, so the resolved
+		// heading level is `order + 1` per `tokensBySize`/`getTokenGroup`.
+		for (const [i, order] of ORDER_OPTIONS.entries()) {
+			const level = order + 1
+			await expect(roots[i]!.style.getPropertyValue('--accordion-text-size'))
+				.toBe(`var(--inkq-font-size-heading-h${ level })`)
 		}
 	},
 }

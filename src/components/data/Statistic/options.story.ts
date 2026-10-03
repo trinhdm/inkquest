@@ -8,8 +8,8 @@ import type { Statistic } from './Statistic'
 
 export const BOOLEAN_OPTIONS = [true, false] as const
 
-// `Statistic.Group.Props` (`Omit<Group.Props, 'childName' | 'provider'>`)
-// inherits `orientation` verbatim from `layout/Group`'s own
+// `Statistic.Group.Props` (`Omit<Group.Props, 'childName' | 'provider' |
+// 'valuesCtx'>`) inherits `orientation` verbatim from `layout/Group`'s own
 // `'horizontal' | 'vertical'` literal union — read off the namespace type
 // itself rather than re-declared by hand, so this can't drift if `Group`
 // ever adds a third orientation.
@@ -18,7 +18,7 @@ export const ORIENTATION_OPTIONS: readonly NonNullable<Statistic.Group.Props['or
 ]
 
 // `columns` is a free-form `number` (fed straight into the
-// `--group-item-count` CSS custom property via `setThemeCSS`, no
+// `--group-item-count` CSS custom property via `defineTokens`, no
 // validation/clamping in `Group.tsx`; `--group-cols` itself is computed
 // FROM `--group-item-count` inside `Group.module.scss` and never set
 // inline) — these are just a few representative values to render

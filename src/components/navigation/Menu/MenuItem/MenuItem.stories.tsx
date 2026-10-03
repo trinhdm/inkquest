@@ -75,7 +75,7 @@ const meta: Meta<MenuItemStoryProps> = {
 		},
 		activeItem: {
 			control: 'text',
-			description: 'A `NavRoute` compared for an EXACT match against this item\'s own `route` (`Menu.tsx`, not `MenuItem` itself, is what falls back to `usePathname()` when this is left `undefined`). Drives `data-current` on the wrapping and `aria-current="page"` on the rendered. An item with no `route` can never match. See `ActiveItem`/`ActiveItemFlattened`.',
+			description: 'Typed `NavigationItem[\'route\'] | null`. `MenuItem.tsx`\'s own `isCurrentRoute` (`!!item.route && item.route === activeItem`) treats `null` and `undefined` IDENTICALLY — neither can ever `===` a real route string, so both simply fail the match, same as any other non-matching string. The two are only distinguished one level up, in `Menu.tsx`: a route string or `null` is used AS-IS; `undefined` is replaced with `usePathname()` before ever reaching `MenuItem`. So from `MenuItem`\'s own perspective there is no pathname fallback to skip — that distinction belongs to `Menu.tsx`\'s `ActiveFromPathname` story, not here. Drives `data-current` on the wrapping `<li>` and `aria-current="page"` on the rendered label. An item with no `route` can never match. See `ActiveItem`/`ActiveItemFlattened`.',
 		},
 		label: {
 			control: 'text',
@@ -302,16 +302,48 @@ export const DataCurrentHook: Story = {
 }
 
 /**
- * `activeItem` matching an exact `route`: `data-current` on the,
- * `aria-current="page"` on the rendered.
+ * `activeItem` matching an exact `route`: `data-current` on the wrapping `<li>`,
+ * `aria-current="page"` on the rendered label.
+ *
+ * `null` and `undefined` are rendered alongside the match for contrast, but —
+ * per `isCurrentRoute` (`!!item.route && item.route === activeItem`) — they
+ * behave IDENTICALLY to each other at this level: neither can ever `===` a
+ * real route string, so both simply fail to match, same as any other
+ * non-matching value. The asymmetry the two carry at the `Menu` level (`null`
+ * = explicitly no active item; `undefined` = fall back to `usePathname()`) is
+ * resolved one level up, in `Menu.tsx`, before `activeItem` ever reaches
+ * `MenuItem` — see `Menu.stories.tsx`'s `ActiveFromPathname` story for that
+ * distinction in action.
  */
 export const ActiveItem: Story = {
-	args: { activeItem: NavRoutes.HOME, label: 'Home', route: NavRoutes.HOME },
+	parameters: { controls: { exclude: ['activeItem'] } },
+	render: (args) => (
+		<Row>
+			<Group label="activeItem: route match">
+				<MenuItem { ...args } activeItem={ NavRoutes.HOME } label="Home" route={ NavRoutes.HOME } />
+			</Group>
+			<Group label="activeItem: null">
+				<MenuItem { ...args } activeItem={ null } label="Home (null)" route={ NavRoutes.HOME } />
+			</Group>
+			<Group label="activeItem: undefined">
+				<MenuItem { ...args } activeItem={ undefined } label="Home (undefined)" route={ NavRoutes.HOME } />
+			</Group>
+		</Row>
+	),
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement),
-			link = canvas.getByRole('menuitem', { name: 'Home' })
-		await expect(link).toHaveAttribute('aria-current', 'page')
-		await expect(link.closest('li')).toHaveAttribute('data-current')
+			match = canvas.getByRole('menuitem', { name: 'Home' }),
+			withNull = canvas.getByRole('menuitem', { name: 'Home (null)' }),
+			withUndefined = canvas.getByRole('menuitem', { name: 'Home (undefined)' })
+
+		await expect(match).toHaveAttribute('aria-current', 'page')
+		await expect(match.closest('li')).toHaveAttribute('data-current')
+
+		await expect(withNull).not.toHaveAttribute('aria-current')
+		await expect(withNull.closest('li')).not.toHaveAttribute('data-current')
+
+		await expect(withUndefined).not.toHaveAttribute('aria-current')
+		await expect(withUndefined.closest('li')).not.toHaveAttribute('data-current')
 	},
 }
 

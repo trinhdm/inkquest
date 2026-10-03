@@ -62,11 +62,11 @@ const meta: Meta<FooterAreaStoryProps> = {
 	argTypes: {
 		items: {
 			control: 'object',
-			description: 'Required — a `readonly` list of `{ category?, location?, orientation?, routes }` groups. Each group renders its own `<Menu hasDropdowns={ false }>` populated via `filterNavigation(routes, \'breadcrumbs\')`; a `category` renders a label `<span>` above its group, and an absent `category` renders no label at all. The whole `.inkq-footer__navigation` block is guarded by `!!items.length` — an empty array renders no navigation at all (only `children`). `location`/`orientation` are read by the PARENT `Footer`/passed straight through to the per-group `Menu`, respectively — `FooterArea` itself never inspects `location`.',
+			description: 'Required — a `readonly` list of `{ category?, location?, orientation?, routes }` groups. Each group renders its own `<Menu hasDropdowns={ false }>` populated via `filterNavigation(routes, \'breadcrumbs\')`; a `category` renders a label `<span>` above its group, and an absent `category` renders no label at all. The whole `.inkq-footer__navigation` block is guarded by `!!items.length` — an empty array renders no navigation at all (only `children`). `location`/`orientation` are read by the PARENT `Footer`/passed straight through to the per-group `Menu`, respectively — `FooterArea` itself never inspects `location`. Every per-group `<Menu>` is also hardcoded with `activeItem={ null }` — per `Menu.tsx`\'s own resolution (`typeof activeItem === \'string\' || activeItem === null ? activeItem : (pathname as NavigationItem[\'route\'])`), `null` is passed straight through rather than falling back to `usePathname()`, so NO footer menu item is ever marked active from the current page.',
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `FooterArea`\'s own props. The semantic base classes are always emitted. `styles(\'wrapper\', true)` is the BOOLEAN-shorthand config form — `getConfigClasses` checks `typeof config === \'boolean\'` BEFORE it ever looks at `unstyled`, so the `inkq-wrapper` class it emits survives `unstyled` unconditionally; only its CSS-module HASH (a separate mechanism, `getStyleClass`) is suppressed. See the `Unstyled` story.',
+			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `FooterArea`\'s own props. The semantic base classes are always emitted. `styles(\'wrapper\', true)` is the BOOLEAN-shorthand config form — `getConfigClasses` now checks `check.isUnstyled` FIRST, before the boolean-shorthand branch, so the `inkq-wrapper` class it emits is suppressed entirely when `unstyled`, same as its CSS-module HASH (a separate mechanism, `getStyleClass`). See the `Unstyled` story.',
 		},
 	},
 	args: {
@@ -178,10 +178,10 @@ export const Orientation: Story = {
  * plain, config-less SCSS declarations nested under `Footer.module.scss`'s
  * `&__info`/`&__legal` blocks, which still generate a hash for the shared class
  * TOKEN regardless of which ancestor context it's compiled under). The boolean-config
- * `styles('wrapper', true)` call behaves differently again: `getConfigClasses` checks
- * `typeof config === 'boolean'` BEFORE it ever looks at `unstyled`, so the literal
- * `inkq-wrapper` class it emits is present EITHER WAY — only the wrapper's own
- * CSS-module hash (a separate, unrelated mechanism) is suppressed when unstyled.
+ * `styles('wrapper', true)` call behaves the SAME way now: `getConfigClasses` checks
+ * `check.isUnstyled` FIRST, before the boolean-shorthand branch, so the literal
+ * `inkq-wrapper` class it emits is ALSO suppressed entirely when unstyled, right
+ * alongside the wrapper's own CSS-module hash.
  */
 export const Unstyled: Story = {
 	parameters: { controls: { exclude: ['unstyled'] } },
@@ -205,10 +205,11 @@ export const Unstyled: Story = {
 			return !!moduleClass && el.classList.contains(moduleClass)
 		}
 
-		// Boolean-shorthand `inkq-wrapper` survives `unstyled` unconditionally —
-		// only the CSS-module hash for `inkq-footer__wrapper` itself is suppressed.
+		// Boolean-shorthand `inkq-wrapper` is now suppressed entirely when
+		// unstyled, same as the CSS-module hash for `inkq-footer__wrapper` itself.
 		await expect(styledWrapper).toHaveClass('inkq-footer__wrapper', 'inkq-wrapper')
-		await expect(unstyledWrapper).toHaveClass('inkq-footer__wrapper', 'inkq-wrapper')
+		await expect(unstyledWrapper).toHaveClass('inkq-footer__wrapper')
+		await expect(unstyledWrapper).not.toHaveClass('inkq-wrapper')
 		expect(hasModuleClass(styledWrapper, 'inkq-footer__wrapper')).toBe(true)
 		expect(hasModuleClass(unstyledWrapper, 'inkq-footer__wrapper')).toBe(false)
 

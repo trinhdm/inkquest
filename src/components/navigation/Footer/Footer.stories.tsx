@@ -55,7 +55,7 @@ const CUSTOM_ITEMS: NonNullable<Footer.Props['items']> = [
 // component itself — the generic call signature's default `C` resolves to `'footer'`
 // here, since `FooterSpecs`'s `defaults.as` is `'footer'` (`Footer.tsx`'s local `TAG`
 // constant), matching `const DEFAULT_PROPS = { as: TAG, items: FOOTER_GLOBAL_NAV,
-// socials: ['instagram', 'tiktok', 'x'] }` and `Footer.setDefaults({ props:
+// socials: ['instagram', 'tiktok', 'x'] }` and `Footer.set({ defaultProps:
 // DEFAULT_PROPS })`.
 type FooterStoryProps = Parameters<typeof Footer>[0]
 type Story = StoryObj<FooterStoryProps>
@@ -238,20 +238,18 @@ export const AsElement: Story = {
  * call is suppressed (`inkq-footer`, `inkq-footer__info`, `inkq-footer__legal` all have
  * direct SCSS declarations).
  *
- * The wrapper's `inkq-wrapper` class survives regardless of `unstyled`, for TWO
- * independent reasons, both verified against the live source:
- *  - `FooterArea`'s `styles('wrapper', true)` call is the BOOLEAN-shorthand form —
- *    `getConfigClasses` in `getClassName.tsx` checks `typeof config === 'boolean'`
- *    FIRST, before it ever looks at `check.isUnstyled`, so a boolean-shorthand class
- *    is emitted unconditionally, `unstyled` or not (unlike an OBJECT config —
- *    `{ module: {...} }` / `{ global: {...} }` — which IS fully suppressed when
- *    unstyled; see `Menu.tsx`'s own `orientation` module class for that case).
- *  - Independently, `Footer.tsx` renders `<FooterArea items={ infoItems }>` (and the
- *    legal one) WITHOUT ever forwarding its own `unstyled` prop down at all — so
- *    `FooterArea`'s internal `check.isUnstyled` is always `false` regardless of the
- *    outer `<Footer unstyled>`, meaning even `FooterArea`'s CSS-module HASH for
- *    `inkq-footer__wrapper` (which normally WOULD be suppressed under real
- *    `unstyled`) survives here too, in BOTH rows below.
+ * The wrapper's `inkq-wrapper` class survives regardless of the OUTER `Footer`'s
+ * `unstyled` value — but, verified against the live source, NOT because the
+ * boolean-shorthand config itself survives `unstyled` (`getConfigClasses` in
+ * `getClassName.tsx` now checks `check.isUnstyled` FIRST, before the
+ * boolean-shorthand branch, so a boolean-shorthand class IS fully suppressed
+ * when genuinely unstyled — same as an OBJECT config). The real reason here is
+ * that `Footer.tsx` renders `<FooterArea items={ infoItems }>` (and the legal
+ * one) WITHOUT ever forwarding its own `unstyled` prop down at all — so
+ * `FooterArea`'s internal `check.isUnstyled` is always `false` regardless of the
+ * outer `<Footer unstyled>`, meaning `FooterArea`'s CSS-module HASH for
+ * `inkq-footer__wrapper`, AND its boolean-shorthand `inkq-wrapper` class, both
+ * survive here, in BOTH rows below.
  *
  * `Footer`'s own `unstyled` only ever affects `Footer`'s OWN `styles(...)` calls
  * (root/info/legal/tagline), never anything rendered by the nested `FooterArea`.

@@ -72,7 +72,7 @@ const meta: Meta<SubnavStoryProps> = {
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Subnav`\'s own `SubnavProps`. The semantic base classes (`inkq-subnav`, `inkq-subnav__inner`, `inkq-subnav__label`, `inkq-subnav__menu`) are ALWAYS emitted regardless — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside each.',
+			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Subnav`\'s own `SubnavProps`. The semantic base classes (`inkq-subnav`, `inkq-subnav__inner`, `inkq-subnav__label`, `inkq-subnav__menu`) are ALWAYS emitted regardless — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside each. The `wrapper` selector\'s `styles(\'wrapper\', true)` boolean-shorthand config is different: `getConfigClasses` now checks `check.isUnstyled` FIRST, before the boolean-shorthand branch, so its literal `inkq-wrapper` class is ALSO suppressed entirely when `unstyled`, not just the (non-existent, for `wrapper`) module hash. See the `Unstyled` story.',
 		},
 	},
 	args: {
@@ -197,9 +197,9 @@ export const AsElement: Story = {
  * suppressed, since each has a plain (config-less) SCSS declaration. `Subnav`'s
  * `styles('wrapper', true)` boolean-config call behaves differently again: `&__wrapper`
  * has no SCSS rule at all (no hash ever), and `getConfigClasses` in `getClassName.tsx`
- * checks `typeof config === 'boolean'` BEFORE it ever looks at `unstyled`, so the
- * boolean-config's own literal `inkq-wrapper` class is emitted REGARDLESS of
- * `unstyled`.
+ * now checks `check.isUnstyled` FIRST, before the boolean-shorthand branch, so the
+ * boolean-config's own literal `inkq-wrapper` class is suppressed entirely when
+ * `unstyled`, same as every other config class.
  */
 export const Unstyled: Story = {
 	parameters: { controls: { exclude: ['unstyled'] } },
@@ -232,7 +232,8 @@ export const Unstyled: Story = {
 			unstyledWrapper = unstyledRoot.querySelector('.inkq-subnav__wrapper') as HTMLElement
 
 		await expect(styledWrapper).toHaveClass('inkq-subnav__wrapper', 'inkq-wrapper')
-		await expect(unstyledWrapper).toHaveClass('inkq-subnav__wrapper', 'inkq-wrapper')
+		await expect(unstyledWrapper).toHaveClass('inkq-subnav__wrapper')
+		await expect(unstyledWrapper).not.toHaveClass('inkq-wrapper')
 		expect(hasModuleClass(styledWrapper, 'inkq-subnav__wrapper')).toBe(false)
 		expect(hasModuleClass(unstyledWrapper, 'inkq-subnav__wrapper')).toBe(false)
 

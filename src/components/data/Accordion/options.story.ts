@@ -18,15 +18,6 @@ export const LAYOUT_OPTIONS: readonly NonNullable<Accordion.Props['layout']>[] =
 	'default', 'steps',
 ]
 
-// Kept even though the standalone `type` prop no longer exists on either
-// `Accordion` or `Accordion.Group` — `AccordionGroupType` (the union backing
-// the new `collapsible?: AccordionGroupType | false`) is still re-exported as
-// `Accordion.Type` (`Accordion.tsx`'s own `declare namespace`, itself sourced
-// from `AccordionGroup.tsx`'s `AccordionGroup.Type`).
-export const TYPE_OPTIONS: readonly NonNullable<Accordion.Type>[] = [
-	'single', 'multiple',
-]
-
 export const BOOLEAN_OPTIONS = [true, false] as const
 
 // `Accordion.Group.Props['collapsible']` is `AccordionGroupType | false` —

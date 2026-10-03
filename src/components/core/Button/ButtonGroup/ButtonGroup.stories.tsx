@@ -7,6 +7,7 @@ import { getDefaultProps } from '@/hooks/useProps'
 import { Button } from '../Button'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+import moduleClasses from '../Button.module.scss'
 
 const Row = ({ children }: { children: ReactNode }) => (
 	<div style={ { display: 'flex', gap: 24, flexWrap: 'wrap' } }>{ children }</div>
@@ -20,6 +21,20 @@ const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 		{ children }
 	</div>
 )
+
+// The hashed CSS-module class is build-generated, so resolve it through
+// `Button.module.scss`'s own compiled export map rather than guessing from
+// leftover classes — same helper shape as `Group`/`Container`/`Grid`'s
+// stories. A naive "any class beyond the base" heuristic would be wrong
+// here: it's satisfied by the ROOT hash alone, so it can't tell one `size`
+// from another, and `getConfigClasses` (`getClassName.tsx`) returns early on
+// `check.isUnstyled` anyway, so no config-driven modifier class survives an
+// unstyled instance to be excluded. Shared by the `Sizes` and `Unstyled`
+// stories below.
+const hasModuleClass = (el: Element, base: string) => {
+	const moduleClass = (moduleClasses as Record<string, string>)[base]
+	return !!moduleClass && el.classList.contains(moduleClass)
+}
 
 // `Button.Group.Props` (the `declare namespace` export) is just the raw
 // `ButtonGroupProps` interface — it doesn't include `unstyled`/`attributes`/
@@ -170,26 +185,33 @@ export const Sizes: Story = {
 		expect(groups).toHaveLength(SIZE_OPTIONS.length)
 
 		// `Button.tsx` has no `data-size` attribute at all — its own `data` bag
-		// is only `{ variant, priority, block, disabled, loading }`. `size`
-		// (cascaded here from `ButtonGroup` context, since these children carry
-		// no own `size`) is expressed purely as a `module` modifier class via
-		// `clsx.module` (`${base}--${size}`). `Button.module.scss` only defines
-		// `&--md`/`&--lg` rules under `.inkq-button` (no `&--sm`), so `sm` has
-		// no matching compiled class and stays a literal `inkq-button--sm`,
-		// while `md`/`lg` DO match a rule and get replaced with a hashed
-		// CSS-module class instead — assert the literal form only for `sm`,
-		// and for `md`/`lg` just confirm the literal, un-hashed form is absent
-		// (proving it resolved to a hash rather than doing nothing).
+		// is only `{ variant, tone, priority, block, disabled, loading }`.
+		// `size` (cascaded here from `ButtonGroup` context, since these
+		// children carry no own `size`) is expressed purely as a `module`
+		// modifier class via `clsx.module` (`${base}--${size}`).
+		// `Button.module.scss` now declares `&--sm`/`&--md`/`&--lg` rules under
+		// `.inkq-button` for ALL THREE sizes (it previously had only
+		// `&--md`/`&--lg`), so every size matches a compiled rule and is
+		// emitted as a hashed CSS-module class — the literal
+		// `inkq-button--${size}` modifier is no longer emitted for ANY size.
+		// Assert BOTH halves per size: the literal form is absent, and the
+		// hash for THIS size's own selector is present while the other two
+		// sizes' hashes are not. That last part is what actually proves the
+		// group's cascade reached the child — a bare "has some module class"
+		// check passes identically for every size.
 		for (const [index, group] of groups.entries()) {
-			const size = SIZE_OPTIONS[index],
-				literalModifier = `inkq-button--${size}`,
+			const size = SIZE_OPTIONS[index]!,
+				others = SIZE_OPTIONS.filter(s => s !== size),
 				buttons = within(group).getAllByRole('button')
 
 			for (const button of buttons) {
 				await expect(button).not.toHaveAttribute('data-size')
+				await expect(button).not.toHaveClass(`inkq-button--${size}`)
 
-				if (size === 'sm') await expect(button).toHaveClass(literalModifier)
-				else await expect(button).not.toHaveClass(literalModifier)
+				expect(hasModuleClass(button, `inkq-button--${size}`)).toBe(true)
+
+				for (const other of others)
+					expect(hasModuleClass(button, `inkq-button--${other}`)).toBe(false)
 			}
 		}
 	},
@@ -389,19 +411,6 @@ export const Unstyled: Story = {
 		expect(groups).toHaveLength(2)
 
 		const [isUnstyled, isStyled] = groups
-
-		// The hashed CSS-module class is build-generated, so assert on its
-		// presence/shape rather than a literal hash. Can't just check "any
-		// class beyond the base" though: `getConfigClasses` (`getClassName.tsx`)
-		// runs regardless of `unstyled` (only `getStyleClass` — the base/
-		// selector hash — checks `check.isUnstyled`), so the `module` modifier
-		// classes this story's args always carry (`inkq-button-group--horizontal`,
-		// `inkq-button-group--sm`, from `clsx.module` keyed on `orientation`/
-		// `size`) survive on BOTH the styled and unstyled instance — exclude the
-		// base itself AND any `${base}--*` modifier class before treating a
-		// leftover class as evidence the CSS-module hash survived.
-		const hasModuleClass = (el: Element, base: string) =>
-			Array.from(el.classList).some(c => c !== base && !c.startsWith(`${base}--`))
 
 		await expect(isStyled).toHaveClass('inkq-button-group')
 		await expect(isUnstyled).toHaveClass('inkq-button-group')

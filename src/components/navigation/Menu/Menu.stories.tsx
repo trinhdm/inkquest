@@ -82,7 +82,7 @@ const meta: Meta<MenuStoryProps> = {
 		},
 		activeItem: {
 			control: 'text',
-			description: 'A `NavRoute` to mark active (exact match against each item\'s own `route`), or `null`/`undefined` to fall back to `usePathname()`. Forwarded unchanged to every top-level `MenuItem`, and one level further into any dropdown\'s own nested `Menu`. See the `ActiveItem` and `ActiveFromPathname` stories.',
+			description: 'A `NavRoute` to mark active (exact match against each item\'s own `route`); `null` to explicitly mark NO item active; or `undefined` to fall back to `usePathname()`. `Menu.tsx` resolves this itself, BEFORE forwarding: `const currentRoute = typeof activeItem === \'string\' || activeItem === null ? activeItem : (pathname as NavigationItem[\'route\'])` — so a route string or `null` is passed down to every top-level `MenuItem` (and, one level further, into any dropdown\'s own nested `Menu`) AS-IS, while `undefined` is replaced with the real pathname first. `null` and `undefined` are NOT equivalent: only `undefined` triggers the pathname fallback. See the `ActiveItem` and `ActiveFromPathname` stories.',
 		},
 		items: {
 			control: 'object',
@@ -681,18 +681,45 @@ export const ActiveItem: Story = {
  * when this flag is truthy, with a default fixture pathname of `'/'` if
  * `parameters.nextjs.navigation.pathname` is left unset. A meta-level default
  * would retroactively mark `Home` active in every OTHER story in this file.
+ *
+ * Renders `activeItem: undefined` alongside `activeItem: null` under the SAME
+ * mocked pathname, to make `Menu.tsx`'s own resolution concrete:
+ * `const currentRoute = typeof activeItem === 'string' || activeItem === null
+ * ? activeItem : (pathname as NavigationItem['route'])`. Only `undefined`
+ * takes the `pathname` branch — `null` is passed straight through as "no
+ * active item", explicitly SKIPPING the fallback, which is exactly how
+ * `FooterArea` uses it (see `FooterArea.stories.tsx`).
  */
 export const ActiveFromPathname: Story = {
 	parameters: {
 		layout: 'padded',
 		nextjs: { appDirectory: true, navigation: { pathname: NavRoutes.MARKETPLACE } },
 	},
-	args: { items: itemsFor('Home', 'Marketplace') },
+	render: (args) => (
+		<Row>
+			<Group label="activeItem: undefined (falls back to pathname)">
+				<Menu { ...args } activeItem={ undefined } items={ itemsFor('Home', 'Marketplace') } />
+			</Group>
+			<Group label="activeItem: null (explicitly no active item)">
+				<Menu { ...args } activeItem={ null } items={ itemsFor('Home', 'Marketplace') } />
+			</Group>
+		</Row>
+	),
 	play: async ({ canvasElement }) => {
-		const canvas = within(canvasElement)
-		await expect(canvas.getByRole('menuitem', { name: 'Marketplace' }))
+		const canvas = within(canvasElement),
+			[fromPathname, explicitlyNone] = canvas.getAllByRole('menubar')
+
+		// `undefined` falls back to the mocked pathname (`Marketplace`).
+		await expect(within(fromPathname).getByRole('menuitem', { name: 'Marketplace' }))
 			.toHaveAttribute('aria-current', 'page')
-		await expect(canvas.getByRole('menuitem', { name: 'Home' }))
+		await expect(within(fromPathname).getByRole('menuitem', { name: 'Home' }))
+			.not.toHaveAttribute('aria-current')
+
+		// `null` skips the fallback entirely — NEITHER item is marked active,
+		// even though the same pathname is mocked for this group too.
+		await expect(within(explicitlyNone).getByRole('menuitem', { name: 'Marketplace' }))
+			.not.toHaveAttribute('aria-current')
+		await expect(within(explicitlyNone).getByRole('menuitem', { name: 'Home' }))
 			.not.toHaveAttribute('aria-current')
 	},
 }

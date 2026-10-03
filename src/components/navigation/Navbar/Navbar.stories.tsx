@@ -71,7 +71,7 @@ const meta: Meta<NavbarStoryProps> = {
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Navbar`\'s own `NavbarProps`. The semantic base class (`inkq-navbar`, `inkq-navbar__wrapper`, `inkq-navbar__inner`, `inkq-navbar__col`, `inkq-navbar__menu`) is ALWAYS emitted regardless. The render tree is root → wrapper (`styles(\'wrapper\', true)`) → inner → col ×3 → menu (`styles(\'menu\')`, no config). `styles(\'wrapper\', true)` is the BOOLEAN-shorthand config form — `getConfigClasses` checks `typeof config === \'boolean\'` BEFORE it ever looks at `unstyled`, so the global `inkq-wrapper` class it emits survives `unstyled` unconditionally. `unstyled` otherwise only suppresses the CSS-module hash normally appended alongside a plain `styles(selector)` call, and only where `Navbar.module.scss` actually declares a rule to hash — `&__inner`/`&__col` do; `&__wrapper`/`&__menu` have no SCSS rule at all, so those two never carry a hash, styled or unstyled. See the `Unstyled` story.',
+			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Navbar`\'s own `NavbarProps`. The semantic base class (`inkq-navbar`, `inkq-navbar__wrapper`, `inkq-navbar__inner`, `inkq-navbar__col`, `inkq-navbar__menu`, `inkq-navbar__buttons`) is ALWAYS emitted regardless. The render tree is root → wrapper (`styles(\'wrapper\', true)`) → inner → col ×3, with `menu` (`styles(\'menu\')`, no config) applied to the `<Menu>` inside the 2nd col and `buttons` (`styles(\'buttons\')`, no config) applied to the auth `Button.Group` inside the 3rd col — both land on the nested component\'s own root, not the `col` div wrapping it. `styles(\'wrapper\', true)` is the BOOLEAN-shorthand config form — `getConfigClasses` now checks `check.isUnstyled` FIRST, before the boolean-shorthand branch, so the global `inkq-wrapper` class it emits is suppressed entirely when `unstyled`, same as any object-config class. `unstyled` otherwise only suppresses the CSS-module hash normally appended alongside a plain `styles(selector)` call, and only where `Navbar.module.scss` actually declares a rule to hash — `&__inner`/`&__col`/`&__buttons` do; `&__wrapper`/`&__menu` have no SCSS rule at all, so those two never carry a hash, styled or unstyled. See the `Unstyled` story.',
 		},
 	},
 	args: {
@@ -109,17 +109,23 @@ export const Default: Story = {
 		await expect(within(menubar).getAllByRole('menuitem')).toHaveLength(3)
 		await expect(within(menubar).getAllByRole('button')).toHaveLength(2)
 
-		// The two `Button.Group` auth buttons. `Button.tsx` only sets an
+		// The two `Button.Group` auth buttons. `Navbar.tsx` now renders both
+		// with an `href` (`<Button href="/login" variant="text">Log in</Button>`,
+		// `<Button href="/signup">Sign up</Button>`), so `Button.tsx` takes its
+		// link branch and renders an `<a>` via `next/link` — whose implicit
+		// ARIA role is `link`, not `button`. `Button.tsx` only sets an
 		// `aria-label` when `showLabel && ariaLabel.length` (`aria = { label:
 		// !!(showLabel && ariaLabel.length) ? ariaLabel : undefined }`), and
 		// `Navbar` renders these with no `showLabel` at all — so NO `aria-label`
-		// is emitted here. The `getByRole('button', { name })` queries below
+		// is emitted here. The `getByRole('link', { name })` queries below
 		// still pass because Testing Library's accessible-name computation
-		// falls back to the button's own text content when there's no explicit
-		// `aria-label`.
-		await expect(canvas.getByRole('button', { name: 'Log in' })).toBeInTheDocument()
-		await expect(canvas.getByRole('button', { name: 'Sign up' })).toBeInTheDocument()
-		await expect(canvas.getAllByRole('button')).toHaveLength(4)
+		// falls back to the link's own text content when there's no explicit
+		// `aria-label`. With both auth buttons now links, the only remaining
+		// `button`-role elements on the bar are the 2 dropdown triggers
+		// asserted just above.
+		await expect(canvas.getByRole('link', { name: 'Log in' })).toBeInTheDocument()
+		await expect(canvas.getByRole('link', { name: 'Sign up' })).toBeInTheDocument()
+		await expect(canvas.getAllByRole('button')).toHaveLength(2)
 	},
 }
 
@@ -137,7 +143,14 @@ export const NoRoutes: Story = {
 
 		await expect(canvas.getByRole('navigation')).toBeInTheDocument()
 		await expect(canvas.queryByRole('menubar')).not.toBeInTheDocument()
-		await expect(canvas.getAllByRole('button')).toHaveLength(2)
+
+		// The two auth buttons carry `href` (see `Default`'s play function),
+		// so they render as `<a>`s with an implicit `link` role, not `button`
+		// — with no menu rendered, there's no `button`-role element left on
+		// the bar at all.
+		await expect(canvas.queryAllByRole('button')).toHaveLength(0)
+		await expect(canvas.getByRole('link', { name: 'Log in' })).toBeInTheDocument()
+		await expect(canvas.getByRole('link', { name: 'Sign up' })).toBeInTheDocument()
 	},
 }
 
@@ -170,9 +183,14 @@ export const FilteredRoutes: Story = {
 		])
 
 		// `Discover`'s only child (`/discover/style`) isn't in the allow-list, so
-		// the item is flattened to a plain link — no trigger anywhere.
+		// the item is flattened to a plain link — no trigger anywhere. Combined
+		// with the two auth buttons now carrying `href` (see `Default`'s play
+		// function) and rendering as `<a>`s, there's no `button`-role element
+		// left on the bar at all.
 		await expect(within(menubar).queryAllByRole('button')).toHaveLength(0)
-		await expect(canvas.getAllByRole('button')).toHaveLength(2)
+		await expect(canvas.queryAllByRole('button')).toHaveLength(0)
+		await expect(canvas.getByRole('link', { name: 'Log in' })).toBeInTheDocument()
+		await expect(canvas.getByRole('link', { name: 'Sign up' })).toBeInTheDocument()
 	},
 }
 
@@ -204,7 +222,13 @@ export const NoMatchingRoutes: Story = {
 		await expect(canvas.queryByRole('menubar')).not.toBeInTheDocument()
 		await expect(canvas.queryAllByRole('menuitem')).toHaveLength(0)
 
-		await expect(canvas.getAllByRole('button')).toHaveLength(2)
+		// The two auth buttons carry `href` (see `Default`'s play function), so
+		// they render as `<a>`s with an implicit `link` role, not `button` —
+		// with no menu rendered, there's no `button`-role element left on the
+		// bar at all.
+		await expect(canvas.queryAllByRole('button')).toHaveLength(0)
+		await expect(canvas.getByRole('link', { name: 'Log in' })).toBeInTheDocument()
+		await expect(canvas.getByRole('link', { name: 'Sign up' })).toBeInTheDocument()
 	},
 }
 
@@ -245,14 +269,16 @@ export const AsElement: Story = {
 
 /**
  * `unstyled` never removes the semantic base classes (`inkq-navbar`,
- * `inkq-navbar__wrapper`, `inkq-navbar__inner`, `inkq-navbar__col`). Render tree: root
- * → wrapper (`styles('wrapper', true)`) → inner → col ×3. `styles('wrapper', true)` is
- * the BOOLEAN-shorthand config form — `getConfigClasses` in `getClassName.tsx` checks
- * `typeof config === 'boolean'` BEFORE it ever looks at `check.isUnstyled`, so the
- * literal global `inkq-wrapper` class it emits is present REGARDLESS of `unstyled`
- * (identical mechanism to `Container`/`Footer`'s own wrapper). The wrapper's
- * `&__wrapper` selector has no SCSS declaration at all, so it never carries a module
- * hash either way. `&__inner`/`&__col` DO have their own plain (config-less) SCSS
+ * `inkq-navbar__wrapper`, `inkq-navbar__inner`, `inkq-navbar__col`, `inkq-navbar__buttons`).
+ * Render tree: root → wrapper (`styles('wrapper', true)`) → inner → col ×3, with
+ * `buttons` (`styles('buttons')`) landing on the auth `Button.Group`'s own root inside
+ * the 3rd col, not on that col div itself. `styles('wrapper', true)` is the
+ * BOOLEAN-shorthand config form — `getConfigClasses` in `getClassName.tsx` now checks
+ * `check.isUnstyled` FIRST, before the boolean-shorthand branch, so the literal global
+ * `inkq-wrapper` class it emits is suppressed entirely when `unstyled` (identical
+ * mechanism to `Container`/`Footer`'s own wrapper). The wrapper's `&__wrapper` selector
+ * has no SCSS declaration at all, so it never carries a module hash either way.
+ * `&__inner`/`&__col`/`&__buttons` DO have their own plain (config-less) SCSS
  * declarations, so THOSE behave as expected: a real CSS-module hash is appended when
  * styled and suppressed when `unstyled`, with the base class always present either way.
  */
@@ -296,11 +322,12 @@ export const Unstyled: Story = {
 
 		// Wrapper (`inkq-navbar__wrapper`): base class always present; NO
 		// module hash ever exists to suppress (`&__wrapper` has no SCSS rule).
-		// The boolean-config global `inkq-wrapper` class is present EITHER WAY —
-		// `getConfigClasses` resolves the boolean-shorthand branch before it ever
-		// checks `unstyled`.
+		// The boolean-config global `inkq-wrapper` class is present ONLY WHEN STYLED —
+		// `getConfigClasses` now checks `check.isUnstyled` FIRST, before the boolean-shorthand branch.
+		//
 		await expect(styledWrapper).toHaveClass('inkq-navbar__wrapper', 'inkq-wrapper')
-		await expect(unstyledWrapper).toHaveClass('inkq-navbar__wrapper', 'inkq-wrapper')
+		await expect(unstyledWrapper).toHaveClass('inkq-navbar__wrapper')
+		await expect(unstyledWrapper).not.toHaveClass('inkq-wrapper')
 		expect(hasModuleClass(unstyledWrapper, 'inkq-navbar__wrapper')).toBe(false)
 		expect(hasModuleClass(styledWrapper, 'inkq-navbar__wrapper')).toBe(false)
 
@@ -323,5 +350,19 @@ export const Unstyled: Story = {
 		await expect(styledCols).toHaveLength(3)
 		expect(hasModuleClass(unstyledCols[0], 'inkq-navbar__col')).toBe(false)
 		expect(hasModuleClass(styledCols[0], 'inkq-navbar__col')).toBe(true)
+
+		// `buttons` (`inkq-navbar__buttons`) is NOT asserted here like
+		// `inner`/`col` above: it lands on the auth `Button.Group`'s own root,
+		// which independently carries its OWN `inkq-button-group` CSS-module
+		// hash and `module` config classes (orientation/size) regardless of
+		// THIS `Navbar`'s `unstyled` state (`Button.Group`'s own `unstyled` prop
+		// is never set by `Navbar`) — so a simple "any extra class beyond the
+		// base" check doesn't cleanly distinguish styled from unstyled here the
+		// way it does for `inner`/`col`.
+		const unstyledButtons = unstyledRoot.querySelector('.inkq-navbar__buttons') as HTMLElement,
+			styledButtons = styledRoot.querySelector('.inkq-navbar__buttons') as HTMLElement
+
+		await expect(unstyledButtons).toHaveClass('inkq-navbar__buttons')
+		await expect(styledButtons).toHaveClass('inkq-navbar__buttons')
 	},
 }

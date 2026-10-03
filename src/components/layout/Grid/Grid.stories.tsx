@@ -82,12 +82,12 @@ const meta: Meta<GridStoryProps> = {
 		},
 		columns: {
 			control: 'number',
-			description: 'Feeds a `--grid-cols` CSS custom property on the root via an inline style (`setThemeCSS`\'s `tokens`), NOT a class — `Grid.tsx` calls `styles(\'root\')` with no `module`/`global`/`selector` config at all, so `columns` never produces any `inkq-grid--*` modifier class. `--grid-cols` is only set inline when `columns` is a positive number (`!!(columns && columns > 0)`); otherwise it is absent from the inline style, and `Grid.module.scss`\'s own base rule (`--grid-cols: auto-fit`) applies instead. See the `Columns` story.',
+			description: 'Feeds a `--grid-cols` CSS custom property on the root via an inline style (the `tokens` function built with `defineTokens`), NOT a class — `Grid.tsx` calls `styles(\'root\')` with no `module`/`global`/`selector` config at all, so `columns` never produces any `inkq-grid--*` modifier class. `--grid-cols` is only set inline when `columns` is a positive number (`!!(columns && columns > 0)`); otherwise it is absent from the inline style, and `Grid.module.scss`\'s own base rule (`--grid-cols: auto-fit`) applies instead. See the `Columns` story.',
 		},
 		gap: {
 			control: 'select',
 			options: GAP_OPTIONS,
-			description: 'Feeds a `--grid-gap` CSS custom property on the root (`setThemeCSS`\'s `tokens`, via `theme.space(...gridGap)` where `gridGap` starts as `[\'grid\']` and pushes `gap` when set) — NOT a class. `\'lg\'` is the only valid, non-default value (`Grid.Props[\'gap\']` resolves to exactly `\'lg\'` — see the type note above); leaving it unset resolves `--grid-gap` to `var(--inkq-space-grid)` (the semantic `space.grid.base` token), while `gap="lg"` resolves it to `var(--inkq-space-grid-lg)` (`space.grid.lg`). See the `Gap` story.',
+			description: 'Feeds a `--grid-gap` CSS custom property on the root (the `tokens` function built with `defineTokens`, via `theme.space(...gridGap)` where `gridGap` starts as `[\'grid\']` and pushes `gap` when set) — NOT a class. `\'lg\'` is the only valid, non-default value (`Grid.Props[\'gap\']` resolves to exactly `\'lg\'` — see the type note above); leaving it unset resolves `--grid-gap` to `var(--inkq-space-grid)` (the semantic `space.grid.base` token), while `gap="lg"` resolves it to `var(--inkq-space-grid-lg)` (`space.grid.lg`). See the `Gap` story.',
 		},
 		unstyled: {
 			control: 'boolean',
@@ -132,7 +132,7 @@ export const Default: Story = {
 
 /**
  * All three representative `columns` values, side by side. `Grid.tsx` (via
- * `setThemeCSS`'s `tokens`) sets an inline `--grid-cols` custom property on
+ * the `tokens` function built with `defineTokens`) sets an inline `--grid-cols` custom property on
  * the root whenever `columns` is a positive number — there is no
  * `inkq-grid--{n}-col` modifier CLASS at all (`Grid.tsx` calls `styles('root')`
  * with no `module` config), so only the inline style is asserted below.
@@ -178,7 +178,7 @@ export const Columns: Story = {
 
 /**
  * `gap: undefined` vs. `gap: 'lg'`, side by side. Feeds `--grid-gap` on the
- * root via `theme.space(...gridGap)` (`setThemeCSS`'s `tokens`), where
+ * root via `theme.space(...gridGap)` (the `tokens` function built with `defineTokens`), where
  * `gridGap` starts as `['grid']` and pushes `gap` onto it when set — resolving
  * to the semantic token path `space.grid.base` (unset) or `space.grid.lg`
  * (`'lg'`). No class of any kind is involved (`Grid.tsx` calls `styles('root')`

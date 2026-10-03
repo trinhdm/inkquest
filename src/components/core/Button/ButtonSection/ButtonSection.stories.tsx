@@ -181,7 +181,7 @@ export const MultipleSections: Story = {
 // the `styles('section')` call `ButtonSection` makes. Set only on the
 // `Button.Section` here (not on the wrapping `Button`), to isolate its own,
 // independent effect — `ButtonSection.tsx` reads `unstyled` off its OWN props
-// (via `useProps(NAME, _props)`/`useStyles`), not off the `Button.context`
+// (via `useProps(_props)`/`useStyles`), not off the `Button.context`
 // value the wrapping `Button` publishes through `ButtonProvider` (that value
 // only carries `unstyled` — and `ButtonSection.tsx` only ever destructures
 // `rootName` off the required context, via `useButtonCtx`, never `unstyled` —
@@ -285,7 +285,7 @@ export const RequiresButtonParent: Story = {
 // `enforceIconSize` (the old `cloneElement` that forced icon children to
 // `size={18}`) is gone — an `Icon` child now renders verbatim, keeping
 // whichever `size` it resolves on its own: its registered default (`16`,
-// per `Icon.setDefaults`) when unset, or its own explicit `size` prop when
+// per `Icon.set({ defaultProps: DEFAULT_PROPS, displayName: NAME })`) when unset, or its own explicit `size` prop when
 // set. Lucide's underlying `Icon` component (`lucide-react`) renders `size`
 // straight onto the `<svg>`'s `width`/`height` attributes.
 export const IconChildren: Story = {

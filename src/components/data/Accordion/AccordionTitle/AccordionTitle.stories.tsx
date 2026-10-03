@@ -90,7 +90,7 @@ const meta: Meta<AccordionTitleStoryProps> = {
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `AccordionTitle`\'s own `AccordionTitleProps`. Read purely off `AccordionTitle`\'s OWN props (`useProps(NAME, _props)`) — `useAccordionCtx(NAME)` only ever destructures `collapsible`/`disabled`/`handleToggle`/`idx`/`indicator`/`isOpen`/`step` here, never `unstyled`, so it does NOT inherit from the wrapping `Accordion`\'s context and must be set directly on `Accordion.Title` itself. The semantic base classes (`inkq-accordion-title`, `inkq-accordion-title__step`, `inkq-accordion-title__text`, `inkq-accordion-title__indicator`) are ALWAYS emitted regardless of this prop — all four have real declarations in `Accordion.module.scss`, so it only suppresses the CSS-module-hashed class normally appended alongside each. See the `Unstyled` story.',
+			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `AccordionTitle`\'s own `AccordionTitleProps`. Read purely off `AccordionTitle`\'s OWN props (`useProps(_props)`) — `useAccordionCtx(NAME)` only ever destructures `collapsible`/`disabled`/`handleToggle`/`idx`/`indicator`/`isOpen`/`step` here, never `unstyled`, so it does NOT inherit from the wrapping `Accordion`\'s context and must be set directly on `Accordion.Title` itself. The semantic base classes (`inkq-accordion-title`, `inkq-accordion-title__step`, `inkq-accordion-title__text`, `inkq-accordion-title__indicator`) are ALWAYS emitted regardless of this prop — all four have real declarations in `Accordion.module.scss`, so it only suppresses the CSS-module-hashed class normally appended alongside each. See the `Unstyled` story.',
 		},
 	},
 	args: {

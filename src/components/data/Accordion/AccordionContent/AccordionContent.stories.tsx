@@ -90,7 +90,7 @@ const meta: Meta<AccordionContentStoryProps> = {
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `AccordionContent`\'s own `AccordionContentProps`. Read purely off `AccordionContent`\'s OWN props (`useProps(NAME, _props)`) — unlike `Accordion`, it does NOT inherit `unstyled` from the wrapping `Accordion`\'s context (`useAccordionCtx` only ever destructures `idx`/`isOpen` here). The semantic base classes (`inkq-accordion-content`, `inkq-accordion-content__inner`, `inkq-accordion-content__wrapper`) are ALWAYS emitted regardless of this prop — it only suppresses the CSS-module-hashed class normally appended alongside each. See the `Unstyled` story.',
+			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `AccordionContent`\'s own `AccordionContentProps`. Read purely off `AccordionContent`\'s OWN props (`useProps(_props)`) — unlike `Accordion`, it does NOT inherit `unstyled` from the wrapping `Accordion`\'s context (`useAccordionCtx` only ever destructures `idx`/`isOpen` here). The semantic base classes (`inkq-accordion-content`, `inkq-accordion-content__inner`, `inkq-accordion-content__wrapper`) are ALWAYS emitted regardless of this prop — it only suppresses the CSS-module-hashed class normally appended alongside each. See the `Unstyled` story.',
 		},
 	},
 	args: {

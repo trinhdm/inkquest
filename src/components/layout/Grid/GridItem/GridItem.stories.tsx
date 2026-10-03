@@ -44,7 +44,7 @@ const ROOT_SELECTOR = '.inkq-grid-item'
 // that real, wrapped type straight off the component itself. `GridItemSpecs`
 // declares no `defaults.as`, so the generic call signature's default
 // `C` resolves to `'div'` (`polymorphic`'s own fallback), and
-// `GridItem.setDefaults({})` registers no defaults at all — `as` is left
+// `GridItem.set({ displayName: NAME })` registers no defaults at all — `as` is left
 // entirely up to the caller.
 type GridItemStoryProps = Parameters<typeof Grid.Item>[0]
 type Story = StoryObj<GridItemStoryProps>

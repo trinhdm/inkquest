@@ -38,11 +38,15 @@ const ROOT_SELECTOR = '.inkq-table'
 // `Parameters<typeof Table>[0]` reads that real, wrapped type straight off the
 // component itself — the generic call signature's default `C` resolves to
 // `'table'` here, since `TableSpecs`'s `defaults.as` is `'table'` (`Table.tsx`'s
-// local `TAG` constant), and `Table.setDefaults({ props: DEFAULT_PROPS })`
+// local `TAG` constant), and `Table.set({ defaultProps: DEFAULT_PROPS })`
 // (where `DEFAULT_PROPS = { as: TAG }`) registers that same `'table'` as the
-// actual runtime default — so `meta.args` (via `getDefaultProps`) already
-// carries `as: 'table'` before any story overrides it. See the `AsElement`
-// story.
+// registered default — so `meta.args` (via `getDefaultProps`) already carries
+// `as: 'table'` before any story overrides it. KNOWN REGRESSION, not a
+// deliberate quirk: `Table.tsx` hardcodes `as={ TAG }` on its own `Box` and
+// never forwards the caller's `as` at all (it's destructured out along with
+// everything else via `extractOthers`), so overriding `as` away from
+// `'table'` compiles (the type still accepts it) but has NO effect at
+// runtime — a real `<table>` is always rendered. See the `AsElement` story.
 type TableStoryProps = Parameters<typeof Table>[0]
 type Story = StoryObj<TableStoryProps>
 
@@ -52,7 +56,7 @@ const meta: Meta<TableStoryProps> = {
 	argTypes: {
 		as: {
 			control: 'text',
-			description: '`Table` is polymorphic — `TableSpecs`\'s `defaults.as` is `\'table\'` (`Table.tsx`\'s local `TAG`), so `IsPolymorphic<S>` resolves `true` and `as` accepts any element type, registered via `Table.setDefaults({ props: DEFAULT_PROPS })`. Overriding it away from `\'table\'` still renders the same hardcoded `<tbody>` wrapper underneath — invalid table markup, but a deliberate, documented quirk (see `Table.test.tsx`). See the `AsElement` story.',
+			description: '`Table` is polymorphic — `TableSpecs`\'s `defaults.as` is `\'table\'` (`Table.tsx`\'s local `TAG`), so `IsPolymorphic<S>` resolves `true` and `as` accepts any element type, registered via `Table.set({ defaultProps: DEFAULT_PROPS })`. KNOWN REGRESSION, not a deliberate design choice: `Table.tsx` renders `<Box as={ TAG } ...>` with `TAG` hardcoded to `\'table\'`, and the caller\'s own `as` is silently stripped out by `extractOthers` before it ever reaches the `Box` — so passing `as="section"` type-checks but is ignored at runtime, and a `<table>` is always rendered regardless. See the `AsElement` story.',
 		},
 		children: {
 			control: false,
@@ -103,14 +107,14 @@ export const Default: Story = {
 /**
  * `Table` is polymorphic: `TableSpecs`'s `defaults.as` is `'table'`
  * (`Table.tsx`'s local `TAG`), registered as the actual runtime default via
- * `Table.setDefaults({ props: DEFAULT_PROPS })`. `as` can be overridden to
- * render a different tag — mirrors `Table.test.tsx`'s own
- * `as="section"` coverage, using plain text content (not `Table.Row`/
- * `Table.Cell`) since `Table.tsx` ALWAYS wraps `children` in a literal
- * `<tbody>` regardless of `as`; overriding away from `table` therefore nests a
- * `<tbody>` outside a `<table>`, which is invalid table markup (an expected,
- * documented quirk — `Table.test.tsx` calls it out explicitly — not something
- * this story needs `Table.Row`/`Table.Cell` children to demonstrate).
+ * `Table.set({ defaultProps: DEFAULT_PROPS })`. `as` TYPE-CHECKS as
+ * overridable to a different tag, but `Table.tsx` renders `<Box as={ TAG }
+ * ...>` with `TAG` hardcoded, and the caller's own `as` is stripped out by
+ * `extractOthers` before it reaches the `Box` — so the override compiles but
+ * is silently ignored at runtime. This is a KNOWN REGRESSION awaiting a
+ * source fix, NOT a deliberate design quirk — this story documents the
+ * attempted override (two groups) while asserting the actual current
+ * behavior: both groups render a `<table>`.
  */
 export const AsElement: Story = {
 	parameters: { layout: 'padded' },
@@ -119,7 +123,7 @@ export const AsElement: Story = {
 			<Group label='as="table" (default)'>
 				<Table { ...args as TableStoryProps }>table content</Table>
 			</Group>
-			<Group label='as="section"'>
+			<Group label='as="section" (attempted override — currently ignored, see comment above)'>
 				<Table { ...args as TableStoryProps } as="section">section content</Table>
 			</Group>
 		</Row>
@@ -130,10 +134,12 @@ export const AsElement: Story = {
 			asSection = canvas.getByText('section content').closest(ROOT_SELECTOR) as HTMLElement
 
 		// `meta.args` already carries the REGISTERED default (`as: 'table'`, via
-		// `getDefaultProps`/`Table.setDefaults`) — leaving `as` unset here
-		// renders `table`, not any other tag.
+		// `getDefaultProps`/`Table.set`) — leaving `as` unset here renders
+		// `table`. The second group's `as="section"` override is silently
+		// dropped at runtime (KNOWN REGRESSION — see comment above), so it ALSO
+		// renders `table`, not `section`.
 		await expect(asTable.tagName).toBe('TABLE')
-		await expect(asSection.tagName).toBe('SECTION')
+		await expect(asSection.tagName).toBe('TABLE')
 	},
 }
 

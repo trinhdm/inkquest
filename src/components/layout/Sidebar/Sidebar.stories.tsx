@@ -7,7 +7,7 @@ import type { Route } from 'next'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import moduleClasses from './Sidebar.module.scss'
 
-// `Sidebar.tsx`'s local `height` constant (`setThemeCSS`'s `tokens`) — not
+// `Sidebar.tsx`'s local `height` constant (used by the `tokens` function built with `defineTokens`) — not
 // exported, so it's pinned here to compute the exact expected
 // `--sidebar-rail-height`/`--sidebar-rail-position` values via the SAME `rem()`
 // utility the component itself calls (`@/lib/general`), rather than a
@@ -65,8 +65,8 @@ const ACTION_ITEMS: Sidebar.ActionItem[] = [
 // which only exist on the actual accepted prop type, `PolymorphicProps<
 // SidebarProps, C>`. `Parameters<typeof Sidebar>[0]` reads that real, wrapped
 // type straight off the component itself — the generic call signature's
-// default `C` resolves to `'div'` here, since `SidebarSpecs`'s `defaults.as`
-// is `'div'`.
+// default `C` resolves to `'aside'` here, since `SidebarSpecs`'s `defaults.as`
+// is `'aside'` (`Sidebar.tsx`'s local `TAG` constant).
 type SidebarStoryProps = Parameters<typeof Sidebar>[0]
 
 // `SidebarProps` is an INTERSECTION that CONTAINS a union
@@ -96,7 +96,7 @@ const meta: Meta<SidebarStoryProps> = {
 	argTypes: {
 		as: {
 			control: 'text',
-			description: 'Polymorphic escape hatch via the shared `Box` contract. `SidebarSpecs` declares `defaults: { as: \'div\' }`, so `Sidebar` genuinely forwards it to the OUTER root element — the inner `<nav>` (and everything inside it) is always hardcoded regardless of `as`. See the `AsElement` story.',
+			description: 'Polymorphic escape hatch via the shared `Box` contract. `SidebarSpecs` declares `defaults: { as: \'aside\' }`, so `Sidebar` genuinely forwards it to the OUTER root element — the inner `<nav>` (and everything inside it) is always hardcoded regardless of `as`. See the `AsElement` story.',
 		},
 		active: {
 			control: 'text',
@@ -395,9 +395,10 @@ export const Shallow: Story = {
 }
 
 /**
- * `SidebarSpecs` declares `defaults: { as: 'div' }` — `Sidebar` genuinely IS
+ * `SidebarSpecs` declares `defaults: { as: 'aside' }` — `Sidebar` genuinely IS
  * polymorphic on its OUTER root element; the inner `<nav>` (and everything
- * inside it) is always hardcoded regardless of `as`.
+ * inside it) is always hardcoded regardless of `as`. `as="div"` below is an
+ * explicit override, not the default.
  */
 export const AsElement: Story = {
 	parameters: {
@@ -406,7 +407,7 @@ export const AsElement: Story = {
 	},
 	render: (args) => (
 		<Row>
-			<Group label='as="div" (default)'>
+			<Group label='as="div"'>
 				<Sidebar { ...args as SidebarBaseArgs } active="overview" items={ LINK_ITEMS } as="div" />
 			</Group>
 			<Group label='as="section"'>

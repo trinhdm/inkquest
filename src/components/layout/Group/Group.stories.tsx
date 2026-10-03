@@ -133,7 +133,7 @@ const meta: Meta<GroupStoryProps> = {
 		},
 		columns: {
 			control: 'number',
-			description: 'Feeds a `--group-item-count` CSS custom property on the root via an inline style (`setThemeCSS`\'s `tokens`), NOT a class — `--group-cols` (referenced by `Group.module.scss`\'s `grid-template-columns`) is a STYLESHEET-INTERNAL value composed FROM `--group-item-count`; it is never itself set inline. When `columns` is a positive number, `--group-item-count` is set to it directly. When `columns` is unset AND `orientation` is set, `--group-item-count` is instead computed from `Children.count(children)` (`count > 1 ? count - 1 : count`). When both are unset, the property is absent entirely and `Group.module.scss`\'s own base rule (`--group-item-count: auto-fit`) applies. See the `Columns` and `Orientations` stories.',
+			description: 'Feeds a `--group-item-count` CSS custom property on the root via an inline style (the `tokens` function built with `defineTokens`), NOT a class — `--group-cols` (referenced by `Group.module.scss`\'s `grid-template-columns`) is a STYLESHEET-INTERNAL value composed FROM `--group-item-count`; it is never itself set inline. When `columns` is a positive number, `--group-item-count` is set to it directly. When `columns` is unset AND `orientation` is set, `--group-item-count` is instead computed from `Children.count(children)` (`count > 1 ? count - 1 : count`). When both are unset, the property is absent entirely and `Group.module.scss`\'s own base rule (`--group-item-count: auto-fit`) applies. See the `Columns` and `Orientations` stories.',
 		},
 		justify: {
 			control: 'text',
@@ -309,7 +309,7 @@ export const FullWidth: Story = {
 }
 
 // `columns` feeds `--group-item-count` as an inline CSS custom property
-// (`setThemeCSS`'s `tokens`), not a class — assert `style`, not `className`.
+// (the `tokens` function built with `defineTokens`), not a class — assert `style`, not `className`.
 // `--group-cols` (referenced by `grid-template-columns`) stays a
 // stylesheet-internal value COMPOSED FROM `--group-item-count`; it's never
 // itself set inline.

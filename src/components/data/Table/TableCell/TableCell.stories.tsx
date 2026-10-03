@@ -36,16 +36,9 @@ const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 // is the stable selector used to walk from rendered content back up to the
 // actual polymorphic root element.
 //
-// **Verified against the LIVE `Table.module.scss`**: unlike `.inkq-table` and
-// `.inkq-table-row`, there is NO `.inkq-table-cell` rule declared anywhere in
-// the stylesheet — only a commented-out `// &__cell {}` placeholder nested
-// under `.inkq-table`, which produces no CSS-module export at all.
-// `getStyleClass()` (`getClassName.tsx`) looks up the exact key
-// `inkq-table-cell` in the compiled `classes` map and finds nothing, so it
-// returns `undefined` REGARDLESS of `unstyled` — `Table.Cell`'s root never
-// carries a CSS-module hash, styled or unstyled alike. See the `Unstyled`
-// story, which asserts this directly instead of a hash-suppression toggle
-// that has nothing to suppress.
+// **Verified against the LIVE `Table.module.scss`**: `.inkq-table-cell` has
+// real direct declarations (`padding`, `text-align`, `white-space`), so it
+// DOES get a real CSS-module hash — see the `Unstyled` story.
 const ROOT_SELECTOR = '.inkq-table-cell'
 
 // `Table` does NOT re-export a nested `Cell` namespace the way `Grid`/`Group`
@@ -57,8 +50,8 @@ const ROOT_SELECTOR = '.inkq-table-cell'
 // regardless of that gap and is what both `getDefaultProps` below and the
 // `Story` type use. `TableCellSpecs` declares `isCompound: true` with no
 // `defaults.as`, so the generic call signature's non-polymorphic branch types
-// `as` as `never`, and `TableCell.setDefaults({})` registers no defaults at
-// all.
+// `as` as `never`, and `TableCell.set({ displayName: NAME })` (no `defaultProps`
+// key) registers no defaults at all.
 type TableCellStoryProps = Parameters<typeof Table.Cell>[0]
 type Story = StoryObj<TableCellStoryProps>
 
@@ -73,7 +66,7 @@ const meta: Meta<TableCellStoryProps> = {
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Table.Cell`\'s own props. Unlike most components in this codebase, `unstyled` has NO visible effect here: `Table.module.scss` declares no `.inkq-table-cell` rule at all, so `Table.Cell`\'s root never carries a CSS-module hash to begin with — styled or unstyled. See the `Unstyled` story.',
+			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Table.Cell`\'s own props. The semantic base class (`inkq-table-cell`) is ALWAYS emitted regardless of this prop — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it. See the `Unstyled` story.',
 		},
 	},
 	args: {
@@ -124,13 +117,12 @@ export const FixedTag: Story = {
 }
 
 /**
- * `unstyled` does NOT change `Table.Cell`'s rendered class at all — its base
- * class (`inkq-table-cell`) is ALWAYS emitted (per `getClassName.tsx`), AND,
- * unlike `Table`/`Table.Row`, there is no `.inkq-table-cell` rule in
- * `Table.module.scss` for CSS Modules to hash in the first place — only a
- * commented-out `// &__cell {}` placeholder. `getStyleClass()` finds no
- * matching key and returns `undefined` regardless of `unstyled`, so the two
- * groups below render byte-identical classes.
+ * `unstyled` does NOT remove `Table.Cell`'s semantic base class
+ * (`inkq-table-cell`) — per `getClassName.tsx` the base class is now ALWAYS
+ * emitted. It only suppresses the CSS-module-hashed class normally appended
+ * alongside it. `.inkq-table-cell` has real direct declarations in
+ * `Table.module.scss` (`padding`, `text-align`, `white-space`), so it DOES
+ * get a real CSS-module hash to suppress.
  */
 export const Unstyled: Story = {
 	parameters: { controls: { exclude: ['unstyled'] } },
@@ -162,11 +154,8 @@ export const Unstyled: Story = {
 
 		await expect(styledRoot).toHaveClass('inkq-table-cell')
 		await expect(unstyledRoot).toHaveClass('inkq-table-cell')
-
-		// No hash exists for either state — `unstyled` has nothing to suppress.
-		expect(hasModuleClass(styledRoot, 'inkq-table-cell')).toBe(false)
+		expect(hasModuleClass(styledRoot, 'inkq-table-cell')).toBe(true)
 		expect(hasModuleClass(unstyledRoot, 'inkq-table-cell')).toBe(false)
-		await expect(styledRoot.className).toBe(unstyledRoot.className)
 	},
 }
 

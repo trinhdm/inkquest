@@ -58,7 +58,7 @@ const meta: Meta<typeof ScriptInjector> = {
 		},
 	},
 	// `ScriptInjector` is a plain function component (no `factory()`/
-	// `polymorphic()` usage, no `.setDefaults`), and `scheme` itself
+	// `polymorphic()` usage, no `.set({ defaultProps: ... })`), and `scheme` itself
 	// has no default parameter value in the component's own signature — it's
 	// left `undefined` and delegated straight to `buildScript`, which merges
 	// it through `configDocument`'s `DEFAULT_DOCUMENT_CONFIG` (see

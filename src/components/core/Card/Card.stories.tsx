@@ -38,7 +38,7 @@ const IMAGE_CAPTION_SELECTOR = '.inkq-card__image-caption'
 // off the component itself — the generic call signature's default `C`
 // resolves to `'div'` here, since `CardSpecs`'s `defaults.as` is `'div'`
 // (`Card.tsx`'s local `TAG` constant), matching `const DEFAULT_PROPS = { as:
-// TAG, hasTitleAlt: false }` and `Card.setDefaults({ props: DEFAULT_PROPS })`.
+// TAG, hasTitleAlt: false }` and `Card.set({ defaultProps: DEFAULT_PROPS, displayName: NAME })`.
 type CardStoryProps = Parameters<typeof Card>[0]
 type Story = StoryObj<CardStoryProps>
 

@@ -47,8 +47,8 @@ const ROOT_SELECTOR = '.inkq-table-row'
 // regardless of that gap and is what both `getDefaultProps` below and the
 // `Story` type use. `TableRowSpecs` declares `isCompound: true` with no
 // `defaults.as`, so the generic call signature's non-polymorphic branch types
-// `as` as `never`, and `TableRow.setDefaults({})` registers no defaults at
-// all.
+// `as` as `never`, and `TableRow.set({ displayName: NAME })` (no `defaultProps`
+// key) registers no defaults at all.
 type TableRowStoryProps = Parameters<typeof Table.Row>[0]
 type Story = StoryObj<TableRowStoryProps>
 

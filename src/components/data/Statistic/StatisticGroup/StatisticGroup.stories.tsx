@@ -74,7 +74,7 @@ const meta: Meta<StatisticGroupStoryProps> = {
 	argTypes: {
 		columns: {
 			control: 'number',
-			description: 'Fed straight into a `--group-item-count` CSS custom property on the root element via `setThemeCSS` (`tokens.root`) — no clamping/validation. `--group-cols` (the property `Group.module.scss`\'s `grid-template-columns` actually reads) is computed FROM `--group-item-count` inside the stylesheet itself and is never set inline, so it isn\'t something a story can assert on directly. Rendered as an inline style, not a class. See the `Columns` story.',
+			description: 'Fed straight through to the inner `<Group>`, which feeds a `--group-item-count` CSS custom property on the root element via its own `tokens` function built with `defineTokens` (`tokens.root`) — no clamping/validation. `--group-cols` (the property `Group.module.scss`\'s `grid-template-columns` actually reads) is computed FROM `--group-item-count` inside the stylesheet itself and is never set inline, so it isn\'t something a story can assert on directly. Rendered as an inline style, not a class. See the `Columns` story.',
 		},
 		divider: {
 			control: 'boolean',

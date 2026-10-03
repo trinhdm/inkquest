@@ -55,7 +55,7 @@ const meta: Meta<StatisticStoryProps> = {
 		},
 		highlight: {
 			control: 'boolean',
-			description: 'A `global`-scope OBJECT config class (`global = { highlight, item: true }`, not a `module`-scope one, and not the `true` boolean-shorthand form) — per `getClassName.tsx`, this emits as a literal, unhashed `inkq-highlight` class (no matching rule in `Statistic.module.scss` to hash against) whenever styled. The same `global` config also includes `item: true` unconditionally, which likewise emits a literal `inkq-item` class regardless of `highlight`. **Both are gated by `unstyled`**: `getConfigClasses` (`getClassName.tsx`) checks the OBJECT-config branch (`{ global }`/`{ module }`) after `check.isUnstyled` and returns nothing at all for it when unstyled is true — this is unlike a `true` boolean-shorthand config (e.g. `Statistic`\'s own `caption`, or `Quote`\'s `rail`/`caption`), which is checked BEFORE the unstyled gate and survives unconditionally. So `inkq-highlight`/`inkq-item` are entirely absent when `unstyled` is true. See the `Highlight` story (styled state) and this file\'s own `Unstyled` story (which asserts the `item` global class disappears entirely when unstyled) for the unstyled interaction.',
+			description: 'A `global`-scope OBJECT config class (`global = { accent: !!highlight, item: true }`, not a `module`-scope one, and not the `true` boolean-shorthand form) — per `getClassName.tsx`, this emits as a literal, unhashed `inkq-accent` class (no matching rule in `Statistic.module.scss` to hash against) whenever styled and `highlight` is true. Note the key is `accent`, not `highlight` — the rendered class is `inkq-accent`. The same `global` config also includes `item: true` unconditionally, which likewise emits a literal `inkq-item` class regardless of `highlight`. **Both are gated by `unstyled`**: `getConfigClasses` (`getClassName.tsx`) now checks `check.isUnstyled` FIRST, before any config branch — object-config or boolean-shorthand alike — so NO config class is emitted at all when unstyled, including boolean-shorthand ones like `Statistic`\'s own `caption`, or `Quote`\'s `rail`/`caption`. So `inkq-accent`/`inkq-item` are entirely absent when `unstyled` is true. See the `Highlight` story (styled state) and this file\'s own `Unstyled` story (which asserts the `item` global class disappears entirely when unstyled) for the unstyled interaction.',
 		},
 		icon: {
 			control: false,
@@ -63,25 +63,25 @@ const meta: Meta<StatisticStoryProps> = {
 		},
 		caption: {
 			control: 'text',
-			description: 'Same pattern as `Quote`\'s `author` — the caption `<span>` (`styles(\'caption\', true)`) renders UNCONDITIONALLY, even with `caption` omitted, producing an empty (but present) element. `Statistic.module.scss` also has no `&__caption` declaration at all, so this selector never carries a CSS-module hash, styled or unstyled — only the semantic base class, plus the `inkq-caption` literal class from the `true` boolean-shorthand config. **Verified against the current `getConfigClasses` in `getClassName.tsx`**: the `typeof config === \'boolean\'` branch is checked BEFORE `check.isUnstyled`, so this boolean-shorthand class is emitted UNCONDITIONALLY — present styled or unstyled (unlike an object-config class such as `Statistic`\'s own `highlight`/`item`, which IS suppressed entirely when unstyled). See the `Caption` story and the `Unstyled` story.',
+			description: 'Same pattern as `Quote`\'s `author` — the caption `<span>` (`styles(\'caption\', true)`) renders UNCONDITIONALLY, even with `caption` omitted, producing an empty (but present) element — only the semantic base class, plus the `inkq-caption` literal class from the `true` boolean-shorthand config, when styled. **Verified against the current `getConfigClasses` in `getClassName.tsx`**: `check.isUnstyled` is checked FIRST, before the boolean-shorthand branch, so this boolean-shorthand class is now suppressed along with every other config class when unstyled (same as an object-config class such as `Statistic`\'s own `accent`/`item`). See the `Caption` story and the `Unstyled` story.',
 		},
 		order: {
 			control: 'select',
 			options: ORDER_OPTIONS,
-			description: 'Registered default `\'descend\'` (`Statistic.setDefaults({ props: DEFAULT_PROPS })`). Drives `setThemeCSS`\'s `tokens.root` — `\'descend\'` sets `--statistic-align: flex-start` and `--statistic-direction: column`; any other value (i.e. `\'ascend\'`) flips to `--statistic-align: flex-end` and `--statistic-direction: column-reverse`. Also inherited from a wrapping `Statistic.Group` via `useStatisticGroupProps` when this `Statistic`\'s own prop is absent. See the `Order` story.',
+			description: 'Registered default `\'descend\'` (`Statistic.set({ defaultProps: DEFAULT_PROPS })`). Drives `defineTokens`\'s `tokens.root` — `\'descend\'` sets `--statistic-align: flex-start` and `--statistic-direction: column`; any other value (i.e. `\'ascend\'`) flips to `--statistic-align: flex-end` and `--statistic-direction: column-reverse`. Also inherited from a wrapping `Statistic.Group` via `useStatisticGroupProps` when this `Statistic`\'s own prop is absent. See the `Order` story.',
 		},
 		size: {
 			control: 'select',
 			options: SIZE_OPTIONS,
-			description: 'Registered default `\'lg\'` (`Statistic.setDefaults({ props: DEFAULT_PROPS })`). Drives BOTH a `module`-scope config class (`inkq-statistic--sm`/`inkq-statistic--lg`, hashed — each has a real `&--sm`/`&--lg` declaration in `Statistic.module.scss`) AND `setThemeCSS`\'s `tokens.root` (`--statistic-font-caption`, `--statistic-font-value`, and — indirectly, via which title tag `Statistic.Group` renders for a section — the surrounding heading level). Also inherited from a wrapping `Statistic.Group` via `useStatisticGroupProps` when this `Statistic`\'s own prop is absent. See the `Size` story.',
+			description: 'Registered default `\'lg\'` (`Statistic.set({ defaultProps: DEFAULT_PROPS })`). Drives BOTH a `module`-scope config class (`inkq-statistic--sm`/`inkq-statistic--lg`, hashed — each has a real `&--sm`/`&--lg` declaration in `Statistic.module.scss`) AND `defineTokens`\'s `tokens.root` (`--statistic-font-caption`, `--statistic-font-value`, and — indirectly, via which title tag `Statistic.Group` renders for a section — the surrounding heading level). Also inherited from a wrapping `Statistic.Group` via `useStatisticGroupProps` when this `Statistic`\'s own prop is absent. See the `Size` story.',
 		},
 		index: {
 			control: 'number',
-			description: 'Combines with `stagger` as `delay: index * stagger` fed into `useCountUp`. Registered default `0` (`Statistic.setDefaults({ props: DEFAULT_PROPS })`, not a local destructuring default in `Statistic.tsx`\'s own render). Standalone, this is mostly meaningful when a parent `Statistic.Group` assigns it automatically per child — see `Statistic.Group`\'s `ContextPrecedence` story, which is where this is actually exercised end-to-end with real timing assertions (kept out of this file to avoid a second flaky multi-second `play` function for the same underlying mechanism).',
+			description: 'Combines with `stagger` as `delay: index * stagger` fed into `useCountUp`. Registered default `0` (`Statistic.set({ defaultProps: DEFAULT_PROPS })`, not a local destructuring default in `Statistic.tsx`\'s own render). Standalone, this is mostly meaningful when a parent `Statistic.Group` assigns it automatically per child — see `Statistic.Group`\'s `ContextPrecedence` story, which is where this is actually exercised end-to-end with real timing assertions (kept out of this file to avoid a second flaky multi-second `play` function for the same underlying mechanism).',
 		},
 		stagger: {
 			control: 'number',
-			description: 'See `index` above — registered default `0` (`Statistic.setDefaults({ props: DEFAULT_PROPS })`, not a local destructuring default).',
+			description: 'See `index` above — registered default `0` (`Statistic.set({ defaultProps: DEFAULT_PROPS })`, not a local destructuring default).',
 		},
 		withinView: {
 			control: 'boolean',
@@ -89,7 +89,7 @@ const meta: Meta<StatisticStoryProps> = {
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps`, not `Statistic`\'s own `StatisticProps`. The semantic base class is ALWAYS emitted for `root`/`inner`/`value`/`caption` (`inkq-statistic`, `inkq-statistic__inner`, `inkq-statistic__value`, `inkq-statistic__caption`) regardless of this prop. **Verified directly against the current `getConfigClasses` in `getClassName.tsx`** (this function has changed shape more than once during development — re-check the live source rather than trusting this comment if these assertions ever start failing again): the `typeof config === \'boolean\'` branch runs BEFORE the `check.isUnstyled` check, so a `true` boolean-shorthand config class is always emitted regardless of `unstyled` — that\'s `caption`\'s `styles(\'caption\', true)` class (`inkq-caption`), which survives `unstyled` unconditionally. The OBJECT-config branch (`{ global }`/`{ module }`), by contrast, IS gated on `check.isUnstyled` and returns nothing at all when unstyled — that\'s root\'s `global: { highlight, item: true }` classes (`inkq-highlight`/`inkq-item`) and its `module`-scope size class (`inkq-statistic--sm`/`--lg`), all entirely absent when unstyled. Separately (via `getStyleClass`, a third code path), `root`/`inner`/`value` each have a real declaration in `Statistic.module.scss` and lose their own CSS-module hash when unstyled; `caption` has no own declaration, so it never carries a hash either way. See the `Unstyled` story.',
+			description: 'Part of `PolymorphicProps`, not `Statistic`\'s own `StatisticProps`. The semantic base class is ALWAYS emitted for `root`/`inner`/`value`/`caption` (`inkq-statistic`, `inkq-statistic__inner`, `inkq-statistic__value`, `inkq-statistic__caption`) regardless of this prop. **Verified directly against the current `getConfigClasses` in `getClassName.tsx`** (this function has changed shape more than once during development — re-check the live source rather than trusting this comment if these assertions ever start failing again): `check.isUnstyled` is now checked FIRST, before the boolean-shorthand branch, so when `unstyled` is true NO config class is emitted at all — not `caption`\'s `styles(\'caption\', true)` class (`inkq-caption`), and not root\'s `global: { accent: !!highlight, item: true }` classes (`inkq-accent`/`inkq-item`) or its `module`-scope size class (`inkq-statistic--sm`/`--lg`) either. Separately (via `getStyleClass`, a third code path), `root`/`inner`/`value` each have a real declaration in `Statistic.module.scss` and lose their own CSS-module hash when unstyled. See the `Unstyled` story.',
 		},
 	},
 	args: {
@@ -196,10 +196,12 @@ export const Highlight: Story = {
 		)
 
 		// `item` is part of the same `global` config as `highlight` and is
-		// unconditionally `true`, so `inkq-item` is present either way.
-		await expect(isHighlighted).toHaveClass('inkq-highlight', 'inkq-item')
+		// unconditionally `true`, so `inkq-item` is present either way. The
+		// config key for `highlight` is `accent`, not `highlight` — the
+		// rendered class is `inkq-accent`.
+		await expect(isHighlighted).toHaveClass('inkq-accent', 'inkq-item')
 		await expect(isNotHighlighted).toHaveClass('inkq-item')
-		await expect(isNotHighlighted).not.toHaveClass('inkq-highlight')
+		await expect(isNotHighlighted).not.toHaveClass('inkq-accent')
 	},
 }
 
@@ -290,7 +292,7 @@ export const WithinView: Story = {
 	},
 }
 
-// `order` flips `setThemeCSS`'s root tokens: `'descend'` (the registered
+// `order` flips `defineTokens`'s root tokens: `'descend'` (the registered
 // default) aligns content at the start in normal column order;
 // `'ascend'` aligns at the end in reversed column order.
 export const Order: Story = {
@@ -329,7 +331,7 @@ export const Order: Story = {
 
 // `size` drives a hashed `module` config class (`inkq-statistic--sm`/
 // `inkq-statistic--lg`, each with a real declaration in
-// `Statistic.module.scss`) AND `setThemeCSS`'s root font tokens
+// `Statistic.module.scss`) AND `defineTokens`'s root font tokens
 // (`--statistic-font-caption`/`--statistic-font-value`) — the exact
 // theme-derived font shorthand isn't asserted here (that's `ThemeProvider`'s
 // concern, not `Statistic`'s), only that the module class swaps and that
@@ -369,11 +371,11 @@ export const Size: Story = {
 
 // `unstyled` does NOT remove any of `Statistic`'s semantic base classes — per
 // `getClassName.tsx`, the base class is always emitted. Beyond that, the
-// CURRENT `getConfigClasses` (`getClassName.tsx`) checks `typeof config ===
-// 'boolean'` FIRST, before `check.isUnstyled` — so a `true` boolean-shorthand
-// config class is emitted unconditionally, styled or unstyled. Only the
-// OBJECT-config branch (`{ global }`/`{ module }`) is gated on
-// `check.isUnstyled` and returns nothing at all when unstyled. Concretely:
+// CURRENT `getConfigClasses` (`getClassName.tsx`) checks `check.isUnstyled`
+// FIRST, before the boolean-shorthand branch — so when unstyled, NO config
+// class is emitted at all, regardless of whether it's an object config
+// (`{ global }`/`{ module }`) or a boolean-shorthand (`true`) config.
+// Concretely:
 //   - root: loses its own hashed module class (`root` has a real
 //     declaration in `Statistic.module.scss`, carrying custom
 //     properties/`flex-direction`/`justify-content`/`row-gap` directly, not
@@ -383,10 +385,9 @@ export const Size: Story = {
 //     registered default size) — all three present only when styled.
 //   - inner/value: lose only their own hashed module class — neither has
 //     any `config` argument in `Statistic.tsx`'s `styles(...)` calls.
-//   - caption: has no own SCSS declaration (no hash either way). Its
-//     `styles('caption', true)` BOOLEAN-shorthand config class
-//     (`inkq-caption`) is checked before the unstyled gate, so it's ALWAYS
-//     present, styled or unstyled.
+//   - caption: its `styles('caption', true)` BOOLEAN-shorthand config class
+//     (`inkq-caption`) is now gated on `check.isUnstyled` too, so it's
+//     present only when styled, entirely absent when unstyled.
 //
 // (This mechanism has changed more than once during development — re-verify
 // `getConfigClasses` directly against `getClassName.tsx` before trusting this
@@ -416,7 +417,7 @@ export const Unstyled: Story = {
 		// (custom properties, `flex-direction`, `justify-content`, `row-gap`),
 		// not just nested `&__...`/`&--...` rules, so it genuinely hashes and
 		// is genuinely suppressed when unstyled. Its `global: { item: true }`
-		// class (`inkq-item`; `highlight` is falsy here, so `inkq-highlight`
+		// class (`inkq-item`; `highlight` is falsy here, so `inkq-accent`
 		// never applies either way) and its `module`-scope size class
 		// (`inkq-statistic--lg`, the registered default size) are both present
 		// when styled and entirely absent when unstyled.
@@ -446,14 +447,15 @@ export const Unstyled: Story = {
 		expect(hasModuleClass(styledValue, 'inkq-statistic__value')).toBe(true)
 		expect(hasModuleClass(unstyledValue, 'inkq-statistic__value')).toBe(false)
 
-		// caption — no own SCSS declaration (no hash either way). Its
-		// `styles('caption', true)` BOOLEAN-shorthand config class
-		// (`inkq-caption`) is checked before `check.isUnstyled` in
-		// `getConfigClasses`, so it's ALWAYS present, styled or unstyled.
+		// caption — its `styles('caption', true)` BOOLEAN-shorthand config
+		// class (`inkq-caption`) is now gated on `check.isUnstyled`, which
+		// `getConfigClasses` checks FIRST, so it is present only when styled,
+		// entirely absent when unstyled.
 		const styledCaption = styledRoot.querySelector('.inkq-statistic__caption') as HTMLElement,
 			unstyledCaption = unstyledRoot.querySelector('.inkq-statistic__caption') as HTMLElement
 
 		await expect(styledCaption).toHaveClass('inkq-statistic__caption', 'inkq-caption')
-		await expect(unstyledCaption).toHaveClass('inkq-statistic__caption', 'inkq-caption')
+		await expect(unstyledCaption).toHaveClass('inkq-statistic__caption')
+		await expect(unstyledCaption).not.toHaveClass('inkq-caption')
 	},
 }

@@ -60,7 +60,7 @@ const meta: Meta<AccordionGroupStoryProps> = {
 		},
 		disabled: {
 			control: 'boolean',
-			description: 'Not registered via `setDefaults` — `undefined` unless passed. Cascades to every child `Accordion` via context (`useAccordionGroupProps`), same own-prop-wins precedence as `layout`/`index`/`open`/`unstyled` — a child\'s own `disabled` (including an explicit `disabled={false}`) always wins over the group\'s. Ultimately reaches `AccordionTitle`, which renders it as a NATIVE `disabled` attribute on each title button — so a disabled group makes every title genuinely unfocusable/untabbable, not just inert to clicks. See the `Disabled` and `ContextOverrides` stories.',
+			description: 'Not registered via `set` — `undefined` unless passed. Cascades to every child `Accordion` via context (`useAccordionGroupProps`), same own-prop-wins precedence as `layout`/`index`/`open`/`unstyled` — a child\'s own `disabled` (including an explicit `disabled={false}`) always wins over the group\'s. Ultimately reaches `AccordionTitle`, which renders it as a NATIVE `disabled` attribute on each title button — so a disabled group makes every title genuinely unfocusable/untabbable, not just inert to clicks. See the `Disabled` and `ContextOverrides` stories.',
 		},
 		layout: {
 			control: 'select',
@@ -70,7 +70,7 @@ const meta: Meta<AccordionGroupStoryProps> = {
 		order: {
 			control: 'select',
 			options: ORDER_OPTIONS,
-			description: 'Registered default `3`. Cascades to every child `Accordion` via context (own prop always wins), which reads it straight off `Accordion.context` and renders its title text as a literal `h${order}` heading tag — also feeds `getSharedTokens`\' `--accordion-text-size` token on the GROUP\'S OWN root, offset by `size` (`config.order = order + step`, where `step` is `{ sm: 2, md: 1, lg: 0 }[size]`). See the `Order` story.',
+			description: 'Registered default `3`. Cascades to every child `Accordion` via context (own prop always wins), which reads it straight off `Accordion.context` and applies it as a global `inkq-h${order}` class name on the title text `<span>` (no actual heading element is rendered) — also feeds `getSharedTokens`\' `--accordion-text-size` token on the GROUP\'S OWN root, offset by `size` (`config.order = order + step`, where `step` is `{ sm: 2, md: 1, lg: 0 }[size]`). See the `Order` story.',
 		},
 		size: {
 			control: 'select',
@@ -245,9 +245,13 @@ export const Layout: Story = {
 }
 
 // `order` cascades to every child `Accordion` via context (own prop always
-// wins), which renders its title text as a literal `h${order}` heading tag —
-// tested here via the implicit ARIA `heading` role's `level`, not a
-// class/selector heuristic.
+// wins), which only applies it as a global `inkq-h${order}` class name on the
+// title text `<span>` — no `<hN>` element is ever rendered anywhere in the
+// `Accordion` family, so there's no ARIA `heading` role to query. Asserted
+// instead against the one thing `order` actually drives at the DOM level:
+// `getSharedTokens`' `--accordion-text-size` custom property on the GROUP'S
+// OWN root (`config.order = order + step`, where `step` is `{ sm: 2, md: 1,
+// lg: 0 }[size]`) — mirroring the `Size` story's shape below.
 export const Order: Story = {
 	parameters: { controls: { exclude: ['order'] } },
 	render: args => (
@@ -262,11 +266,16 @@ export const Order: Story = {
 		</Row>
 	),
 	play: async ({ canvasElement }) => {
-		const canvas = within(canvasElement)
+		const groups = canvasElement.querySelectorAll('[data-group]') as unknown as HTMLElement[]
 
-		for (const order of ORDER_OPTIONS) {
-			const heading = canvas.getByRole('heading', { level: order })
-			await expect(heading.tagName).toBe(`H${ order }`)
+		expect(groups).toHaveLength(ORDER_OPTIONS.length)
+
+		// Registered default `size: 'md'` → `step` is `1`, so the resolved
+		// heading level is `order + 1` per `tokensBySize`/`getTokenGroup`.
+		for (const [i, order] of ORDER_OPTIONS.entries()) {
+			const level = order + 1
+			await expect(groups[i]!.style.getPropertyValue('--accordion-text-size'))
+				.toBe(`var(--inkq-font-size-heading-h${ level })`)
 		}
 	},
 }
