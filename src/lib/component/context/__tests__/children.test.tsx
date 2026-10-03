@@ -1,4 +1,4 @@
-import { extractChildrenText, filterChildren, getChildKey } from '../children'
+import { countChildren, extractChildrenText, filterChildren, getChildKey } from '../children'
 import type { FC, ReactNode } from 'react'
 
 const Named: FC<{ children?: ReactNode }> = ({ children }) => <>{ children }</>
@@ -90,6 +90,46 @@ describe('filterChildren', () => {
 	it('excludes everything when nothing matches the requested displayName', () => {
 		const result = filterChildren([<Named key="a">a</Named>], 'DoesNotExist')
 		expect(result).toEqual([])
+	})
+})
+
+describe('countChildren', () => {
+	it('counts every renderable child when no displayName is given', () => {
+		expect(countChildren([<Named key="a">a</Named>, 'text', <OtherNamed key="b">b</OtherNamed>])).toBe(3)
+	})
+
+	it('counts only children matching the given displayName', () => {
+		expect(countChildren([<Named key="a">a</Named>, <OtherNamed key="b">b</OtherNamed>], 'Named')).toBe(1)
+	})
+
+	it('descends into a Fragment rather than counting it as one child', () => {
+		const children = <><Named>a</Named><Named>b</Named></>
+		expect(countChildren(children)).toBe(2)
+		expect(countChildren(children, 'Named')).toBe(2)
+	})
+
+	it('descends into nested Fragments', () => {
+		const children = <><Named>a</Named><><Named>b</Named><OtherNamed>c</OtherNamed></></>
+		expect(countChildren(children)).toBe(3)
+		expect(countChildren(children, 'Named')).toBe(2)
+	})
+
+	// pins the deliberate divergence from `Children.count`, which returns 4 here
+	it('ignores null, undefined and boolean children', () => {
+		expect(countChildren([null, undefined, false, <Named key="a">a</Named>])).toBe(1)
+	})
+
+	it('does not count a text child towards a displayName match', () => {
+		expect(countChildren(['text', <Named key="a">a</Named>], 'Named')).toBe(1)
+	})
+
+	it('does not count a component that has no displayName', () => {
+		expect(countChildren([<Anonymous key="a">a</Anonymous>], 'Named')).toBe(0)
+	})
+
+	it('returns 0 for no children', () => {
+		expect(countChildren(null)).toBe(0)
+		expect(countChildren(undefined)).toBe(0)
 	})
 })
 
