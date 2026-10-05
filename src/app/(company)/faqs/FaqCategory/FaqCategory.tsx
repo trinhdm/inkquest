@@ -1,9 +1,9 @@
 'use client'
 
+import { countFaqs, type FaqGroup } from '../faqs.data'
 import { highlightText } from '@/lib/component'
 import { Accordion } from '@/components/data/Accordion'
 import { Section } from '@/components/layout/Section'
-import type { FaqGroup } from '../faqs.data'
 
 interface FaqCategoryProps {
 	group: FaqGroup
@@ -15,7 +15,8 @@ export const FaqCategory = ({
 	terms,
 }: FaqCategoryProps) => {
 	const { category, id, questions } = group
-	const count = questions.length,
+
+	const count = countFaqs([group]),
 		headingID = `${id}-heading`
 
 	return (
@@ -44,7 +45,9 @@ export const FaqCategory = ({
 					)) }
 				</Accordion.Group>
 			) : (
-				<p>Nothing here yet. Check back soon.</p>
+				<div className="faq-content">
+					<p>Nothing here yet. Check back soon.</p>
+				</div>
 			) }
 		</Section>
 	)

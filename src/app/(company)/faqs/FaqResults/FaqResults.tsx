@@ -1,15 +1,12 @@
 import Link from 'next/link'
+import { countFaqs, type FaqGroup } from '../faqs.data'
 import { FaqCategory } from '../FaqCategory'
-import type { FaqGroup } from '../faqs.data'
 
 interface FaqResultsProps {
 	groups: FaqGroup[]
 	query: string
 	terms: string[]
 }
-
-export const countFaqs = (groups: FaqGroup[]): number =>
-	groups.reduce((total, { questions }) => total + questions.length, 0)
 
 export const FaqResults = ({ groups, query, terms }: FaqResultsProps) => {
 	const count = countFaqs(groups)
