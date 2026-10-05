@@ -31,7 +31,7 @@ const DEFAULT_PROPS = {
 	size: 'md',
 } as const
 
-const SUBCOMPONENTS = {
+export const SUBCOMPONENTS = {
 	// FileUpload: FileUpload,
 	// TextArea: TextArea,
 	Input: TextInput,
@@ -74,6 +74,7 @@ interface FieldParts {
 	control: ReactNode
 	icon: ReactNode
 	label: ReactNode
+	loader: ReactNode
 }
 
 const getIcon = (type?: TextInput.Props['type']) => {
@@ -94,22 +95,26 @@ const getIcon = (type?: TextInput.Props['type']) => {
 }
 
 const buildField = (
-	children: FieldProps['children'],
+	props: FieldProps,
 	styles: StyleFn<FieldSpecs>,
 ): FieldParts => {
+	const { children, loading } = props
+
 	const childNames = [FieldLabel.displayName, TextInput.displayName]
-	const [label, control] = filterChildren(children, childNames, { name: NAME, total: 2 })
+	const [label, control] = filterChildren(children, childNames, { name: NAME, max: 2 })
 
 	const items = {
 		control,
 		icon: null,
 		label,
+		loader: null,
 	} as FieldParts
 
 	if (isValidElement<TextInput.Props>(control)) {
 		const { props: { type } } = control,
 			icon = getIcon(type)
 		if (icon) items.icon = <div { ...styles('icon') }>{ icon }</div>
+		if (loading) items.loader = <LoaderCircle { ...styles('loader', true) } />
 	}
 
 	return items
@@ -150,7 +155,7 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 
 	const others = extractOthers(rest)
 	const hasError = !!error?.trim()
-	const { control, icon, label } = buildField(children, styles)
+	const { control, icon, label, loader } = buildField(props, styles)
 
 	const uid = useId()
 	const idx = useMemo(() => {
@@ -161,13 +166,13 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 	}, [id, uid])
 
 	const ctxValues = useMemo(() => ({
-		disabled, loading, required,
-		hasError, hasIcon: icon !== null,
+		disabled, hasError, required,
+		icon, loader, loading,
 		idx, size, unstyled,
 	}), [
 		disabled, loading, required,
 		hasError, unstyled,
-		icon, idx, size,
+		icon, loader, idx, size,
 	])
 
 	const clsx = {
@@ -191,8 +196,7 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 				{ label }
 
 				<div { ...styles('control') }>
-					{ icon }{ control }
-					{ !!loading && <Box { ...styles('loader', true) } as={ LoaderCircle } /> }
+					{ control }
 				</div>
 
 				{ hasError && <p { ...styles('error') }>{ error }</p> }

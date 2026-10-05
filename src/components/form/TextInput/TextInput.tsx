@@ -45,10 +45,10 @@ type TextInputTokens = {
 }
 
 const tokens = defineTokens<TextInputSpecs>()(({ context, props, theme }) => {
-	const { hasIcon } = context
+	const { icon } = context
 	const { size } = props
 
-	const step = hasIcon ? 2 : 1.5
+	const step = !!icon ? 2 : 1.5
 	const blockPadding = !!size ? theme.el.field.padding(size) : 'var(--field-padding-block)',
 		inlinePadding = `calc(${step} * ${blockPadding})`,
 		padding = `${blockPadding} ${inlinePadding}`
@@ -58,7 +58,7 @@ const tokens = defineTokens<TextInputSpecs>()(({ context, props, theme }) => {
 
 	return {
 		root: {
-			'--input-control-padding': hasIcon
+			'--input-control-padding': !!icon
 				? `${padding} ${blockPadding} ${leftPadding}`
 				: padding,
 		},
@@ -70,7 +70,7 @@ export const TextInput = polymorphic<TextInputSpecs>((_props, { useProps, useSty
 	const props = useProps(useChosenFieldProps(_props))
 	const styles = useStyles({ context, props, tokens })
 
-	const { hasError, idx } = context
+	const { hasError, icon, idx, loader } = context
 
 	const {
 		disabled,
@@ -100,17 +100,21 @@ export const TextInput = polymorphic<TextInputSpecs>((_props, { useProps, useSty
 	}
 
 	return (
-		<Box
-			{ ...styles('root') }
-			{ ...others }
-			as={ TAG }
-			attributes={ { aria, data } }
-			disabled={ disabled }
-			id={ idx.control }
-			onChange={ onChange }
-			readOnly={ readOnly || (value !== undefined && !onChange) }
-			value={ value }
-		/>
+		<>
+			{ icon }
+			<Box
+				{ ...styles('root') }
+				{ ...others }
+				as={ TAG }
+				attributes={ { aria, data } }
+				disabled={ disabled }
+				id={ idx.control }
+				onChange={ onChange }
+				readOnly={ readOnly || (value !== undefined && !onChange) }
+				value={ value }
+			/>
+			{ !!loading && loader }
+		</>
 	)
 }, { name: NAME, classes })
 

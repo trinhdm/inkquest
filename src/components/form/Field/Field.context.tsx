@@ -1,6 +1,16 @@
 import { createRootCtx } from '@/lib/component/context'
+import { TextInput } from '../TextInput'
 import type { AnimationOptions } from '@/hooks/animation'
 import type { Size } from '@/types/shared'
+import type { ReactNode } from 'react'
+
+export const FIELD_TYPES = [
+	TextInput,
+	// TextInput.displayName
+] as const
+
+export type FieldType =
+	typeof FIELD_TYPES[number]
 
 interface FieldIds {
 	control: string
@@ -19,8 +29,9 @@ export interface FieldContext
 	extends Pick<AnimationOptions, 'unstyled'>  {
 	disabled?: boolean
 	hasError: boolean
-	hasIcon: boolean
+	icon?: ReactNode
 	idx: FieldIds
+	loader?: ReactNode
 	loading?: boolean
 	required?: boolean
 	size?: Size
