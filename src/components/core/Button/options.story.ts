@@ -1,3 +1,4 @@
+import { tokens } from '@/lib/theme/reference'
 import type { Button } from './Button'
 
 // Single source of truth for the option lists shared across
@@ -31,3 +32,9 @@ export const SIZE_OPTIONS: readonly Button.Size[] = [
 export const ORIENTATION_OPTIONS = ['horizontal', 'vertical'] as const
 
 export const BOOLEAN_OPTIONS = [true, false] as const
+
+export const TRACKING_BY_SIZE: Record<Button.Size, string> = {
+	sm: tokens.letterSpacing('heading'),
+	md: tokens.letterSpacing('display'),
+	lg: tokens.letterSpacing('stat'),
+}

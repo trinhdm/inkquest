@@ -148,13 +148,13 @@ export const getFontPresetTokens = (): FontPresetTokens => {
 		},
 		label: {
 			fontFamily: alias.fontFamily('body'),
-			fontSize: 	base.fontSize('14'),
+			fontSize: 	alias.fontSize('label'),
 			fontWeight: base.fontWeight('600'),
 			lineHeight: alias.lineHeight('label'),
 		},
 		navigation: {
 			fontFamily: alias.fontFamily('body'),
-			fontSize: 	base.fontSize('14'),
+			fontSize: 	alias.fontSize('label'),
 			fontWeight: base.fontWeight('600'),
 			lineHeight: alias.lineHeight('body'),
 		},

@@ -1,6 +1,6 @@
 import { useMemo, type CSSProperties, type ReactNode } from 'react'
 import { extractOthers } from '@/hooks/useProps'
-import { filterChildren, withProvider } from '@/lib/component'
+import { defineTokens, filterChildren, withProvider } from '@/lib/component'
 import { polymorphic } from '@/lib/component'
 import { revealItemFrom } from '@/hooks/animation'
 import { Box } from '@/components/polymorphic/Box'
@@ -37,10 +37,16 @@ type ButtonGroupSpecs = {
 	isCompound: true
 	props: ButtonGroupProps
 	selectors: ButtonGroupSelectors
+	tokens: ButtonGroupTokens
 }
 
 type ButtonGroupSelectors =
 	| 'root'
+
+type ButtonGroupTokens = {
+	root:
+		| '--button-group-gap'
+}
 
 const derivePriority = (index: number): Button.Priority => {
 	const max = PRIORITY_ROLES.length,
@@ -48,9 +54,26 @@ const derivePriority = (index: number): Button.Priority => {
 	return PRIORITY_ROLES[i]
 }
 
+const tokens = defineTokens<ButtonGroupSpecs>()(({ props, theme }) => {
+	const { size } = props
+	if (!size) return {}
+
+	const groupGap: Record<Button.Size, string> = {
+		sm: theme.space('group'),
+		md: theme.space('group'),
+		lg: theme.space('group', 'lg'),
+	}
+
+	return {
+		root: {
+			'--button-group-gap': groupGap[size],
+		},
+	}
+})
+
 export const ButtonGroup = polymorphic<ButtonGroupSpecs>((_props, { useProps, useStyles }) => {
 	const props = useProps(_props)
-	const styles = useStyles({ props })
+	const styles = useStyles({ props, tokens })
 
 	const {
 		children,
@@ -68,10 +91,7 @@ export const ButtonGroup = polymorphic<ButtonGroupSpecs>((_props, { useProps, us
 	const others = extractOthers(rest)
 
 	const clsx = {
-		module: {
-			[`${orientation}`]: !!orientation || null,
-			[`${size}`]: size,
-		},
+		module: { [`${orientation}`]: !!orientation || null },
 	}
 
 	const items = filterChildren(children, 'Button'),

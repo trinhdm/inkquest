@@ -1,6 +1,6 @@
 import {
 	BOOLEAN_OPTIONS, ORIENTATION_OPTIONS,
-	SIZE_OPTIONS, VARIANT_OPTIONS,
+	SIZE_OPTIONS, TRACKING_BY_SIZE, VARIANT_OPTIONS,
 } from '../options.story'
 import { expect, userEvent, within } from 'storybook/test'
 import { getDefaultProps } from '@/hooks/useProps'
@@ -201,17 +201,14 @@ export const Sizes: Story = {
 		// check passes identically for every size.
 		for (const [index, group] of groups.entries()) {
 			const size = SIZE_OPTIONS[index]!,
-				others = SIZE_OPTIONS.filter(s => s !== size),
 				buttons = within(group).getAllByRole('button')
 
 			for (const button of buttons) {
 				await expect(button).not.toHaveAttribute('data-size')
 				await expect(button).not.toHaveClass(`inkq-button--${size}`)
 
-				expect(hasModuleClass(button, `inkq-button--${size}`)).toBe(true)
-
-				for (const other of others)
-					expect(hasModuleClass(button, `inkq-button--${other}`)).toBe(false)
+				await expect(button.style.getPropertyValue('--button-tracking'))
+					.toBe(TRACKING_BY_SIZE[size])
 			}
 		}
 	},

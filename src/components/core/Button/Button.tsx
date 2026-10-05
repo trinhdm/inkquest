@@ -1,6 +1,6 @@
 import { LoaderCircle } from 'lucide-react'
 import { isValidElement, useMemo, Children } from 'react'
-import { extractChildrenText } from '@/lib/component'
+import { defineTokens, extractChildrenText } from '@/lib/component'
 import { extractOthers } from '@/hooks/useProps'
 import { isExternalLink, keyHasValue } from '@/utils/helpers'
 import { polymorphic } from '@/lib/component'
@@ -77,11 +77,22 @@ interface ButtonSpecs {
 	props: ButtonProps
 	selectors: ButtonSelectors
 	subcomponents: typeof SUBCOMPONENTS
+	tokens: ButtonTokens
 }
 
 type ButtonSelectors =
 	| 'root' | 'inner'
-	| 'icon' | 'label'
+	| 'label' | 'loader'
+
+type ButtonTokens = {
+	root:
+		| '--button-font-size'
+		| '--button-icon-size'
+		| '--button-tracking'
+	inner:
+		| '--button-gap'
+		| '--button-padding'
+}
 
 const buildSections = (
 	children: ButtonProps['children'],
@@ -114,10 +125,51 @@ const buildSections = (
 	return <>{ left }{ content }{ right }</>
 }
 
+const tokens = defineTokens<ButtonSpecs>()(({ props, theme }) => {
+	const { size } = props
+	if (!size) return {}
+
+	const buttonFontSize: Record<Button.Size, string> = {
+		sm: theme.fontSize('label'),
+		md: theme.fontSize('body'),
+		lg: theme.fontSize('body'),
+	}
+
+	const buttonGap: Record<Button.Size, string> = {
+		sm: theme.space('icon'),
+		md: theme.space('chip'),
+		lg: theme.space('chip'),
+	}
+
+	const buttonPadding: Record<Button.Size, string> = {
+		sm: theme.padding('chip'),
+		md: theme.padding('item'),
+		lg: theme.padding('block'),
+	}
+
+	const buttonTracking: Record<Button.Size, string> = {
+		sm: theme.letterSpacing('heading'),
+		md: theme.letterSpacing('display'),
+		lg: theme.letterSpacing('stat'),
+	}
+
+	return {
+		root: {
+			'--button-font-size': buttonFontSize[size],
+			'--button-icon-size': theme.el.icon.size(size),
+			'--button-tracking': buttonTracking[size],
+		},
+		inner: {
+			'--button-gap': buttonGap[size],
+			'--button-padding': buttonPadding[size],
+		},
+	}
+})
+
 export const Button = polymorphic<ButtonSpecs>((_props, { useProps, useStyles, useVariants }) => {
 	useVariants()
 	const props = useProps(useButtonGroupProps(_props))
-	const styles = useStyles({ props })
+	const styles = useStyles({ props, tokens })
 
 	const {
 		as,
@@ -141,7 +193,6 @@ export const Button = polymorphic<ButtonSpecs>((_props, { useProps, useStyles, u
 
 	const clsx = {
 		global: { block: fullWidth },
-		module: { [`${size}`]: size },
 	}
 
 	const ariaLabel = extractChildrenText(children),
@@ -167,7 +218,7 @@ export const Button = polymorphic<ButtonSpecs>((_props, { useProps, useStyles, u
 	const inner = (
 		<ButtonProvider value={ ctxValues }>
 			<Box as="span" { ...styles('inner') }>
-				{ loading && <Box as={ LoaderCircle } { ...styles('icon') } /> }
+				{ loading && <Box as={ LoaderCircle } { ...styles('loader') } /> }
 				{ buildSections(children, styles) }
 			</Box>
 		</ButtonProvider>

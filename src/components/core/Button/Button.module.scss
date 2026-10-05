@@ -4,10 +4,8 @@
 	--button-background: var(--variant-background);
 	--button-border: var(--variant-border);
 	--button-color: var(--variant-color);
-	--button-height: 2.25rem;
-	// --button-icon-size: calc((var(--button-height) * .5) - .125rem);
-	--button-icon-size: 1rem;
-	--button-padding: var(--inkq-pad-chip);
+	--button-font-size: var(--inkq-font-size-label);
+	--button-icon-size: var(--inkq-icon-md);
 	--button-tracking: var(--inkq-font-tracking-display);
 
 	background-color: var(--button-background);
@@ -16,8 +14,8 @@
 	color: var(--button-color, inherit);
 	display: inline-block;
 	font: var(--inkq-text-label);
+	font-size: var(--button-font-size);
 	letter-spacing: var(--button-tracking);
-	max-height: var(--button-height, 'none');
 	overflow: hidden;
 	position: relative;
 	text-decoration: none;
@@ -26,11 +24,13 @@
 	vertical-align: middle;
 
 	&__inner {
+		--button-gap: var(--inkq-space-chip);
+		--button-padding: var(--inkq-pad-chip);
 		--icon-size: var(--button-icon-size);
 
 		align-items: center;
 		display: flex;
-		gap: var(--inkq-space-chip);
+		gap: var(--button-gap);
 		justify-content: center;
 		padding: var(--button-padding);
 		position: relative;
@@ -45,9 +45,9 @@
 		user-select: none;
 	}
 
-	&__icon {
+	&__loader {
 		display: inline-block;
-		font-size: var(--icon-size);
+		font-size: calc(.125rem + var(--icon-size));
 		height: 1em;
 		inset: auto;
 		opacity: 0;
@@ -98,7 +98,7 @@
 				opacity: 0;
 			}
 
-			&__icon {
+			&__loader {
 				animation:
 					fadeIn var(--duration-default) ease-out var(--duration-instant) forwards,
 					spin 2s linear calc(var(--duration-gradual) - var(--duration-default)) infinite;
@@ -112,38 +112,13 @@
 			padding-inline: 0;
 		}
 	}
-
-	&--sm {
-		--button-icon-size: .875rem;
-		--button-height: 2.375rem;
-		--button-padding: var(--inkq-pad-chip);
-		--button-tracking: var(--inkq-font-tracking-heading);
-	}
-
-	&--md {
-		--button-icon-size: 1rem;
-		--button-height: 2.875rem;
-		--button-padding: var(--space-3) var(--space-5);
-		--button-tracking: var(--inkq-font-tracking-display);
-
-		font-size: var(--inkq-font-size-body);
-	}
-
-	&--lg {
-		--button-icon-size: 1.125rem;
-		--button-height: 3.375rem;
-		--button-padding: var(--inkq-pad-block);
-		--button-tracking: var(--inkq-font-tracking-stat);
-
-		font-size: var(--inkq-font-size-body);
-	}
 }
 
 .inkq-button-group {
-	--button-gap: var(--inkq-space-group);
+	--button-group-gap: var(--inkq-space-group);
 
 	display: flex;
-	gap: var(--button-gap);
+	gap: var(--button-group-gap);
 	max-width: fit-content;
 
 	&:where([data-block]) {
@@ -151,14 +126,6 @@
 		justify-content: space-between;
 		max-width: none;
 		width: 100%;
-	}
-
-	&--md {
-		--button-gap: var(--inkq-space-group);
-	}
-
-	&--lg {
-		--button-gap: var(--inkq-space-group-lg);
 	}
 
 	&--vertical {

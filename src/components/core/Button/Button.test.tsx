@@ -1,5 +1,6 @@
 import { getDefaultProps } from '@/hooks/useProps'
 import { render, reset, screen } from '@/tests/test-utils'
+import { tokens } from '@/lib/theme/reference'
 import { Button } from './Button'
 
 describe('Button', () => {
@@ -7,6 +8,8 @@ describe('Button', () => {
 	// parts (see the nested describes below), so their registries need
 	// resetting too, alongside `Button`'s own.
 	reset('Button', 'Button.Group', 'Button.Section')
+
+	const tracking = (el: HTMLElement) => el.style.getPropertyValue('--button-tracking')
 
 	it('renders its children', () => {
 		render(<Button>Save</Button>)
@@ -122,14 +125,13 @@ describe('Button', () => {
 	})
 
 	describe('size', () => {
-		it('applies a size-specific class that changes when size changes', () => {
+		it('applies size-specific design tokens that change when size changes', () => {
 			const { rerender } = render(<Button>Save</Button>)
-			const smClassName = screen.getByRole('button').className
+			// registered default is `size: 'md'`, not `sm`
+			expect(tracking(screen.getByRole('button'))).toBe(tokens.letterSpacing('display'))
 
 			rerender(<Button size="lg">Save</Button>)
-			const lgClassName = screen.getByRole('button').className
-
-			expect(smClassName).not.toBe(lgClassName)
+			expect(tracking(screen.getByRole('button'))).toBe(tokens.letterSpacing('stat'))
 		})
 	})
 
@@ -233,7 +235,8 @@ describe('Button', () => {
 			const grouped = screen.getByRole('button', { name: 'Grouped' })
 			const standalone = screen.getByRole('button', { name: 'Standalone' })
 
-			expect(grouped.className).not.toBe(standalone.className)
+			expect(tracking(grouped)).toBe(tokens.letterSpacing('stat'))
+			expect(tracking(standalone)).toBe(tokens.letterSpacing('display'))
 		})
 
 		it('renders a group role for assistive tech', () => {
