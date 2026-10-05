@@ -43,7 +43,7 @@ const handleOpenItems = (value?: AccordionGroupProps['defaultOpen']): number[] =
 		: Array.isArray(value)
 			? value : []
 
-const tokens = defineTokens<AccordionGroupSpecs>(({ props }) => getSharedTokens(props))
+const tokens = defineTokens<AccordionGroupSpecs>()(({ props }) => getSharedTokens(props))
 
 export const AccordionGroup = polymorphic<AccordionGroupSpecs>((_props, { useProps, useStyles }) => {
 	const props = useProps(_props)

@@ -20,6 +20,9 @@ import type {
 	Specs,
 	SpecsDefaultAs,
 	SpecsDefaultProps,
+	SpecsTokenGroups,
+	SpecsTokens,
+	TokensList,
 } from './specs.types'
 
 /** Exact equality — defeats the usual bidirectional-assignability fudge. */
@@ -122,6 +125,91 @@ const _compoundStyles: Specs<unknown, object> = { isCompound: true, props: {}, s
 // @ts-expect-error compound specs cannot declare a default tag
 const _compoundDefaultAs: Specs<unknown, object> = { isCompound: true, props: {}, defaults: { as: 'div' } }
 
+
+// ---- Token specs ------------------------------------------------------
+
+type TokenSpec = {
+	props: { size?: 'sm' | 'lg' }
+	selectors: 'root' | 'icon'
+	tokens: { root: '--gap' | '--pad' }
+}
+
+/** Declares `tokens` but no `selectors` — the `_AnySelector` fallback path. */
+type NoSelectorsSpec = {
+	props: object
+	tokens: { root: '--gap' }
+}
+
+/** A token group keyed by a selector the spec never declares. */
+type BadSelectorSpec = {
+	props: object
+	selectors: 'root'
+	tokens: { bogus: '--gap' }
+}
+
+type TokenValue = number | string | undefined
+
+
+// ---- SpecsTokens / SpecsTokenGroups ----------------------------------
+
+// the declared union becomes one required record per group, and the empty
+// `Record<PropertyKey, never>` arm is what makes `return {}` legal
+type _TokensResolve = Expect<Equal<
+	SpecsTokens<TokenSpec>,
+	{ root: Record<'--gap' | '--pad', TokenValue> } | Record<PropertyKey, never>
+>>
+
+// `SpecsTokenGroups` is the same thing WITHOUT that empty arm
+type _TokenGroupsResolve = Expect<Equal<
+	SpecsTokenGroups<TokenSpec>,
+	{ root: Record<'--gap' | '--pad', TokenValue> }
+>>
+
+/**
+ * The load-bearing distinction, and the reason `defineTokens` builds its
+ * exactness check on `SpecsTokenGroups` rather than `SpecsTokens`: `keyof`
+ * over a union is the INTERSECTION of its members' keys, so the empty arm's
+ * index signature would collapse the mapped type and silently disable the
+ * whole check. `{}` satisfying one but not the other pins them apart.
+ *
+ * Positive control first — if `SpecsTokens` ever loses the empty arm, this
+ * errors and the negative below can no longer pass vacuously.
+ */
+const _emptyIsATokenList: SpecsTokens<TokenSpec> = {}
+
+// @ts-expect-error a token GROUP must carry every variable the spec declares
+const _emptyIsNotAGroup: SpecsTokenGroups<TokenSpec> = {}
+
+// a spec with no `tokens` key accepts nothing but the empty object
+type _TokensAbsent = Expect<Equal<
+	SpecsTokens<{ props: object; selectors: 'root' }>,
+	Record<PropertyKey, never>
+>>
+
+// `tokens` but no `selectors` → `_AnySelector` widens to `PropertyKey`, so the
+// group is accepted rather than every key being rejected
+type _TokensNoSelectors = Expect<Equal<
+	SpecsTokenGroups<NoSelectorsSpec>,
+	{ root: Record<'--gap', TokenValue> }
+>>
+
+// a group keyed by an undeclared selector resolves to a branded marker whose
+// key IS the diagnostic the author sees
+type _TokensBadSelector = Expect<Equal<
+	SpecsTokenGroups<BadSelectorSpec>,
+	{ bogus: { "selector 'bogus' is not declared in Specs['selectors']": never } }
+>>
+
+
+// ---- TokensList -------------------------------------------------------
+
+// used directly with one argument (as Accordion's shared helper does), the
+// `T = never` default leaves group keys unchecked
+type _TokensListDefault = Expect<Equal<
+	TokensList<{ root: '--gap' }>,
+	{ root: Record<'--gap', TokenValue> } | Record<PropertyKey, never>
+>>
+
 export type {
 	_AsResolves,
 	_AsFallsBack,
@@ -134,5 +222,12 @@ export type {
 	_DefaultPropsNarrow,
 	_DefaultPropsDropsUnknown,
 	_DefaultPropsNone,
+	_TokensResolve,
+	_TokenGroupsResolve,
+	_TokensAbsent,
+	_TokensNoSelectors,
+	_TokensBadSelector,
+	_TokensListDefault,
 }
 export { _validCompound, _compoundClassNames, _compoundStyles, _compoundDefaultAs }
+export { _emptyIsATokenList, _emptyIsNotAGroup }

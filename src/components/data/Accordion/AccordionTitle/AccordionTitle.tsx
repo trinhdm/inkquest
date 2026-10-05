@@ -31,7 +31,7 @@ type AccordionTitleTokens = {
 		| '--accordion-title-indent'
 }
 
-const tokens = defineTokens<AccordionTitleSpecs>(({ context }) => ({
+const tokens = defineTokens<AccordionTitleSpecs>()(({ context }) => ({
 	root: { '--accordion-title-indent': keyHasValue(context, 'step') ? 0 : undefined },
 }))
 

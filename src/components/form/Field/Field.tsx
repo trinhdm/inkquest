@@ -115,7 +115,7 @@ const buildField = (
 	return items
 }
 
-const tokens = defineTokens<FieldSpecs>(({ props, theme }) => {
+const tokens = defineTokens<FieldSpecs>()(({ props, theme }) => {
 	const { size } = props
 
 	const step = size === 'sm' ? 2 : 1.25

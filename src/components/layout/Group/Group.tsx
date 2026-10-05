@@ -104,7 +104,7 @@ type GroupTokens = {
 		| '--group-item-count'
 }
 
-const tokens = defineTokens<GroupSpecs>(({ props }) => {
+const tokens = defineTokens<GroupSpecs>()(({ props }) => {
 	const { columns, children, orientation } = props
 	const hasColumns = !!(columns && columns > 0)
 	let numCols: number | undefined = hasColumns ? columns : undefined

@@ -48,7 +48,7 @@ type TextInputTokens = {
 		| '--input-control-padding'
 }
 
-const tokens = defineTokens<TextInputSpecs>(({ context, props, theme }) => {
+const tokens = defineTokens<TextInputSpecs>()(({ context, props, theme }) => {
 	const { hasIcon } = context
 	const { size } = props
 

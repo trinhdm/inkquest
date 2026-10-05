@@ -73,7 +73,7 @@ type SectionTokens = {
 		| '--reveal-stagger'
 }
 
-const tokens = defineTokens<SectionSpecs>(({ props }) => {
+const tokens = defineTokens<SectionSpecs>()(({ props }) => {
 	const { duration, stagger } = props
 
 	return {

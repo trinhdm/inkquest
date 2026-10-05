@@ -86,7 +86,7 @@ const buildAccordion = (children: AccordionProps['children']) => {
 	return <>{ title }{ content }</>
 }
 
-const tokens = defineTokens<AccordionSpecs>(({ props }) => {
+const tokens = defineTokens<AccordionSpecs>()(({ props }) => {
 	if (typeof props.onItemToggle === 'function') return {}
 	return getSharedTokens(props)
 })

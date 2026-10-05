@@ -29,7 +29,7 @@ type AccordionContentTokens = {
 		| '--accordion-content-indent'
 }
 
-const tokens = defineTokens<AccordionContentSpecs>(({ context }) => ({
+const tokens = defineTokens<AccordionContentSpecs>()(({ context }) => ({
 	root: { '--accordion-content-indent': keyHasValue(context, 'step')
 		? 'calc(var(--accordion-column-width) + var(--accordion-gap))'
 		: undefined

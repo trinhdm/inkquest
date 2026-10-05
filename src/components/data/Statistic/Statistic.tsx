@@ -61,7 +61,7 @@ type StatisticTokens = {
 		| '--statistic-font-value'
 }
 
-const tokens = defineTokens<StatisticSpecs>(({ props, theme }) => {
+const tokens = defineTokens<StatisticSpecs>()(({ props, theme }) => {
 	const { order, size } = props
 	const isDescend = order === 'descend'
 

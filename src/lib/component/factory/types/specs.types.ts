@@ -82,19 +82,29 @@ export type SpecsSelectors<S> =
 		? NonNullable<S['selectors']>
 		: never
 
-type _TokensGroup<V> = {
-	[K in keyof V]: V[K] extends CSSVariable
-		? Record<V[K], number | string | undefined>
-		: never
+type _AnySelector<T> =
+	[T] extends [never] ? PropertyKey : T
+
+type _TokensGroup<V, T> = {
+	[K in keyof V]: K extends _AnySelector<T>
+		? V[K] extends CSSVariable
+			? Record<V[K], number | string | undefined>
+			: never
+		: { [E in K & string as `selector '${E}' is not declared in Specs['selectors']`]: never }
 }
 
-export type TokensList<V> =
-	| _TokensGroup<V>
+export type TokensList<V, T = never> =
+	| _TokensGroup<V, T>
 	| Record<PropertyKey, never>
 
 export type SpecsTokens<S> =
 	'tokens' extends keyof S
-		? TokensList<NonNullable<S['tokens']>>
+		? TokensList<NonNullable<S['tokens']>, SpecsSelectors<S>>
+		: Record<PropertyKey, never>
+
+export type SpecsTokenGroups<S> =
+	'tokens' extends keyof S
+		? _TokensGroup<NonNullable<S['tokens']>, SpecsSelectors<S>>
 		: Record<PropertyKey, never>
 
 
