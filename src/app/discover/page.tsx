@@ -1,14 +1,5 @@
-'use client'
-
-import { Section } from '@/components/layout/Section'
+import { redirect } from 'next/navigation'
 
 export default function Discover() {
-	return (
-		<>
-			<Section>
-				<h1>Discover</h1>
-				{/* { children } */}
-			</Section>
-		</>
-	)
+	redirect('/discover/artists')
 }

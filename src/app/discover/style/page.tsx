@@ -1,4 +1,19 @@
+'use client'
 
-export default function DiscoverStyleQuiz() {
-	return <main><h1>DiscoverStyleQuiz</h1></main>
+import { Section } from '@/components/layout/Section'
+
+export default function DiscoverStyles() {
+	const pageID = 'discover-styles'
+
+	return (
+		<>
+			<Section
+				id={ `${pageID}-hero` }
+				layout="hero"
+				title="Discover Styles"
+			>
+				discover styles
+			</Section>
+		</>
+	)
 }

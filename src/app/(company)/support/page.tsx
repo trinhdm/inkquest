@@ -14,7 +14,9 @@ export default function Support() {
 				layout="hero"
 				title="Talk to a human."
 			>
-				Pick who you are and what it's about — we'll route it to the right person. Quick question? The <Link href="/faqs" data-cta>FAQs</Link> might already have it.
+				<>
+					Pick who you are and what it&apos;s about — we&apos;ll route it to the right person. Quick question? The <Link href="/faqs" data-cta>FAQs</Link> might already have it.
+				</>
 			</Section>
 		</>
 	)
