@@ -3,6 +3,7 @@ import { polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
 import type { ReactNode } from 'react'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
+import type { Tone as ThemeTone, Variant as ThemeVariant } from '@/lib/theme/types'
 import classes from './Badge.module.scss'
 
 const NAME = 'Badge' as const,
@@ -14,22 +15,13 @@ const DEFAULT_PROPS = {
 	variant: 'light',
 } as const
 
-type BadgeVariant =
-	| 'dark'
-	| 'ghost'
-	| 'light'
-	| 'outline'
-	| 'solid'
-	| 'success'
-	| 'warning'
-	| 'danger'
-
 interface BadgeProps {
 	children: ReactNode
 	fullWidth?: boolean
 	shape?: 'round' | 'pill'
 	size?: 'sm' | 'lg'
-	variant?: BadgeVariant
+	tone?: ThemeTone
+	variant?: ThemeVariant
 }
 
 interface BadgeSpecs {
@@ -55,17 +47,27 @@ export const Badge = polymorphic<BadgeSpecs>((_props, { useProps, useStyles, use
 		fullWidth,
 		shape,
 		size,
+		tone,
 		variant,
 		...rest
 	} = props
 
 	const others = extractOthers(rest)
-	const data = { variant, block: !!fullWidth || null },
-		global = { block: fullWidth }
+
+	const clsx = {
+		global: { block: fullWidth },
+		module: { [`${size}`]: size },
+	}
+
+	const data = {
+		tone,
+		variant,
+		block: !!fullWidth || null,
+	}
 
 	return (
 		<Box
-			{ ...styles('root', { global }) }
+			{ ...styles('root', clsx) }
 			{ ...others }
 			as={ as }
 			attributes={ { data } }
@@ -86,5 +88,8 @@ export declare namespace Badge {
 	export type Props = BadgeProps
 	export type Specs = BadgeSpecs
 
-	export type Variant = BadgeVariant
+	export type Tone = ThemeTone
+	export type Variant = ThemeVariant
+
+	export type Size = NonNullable<Badge.Props['size']>
 }

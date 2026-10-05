@@ -17,15 +17,26 @@ type BadgeStoryProps = Parameters<typeof Badge>[0]
 // Single source of truth for this file's option lists. `Badge` has no
 // subcomponent family (unlike Button/ButtonGroup/ButtonSection), so these
 // stay local instead of living in a shared `options.story.ts`.
+//
+// `variant` is the SHAPE axis only. The semantic colours ('success' |
+// 'warning' | 'danger' | 'info') used to sit conflated inside this list —
+// they are `tone` values and belong in `TONE_OPTIONS` below instead. The two
+// props are orthogonal: `Badge.tsx` reflects both, as `data-variant` and
+// `data-tone`.
 const VARIANT_OPTIONS: readonly Badge.Variant[] = [
-	'dark', 'ghost', 'light', 'outline', 'solid', 'success', 'warning', 'danger',
+	'solid', 'outline', 'ghost', 'light', 'dark', 'text',
+]
+
+const TONE_OPTIONS: readonly Badge.Tone[] = [
+	'neutral', 'action',
+	'success', 'warning', 'danger', 'info',
 ]
 
 const SHAPE_OPTIONS: readonly NonNullable<Badge.Props['shape']>[] = [
 	'round', 'pill',
 ]
 
-const SIZE_OPTIONS: readonly NonNullable<Badge.Props['size']>[] = [
+const SIZE_OPTIONS: readonly Badge.Size[] = [
 	'sm', 'lg',
 ]
 
@@ -58,7 +69,12 @@ const meta: Meta<BadgeStoryProps> = {
 		variant: {
 			control: 'select',
 			options: VARIANT_OPTIONS,
-			description: 'Visual style of the badge.',
+			description: 'The SHAPE axis only — `solid`/`outline`/`ghost`/`light`/`dark`/`text`. Semantic colours (`danger`, `warning`, `success`, `info`) are NOT variants; they are `tone` values, and the two props are fully orthogonal. `Badge.tsx` reflects each on its own data attribute (`data = { tone, variant, block }`), so a red outline badge is `variant="outline" tone="danger"`, which renders `data-variant="outline" data-tone="danger"` — not `variant="danger"`. Registered as a default (`DEFAULT_PROPS` in `Badge.tsx`, `variant: \'light\'`), so `data-variant` is always present. See the `Variants` story.',
+		},
+		tone: {
+			control: 'select',
+			options: TONE_OPTIONS,
+			description: 'The semantic COLOUR axis, orthogonal to `variant` (see above) — reflected verbatim as `data-tone`. Unlike `variant`, this is NOT in `Badge.tsx`\'s `DEFAULT_PROPS`, so `data-tone` is omitted entirely unless a tone is passed (`prefixAttributes` drops keys that fail `hasValue`). Decorative rather than functional, so `unstyled` strips it — `data-tone` is absent from `buildAttributes`\'s `STATE_KEYS` allowlist, alongside `variant`/`block`. See the `Tones` story.',
 		},
 		shape: {
 			control: 'select',
@@ -68,7 +84,7 @@ const meta: Meta<BadgeStoryProps> = {
 		size: {
 			control: 'select',
 			options: SIZE_OPTIONS,
-			description: 'Size of the badge. Unset renders the component\'s intrinsic size.',
+			description: '`size` is expressed as a `module` modifier class (via the `clsx.module` config passed to `styles(\'root\', clsx)` in `Badge.tsx`), formatted as `inkq-badge--${size}`. `Badge.module.scss` declares no matching `&--sm`/`&--lg` rule, so — unlike `Button`\'s `size`, which resolves to a CSS-module hash — this stays a LITERAL, unhashed class. `Badge` registers no default `size` (`DEFAULT_PROPS` in `Badge.tsx` omits it), so leaving it unset emits no size class at all. See the `Size` story.',
 		},
 		fullWidth: {
 			control: 'boolean',
@@ -101,6 +117,41 @@ export const Variants: Story = {
 	),
 }
 
+// `tone` is the semantic COLOUR axis, orthogonal to `variant` (the SHAPE
+// axis) — every group below renders under the SAME, unchanged `variant`,
+// each carrying its own `data-tone` on top (`Badge.tsx`'s
+// `data = { tone, variant, block }`).
+export const Tones: Story = {
+	render: (args) => (
+		<Row>
+			{ TONE_OPTIONS.map(tone => (
+				<Group key={ tone } label={ tone }>
+					<Badge { ...args as BadgeStoryProps } tone={ tone } />
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ args, canvasElement }) => {
+		const canvas = within(canvasElement),
+			badges = canvas.getAllByText('Badge')
+
+		await expect(badges).toHaveLength(TONE_OPTIONS.length)
+
+		const roots = badges.map(badge => badge.closest('[data-variant]') as HTMLElement)
+
+		for (const [i, tone] of TONE_OPTIONS.entries()) {
+			await expect(roots[i]).toHaveAttribute('data-tone', tone)
+
+			// The orthogonality itself: every tone renders under the SAME,
+			// unchanged `variant`, on its own separate attribute. Read off
+			// `args` rather than a literal 'light' so switching the `variant`
+			// control still holds (the per-badge `tone` is what this story
+			// varies, and it never feeds `data-variant`).
+			await expect(roots[i]).toHaveAttribute('data-variant', `${args.variant}`)
+		}
+	},
+}
+
 export const Shape: Story = {
 	render: (args) => (
 		<Row>
@@ -123,6 +174,28 @@ export const Size: Story = {
 			)) }
 		</Row>
 	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			badges = canvas.getAllByText('Badge')
+
+		await expect(badges).toHaveLength(SIZE_OPTIONS.length)
+
+		const roots = badges.map(badge => badge.closest('[data-variant]') as HTMLElement)
+
+		// `size` resolves to a LITERAL class (`inkq-badge--${size}`), not a
+		// CSS-module hash: `Badge.module.scss` declares no matching `&--sm`/
+		// `&--lg` rule for `getStyleClass` (`getClassName.tsx`) to resolve
+		// against, so `formatConfigClass`'s unhashed fallback
+		// (`styleName ?? baseName`) is what lands. Assert BOTH halves per
+		// size — this size's own class present AND the other size's class
+		// absent — so the story actually discriminates between sizes.
+		for (const [i, size] of SIZE_OPTIONS.entries()) {
+			await expect(roots[i]).toHaveClass(`inkq-badge--${size}`)
+
+			for (const other of SIZE_OPTIONS.filter(s => s !== size))
+				await expect(roots[i]).not.toHaveClass(`inkq-badge--${other}`)
+		}
+	},
 }
 
 export const FullWidth: Story = {
@@ -193,6 +266,13 @@ export const AsElement: Story = {
 // against `Badge.tsx`'s own render, which calls `styles('root')` on the root
 // `Box` and `styles('inner')` on the nested `<Box as="span">` wrapping
 // `children`.
+//
+// This story doesn't vary `size`/`fullWidth`, but it's worth noting
+// `getConfigClasses` (`getClassName.tsx`) returns before evaluating any
+// `module`/`global` config at all once `check.isUnstyled` is true — so had
+// either prop been set here too, `unstyled` would also suppress the
+// `inkq-badge--${size}` modifier class and the `inkq-block` global class,
+// on top of the CSS-module hash asserted below.
 export const Unstyled: Story = {
 	parameters: { controls: { exclude: ['unstyled'] } },
 	render: (args) => (
