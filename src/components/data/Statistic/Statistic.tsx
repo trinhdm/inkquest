@@ -39,6 +39,7 @@ type StatisticProps =
 	& MaybeAnimationProps
 
 interface StatisticSpecs {
+	context: StatisticGroup.Context
 	defaults: {
 		as: typeof TAG
 		props: PropsDefaultList<typeof DEFAULT_PROPS>

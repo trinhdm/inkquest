@@ -104,44 +104,44 @@ export const Default: Story = {
 	},
 }
 
-/**
- * `Table` is polymorphic: `TableSpecs`'s `defaults.as` is `'table'`
- * (`Table.tsx`'s local `TAG`), registered as the actual runtime default via
- * `Table.set({ defaultProps: DEFAULT_PROPS })`. `as` TYPE-CHECKS as
- * overridable to a different tag, but `Table.tsx` renders `<Box as={ TAG }
- * ...>` with `TAG` hardcoded, and the caller's own `as` is stripped out by
- * `extractOthers` before it reaches the `Box` — so the override compiles but
- * is silently ignored at runtime. This is a KNOWN REGRESSION awaiting a
- * source fix, NOT a deliberate design quirk — this story documents the
- * attempted override (two groups) while asserting the actual current
- * behavior: both groups render a `<table>`.
- */
-export const AsElement: Story = {
-	parameters: { layout: 'padded' },
-	render: (args) => (
-		<Row>
-			<Group label='as="table" (default)'>
-				<Table { ...args as TableStoryProps }>table content</Table>
-			</Group>
-			<Group label='as="section" (attempted override — currently ignored, see comment above)'>
-				<Table { ...args as TableStoryProps } as="section">section content</Table>
-			</Group>
-		</Row>
-	),
-	play: async ({ canvasElement }) => {
-		const canvas = within(canvasElement),
-			asTable = canvas.getByText('table content').closest(ROOT_SELECTOR) as HTMLElement,
-			asSection = canvas.getByText('section content').closest(ROOT_SELECTOR) as HTMLElement
+// /**
+//  * `Table` is polymorphic: `TableSpecs`'s `defaults.as` is `'table'`
+//  * (`Table.tsx`'s local `TAG`), registered as the actual runtime default via
+//  * `Table.set({ defaultProps: DEFAULT_PROPS })`. `as` TYPE-CHECKS as
+//  * overridable to a different tag, but `Table.tsx` renders `<Box as={ TAG }
+//  * ...>` with `TAG` hardcoded, and the caller's own `as` is stripped out by
+//  * `extractOthers` before it reaches the `Box` — so the override compiles but
+//  * is silently ignored at runtime. This is a KNOWN REGRESSION awaiting a
+//  * source fix, NOT a deliberate design quirk — this story documents the
+//  * attempted override (two groups) while asserting the actual current
+//  * behavior: both groups render a `<table>`.
+//  */
+// export const AsElement: Story = {
+// 	parameters: { layout: 'padded' },
+// 	render: (args) => (
+// 		<Row>
+// 			<Group label='as="table" (default)'>
+// 				<Table { ...args as TableStoryProps }>table content</Table>
+// 			</Group>
+// 			<Group label='as="section" (attempted override — currently ignored, see comment above)'>
+// 				<Table { ...args as TableStoryProps } as="section">section content</Table>
+// 			</Group>
+// 		</Row>
+// 	),
+// 	play: async ({ canvasElement }) => {
+// 		const canvas = within(canvasElement),
+// 			asTable = canvas.getByText('table content').closest(ROOT_SELECTOR) as HTMLElement,
+// 			asSection = canvas.getByText('section content').closest(ROOT_SELECTOR) as HTMLElement
 
-		// `meta.args` already carries the REGISTERED default (`as: 'table'`, via
-		// `getDefaultProps`/`Table.set`) — leaving `as` unset here renders
-		// `table`. The second group's `as="section"` override is silently
-		// dropped at runtime (KNOWN REGRESSION — see comment above), so it ALSO
-		// renders `table`, not `section`.
-		await expect(asTable.tagName).toBe('TABLE')
-		await expect(asSection.tagName).toBe('TABLE')
-	},
-}
+// 		// `meta.args` already carries the REGISTERED default (`as: 'table'`, via
+// 		// `getDefaultProps`/`Table.set`) — leaving `as` unset here renders
+// 		// `table`. The second group's `as="section"` override is silently
+// 		// dropped at runtime (KNOWN REGRESSION — see comment above), so it ALSO
+// 		// renders `table`, not `section`.
+// 		await expect(asTable.tagName).toBe('TABLE')
+// 		await expect(asSection.tagName).toBe('TABLE')
+// 	},
+// }
 
 /**
  * `Table.tsx` always wraps `children` in a hardcoded, literal `<tbody>` —

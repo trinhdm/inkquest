@@ -44,6 +44,7 @@ export const Menu = polymorphic<MenuSpecs>((_props, { useProps, useStyles }) => 
 
 	const {
 		activeItem,
+		as,
 		className,
 		depth,
 		hasDropdowns,
@@ -66,7 +67,7 @@ export const Menu = polymorphic<MenuSpecs>((_props, { useProps, useStyles }) => 
 		<Box
 			{ ...styles('root', clsx) }
 			{ ...others }
-			as={ TAG }
+			as={ as }
 			role="menubar"
 		>
 			{ items?.map(item => (

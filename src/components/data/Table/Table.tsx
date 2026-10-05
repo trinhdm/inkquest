@@ -4,15 +4,10 @@ import { Box } from '@/components/polymorphic/Box'
 import { TableCell } from './TableCell'
 import { TableRow } from './TableRow'
 import type { ReactNode } from 'react'
-import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Table.module.scss'
 
 const NAME = 'Table' as const,
 	TAG = 'table' as const
-
-const DEFAULT_PROPS = {
-	as: TAG,
-} as const
 
 const SUBCOMPONENTS = {
 	Cell: TableCell,
@@ -24,10 +19,6 @@ interface TableProps {
 }
 
 interface TableSpecs {
-	defaults: {
-		as: typeof TAG
-		props: PropsDefaultList<typeof DEFAULT_PROPS>
-	}
 	props: TableProps
 	selectors: TableSelectors
 	subcomponents: typeof SUBCOMPONENTS
@@ -55,7 +46,6 @@ export const Table = polymorphic<TableSpecs>((_props, { useProps, useStyles }) =
 }, { name: NAME, classes })
 
 Table.set({
-	defaultProps: DEFAULT_PROPS,
 	displayName: NAME,
 	subcomponents: SUBCOMPONENTS,
 })

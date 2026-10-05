@@ -186,12 +186,13 @@ export const MenuItem = polymorphic<MenuItemSpecs>((_props, { useProps, useStyle
 	const sharedProps = {
 		...styles('root'),
 		...others,
+		as,
 		role: 'none',
 	}
 
 	if (!isDropdown) {
 		return (
-			<Box { ...sharedProps } as={ as } attributes={ setAttributes(isActive) }>
+			<Box { ...sharedProps } attributes={ setAttributes(isActive) }>
 				{ wrappedLabel }
 			</Box>
 		)
@@ -204,7 +205,6 @@ export const MenuItem = polymorphic<MenuItemSpecs>((_props, { useProps, useStyle
 			return (
 				<Box
 					{ ...sharedProps }
-					as={ TAG }
 					attributes={ setAttributes(isCurrent) }
 					key={ item.label }
 				>
@@ -221,7 +221,6 @@ export const MenuItem = polymorphic<MenuItemSpecs>((_props, { useProps, useStyle
 	return (
 		<Box
 			{ ...sharedProps }
-			as={ as }
 			attributes={ setAttributes(isActive) }
 			ref={ itemRef }
 			onKeyDown={ handleKeyDown }
