@@ -4,13 +4,23 @@ import { Section } from './Section'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import containerClasses from '../Container/Container.module.scss'
+import { Button } from '@/components/core/Button'
 
 // `layout` is the only genuine enum among `Grid`/`GridItem`/`Section`/`MenuItem`
 // and has exactly one consumer (this file), so — per the Button/Badge/Container
 // precedent — it stays a local const rather than living in a shared
 // `options.story.ts`.
 type SectionLayout = NonNullable<Section.Props['layout']>
-const LAYOUT_OPTIONS: readonly SectionLayout[] = ['default', 'blocks', 'cta', 'hero', 'split'] as const
+
+const LAYOUT_OPTIONS: readonly SectionLayout[] = [
+	'default',
+	'banner',
+	'blocks',
+	'hero',
+	'split',
+] as const
+
+const BUTTON_LABELS: string[] = ['Learn more', 'View more']
 
 const Row = ({ children }: { children: ReactNode }) => (
 	<div style={ { display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'flex-start' } }>
@@ -25,6 +35,12 @@ const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 		</span>
 		{ children }
 	</div>
+)
+
+const ButtonFooter = ({ labels = BUTTON_LABELS }: { labels?: string[] }) => (
+	<Section.Footer>
+		{ labels.map(label => <Button key={ label }>{ label }</Button>) }
+	</Section.Footer>
 )
 
 // `Section`'s own semantic base class (`inkq-section`, always emitted by
@@ -93,7 +109,7 @@ const meta: Meta<SectionStoryProps> = {
 		},
 		children: {
 			control: false,
-			description: 'Passed through `orderSection` (see the `ContentComposition` story) rather than rendered as-is: string children become a description paragraph, and any `isValidElement` child whose `type !== Button` is treated as ordinary content while a genuine `Section.Button` (up to 2) becomes a CTA `Button.Group` entry.',
+			description: 'Passed through `orderSection` (see the `ContentComposition` story) rather than rendered as-is: string children become a description paragraph, and any `isValidElement` child whose `type !== Button` is treated as ordinary content while a genuine `Section.Footer` (up to 2) becomes a CTA `Button.Group` entry.',
 		},
 		animated: {
 			control: 'boolean',
@@ -169,14 +185,12 @@ export const Layout: Story = {
 					{ layout === 'blocks' ? (
 						<Section { ...args as SectionBlocksArgs } layout="blocks">
 							{ `A description for the ${ layout } layout.` }
-							<Section.Button>Learn more</Section.Button>
-							<Section.Button>View more</Section.Button>
+							<ButtonFooter />
 						</Section>
 					) : (
 						<Section { ...args as SectionContentArgs } layout={ layout } title={ `Layout: ${ layout }` }>
 							{ `A description for the ${ layout } layout.` }
-							<Section.Button>Learn more</Section.Button>
-							<Section.Button>View more</Section.Button>
+							<ButtonFooter />
 						</Section>
 					) }
 				</Group>
@@ -331,14 +345,14 @@ export const NoTitle: Story = {
 }
 
 /**
- * Correct, non-buggy usage: a string description plus TWO `Section.Button`
+ * Correct, non-buggy usage: a string description plus TWO `Section.Footer`
  * children. `orderSection` (`Section.tsx`) pushes the string into
  * `content` and both buttons into `buttons` (the `else if` branch — see the
  * `OrderSectionDoublePushBug`-removal note further down for why that guard
  * means there's no bug left to reproduce here).
  *
  * IMPORTANT: `children` is passed via `render` with genuine JSX children
- * (`<Section>text<Section.Button>...</Section.Button>...</Section>`), NOT as
+ * (`<Section>text<Section.Footer>...</Section.Footer>...</Section>`), NOT as
  * a `<>...</>` fragment assigned to `args.children`. A JSX `<>...</>` shorthand
  * compiles to a SINGLE `Fragment` element — from `orderSection`'s perspective
  * (`Children.toArray(children)`), that's ONE child whose `type === Fragment`,
@@ -353,8 +367,7 @@ export const ContentComposition: Story = {
 	render: (args) => (
 		<Section { ...args as SectionContentArgs }>
 			A single string child becomes one description paragraph.
-			<Section.Button>Learn more</Section.Button>
-			<Section.Button>View more</Section.Button>
+			<ButtonFooter />
 		</Section>
 	),
 	parameters: { layout: 'padded' },

@@ -1,14 +1,16 @@
 import {
+	cloneElement,
 	isValidElement,
 	Children,
 	Fragment,
 	type ElementType,
+	type ReactElement,
 	type ReactNode,
 } from 'react'
 
-import { Button } from '@/components/core/Button'
+import { partitionFooter, SectionFooter } from './SectionFooter'
+import { verifyChildren } from '@/lib/component'
 import { Grid } from '../Grid'
-// import { TextInput } from '@/components/form/TextInput'
 import type { RevealCounter } from '@/hooks/animation'
 import type { Section } from './Section'
 import type { StyleFn } from '@/hooks/useStyles'
@@ -51,37 +53,37 @@ const buildHeader = ({ id, props, reveal, styles }: BuildSectionConfig): ReactNo
 
 const orderSection = ({ id, props, reveal }: Omit<BuildSectionConfig, 'styles'>) => {
 	const { children } = props
-	const buttons: ReactNode[] = [],
-		cta: ReactNode[] = [],
-		items: ReactNode[] = []
+	const items: ReactNode[] = []
+	let footer: ReactElement<SectionFooter.Props> | undefined
 
-	Children.toArray(children).forEach((child, index) => {
-		const key = `${id}-desc-${index}`
+	Children.toArray(children).forEach((child, i) => {
+		if (isValidElement<SectionFooter.Props>(child) && child.type === SectionFooter) {
+			const verifyArgs = { name: SectionFooter.displayName, total: 1 }
 
-		if (isValidElement(child) || typeof child === 'string') {
-			const desc = <p key={ key } className="inkq-prose" { ...reveal.next() }>{ child }</p>
-
-			if (typeof child === 'string')
-				items.push(desc)
-
-			if (isValidElement(child)) {
-				if (child.type === Fragment) items.push(desc)
-				// else if (child.type === TextInput) cta.push(child)
-				else if (child.type !== Button) items.push(child)
-				else if (buttons.length < 2) buttons.push(child)
-			}
+			if (!footer) footer = child
+			else verifyChildren({ ...verifyArgs, children: [footer, child] })
+			return
 		}
+
+		const key = `${id}-desc-${i}`
+		const isText = typeof child === 'string'
+			|| (isValidElement(child) && child.type === Fragment)
+
+		if (isText)
+			items.push(<p key={ key } className="inkq-prose" { ...reveal.next() }>{ child }</p>)
+		else if (isValidElement(child))
+			items.push(child)
 	})
 
-	return { buttons, cta, items }
+	return { footer, items }
 }
 
 const buildContent = ({ id, props, reveal, styles }: BuildSectionConfig): ReactNode[] => {
-	const { buttons, cta, items } = orderSection({ id, props, reveal }),
+	const { footer, items } = orderSection({ id, props, reveal }),
 		content: ReactNode[] = []
 
 	const { eyebrow, layout, title } = props,
-		hasSiblings = !!(title || eyebrow || buttons?.length)
+		hasSiblings = !!(title || eyebrow || footer)
 
 	if (!!items?.length) {
 		const clsx = { global: { prose: true } },
@@ -109,25 +111,14 @@ const buildContent = ({ id, props, reveal, styles }: BuildSectionConfig): ReactN
 		content.push(body)
 	}
 
-	if (!!cta?.length) {
-		const footer = <div key={ `${id}-cta` } { ...styles('cta') }>{ cta }</div>
-		content.push(footer)
-	}
+	if (footer) {
+		const { total } = partitionFooter(footer.props.children)
 
-	if (!!buttons?.length) {
-		const footer = (
-			<Button.Group
-				key={ `${id}-buttons` }
-				{ ...styles('cta') }
-				hasPriority={ buttons.length > 1 }
-				revealFrom={ reveal.reserve(buttons.length) }
-				size={ layout === 'hero' ? 'lg' : 'md' }
-			>
-				{ buttons }
-			</Button.Group>
-		)
-
-		content.push(footer)
+		content.push(cloneElement(footer, {
+			key: `${id}-footer`,
+			revealFrom: reveal.reserve(total),
+			size: footer.props.size ?? (layout === 'hero' ? 'lg' : 'md'),
+		}))
 	}
 
 	return content
@@ -143,7 +134,7 @@ export const buildSection = (config: Omit<BuildSectionConfig, 'id'>) => {
 
 	switch (layout) {
 		case 'hero':
-		case 'cta':
+		case 'banner':
 			return <div { ...styles('inner') }>{ inner }</div>
 		case 'split':
 			return (

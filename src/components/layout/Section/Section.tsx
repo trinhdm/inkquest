@@ -2,8 +2,8 @@ import { useReveal, type MaybeAnimationProps } from '@/hooks/animation'
 import { buildSection } from './builder'
 import { defineTokens, polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
-import { Button } from '@/components/core/Button'
 import { Container } from '../Container'
+import { SectionFooter } from './SectionFooter'
 import type { ReactNode } from 'react'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Section.module.scss'
@@ -18,13 +18,13 @@ const DEFAULT_PROPS = {
 } as const
 
 const SUBCOMPONENTS = {
-	Button,
+	Footer: SectionFooter,
 } as const
 
 type SectionLayout =
+	| 'banner'
 	| 'blocks'
 	| 'default'
-	| 'cta'
 	| 'hero'
 	| 'split'
 
@@ -65,7 +65,6 @@ type SectionSelectors =
 	| 'root' | 'inner'
 	| 'eyebrow' | 'title'
 	| 'description' | 'body'
-	| 'cta'
 
 type SectionTokens = {
 	root:
@@ -123,4 +122,9 @@ Section.set({
 export declare namespace Section {
 	export type Props = SectionProps
 	export type Specs = SectionSpecs
+
+	export namespace Footer {
+		export type Props = SectionFooter.Props
+		export type Specs = SectionFooter.Specs
+	}
 }

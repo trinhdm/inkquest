@@ -1,6 +1,7 @@
 export {
 	extractText, highlightText,
-	filterChildren, withInlineWrap,
+	filterChildren, verifyChildren,
+	withInlineWrap,
 } from './children'
 
 export { defineTokens } from './tokens'

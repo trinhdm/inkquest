@@ -1,6 +1,7 @@
 import { buildSection } from '../builder'
 import { render, reset, screen } from '@/tests/test-utils'
 import { Button } from '@/components/core/Button'
+import { SectionFooter } from '../SectionFooter'
 import type { useStyles } from '@/hooks/useStyles'
 import type { RevealCounter } from '@/hooks/animation'
 import type { Section } from '../Section'
@@ -102,14 +103,16 @@ describe('buildSection', () => {
 			expect(screen.getByText('Plain description text')).toBeInTheDocument()
 		})
 
-		it('keeps up to 2 Button children out of the description and renders them as a CTA group', () => {
+		it('renders Section.Footer buttons as a CTA group', () => {
 			render(
 				<>{ buildSection({
 					props: buildProps({
-						children: [
-							<Button key="first">First</Button>,
-							<Button key="second">Second</Button>,
-						],
+						children: (
+							<SectionFooter>
+								<Button>First</Button>
+								<Button>Second</Button>
+							</SectionFooter>
+						),
 					}),
 					reveal: makeReveal(),
 					styles: makeStyles(),
@@ -121,14 +124,58 @@ describe('buildSection', () => {
 			expect(screen.getByRole('button', { name: 'Second' })).toBeInTheDocument()
 		})
 
-		it('drops a 3rd Button entirely rather than adding it to the description or a 3rd CTA slot', () => {
+		it('reserves one reveal slot for footer content plus one per footer Button, after the description', () => {
+			const reveal = makeReveal()
+
 			render(
 				<>{ buildSection({
 					props: buildProps({
 						children: [
-							<Button key="first">First</Button>,
-							<Button key="second">Second</Button>,
-							<Button key="third">Third</Button>,
+							'Description',
+							<SectionFooter key="footer">
+								<input aria-label="Search" />
+								<Button>First</Button>
+								<Button>Second</Button>
+							</SectionFooter>,
+						],
+						title: 'Headline',
+					}),
+					reveal,
+					styles: makeStyles(),
+				}) }</>
+			)
+
+			// title = 0, description = 1, then the footer's reserved range starts at 2
+			expect(reveal.reserve).toHaveBeenCalledWith(3)
+			expect(screen.getByText('Description')).toHaveAttribute('data-reveal-item', '1')
+			expect(screen.getByRole('textbox', { name: 'Search' }).parentElement).toHaveAttribute('data-reveal-item', '2')
+			expect(screen.getByRole('button', { name: 'First' }).closest('[data-reveal-item]')).toHaveAttribute('data-reveal-item', '3')
+			expect(screen.getByRole('button', { name: 'Second' }).closest('[data-reveal-item]')).toHaveAttribute('data-reveal-item', '4')
+		})
+
+		it('no longer spends a reveal slot on non-text element children', () => {
+			const reveal = makeReveal()
+
+			render(
+				<>{ buildSection({
+					props: buildProps({ children: [<span key="a">Custom</span>, 'Text'] }),
+					reveal,
+					styles: makeStyles(),
+				}) }</>
+			)
+
+			expect(screen.getByText('Text')).toHaveAttribute('data-reveal-item', '0')
+		})
+
+		it('renders only the first Section.Footer and warns about the rest', () => {
+			const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+
+			render(
+				<>{ buildSection({
+					props: buildProps({
+						children: [
+							<SectionFooter key="a"><Button>Kept</Button></SectionFooter>,
+							<SectionFooter key="b"><Button>Dropped</Button></SectionFooter>,
 						],
 					}),
 					reveal: makeReveal(),
@@ -136,9 +183,10 @@ describe('buildSection', () => {
 				}) }</>
 			)
 
-			expect(screen.getByRole('button', { name: 'First' })).toBeInTheDocument()
-			expect(screen.getByRole('button', { name: 'Second' })).toBeInTheDocument()
-			expect(screen.queryByRole('button', { name: 'Third' })).not.toBeInTheDocument()
+			expect(screen.getByRole('button', { name: 'Kept' })).toBeInTheDocument()
+			expect(screen.queryByRole('button', { name: 'Dropped' })).not.toBeInTheDocument()
+			expect(warn).toHaveBeenCalledWith(expect.stringContaining('multiple Section.Footer'))
+			warn.mockRestore()
 		})
 
 		it('renders a non-Button element child as-is, outside of the description wrapper', () => {

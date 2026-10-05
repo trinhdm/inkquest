@@ -25,7 +25,9 @@ export default function Press() {
 			>
 				<>Everything you need — boilerplate, facts, logos, and photography. For interviews and anything not covered here, email <a href="press@inkquest.com" data-cta>press@inkquest.com</a>.</>
 
-				<Section.Button>Download full kit (ZIP)</Section.Button>
+				<Section.Footer>
+					<Button>Download full kit (ZIP)</Button>
+				</Section.Footer>
 			</Section>
 
 			<Section
@@ -36,12 +38,12 @@ export default function Press() {
 			>
 				Inkquest is a marketplace and community connecting tattoo artists with clients. Clients search by style and distance, bid on flash designs and open booking slots, and book directly — with the artist setting the floor price on every piece. Founded in Brooklyn in 2024, Inkquest hosts more than 12,400 verified artists across 38 cities and has paid over $9.2M directly to artists.
 
-				<Section.Button size="sm" variant="outline">
-					<Section.Button.Section left>
-						<Copy />
-					</Section.Button.Section>
-					Copy boilerplate
-				</Section.Button>
+				<Section.Footer>
+					<Button size="sm" variant="outline">
+						<Button.Section left><Copy /></Button.Section>
+						Copy boilerplate
+					</Button>
+				</Section.Footer>
 			</Section>
 
 			<Section id={ `${pageID}-stats` } layout="blocks">

@@ -1,5 +1,7 @@
+import { Suspense } from 'react'
 import { getDefaultProps } from '@/hooks/useProps'
 import { render, reset, screen, within } from '@/tests/test-utils'
+import { Button } from '@/components/core/Button'
 import { Section } from './Section'
 
 describe('Section', () => {
@@ -90,11 +92,13 @@ describe('Section', () => {
 		expect(body?.parentElement).toBe(heading.parentElement)
 	})
 
-	it('groups up to two Section.Button children into a CTA button group', () => {
+	it('groups Button children of Section.Footer into a CTA button group', () => {
 		render(
 			<Section title="t">
-				<Section.Button>Learn more</Section.Button>
-				<Section.Button>View more</Section.Button>
+				<Section.Footer>
+					<Button>Learn more</Button>
+					<Button>View more</Button>
+				</Section.Footer>
 			</Section>
 		)
 
@@ -104,42 +108,73 @@ describe('Section', () => {
 		expect(within(group).getByRole('button', { name: 'View more' })).toBeInTheDocument()
 	})
 
-	// `orderSection`'s `buttons` push is gated with `else if (buttons.length < 2)`
-	// — a THIRD `Section.Button` matches `child.type === Button` so it never
-	// falls into the `content` branch either; it is silently dropped from the
-	// render entirely, not merely excluded from the CTA group.
-	it('silently drops a third Section.Button beyond the first two', () => {
+	// the old 2-button cap is gone — `Button.Group` already caps priorities at tertiary
+	it('keeps a third footer Button and gives it the tertiary priority', () => {
 		render(
 			<Section title="t">
-				<Section.Button>One</Section.Button>
-				<Section.Button>Two</Section.Button>
-				<Section.Button>Three</Section.Button>
+				<Section.Footer>
+					<Button>One</Button>
+					<Button>Two</Button>
+					<Button>Three</Button>
+				</Section.Footer>
 			</Section>
 		)
 
-		expect(screen.getAllByRole('button')).toHaveLength(2)
-		expect(screen.queryByRole('button', { name: 'Three' })).not.toBeInTheDocument()
+		expect(screen.getAllByRole('button')).toHaveLength(3)
+		expect(screen.getByRole('button', { name: 'Three' })).toHaveAttribute('data-priority', 'tertiary')
 	})
 
-	it('assigns a single Section.Button no priority (hasPriority requires 2+ buttons)', () => {
+	it('assigns a single footer Button no priority (hasPriority requires 2+ buttons)', () => {
 		render(
 			<Section title="t">
-				<Section.Button>Solo</Section.Button>
+				<Section.Footer>
+					<Button>Solo</Button>
+				</Section.Footer>
 			</Section>
 		)
 		expect(screen.getByRole('button', { name: 'Solo' })).not.toHaveAttribute('data-priority')
 	})
 
-	it('assigns the CTA group\'s two buttons distinct priorities (primary, then secondary)', () => {
+	it('assigns the footer\'s two buttons distinct priorities (primary, then secondary)', () => {
 		render(
 			<Section title="t">
-				<Section.Button>First</Section.Button>
-				<Section.Button>Second</Section.Button>
+				<Section.Footer>
+					<Button>First</Button>
+					<Button>Second</Button>
+				</Section.Footer>
 			</Section>
 		)
 
 		expect(screen.getByRole('button', { name: 'First' })).toHaveAttribute('data-priority', 'primary')
 		expect(screen.getByRole('button', { name: 'Second' })).toHaveAttribute('data-priority', 'secondary')
+	})
+
+	// the FAQs hero case: the builder can't see through `Suspense`, the footer doesn't need to
+	it('keeps non-Button footer content in the footer, ahead of the button group', () => {
+		render(
+			<Section title="t">
+				<Section.Footer>
+					<Suspense fallback={ null }>
+						<input aria-label="Search" />
+					</Suspense>
+					<Button>Go</Button>
+				</Section.Footer>
+			</Section>
+		)
+
+		const input = screen.getByRole('textbox', { name: 'Search' })
+		expect(input.parentElement?.nextElementSibling).toBe(screen.getByRole('group'))
+	})
+
+	it('treats a Button outside Section.Footer as ordinary content, not a CTA', () => {
+		render(
+			<Section title="t">
+				<Button>Loose</Button>
+			</Section>
+		)
+
+		expect(screen.getByRole('button', { name: 'Loose' })).toBeInTheDocument()
+		expect(screen.queryByRole('group')).not.toBeInTheDocument()
 	})
 
 	describe('unstyled forwarding to Container', () => {

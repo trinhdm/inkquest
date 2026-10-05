@@ -72,7 +72,9 @@ export default function Careers() {
 					}) }
 				</Table>
 
-				<Section.Button variant="outline">See all roles</Section.Button>
+				<Section.Footer>
+					<Button variant="outline">See all roles</Button>
+				</Section.Footer>
 			</Section>
 
 			<Section

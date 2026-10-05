@@ -19,13 +19,15 @@ export const FaqsHero = () => {
 		>
 			<>Everything about bidding, booking, verification, and payouts — for clients, artists, and studios. Can&apos;t find it? <Link href="/messages" data-cta>Message us</Link>.</>
 
-			<Suspense fallback={ (
-				<Field disabled id={ `${pageID}-search` } size="lg">
-					<Field.Input placeholder="Search all FAQs…" type="search" />
-				</Field>
-			) }>
-				<FaqSearch />
-			</Suspense>
+			<Section.Footer>
+				<Suspense fallback={ (
+					<Field disabled id={ `${pageID}-search` } size="lg">
+						<Field.Input placeholder="Search all FAQs…" type="search" />
+					</Field>
+				) }>
+					<FaqSearch />
+				</Suspense>
+			</Section.Footer>
 		</Section>
 	)
 }

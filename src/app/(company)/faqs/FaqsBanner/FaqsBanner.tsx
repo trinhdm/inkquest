@@ -1,6 +1,7 @@
 'use client'
 
 import { useFaqsCtx } from '../faqs.context'
+import { Button } from '@/components/core/Button'
 import { Section } from '@/components/layout/Section'
 
 export const FaqsBanner = () => {
@@ -10,13 +11,15 @@ export const FaqsBanner = () => {
 		<Section
 			eyebrow="Still need help?"
 			id={ `${pageID}-banner` }
-			layout="cta"
+			layout="banner"
 			title="Ask a human."
 		>
 			Our support team answers within a day — usually much faster. For booking disputes or safety concerns, head straight to the Support page.
 
-			<Section.Button href="/careers">Open ticket</Section.Button>
-			<Section.Button href="/press">Email support</Section.Button>
+			<Section.Footer>
+				<Button href="/careers">Open ticket</Button>
+				<Button href="/press">Email support</Button>
+			</Section.Footer>
 		</Section>
 	)
 }
