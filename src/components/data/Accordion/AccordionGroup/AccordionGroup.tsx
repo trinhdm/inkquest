@@ -5,6 +5,7 @@ import { extractOthers } from '@/hooks/useProps'
 import { getSharedTokens, type AccordionTokens as AccordionGroupTokens } from '../utils'
 import { AccordionGroupProvider } from './AccordionGroup.context'
 import { Box } from '@/components/polymorphic/Box'
+import type { Accordion } from '../Accordion'
 import type { AccordionGroupContext, AccordionGroupType } from './AccordionGroup.context'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from '../Accordion.module.scss'
@@ -17,13 +18,13 @@ const DEFAULT_PROPS = {
 	size: 'md',
 } as const
 
-interface AccordionGroupProps
-	extends Pick<AccordionGroupContext, 'disabled' | 'layout' | 'order' | 'size'> {
+interface AccordionGroupProps {
 	collapsible?: AccordionGroupType | false
 	defaultOpen?: number | number[]
-	// disabled?: boolean
-	// layout?: AccordionGroupContext['layout']
-	// size?: AccordionGroupContext['size']
+	disabled?: Accordion.Props['disabled']
+	layout?: Accordion.Props['layout']
+	order?: Accordion.Props['order']
+	size?: Accordion.Props['size']
 }
 
 type AccordionGroupSpecs = {

@@ -1,7 +1,6 @@
 import { useAccordionCtx } from '../Accordion.context'
 import { defineTokens, polymorphic, withInlineWrap } from '@/lib/component'
 import { extractOthers } from '@/hooks/useProps'
-import { keyHasValue } from '@/utils/helpers'
 import { Box } from '@/components/polymorphic/Box'
 import type { Accordion } from '../Accordion'
 import type { ReactNode } from 'react'
@@ -27,14 +26,24 @@ type AccordionContentSelectors =
 type AccordionContentTokens = {
 	root:
 		| '--accordion-content-indent'
+		| '--accordion-content-size'
 }
 
-const tokens = defineTokens<AccordionContentSpecs>()(({ context }) => ({
-	root: { '--accordion-content-indent': keyHasValue(context, 'step')
-		? 'calc(var(--accordion-column-width) + var(--accordion-gap))'
-		: undefined
-	},
-}))
+const tokens = defineTokens<AccordionContentSpecs>()(({ context, theme }) => {
+	const { size, step } = context
+
+	const fontSize = ['body']
+	if (size !== 'sm') fontSize.push('lg')
+
+	return {
+		root: {
+			'--accordion-content-indent': !!step
+				? 'calc(var(--accordion-column-width) + var(--accordion-gap))'
+				: undefined,
+			'--accordion-content-size': theme.fontSize(...fontSize as Parameters<typeof theme.fontSize>),
+		},
+	}
+})
 
 export const AccordionContent = polymorphic<AccordionContentSpecs>((_props, { useProps, useStyles }) => {
 	const context = useAccordionCtx(NAME)
@@ -45,9 +54,11 @@ export const AccordionContent = polymorphic<AccordionContentSpecs>((_props, { us
 	const { children, ...rest } = props
 	const others = extractOthers(rest)
 
+	const clsx = { global: { prose: true } }
+
 	return (
 		<Box
-			{ ...styles('root') }
+			{ ...styles('root', clsx) }
 			{ ...others }
 			as="div"
 			attributes={ { aria: { labelledby: idx.title } } }

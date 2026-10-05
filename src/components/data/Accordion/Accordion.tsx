@@ -1,4 +1,4 @@
-import { useCallback, useId, useMemo, useState, Children, type ReactNode } from 'react'
+import { useCallback, useId, useMemo, useState, type ReactNode } from 'react'
 import { useAccordionGroupProps, AccordionGroup } from './AccordionGroup'
 import { defineTokens, filterChildren, polymorphic } from '@/lib/component'
 import { extractOthers } from '@/hooks/useProps'
@@ -9,6 +9,7 @@ import { AccordionProvider } from './Accordion.context'
 import { AccordionTitle } from './AccordionTitle'
 import { Box } from '@/components/polymorphic/Box'
 import type { AccordionContext } from './Accordion.context'
+import type { HeadingOrder, Size } from '@/types/shared'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Accordion.module.scss'
 
@@ -31,22 +32,24 @@ const SUBCOMPONENTS = {
 	Title: AccordionTitle,
 } as const
 
-interface AccordionProps
-	extends Omit<AccordionGroup.Context, 'withinView'> {
+interface AccordionProps {
 	children: ReactNode
-	// collapsible?: Accordion.Context['collapsible']
+	collapsible?: boolean
 	defaultOpen?: boolean
-	// disabled?: boolean
+	disabled?: boolean
 	id?: string
-	// index?: number
-	indicator?: AccordionContext['indicator']
-	// layout?: AccordionGroup.Context['layout']
-	// onItemToggle?: (index: number, open: boolean) => void
+	index?: number
+	indicator?: 'chevron' | 'plus' | 'none'
+	layout?: 'default' | 'steps'
+	onItemToggle?: (index: number, open: boolean) => void
 	onToggle?: (open: boolean) => void
-	// open?: boolean
+	open?: boolean
+	order?: HeadingOrder
+	size?: Size
 }
 
 interface AccordionSpecs {
+	context: AccordionGroup.Context
 	defaults: {
 		as: typeof TAG
 		props: PropsDefaultList<typeof DEFAULT_PROPS>
@@ -61,26 +64,8 @@ type AccordionSelectors =
 	| 'root' | 'wrapper' | 'divider'
 
 const buildAccordion = (children: AccordionProps['children']) => {
-	const childNames = [AccordionTitle.displayName, AccordionContent.displayName]
-	const [title, content, ...extras] = filterChildren(children, childNames)
-
-	if (process.env.NODE_ENV !== 'production') {
-		const ns = { title: `${NAME}.Title`, content: `${NAME}.Content` },
-			subcomponents = `${ns.title}, ${ns.content}`,
-			warning = `an ${NAME} needs exactly one`
-
-		const matched = extras.length
-			+ (title ? 1 : 0) + (content ? 1 : 0)
-
-		if (!title)
-			console.warn(`${NAME}: no ${ns.title} found; ${warning}.`)
-		if (!content)
-			console.warn(`${NAME}: no ${ns.content} found; ${warning}.`)
-		if (extras.length)
-			console.warn(`${NAME}: multiple ${subcomponents} found; ${warning} of each.`)
-		if (Children.count(children) > matched)
-			console.warn(`${NAME}: children outside of ${subcomponents} detected.`)
-	}
+	const childNames = [AccordionTitle.displayName, AccordionContent.displayName],
+		[title, content] = filterChildren(children, childNames, { name: NAME, total: 2 })
 
 	if (!title || !content) return null
 	return <>{ title }{ content }</>
@@ -152,12 +137,12 @@ export const Accordion = polymorphic<AccordionSpecs>((_props, { useProps, useSty
 		handleToggle,
 		collapsible, disabled,
 		idx, indicator, isOpen,
-		order, step, unstyled,
+		order, size, step, unstyled,
 	}), [
 		handleToggle,
 		collapsible, disabled,
 		idx, indicator, isOpen,
-		order, step, unstyled,
+		order, size, step, unstyled,
 	])
 
 	return (

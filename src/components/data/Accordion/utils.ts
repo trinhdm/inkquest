@@ -10,7 +10,7 @@ export type AccordionTokens = {
 		| '--accordion-indicator-size'
 		| '--accordion-padding'
 		| '--accordion-step-size'
-		| '--accordion-text-size'
+		| '--accordion-title-size'
 }
 
 interface AccordionTokenConfig {
@@ -34,12 +34,12 @@ const getTokenGroup = (
 	indicator: base.indicator - (4 * step),
 	order: base.order + step as AccordionTokenConfig['order'],
 	padding: base.padding - step,
-	step: `calc((var(--accordion-text-size) - var(--accordion-indicator-size)) + (${base.step} * ${step + 1}) )`,
+	step: `calc((var(--accordion-title-size) - var(--accordion-indicator-size)) + (${base.step} * ${step + 1}) )`,
 })
 
-const tokensBySize = (
-	size: NonNullable<AccordionPropsList['size']>,
-	order: AccordionPropsList['order'],
+const tokensBySize = <P extends AccordionPropsList>(
+	size: NonNullable<P['size']>,
+	order: P['order'],
 ): AccordionTokenConfig => {
 	const step = { sm: 2, md: 1, lg: 0 }[size]
 	const base: AccordionTokenConfig = {
@@ -54,10 +54,11 @@ const tokensBySize = (
 	return getTokenGroup(step, base)
 }
 
-export const getSharedTokens = ({
+export const getSharedTokens = <P extends AccordionPropsList>({
+	layout,
 	order,
 	size,
-}: AccordionPropsList): TokensList<AccordionTokens> => {
+}: P): TokensList<AccordionTokens> => {
 	if (!size) return {}
 	const config = tokensBySize(size, order)
 
@@ -67,8 +68,8 @@ export const getSharedTokens = ({
 			'--accordion-gap': `var(--space-${config.gap})`,
 			'--accordion-padding': `var(--space-${config.padding})`,
 			'--accordion-indicator-size': `var(--font-size-${config.indicator})`,
-			'--accordion-step-size': config.step,
-			'--accordion-text-size': `var(--inkq-font-size-heading-h${config.order})`,
+			'--accordion-step-size': layout === 'steps' ? config.step : undefined,
+			'--accordion-title-size': `var(--inkq-font-size-heading-h${config.order})`,
 		},
 	}
 }

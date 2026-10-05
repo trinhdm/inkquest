@@ -1,13 +1,8 @@
-
-
-.inkq-accordion,
-.inkq-accordion-group {
-	--accordion-border-color: var(--inkq-border);
-	--accordion-indent: calc(var(--accordion-column-width) / 1.5);
-}
-
 .inkq-accordion {
 	$name: &;
+
+	--accordion-border-color: var(--inkq-border);
+	--accordion-indent: calc(var(--accordion-column-width) / 1.5);
 
 	position: relative;
 
@@ -63,15 +58,15 @@
 
 	&__step {
 		color: var(--inkq-color-text-tertiary);
-		font: var(--inkq-text-prose);
-		font-size: var(--accordion-step-size);
+		font: var(--inkq-text-numeric);
+		font-size: var(--accordion-step-size, var( --inkq-font-size-label));
 		justify-items: end;
 	}
 
 	&__text {
 		color: var(--inkq-color-text);
 		flex: 1 1 100%;
-		font-size: var(--accordion-text-size);
+		font-size: var(--accordion-title-size, var(--inkq-font-size-heading-h3));
 		font-weight: var(--inkq-font-weight-semibold);
 		letter-spacing: var(--inkq-font-tracking-display);
 		line-height: var(--inkq-font-leading-label);
@@ -83,7 +78,7 @@
 	}
 
 	&__indicator {
-		--icon-size: var(--accordion-indicator-size);
+		--icon-size: var(--accordion-indicator-size, var(--inkq-icon-md));
 
 		justify-items: start;
 
@@ -101,10 +96,15 @@
 			color: var(--inkq-color-action);
 			display: block;
 			transform: none;
-			transition: transform var(--icon-rotate-duration) var(--easing-out);
+			transition: var(--inkq-motion-color),
+				transform var(--icon-rotate-duration) var(--easing-out);
 
 			.inkq-accordion:where([data-open]) & {
 				transform: rotate(var(--icon-rotate));
+			}
+
+			.inkq-accordion__wrapper:hover & {
+				color: var(--inkq-color-action-hover);
 			}
 		}
 	}
@@ -117,12 +117,10 @@
 .inkq-accordion-content {
 	$name: &;
 
-	color: var(--inkq-color-text-secondary);
 	display: grid;
-	font: var(--inkq-text-body);
+	font-size: var(--accordion-content-size, var(--inkq-font-size-body-lg));
 	grid-template-rows: 1fr;
 	opacity: 1;
-	text-wrap: pretty;
 	transition: grid-template-rows 340ms var(--easing),
 		opacity 340ms var(--easing);
 

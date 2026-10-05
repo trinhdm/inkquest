@@ -52,10 +52,10 @@ describe('getSharedTokens', () => {
 		expect(sm.root!['--accordion-column-width']).toBe('var(--space-5)')
 	})
 
-	it('honors a custom `order`, reflected in the derived heading text-size token', () => {
+	it('honors a custom `order`, reflected in the derived heading title-size token', () => {
 		// lg has step 0, so order passes through unshifted
 		const result = getSharedTokens({ order: 1, size: 'lg' })
-		expect(result.root!['--accordion-text-size']).toBe('var(--inkq-font-size-heading-h1)')
+		expect(result.root!['--accordion-title-size']).toBe('var(--inkq-font-size-heading-h1)')
 	})
 
 	it('ignores `layout` entirely -- the title/content indent tokens moved to AccordionTitle/AccordionContent, so passing `layout` produces the same root tokens as omitting it', () => {

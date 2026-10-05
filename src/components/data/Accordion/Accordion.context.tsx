@@ -1,11 +1,6 @@
 import { createRootCtx } from '@/lib/component/context'
+import type { Accordion } from './Accordion'
 import type { AnimationOptions } from '@/hooks/animation'
-import type { HeadingOrder } from '@/types/shared'
-
-type AccordionIndicator =
-	| 'chevron'
-	| 'plus'
-	| 'none'
 
 interface AccordionIds {
 	content: string
@@ -13,16 +8,17 @@ interface AccordionIds {
 	title: string
 }
 
-export interface AccordionContext
-	extends Pick<AnimationOptions, 'unstyled'> {
-	collapsible?: boolean
-	disabled?: boolean
+export interface AccordionContext {
+	collapsible?: Accordion.Props['collapsible']
+	disabled?: Accordion.Props['disabled']
 	handleToggle: () => void
 	idx: AccordionIds
-	indicator?: AccordionIndicator
+	indicator?: Accordion.Props['indicator']
 	isOpen: boolean
-	order: HeadingOrder
+	order: Accordion.Props['order']
+	size?: Accordion.Props['size']
 	step?: `${number}`
+	unstyled?: AnimationOptions['unstyled']
 }
 
 export const {

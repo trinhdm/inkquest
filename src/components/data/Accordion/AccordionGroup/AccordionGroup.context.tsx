@@ -1,22 +1,21 @@
 import { createRootCtx } from '@/lib/component/context'
+import type { Accordion } from '../Accordion'
 import type { AnimateInViewConfig } from '@/hooks/animation'
-import type { HeadingOrder, Size } from '@/types/shared'
-
-type AccordionGroupLayout =
-	'default' | 'steps'
 
 export type AccordionGroupType =
 	'single' | 'multiple'
 
-export interface AccordionGroupContext
-	extends Pick<AnimateInViewConfig, 'index' | 'unstyled' | 'withinView'> {
-	collapsible?: boolean
-	disabled?: boolean
-	layout?: AccordionGroupLayout
-	onItemToggle?: (index: number, open: boolean) => void
-	order?: HeadingOrder
-	open?: boolean
-	size?: Size
+export interface AccordionGroupContext {
+	collapsible?: Accordion.Props['collapsible']
+	disabled?: Accordion.Props['disabled']
+	index?: Accordion.Props['index']
+	layout?: Accordion.Props['layout']
+	onItemToggle?: Accordion.Props['onItemToggle']
+	open?: Accordion.Props['open']
+	order?: Accordion.Props['order']
+	size?: Accordion.Props['size']
+	unstyled?: AnimateInViewConfig['unstyled']
+	withinView?: AnimateInViewConfig['withinView']
 }
 
 export const {

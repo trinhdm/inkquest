@@ -4,7 +4,6 @@ import { defineTokens, polymorphic } from '@/lib/component'
 import { extractOthers } from '@/hooks/useProps'
 import { keyHasValue } from '@/utils/helpers'
 import { Box } from '@/components/polymorphic/Box'
-import { Icon } from '@/components/core/Icon'
 import type { Accordion } from '../Accordion'
 import type { KeyboardEvent, ReactNode } from 'react'
 import classes from '../Accordion.module.scss'
@@ -100,7 +99,6 @@ export const AccordionTitle = polymorphic<AccordionTitleSpecs>((_props, { usePro
 				{ (indicator !== 'none') && (
 					<span { ...styles('indicator', { selector: indicateClass }) }>
 						<Box as={ indicator === 'plus' ? Plus : ChevronDown } />
-						<Icon type={ indicator === 'plus' ? 'add' : 'caret-down' } />
 					</span>
 				) }
 			</Box>
