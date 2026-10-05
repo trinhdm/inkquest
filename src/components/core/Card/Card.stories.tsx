@@ -38,7 +38,7 @@ const IMAGE_CAPTION_SELECTOR = '.inkq-card__image-caption'
 // off the component itself — the generic call signature's default `C`
 // resolves to `'div'` here, since `CardSpecs`'s `defaults.as` is `'div'`
 // (`Card.tsx`'s local `TAG` constant), matching `const DEFAULT_PROPS = { as:
-// TAG, hasTitleAlt: false }` and `Card.set({ defaultProps: DEFAULT_PROPS, displayName: NAME })`.
+// TAG, isAltTitle: false }` and `Card.set({ defaultProps: DEFAULT_PROPS, displayName: NAME })`.
 type CardStoryProps = Parameters<typeof Card>[0]
 type Story = StoryObj<CardStoryProps>
 
@@ -48,7 +48,7 @@ const meta: Meta<CardStoryProps> = {
 	argTypes: {
 		title: {
 			control: 'text',
-			description: 'Required. Rendered as the card\'s `<h3>` heading, and also feeds the caption-fallback chain when `hasTitleAlt` is set — see the `ImageCaptionPrecedence` story.',
+			description: 'Required. Rendered as the card\'s `<h3>` heading, and also feeds the caption-fallback chain when `isAltTitle` is set — see the `ImageCaptionPrecedence` story.',
 		},
 		caption: {
 			control: 'text',
@@ -56,11 +56,11 @@ const meta: Meta<CardStoryProps> = {
 		},
 		image: {
 			control: 'object',
-			description: 'Raw `next/image` props (`ComponentProps<typeof Image>`), spread directly onto an `<Image />`. When `image.alt` is present it takes precedence over the caption-fallback chain driven by `hasTitleAlt` (`image?.alt ?? altDefault`) — see the `ImageCaptionPrecedence` story.',
+			description: 'Raw `next/image` props (`ComponentProps<typeof Image>`), spread directly onto an `<Image />`. When `image.alt` is present it takes precedence over the caption-fallback chain driven by `isAltTitle` (`image?.alt ?? altDefault`) — see the `ImageCaptionPrecedence` story.',
 		},
-		hasTitleAlt: {
+		isAltTitle: {
 			control: 'boolean',
-			description: 'Controls the image caption\'s fallback text when `image.alt` is absent: `altDefault = hasTitleAlt ? title : \'[ PHOTO ]\'`. The rendered caption text is `image?.alt ?? altDefault` — an explicit `image.alt` always wins regardless of this prop. See the `HasTitleAlt` and `ImageCaptionPrecedence` stories.',
+			description: 'Controls the image caption\'s fallback text when `image.alt` is absent: `altDefault = isAltTitle ? title : \'[ PHOTO ]\'`. The rendered caption text is `image?.alt ?? altDefault` — an explicit `image.alt` always wins regardless of this prop. See the `isAltTitle` and `ImageCaptionPrecedence` stories.',
 		},
 		elevated: {
 			control: 'boolean',
@@ -90,7 +90,7 @@ export const WithoutImage: Story = {
 		const canvas = within(canvasElement)
 
 		await expect(canvas.queryByRole('img')).not.toBeInTheDocument()
-		// `hasTitleAlt` stays at its registered default (`false`) here, so the
+		// `isAltTitle` stays at its registered default (`false`) here, so the
 		// caption falls all the way through to the literal placeholder.
 		await expect(canvas.getByText('[ PHOTO ]')).toBeInTheDocument()
 	},
@@ -119,10 +119,10 @@ export const CaptionPresence: Story = {
 	},
 }
 
-// `image?.alt ?? altDefault`, where `altDefault = hasTitleAlt ? title :
+// `image?.alt ?? altDefault`, where `altDefault = isAltTitle ? title :
 // '[ PHOTO ]'` — three distinct branches of the same precedence chain.
 // `image.alt` is a required field on `next/image`'s own prop type, so the
-// only way to exercise the `hasTitleAlt` branches is to omit `image`
+// only way to exercise the `isAltTitle` branches is to omit `image`
 // entirely (which also makes `image?.alt` undefined via optional chaining).
 export const ImageCaptionPrecedence: Story = {
 	parameters: { layout: 'padded' },
@@ -131,14 +131,14 @@ export const ImageCaptionPrecedence: Story = {
 			<Group label="image.alt set (wins over everything)">
 				<Card
 					title="Card title"
-					hasTitleAlt
+					isAltTitle
 					image={ { src: '/globe.svg', alt: 'Explicit image alt', width: 160, height: 160 } }
 				/>
 			</Group>
-			<Group label="no image, hasTitleAlt (falls back to title)">
-				<Card title="Card title" hasTitleAlt />
+			<Group label="no image, isAltTitle (falls back to title)">
+				<Card title="Card title" isAltTitle />
 			</Group>
-			<Group label="no image, !hasTitleAlt (literal placeholder)">
+			<Group label="no image, !isAltTitle (literal placeholder)">
 				<Card title="Card title" />
 			</Group>
 		</Row>
@@ -156,13 +156,13 @@ export const ImageCaptionPrecedence: Story = {
 	},
 }
 
-export const HasTitleAlt: Story = {
-	parameters: { controls: { exclude: ['hasTitleAlt'] } },
+export const IsAltTitle: Story = {
+	parameters: { controls: { exclude: ['isAltTitle'] } },
 	render: (args) => (
 		<Row>
-			{ BOOLEAN_OPTIONS.map(hasTitleAlt => (
-				<Group key={ String(hasTitleAlt) } label={ String(hasTitleAlt) }>
-					<Card { ...args } image={ undefined } hasTitleAlt={ hasTitleAlt } />
+			{ BOOLEAN_OPTIONS.map(isAltTitle => (
+				<Group key={ String(isAltTitle) } label={ String(isAltTitle) }>
+					<Card { ...args } image={ undefined } isAltTitle={ isAltTitle } />
 				</Group>
 			)) }
 		</Row>

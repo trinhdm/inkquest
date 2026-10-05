@@ -23,7 +23,7 @@ describe('Card', () => {
 		expect(container.textContent).not.toContain('by Jane Doe')
 	})
 
-	it('applies the registered default tag and hasTitleAlt', () => {
+	it('applies the registered default tag and isAltTitle', () => {
 		// `as` is registered in the defaults registry at runtime, but it's
 		// declared on the component's Specs rather than its Props — widen the
 		// generic to match what `setDefaults` actually stored.
@@ -33,16 +33,16 @@ describe('Card', () => {
 		const { container } = render(<Card title="Rose Sleeve" />)
 
 		expect(container.firstElementChild?.tagName).toBe(defaults.as?.toUpperCase())
-		expect(defaults.hasTitleAlt).toBe(false)
+		expect(defaults.isAltTitle).toBe(false)
 	})
 
-	it('defaults the image caption placeholder to "[ PHOTO ]" when there is no image and hasTitleAlt is unset', () => {
+	it('defaults the image caption placeholder to "[ PHOTO ]" when there is no image and isAltTitle is unset', () => {
 		render(<Card title="Rose Sleeve" />)
 		expect(screen.getByText('[ PHOTO ]')).toBeInTheDocument()
 	})
 
-	it('falls back to the title text as the image caption placeholder when hasTitleAlt is set', () => {
-		render(<Card title="Rose Sleeve" hasTitleAlt />)
+	it('falls back to the title text as the image caption placeholder when isAltTitle is set', () => {
+		render(<Card title="Rose Sleeve" isAltTitle />)
 		// title appears both as the heading and (via `altDefault`) as the
 		// placeholder caption — assert there are two occurrences of the text.
 		expect(screen.getAllByText('Rose Sleeve')).toHaveLength(2)

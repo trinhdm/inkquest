@@ -11,14 +11,14 @@ const NAME = 'Card' as const,
 
 const DEFAULT_PROPS = {
 	as: TAG,
-	hasTitleAlt: false,
+	isAltTitle: false,
 } as const
 
 interface CardProps {
 	caption?: string
 	elevated?: boolean
-	hasTitleAlt?: boolean
 	image?: ComponentProps<typeof Image>
+	isAltTitle?: boolean
 	title: string
 }
 
@@ -44,26 +44,31 @@ export const Card = polymorphic<CardSpecs>((_props, { useProps, useStyles }) => 
 		as,
 		caption,
 		children,
-		hasTitleAlt,
 		image,
+		isAltTitle,
 		title,
 		...rest
 	} = props
 
 	const others = extractOthers(rest)
-	const altDefault = hasTitleAlt ? title : '[ PHOTO ]'
+
+	const alt = isAltTitle ? title : '[ PHOTO ]',
+		altText = image?.alt ?? alt
 
 	return (
 		<Box { ...styles('root') } { ...others } as={ as }>
 			<div { ...styles('wrapper') }>
 				<div { ...styles('image') }>
-					{ image && <Image { ...image } /> }
+					{ image && <Image { ...image } alt={ altText } /> }
 					<span { ...styles('image-caption') }>
-						{ image?.alt ?? altDefault }
+						{ altText }
 					</span>
 				</div>
+
 				<div { ...styles('info') }>
-					<h3 { ...styles('title', { global: { h4: true } }) }>{ title }</h3>
+					<h3 { ...styles('title', { global: { h4: true } }) }>
+						{ title }
+					</h3>
 					{ caption && (
 						<span { ...styles('caption', true) }>{ caption }</span>
 					) }
