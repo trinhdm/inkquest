@@ -1,14 +1,14 @@
 'use client'
 
-import { Container } from '@/components/layout/Container'
+import { Section } from '@/components/layout/Section'
 
 export default function Discover() {
 	return (
-		<main>
-			<Container>
+		<>
+			<Section>
 				<h1>Discover</h1>
 				{/* { children } */}
-			</Container>
-		</main>
+			</Section>
+		</>
 	)
 }

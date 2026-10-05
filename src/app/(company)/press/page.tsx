@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { Copy } from 'lucide-react'
 import { Button } from '@/components/core/Button'
 import { Grid } from '@/components/layout/Grid'
 import { Group } from '@/components/layout/Group'
@@ -9,6 +10,7 @@ import { Statistic } from '@/components/data/Statistic'
 import { Table } from '@/components/data/Table'
 import { ASSETS_LIST, COMPANY_STATS, PRESS_HISTORY } from './press.data'
 import type { Route } from 'next'
+import './press.scss'
 
 export default function Press() {
 	const pageID = 'press'
@@ -34,13 +36,18 @@ export default function Press() {
 			>
 				Inkquest is a marketplace and community connecting tattoo artists with clients. Clients search by style and distance, bid on flash designs and open booking slots, and book directly — with the artist setting the floor price on every piece. Founded in Brooklyn in 2024, Inkquest hosts more than 12,400 verified artists across 38 cities and has paid over $9.2M directly to artists.
 
-				<Section.Button variant="outline">Copy boilerplate</Section.Button>
+				<Section.Button size="sm" variant="outline">
+					<Section.Button.Section left>
+						<Copy />
+					</Section.Button.Section>
+					Copy boilerplate
+				</Section.Button>
 			</Section>
 
 			<Section id={ `${pageID}-stats` } layout="blocks">
 				<Statistic.Group animated={ false } order="ascend" size="sm">
 					{ COMPANY_STATS.map(({ isHighlight, ...stat }) => (
-						<Statistic highlight={ isHighlight } { ...stat } />
+						<Statistic key={ stat.id } highlight={ isHighlight } { ...stat } />
 					)) }
 				</Statistic.Group>
 			</Section>
@@ -126,12 +133,16 @@ export default function Press() {
 
 						return (
 							<Table.Row key={ `press-${id}` }>
-								<Table.Cell><strong>{ author }</strong></Table.Cell>
-								<Table.Cell className="inkq-prose">
-									<span>
-										{ !!url ? <Link href={ url }>{ headline }</Link> : headline }
-									</span>
+								<Table.Cell>
+									<strong>{ author }</strong>
 								</Table.Cell>
+
+								<Table.Cell className="inkq-prose">
+									{ !!url
+										? <Link href={ url }>{ headline }</Link>
+										: <span>{ headline }</span> }
+								</Table.Cell>
+
 								{ !!calendarDate.length && (
 									<Table.Cell>
 										<span className="inkq-eyebrow">

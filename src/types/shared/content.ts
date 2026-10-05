@@ -28,6 +28,15 @@ export interface AssetItem
 	attachment?: FileItem
 }
 
+export interface JobItem
+	extends PageDataItem {
+	department: | 'artist relations' | 'community' | 'engineering' | 'trust & safety'
+	location: string[]
+	publishDate?: CalendarDate
+	role?: ReactNode[]
+	url: Route<string>
+}
+
 export interface PressItem
 	extends Omit<PageDataItem, 'content'> {
 	author: string

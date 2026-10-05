@@ -74,22 +74,86 @@ export const FAQ_ITEMS: FaqGroup[] = [
 	{
 		id: 'artist-faqs',
 		category: 'For artists',
-		questions: [],
+		questions: [
+			{
+				id: 'artist-verification-process',
+				title: 'How do I get verified?',
+				content: `Submit your portfolio, studio affiliation, and local licensing details from your profile settings. Our team reviews every application by hand — most are approved within 3 business days. Verified artists get the VERIFIED badge, priority placement in search, and access to bidding.`,
+			},
+			{
+				id: 'add-design-slot',
+				title: 'How do I post a flash design or open slot?',
+				content: `From your dashboard, choose New listing → Flash design or Open slot. Upload the artwork or set the date range, write a short description, set your floor price and deposit, and choose how long bidding stays open. Listings go live immediately and appear in search and your followers' feeds.`,
+			},
+			{
+				id: 'payout-process',
+				title: 'How and when do I get paid?',
+				content: `Deposits are paid out to your linked bank account 24 hours after the booking is confirmed. Session balances you collect in-studio are yours directly — Inkquest only processes the deposit. Payouts run daily; standard transfers take 1–2 business days.`,
+			},
+			{
+				id: 'listing-minimum-price',
+				title: 'Can I set a minimum price?',
+				content: `Always. Every listing starts at the floor you set — bids below it aren't possible. You can also set a Buy-now price that ends bidding instantly when someone meets it.`,
+			},
+			{
+				id: 'bid-choice',
+				title: 'Do I have to accept the highest bid?',
+				content: `No. The chair is yours. You can accept any bid — or none — based on the client's idea, placement, references, or anything else. Declining all bids closes the listing with no fee.`,
+			},
+			{
+				id: 'platform-fees',
+				title: 'What fees does Inkquest take?',
+				content: `A flat 8% service fee on the accepted bid amount, deducted from the deposit payout. No listing fees, no subscription, no charge for declined or expired listings.`,
+			},
+		],
 	},
 	{
 		id: 'studio-faqs',
 		category: 'For studios',
-		questions: [],
+		questions: [
+			// {
+			// 	id: 'sharing-studio-profile',
+			// 	title: 'Can a studio have a shared profile?',
+			// 	content: `Yes. Studio profiles group your resident artists under one roof — shared portfolio, location, hours, and booking policies — while each artist keeps their own profile, listings, and reviews.`,
+			// },
+			{
+				id: 'add-studio-artists',
+				title: 'How do I add artists to my studio?',
+				content: `From your studio dashboard, send an invite to the artist's Inkquest account. Once they accept, their profile shows your studio affiliation and their work appears in your studio's shared portfolio. Artists can belong to one studio at a time.`,
+			},
+			{
+				id: 'add-guest-spots',
+				title: 'Can studios post guest spots?',
+				content: `Yes — post a guest spot listing with the dates and the visiting artist's profile. Guest artists keep their own reviews and payouts; the listing appears in both the studio's page and local search for the duration of the visit.`,
+			},
+			{
+				id: 'studio-verification-process',
+				title: 'How does studio verification differ from artist verification?',
+				content: `Studio verification covers the business: health department licensing, premises, and insurance, reviewed by our team. It doesn't replace individual artist verification — each resident artist still verifies separately. A fully verified studio (business + all residents) earns the STUDIO VERIFIED badge.`,
+			},
+		],
 	},
 	{
 		id: 'payment-faqs',
 		category: 'Bidding & payments',
-		questions: [],
+		questions: [
+			{
+				id: 'payment-security',
+				title: 'Is my payment information secure?',
+				content: `Yes. Payments are processed by our PCI-DSS-certified payment partner — card details never touch Inkquest's servers. Deposits are held in escrow until the booking is confirmed by both sides.`,
+			},
+		],
 	},
 	{
 		id: 'safety-faqs',
 		category: 'Trust & safety',
-		questions: [],
+		questions: [
+			{
+				id: 'health-standards',
+				title: 'How do you handle health and hygiene standards?',
+				content: `Every verified artist and studio must hold current local health licensing, which we check at verification and re-check annually. Reviews flag hygiene concerns to our Trust & Safety team automatically, and credible reports trigger an immediate re-review.`,
+			},
+		],
 	},
 	{
 		id: 'misc-faqs',
