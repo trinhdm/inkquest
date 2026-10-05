@@ -1,9 +1,11 @@
 import { isValidElement, Children, type ReactNode } from 'react'
+import { useSectionCtx, useSectionProps } from '../Section.context'
 import { extractOthers } from '@/hooks/useProps'
 import { polymorphic } from '@/lib/component'
 import { revealItemFrom } from '@/hooks/animation'
 import { Box } from '@/components/polymorphic/Box'
 import { Button } from '@/components/core/Button'
+import type { Section } from '../Section'
 import classes from '../Section.module.scss'
 
 const NAME = 'Section.Footer' as const
@@ -15,6 +17,7 @@ interface SectionFooterProps {
 }
 
 interface SectionFooterSpecs {
+	context: Section.Context
 	isCompound: true
 	props: SectionFooterProps
 	selectors: SectionFooterSelectors
@@ -39,12 +42,17 @@ export const partitionFooter = (children: ReactNode): FooterParts => {
 		else content.push(child)
 	})
 
-	return { buttons, content, total: buttons.length + (content.length ? 1 : 0) }
+	return {
+		buttons,
+		content,
+		total: buttons.length + (content.length ? 1 : 0),
+	}
 }
 
 export const SectionFooter = polymorphic<SectionFooterSpecs>((_props, { useProps, useStyles }) => {
-	const props = useProps(_props)
-	const styles = useStyles({ name: 'section', props })
+	const context = useSectionCtx(NAME)
+	const props = useProps(useSectionProps(_props))
+	const styles = useStyles({ context, props, withRootName: true })
 
 	const { children, revealFrom, size, ...rest } = props
 	const others = extractOthers(rest)
@@ -58,9 +66,9 @@ export const SectionFooter = polymorphic<SectionFooterSpecs>((_props, { useProps
 		: undefined
 
 	return (
-		<Box { ...styles('footer') } { ...others } as="div">
+		<Box { ...styles(context.baseName) } { ...others } as="div">
 			{ hasContent && (
-				<div { ...styles('footer-content') } { ...revealItemFrom(0, revealFrom) }>
+				<div { ...styles(`${context.baseName}-content`) } { ...revealItemFrom(0, revealFrom) }>
 					{ content }
 				</div>
 			) }

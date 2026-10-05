@@ -6,6 +6,7 @@ import { Container } from '../Container'
 import { SectionFooter } from './SectionFooter'
 import type { ReactNode } from 'react'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
+import type { SectionContext } from './Section.context'
 import classes from './Section.module.scss'
 
 const NAME = 'Section' as const
@@ -120,6 +121,7 @@ Section.set({
 })
 
 export declare namespace Section {
+	export type Context = SectionContext
 	export type Props = SectionProps
 	export type Specs = SectionSpecs
 

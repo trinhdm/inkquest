@@ -1,5 +1,4 @@
 import {
-	cloneElement,
 	isValidElement,
 	Children,
 	Fragment,
@@ -11,6 +10,7 @@ import {
 import { partitionFooter, SectionFooter } from './SectionFooter'
 import { verifyChildren } from '@/lib/component'
 import { Grid } from '../Grid'
+import { SectionProvider } from './Section.context'
 import type { RevealCounter } from '@/hooks/animation'
 import type { Section } from './Section'
 import type { StyleFn } from '@/hooks/useStyles'
@@ -114,11 +114,16 @@ const buildContent = ({ id, props, reveal, styles }: BuildSectionConfig): ReactN
 	if (footer) {
 		const { total } = partitionFooter(footer.props.children)
 
-		content.push(cloneElement(footer, {
-			key: `${id}-footer`,
+		const value: Section.Context = {
 			revealFrom: reveal.reserve(total),
-			size: footer.props.size ?? (layout === 'hero' ? 'lg' : 'md'),
-		}))
+			size: layout === 'hero' ? 'lg' : 'md',
+		}
+
+		content.push(
+			<SectionProvider key={ `${id}-footer` } value={ value }>
+				{ footer }
+			</SectionProvider>
+		)
 	}
 
 	return content
