@@ -65,7 +65,7 @@ export const createRootCtx = <
 		const context = use(RootCtx)
 
 		if (context === null)
-			throw new Error(`<${componentName} /> must be rendered inside <${name}>`)
+			throw new Error(`${name}: <${componentName} /> must be rendered inside <${name}>`)
 
 		const { rootName } = context
 		let baseName: string = rootName
