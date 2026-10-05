@@ -1,9 +1,9 @@
 
 //	general
 
-import type { Primitive } from '../shared'
+import type { PrimitiveName } from '../shared'
 
-export type DeepRequired<T> = T extends Function
+export type DeepRequired<T> = T extends () => void
 	? T
 	: T extends Array<infer InferredArrayType>
 		? DeepRequired<InferredArrayType>[]
@@ -35,8 +35,8 @@ export type ExcludeIn<Union extends string, Sub extends string> =
 
 //	arrays
 
-export type ExtractFrom<T extends any[], V extends Primitive> =
-	T extends any
+export type ExtractFrom<T extends unknown[], V extends PrimitiveName> =
+	T extends unknown
 		? V extends T[number]
 			? T
 			: never
@@ -51,6 +51,10 @@ export type UnpackArray<T> =
 export type PluralizeKeys<T> = {
 	[K in keyof T as K extends string ? `${K}s` : K]: T[K]
 }
+
+export type AsPluralKeys<T extends object, K extends keyof T> =
+	& Omit<T, K>
+	& PluralizeKeys<Pick<T, K>>
 
 export type RewriteKeysWithout<Sub extends string, T> = {
 	[K in keyof T as K extends string

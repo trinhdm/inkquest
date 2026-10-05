@@ -1,6 +1,9 @@
 //	general
 
 export type Primitive =
+	boolean | number | string | bigint | symbol | null | undefined
+
+export type PrimitiveName =
 	boolean | number | string
 
 

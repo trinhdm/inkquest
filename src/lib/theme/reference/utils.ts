@@ -1,5 +1,6 @@
-import { PREFIX_CSS_SELECTOR } from '@/utils/constants'
 import { formatToken } from '../format'
+import { PREFIX_CSS_SELECTOR } from '@/utils/constants'
+import type { Primitive } from '@/types/shared'
 import type { TokenVar } from '../types/token.types'
 
 const getTokenVar = (path: string[], prefix?: string): TokenVar =>
@@ -18,14 +19,16 @@ export const aliasVar = (...path: string[]): TokenVar =>
 type ShorthandNode = Record<'fontFamily' | 'fontSize' | 'fontWeight' | 'lineHeight', string>
 
 type LeafPath<T> =
-	T extends readonly unknown[] ? [] :
-	T extends ShorthandNode
+	T extends Primitive						// guards against `(string & {})` i.e. CSSProperties[T]
 		? []
-		: T extends object
-			?
-				| ('base' extends keyof T ? [] : never)
-				| { [K in Exclude<keyof T & string, 'base'>]: [K, ...LeafPath<T[K]>] }[Exclude<keyof T & string, 'base'>]
-			: []
+		: T extends readonly unknown[]
+			? []
+			: T extends ShorthandNode
+				? []
+				: T extends object
+					?	| ('base' extends keyof T ? [] : never)
+						| { [K in Exclude<keyof T & string, 'base'>]: [K, ...LeafPath<T[K]>] }[Exclude<keyof T & string, 'base'>]
+					: []
 
 type PathOf<K> = K extends object ? LeafPath<K> : [K]
 type StatePathOf<K> = K extends object ? LeafPath<K> : [K] | []
@@ -47,7 +50,7 @@ export const createValueRef = (build: Builder, ...category: string[]) =>
 
 /** Accessor-factory kinds for building token maps — tokenPath.get<K>(build, ...category). */
 export const token = {
-	path: createAccessor,
-	optPath: createStateAccessor,
-	endPath: createValueRef,
+	path: createAccessor,						//
+	optPath: createStateAccessor,				//	includes 'base' as []
+	endPath: createValueRef,					//	not nested
 }
