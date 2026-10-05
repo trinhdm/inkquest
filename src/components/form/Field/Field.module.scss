@@ -5,20 +5,51 @@
     --field-padding-block: var(--inkq-field-padding-md);
     --field-padding-inline: var(--inkq-field-padding-md);
 
+    display: flex;
+    flex-direction: column;
     position: relative;
+    row-gap: var(--space-3);
 
     &__control {
         position: relative;
     }
 
-    &__icon {
+    &__icon,
+    &__loader {
         --icon-size: var(--field-icon-size);
 
         color: var(--inkq-color-placeholder);
         inset-block: 0;
         margin: auto var(--field-padding-inline);
-        max-height: fit-content;
         position: absolute;
-        z-index: 5;
     }
+
+    &__icon {
+        max-height: fit-content;
+        z-index: 2;
+    }
+
+    &__label {
+        color: var(--inkq-color-text-tertiary);
+        column-gap: var(--space-1);
+        display: flex;
+        font: var(--inkq-text-label-mono);
+        letter-spacing: var(--inkq-font-tracking-wide);
+        text-transform: uppercase;
+    }
+
+    &__star {
+        color: var(--inkq-color-action-active);
+    }
+
+    &:where([data-loading]) #{$name} {
+		&__icon {
+            animation: fadeOut var(--duration-default) var(--easing-out) forwards;
+        }
+	}
+}
+
+@keyframes fadeOut {
+	from { opacity: 1; }
+	to { opacity: 0; }
 }

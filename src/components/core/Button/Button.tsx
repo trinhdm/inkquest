@@ -70,6 +70,7 @@ type ButtonProps = BaseButtonProps & (
 )
 
 interface ButtonSpecs {
+	context: ButtonGroup.Context
 	defaults: {
 		as: typeof TAG
 		props: PropsDefaultList<typeof DEFAULT_PROPS>
@@ -218,7 +219,7 @@ export const Button = polymorphic<ButtonSpecs>((_props, { useProps, useStyles, u
 	const inner = (
 		<ButtonProvider value={ ctxValues }>
 			<Box as="span" { ...styles('inner') }>
-				{ loading && <Box as={ LoaderCircle } { ...styles('loader') } /> }
+				{ loading && <LoaderCircle { ...styles('loader', true) } /> }
 				{ buildSections(children, styles) }
 			</Box>
 		</ButtonProvider>

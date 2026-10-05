@@ -11,7 +11,6 @@ const NAME = 'TextInput' as const,
 	TAG = 'input' as const
 
 const DEFAULT_PROPS = {
-	as: TAG,
 	required: false,
 	type: 'text',
 } as const
@@ -31,10 +30,7 @@ interface TextInputProps {
 
 interface TextInputSpecs {
 	context: Field.Context
-	defaults: {
-		as: typeof TAG
-		props: PropsDefaultList<typeof DEFAULT_PROPS>
-	}
+	defaults: { props: PropsDefaultList<typeof DEFAULT_PROPS> }
 	props: TextInputProps
 	selectors: TextInputSelectors
 	tokens: TextInputTokens
@@ -53,7 +49,7 @@ const tokens = defineTokens<TextInputSpecs>()(({ context, props, theme }) => {
 	const { size } = props
 
 	const step = hasIcon ? 2 : 1.5
-	const blockPadding = !!size ? theme.el.field.padding(size) : 'var(--field-control-padding)',
+	const blockPadding = !!size ? theme.el.field.padding(size) : 'var(--field-padding-block)',
 		inlinePadding = `calc(${step} * ${blockPadding})`,
 		padding = `${blockPadding} ${inlinePadding}`
 
@@ -112,7 +108,7 @@ export const TextInput = polymorphic<TextInputSpecs>((_props, { useProps, useSty
 			disabled={ disabled }
 			id={ idx.control }
 			onChange={ onChange }
-			readOnly={ readOnly || !!loading || (value !== undefined && !onChange) }
+			readOnly={ readOnly || (value !== undefined && !onChange) }
 			value={ value }
 		/>
 	)

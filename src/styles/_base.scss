@@ -269,6 +269,23 @@ textarea,
 	z-index: 5;
 }
 
+.inkq-loader {
+	display: inline-block;
+	max-height: fit-content;
+	opacity: 0;
+	pointer-events: none;
+	user-select: none;
+	z-index: 5;
+
+	[data-loading] & {
+		cursor: progress;
+
+		animation:
+			fadeIn var(--duration-default) var(--easing-out) var(--duration-instant) forwards,
+			spin 2s linear calc(var(--duration-gradual) - var(--duration-default)) infinite;
+	}
+}
+
 
 /**
   *	 hard-coded token backups
@@ -353,4 +370,20 @@ $animate-max: 99;
 			}
 		}
 	}
+}
+
+
+@keyframes fadeIn {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+	from { opacity: 1; }
+	to { opacity: 0; }
+}
+
+@keyframes spin {
+	from { transform: rotate(0deg); }
+	to { transform: rotate(360deg); }
 }
