@@ -1,6 +1,6 @@
 'use client'
 
-import { countFaqs, type FaqGroup } from '../faqs.data'
+import { countFaqs, type FaqGroup } from '../../faqs.data'
 import { highlightText } from '@/lib/component'
 import { Accordion } from '@/components/data/Accordion'
 import { Section } from '@/components/layout/Section'
@@ -52,3 +52,5 @@ export const FaqCategory = ({
 		</Section>
 	)
 }
+
+FaqCategory.displayName = 'FaqCategory'

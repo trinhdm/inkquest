@@ -1,0 +1,1 @@
+export { FaqsBanner } from './FaqsBanner'

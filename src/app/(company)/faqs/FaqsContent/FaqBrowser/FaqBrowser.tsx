@@ -2,7 +2,7 @@
 
 import { useOptimistic, useTransition } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useFaqsCtx } from '../faqs.context'
+import { useFaqsCtx } from '../../faqs.context'
 import { extractText } from '@/lib/component'
 import { FaqCategory } from '../FaqCategory'
 import { FaqResults } from '../FaqResults'
@@ -15,9 +15,7 @@ import {
 	FAQ_CATEGORIES,
 	FAQ_ITEMS,
 	type FaqGroup,
-} from '../faqs.data'
-
-const NAME = 'FaqBrowser'
+} from '../../faqs.data'
 
 const findTerms = (query: string): string[] =>
 	query.split(/\s+/).filter(Boolean).map(term => term.toLowerCase())
@@ -97,4 +95,4 @@ export const FaqBrowser = () => {
 	)
 }
 
-FaqBrowser.displayName = NAME
+FaqBrowser.displayName = 'FaqBrowser'

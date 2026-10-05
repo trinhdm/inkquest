@@ -1,0 +1,1 @@
+export { FaqsContent } from './FaqsContent'

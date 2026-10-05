@@ -1,5 +1,7 @@
+'use client'
+
 import Link from 'next/link'
-import { countFaqs, type FaqGroup } from '../faqs.data'
+import { countFaqs, type FaqGroup } from '../../faqs.data'
 import { FaqCategory } from '../FaqCategory'
 
 interface FaqResultsProps {
@@ -9,8 +11,8 @@ interface FaqResultsProps {
 }
 
 export const FaqResults = ({ groups, query, terms }: FaqResultsProps) => {
-	const count = countFaqs(groups)
-	const resultStr = `result${count === 1 ? '' : 's'} for`
+	const count = countFaqs(groups),
+		resultStr = `result${count === 1 ? '' : 's'} for`
 
 	return (
 		<>
@@ -35,3 +37,5 @@ export const FaqResults = ({ groups, query, terms }: FaqResultsProps) => {
 		</>
 	)
 }
+
+FaqResults.displayName = 'FaqResults'
