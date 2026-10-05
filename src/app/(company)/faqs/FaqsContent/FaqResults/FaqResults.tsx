@@ -1,8 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { countFaqs, type FaqGroup } from '../../faqs.data'
+import { countFaqs } from '../../utils'
 import { FaqCategory } from '../FaqCategory'
+import type { FaqGroup } from '../../faqs.data'
 
 interface FaqResultsProps {
 	groups: FaqGroup[]

@@ -1,6 +1,4 @@
-import type { Route } from 'next'
 import type { PageDataItem } from '@/types/shared'
-import type { Sidebar } from '@/components/layout/Sidebar'
 
 export interface FaqGroup {
 	id: string
@@ -161,19 +159,3 @@ export const FAQ_ITEMS: FaqGroup[] = [
 		questions: [],
 	},
 ]
-
-export const FAQ_CATEGORIES: Sidebar.LinkItem[] = FAQ_ITEMS.map(({ category, id }) => ({
-	id,
-	label: category,
-	url: `/faqs?category=${id}`,
-}))
-
-export const faqCategoryUrl = (id: string): Route<string> => `/faqs?category=${id}`
-
-export const resolveFaqGroup = (value?: string | string[]): FaqGroup => {
-	const id = Array.isArray(value) ? value[0] : value
-	return FAQ_ITEMS.find(group => group.id === id) ?? FAQ_ITEMS[0]
-}
-
-export const countFaqs = (groups: FaqGroup[]): number =>
-	groups.reduce((total, { questions }) => total + questions.length, 0)

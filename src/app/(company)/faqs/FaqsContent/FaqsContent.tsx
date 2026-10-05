@@ -2,7 +2,7 @@
 
 import { Suspense } from 'react'
 import { useFaqsCtx } from '../faqs.context'
-import { resolveFaqGroup } from '../faqs.data'
+import { resolveFaqGroup } from '../utils'
 import { FaqBrowser } from './FaqBrowser'
 import { FaqCategory } from './FaqCategory'
 import { Section } from '@/components/layout/Section'

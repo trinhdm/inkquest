@@ -4,18 +4,24 @@ import { useOptimistic, useTransition } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useFaqsCtx } from '../../faqs.context'
 import { extractText } from '@/lib/component'
+import { resolveFaqGroup } from '../../utils'
 import { FaqCategory } from '../FaqCategory'
 import { FaqResults } from '../FaqResults'
 import { Grid } from '@/components/layout/Grid'
 import { Sidebar } from '@/components/layout/Sidebar'
+import { FAQ_ITEMS, type FaqGroup } from '../../faqs.data'
+import type { Route } from 'next'
 
-import {
-	faqCategoryUrl,
-	resolveFaqGroup,
-	FAQ_CATEGORIES,
-	FAQ_ITEMS,
-	type FaqGroup,
-} from '../../faqs.data'
+
+const getCategoryUrl = (id: string, param: string): Route<string> =>
+	`/faqs?${param}=${id}`
+
+const findCategories = (param: string): Sidebar.LinkItem[] =>
+	FAQ_ITEMS.map(({ category, id }) => ({
+		id,
+		label: category,
+		url: getCategoryUrl(id, param),
+	}))
 
 const findTerms = (query: string): string[] =>
 	query.split(/\s+/).filter(Boolean).map(term => term.toLowerCase())
@@ -59,12 +65,14 @@ export const FaqBrowser = () => {
 	const urlID = searchParams.get(params.category) ?? undefined
 	const [optimisticID, setOptimisticID] = useOptimistic(urlID)
 	const [isPending, startTransition] = useTransition()
+
 	const activeGroup = resolveFaqGroup(optimisticID)
+	const categories = findCategories(params.category)
 
 	const selectCategory = (id: string) => {
 		startTransition(() => {
 			setOptimisticID(id)
-			router.push(faqCategoryUrl(id), { scroll })
+			router.push(getCategoryUrl(id, params.category), { scroll })
 		})
 	}
 
@@ -86,7 +94,7 @@ export const FaqBrowser = () => {
 		<Grid attributes={ { aria: { busy: isPending || undefined } } } gap="lg">
 			<Sidebar
 				active={ activeGroup.id }
-				items={ FAQ_CATEGORIES }
+				items={ categories }
 				onItemChange={ selectCategory }
 				scroll={ scroll }
 			/>

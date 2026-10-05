@@ -1,9 +1,10 @@
 'use client'
 
-import { countFaqs, type FaqGroup } from '../../faqs.data'
+import { countFaqs } from '../../utils'
 import { highlightText } from '@/lib/component'
 import { Accordion } from '@/components/data/Accordion'
 import { Section } from '@/components/layout/Section'
+import type { FaqGroup } from '../../faqs.data'
 
 interface FaqCategoryProps {
 	group: FaqGroup
