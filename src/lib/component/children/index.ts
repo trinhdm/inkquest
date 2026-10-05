@@ -1,3 +1,5 @@
 export { extractText } from './extractText'
 export { filterChildren } from './filterChildren'
 export { getChildKey } from './getChildKey'
+export { highlightText } from './highlightText'
+export { withInlineWrap } from './withInlineWrap'

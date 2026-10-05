@@ -1,6 +1,6 @@
 'use client'
 
-import { createElement, type ReactNode } from 'react'
+import { highlightText } from '@/lib/component'
 import { Accordion } from '@/components/data/Accordion'
 import { Section } from '@/components/layout/Section'
 import type { FaqGroup } from '../faqs.data'
@@ -8,22 +8,6 @@ import type { FaqGroup } from '../faqs.data'
 interface FaqCategoryProps {
 	group: FaqGroup
 	terms?: string[]
-}
-
-const ESCAPE_REGEX = /[.*+?^${}()|[\]\\]/g
-const escapeTerm = (term: string): string => term.replace(ESCAPE_REGEX, '\\$&')
-
-export const highlightMatch = (text: string, terms: string[]): ReactNode => {
-	if (!terms.length) return text
-
-	const pattern = new RegExp(`(${terms.map(escapeTerm).join('|')})`, 'gi')
-	const parts = text.split(pattern)
-
-	return parts.map((part, index) => (
-		index % 2 === 1
-			? createElement('mark', { key: `${ index }-${ part }` }, part)
-			: part
-	))
 }
 
 export const FaqCategory = ({
@@ -51,10 +35,10 @@ export const FaqCategory = ({
 					{ questions.map(({ content, id, title }) => (
 						<Accordion id={ id } key={ `faq-${id}` }>
 							<Accordion.Title>
-								{ !!terms?.length ? highlightMatch(title, terms) : title }
+								{ !!terms?.length ? highlightText(title, terms) : title }
 							</Accordion.Title>
 							<Accordion.Content>
-								{ content }
+								{ !!terms?.length ? highlightText(content, terms) : content }
 							</Accordion.Content>
 						</Accordion>
 					)) }

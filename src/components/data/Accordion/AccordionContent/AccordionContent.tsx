@@ -1,5 +1,5 @@
 import { useAccordionCtx } from '../Accordion.context'
-import { defineTokens, polymorphic } from '@/lib/component'
+import { defineTokens, polymorphic, withInlineWrap } from '@/lib/component'
 import { extractOthers } from '@/hooks/useProps'
 import { keyHasValue } from '@/utils/helpers'
 import { Box } from '@/components/polymorphic/Box'
@@ -56,7 +56,7 @@ export const AccordionContent = polymorphic<AccordionContentSpecs>((_props, { us
 		>
 			<div { ...styles('wrapper') } inert={ !isOpen || undefined }>
 				<div { ...styles('inner') }>
-					{ typeof children === 'string' ? <p>{ children }</p> : children }
+					{ withInlineWrap(children) }
 				</div>
 			</div>
 		</Box>
