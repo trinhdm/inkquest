@@ -14,15 +14,17 @@
 		}
 	}
 
-	.faq-content p {
-		color: var(--inkq-color-text-secondary);
-	}
+	.faq-content {
+		p {
+			color: var(--inkq-color-text-secondary);
+		}
 
-	.faq-category-group {
-		padding-block: var(--inkq-stack-gap-lede);
+		.faq-category-group {
+			padding-block: var(--inkq-stack-gap-lede);
 
-		&:last-child {
-			padding-block-end: 0;
+			&:last-child {
+				padding-block-end: 0;
+			}
 		}
 	}
 }

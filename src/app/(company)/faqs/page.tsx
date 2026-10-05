@@ -33,7 +33,7 @@ export default function FAQs() {
 			</Section>
 
 			<Section id={ `${pageID}-list` }>
-				<Suspense fallback={ <FaqCategory { ...resolveFaqGroup() } /> }>
+				<Suspense fallback={ <FaqCategory group={ resolveFaqGroup() } /> }>
 					<FaqBrowser />
 				</Suspense>
 			</Section>

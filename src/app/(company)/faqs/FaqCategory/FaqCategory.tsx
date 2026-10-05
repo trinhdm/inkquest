@@ -5,8 +5,8 @@ import { Accordion } from '@/components/data/Accordion'
 import { Section } from '@/components/layout/Section'
 import type { FaqGroup } from '../faqs.data'
 
-interface FaqCategoryProps
-	extends FaqGroup {
+interface FaqCategoryProps {
+	group: FaqGroup
 	terms?: string[]
 }
 
@@ -27,11 +27,10 @@ export const highlightMatch = (text: string, terms: string[]): ReactNode => {
 }
 
 export const FaqCategory = ({
-	category,
-	id,
-	questions,
+	group,
 	terms,
 }: FaqCategoryProps) => {
+	const { category, id, questions } = group
 	const count = questions.length,
 		headingID = `${id}-heading`
 

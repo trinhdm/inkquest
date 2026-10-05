@@ -77,7 +77,7 @@ export const FaqBrowser = () => {
 				items={ FAQ_CATEGORIES }
 				onItemChange={ selectCategory }
 			/>
-			<FaqCategory { ...activeGroup } />
+			<FaqCategory group={ activeGroup } />
 		</Grid>
 	)
 }

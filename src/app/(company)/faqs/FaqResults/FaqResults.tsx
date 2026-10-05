@@ -26,7 +26,11 @@ export const FaqResults = ({ groups, query, terms }: FaqResultsProps) => {
 			<div className="faq-content">
 				{ !!groups.length
 					? groups.map(group => (
-						<FaqCategory { ...group } key={ `faq-result-${group.id}` } terms={ terms } />
+						<FaqCategory
+							key={ `faq-result-${group.id}` }
+							group={ group }
+							terms={ terms }
+						/>
 					))
 					: <p>Try a different word, or <Link href="/messages" data-cta>ask us</Link> directly and we&apos;ll answer.</p>
 				}
