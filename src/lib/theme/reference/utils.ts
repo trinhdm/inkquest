@@ -1,7 +1,7 @@
 import { formatToken } from '../format'
 import { PREFIX_CSS_SELECTOR } from '@/utils/constants'
 import type { Primitive } from '@/types/shared'
-import type { TokenVar } from '../types/token.types'
+import type { TokenVar, TokenVariableShape } from '../types/token.types'
 
 const getTokenVar = (path: string[], prefix?: string): TokenVar =>
 	`var(${formatToken({ path, prefix })})`
@@ -11,7 +11,7 @@ export const baseVar = (...path: string[]): TokenVar =>
 	getTokenVar(path)
 
 /** Prefixed reference into an already-built semantic/alias token — aliasVar('primary') -> var(--inkq-primary). */
-export const aliasVar = (...path: string[]): TokenVar =>
+export const aliasVar = (...path: string[]): TokenVariableShape =>
 	getTokenVar(path, PREFIX_CSS_SELECTOR)
 
 

@@ -6,7 +6,8 @@ export type {
 
 export type {
 	StaticColorNames,
-	TokenState, TokenStateHues, TokenVariableShape,
+	TokenState, TokenStateHues,
+	TokenSizeShape, TokenVariableShape,
 } from './token.types'
 
 export type {

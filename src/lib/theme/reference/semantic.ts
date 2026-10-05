@@ -32,7 +32,7 @@ const propertyTokens = {
 }
 
 // limit component usage to only semantic tokens
-export const semanticTokens = {
+const semanticTokens = {
 	breakpoint: token.path<ReturnType<LayoutTokens['breakpoint']>>(aliasVar, 'breakpoint'),
 	container: token.path<ReturnType<LayoutTokens['container']>>(aliasVar, 'container'),
 	space: token.path<ReturnType<LayoutTokens['space']>>(aliasVar, 'space'),

@@ -1,13 +1,10 @@
 import { base } from '../../reference'
-import type { TokenVariableShape } from '../../types'
+import type { SizeRangeX } from '@/types/shared'
+import type { TokenSizeShape, TokenVariableShape } from '../../types'
 
-export interface BreakpointTokens {
+export interface BreakpointTokens
+	extends TokenSizeShape<SizeRangeX> {
 	min: string
-	xs: string
-	sm: string
-	md: string
-	lg: string
-	xl: string
 	max: string
 }
 
@@ -63,11 +60,7 @@ export interface GridTokens {
 	subnav: { size: string }
 
 	field: {
-		padding: {
-			sm: string
-			md: string
-			lg: string
-		}
+		padding: TokenSizeShape
 	}
 }
 
@@ -106,5 +99,5 @@ export const getGridTokens = (): GridTokens => ({
 			md: base.space('3'),
 			lg: base.space('4'),
 		},
-	}
+	},
 })

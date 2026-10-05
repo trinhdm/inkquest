@@ -1,28 +1,17 @@
 import { base } from '../../reference'
+import type { TokenSizeShape } from '../../types'
 
 export interface ElementTokens {
-	icon: {
-		sm: string
-		md: string
-		lg: string
-	}
-	dot: {
-		sm: string
-		md: string
-		lg: string
-	}
-	tile: {
-		sm: string
-		md: string
-		lg: string
-	}
+	icon: TokenSizeShape
+	dot: TokenSizeShape
+	tile: TokenSizeShape
 }
 
 export const getElementTokens = (): ElementTokens => ({
 	icon: {
-		sm: base.icon('12'),
+		sm: base.icon('14'),
 		md: base.icon('16'),
-		lg: base.icon('20'),
+		lg: base.icon('18'),
 	},
 	dot: {
 		sm: base.space('1'),

@@ -33,5 +33,8 @@ export type SizeRange =
 	| 'xl'
 	| 'xxl'
 
+export type SizeRangeX =
+	ExcludeIn<SizeRange, 'xx'>
+
 export type Size =
 	ExcludeIn<SizeRange, 'x'>

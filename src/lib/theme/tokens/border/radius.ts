@@ -1,10 +1,9 @@
 import { alias, base } from '../../reference'
+import type { TokenSizeShape } from '../../types'
 
-interface RadiusScaleTokens {
+interface RadiusScaleTokens
+	extends TokenSizeShape {
 	none: string
-	sm: string
-	md: string
-	lg: string
 	pill: string
 }
 
