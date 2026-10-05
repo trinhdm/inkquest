@@ -1,8 +1,9 @@
 .inkq-field {
 	$name: &;
 
+    --field-icon-size: var(--inkq-icon-md);
+    --field-padding-block: var(--inkq-field-padding-md);
     --field-padding-inline: var(--inkq-field-padding-md);
-    --field-icon-size: 1.125rem;
 
     position: relative;
 

@@ -30,7 +30,7 @@ export const {
 	RootProvider: FieldProvider,
 	useRootCtx: useFieldCtx,
 	useRootProps: useFieldProps,
-} = createRootCtx<FieldContext>('Field')
+} = createRootCtx<FieldContext, 'Field'>('Field')
 
 const fieldProps = [
 	'disabled',

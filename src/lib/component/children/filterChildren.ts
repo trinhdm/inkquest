@@ -54,25 +54,29 @@ export const filterChildren = (
 	displayName: string | string[],
 	verifyArgs?: Omit<VerifyChildrenArgs, 'children'>,
 ): ReactNode[] => {
-	const filtered = Children.toArray(children).flatMap<ReactNode>(child => {
+	const filtered: ReactNode[] = Array.isArray(displayName)
+		? new Array(displayName.length).fill(null)
+		: []
+
+	Children.toArray(children).forEach(child => {
 		if (isValidElement<WithChildren>(child)) {
 			if (child.type === Fragment)
 				return filterChildren(child.props.children, displayName)
 
-			const childName = (child.type as ComponentType).displayName
+			const { displayName: childName } = child.type as ComponentType
+			if (!childName) return
 
-			if (!childName)
-				return []
-			else if (typeof displayName === 'string')
-				if (childName !== displayName) return []
-			else if (Array.isArray(displayName))
-				if (!displayName.includes(childName)) return []
+			if (typeof displayName === 'string') {
+				if (childName !== displayName) return
+				filtered.push(child)
+			} else if (Array.isArray(displayName)) {
+				const i = displayName.indexOf(childName)
+				if (i < 0) return
+				filtered[i] = child
+			}
 		}
-
-		return [child]
 	})
 
 	if (verifyArgs) verifyChildren({ ...verifyArgs, children })
-
 	return filtered
 }

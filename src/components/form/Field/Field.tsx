@@ -14,6 +14,7 @@ import { defineTokens, filterChildren, polymorphic } from '@/lib/component'
 import { extractOthers } from '@/hooks/useProps'
 import { toKebabCase } from '@/utils/helpers'
 import { Box } from '@/components/polymorphic/Box'
+import { FieldLabel } from './FieldLabel'
 import { FieldProvider, type FieldContext } from './Field.context'
 import { TextInput } from '../TextInput'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
@@ -34,6 +35,7 @@ const SUBCOMPONENTS = {
 	// FileUpload: FileUpload,
 	// TextArea: TextArea,
 	Input: TextInput,
+	Label: FieldLabel,
 } as const
 
 interface FieldProps {
@@ -41,7 +43,6 @@ interface FieldProps {
 	disabled?: boolean
 	error?: string
 	id: string
-	label?: string
 	loading?: boolean
 	required?: boolean
 	size?: Size
@@ -59,18 +60,20 @@ interface FieldSpecs {
 }
 
 type FieldSelectors =
-	| 'root' | 'label' | 'control'
-	| 'required' | 'icon' | 'indicator' | 'error'
+	| 'root' | 'control' | 'error'
+	| 'icon' | 'loader'
 
 type FieldTokens = {
 	root:
-		| '--field-control-padding'
+		| '--field-icon-size'
+		| '--field-padding-block'
+		| '--field-padding-inline'
 }
 
 interface FieldParts {
-	control: ReactNode | null
-	icon: ReactNode | null
-	label: ReactNode  | null
+	control: ReactNode
+	icon: ReactNode
+	label: ReactNode
 }
 
 const getIcon = (type?: TextInput.Props['type']) => {
@@ -94,19 +97,18 @@ const buildField = (
 	children: FieldProps['children'],
 	styles: StyleFn<FieldSpecs>,
 ): FieldParts => {
-	const childNames = [TextInput.displayName]
-	const [control] = filterChildren(children, childNames, { name: NAME, total: 1 })
+	const childNames = [FieldLabel.displayName, TextInput.displayName]
+	const [label, control] = filterChildren(children, childNames, { name: NAME, total: 2 })
 
 	const items = {
 		control,
 		icon: null,
-		label: null,
+		label,
 	} as FieldParts
 
 	if (isValidElement<TextInput.Props>(control)) {
-		const { props: { type } } = control
-		const icon = getIcon(type)
-
+		const { props: { type } } = control,
+			icon = getIcon(type)
 		if (icon) items.icon = <div { ...styles('icon') }>{ icon }</div>
 	}
 
@@ -122,10 +124,9 @@ const tokens = defineTokens<FieldSpecs>()(({ props, theme }) => {
 
 	return {
 		root: {
-			'--field-control-padding': !!size ? theme.el.field.padding(size) : undefined,
+			'--field-icon-size': !!size ? `calc(${theme.el.icon.size(size)} - .125rem)` : undefined,
 			'--field-padding-block': !!size ? theme.el.field.padding(size) : undefined,
 			'--field-padding-inline': !!size ? inlinePadding : undefined,
-			'--field-icon-size': !!size ? `calc(${theme.el.icon.size(size)} - .125rem)` : undefined,
 		},
 	}
 })
@@ -140,7 +141,6 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 		disabled,
 		error,
 		id,
-		label,
 		loading,
 		required,
 		size,
@@ -150,7 +150,7 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 
 	const others = extractOthers(rest)
 	const hasError = !!error?.trim()
-	const { control, icon } = buildField(children, styles)
+	const { control, icon, label } = buildField(children, styles)
 
 	const uid = useId()
 	const idx = useMemo(() => {
@@ -187,21 +187,16 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 			as={ as }
 			attributes={ { data } }
 		>
-			{ !!label && (
-				<label { ...styles('label') } htmlFor={ idx.control }>
-					{ label }
-					{ required && <span { ...styles('required') } aria-hidden="true">*</span> }
-				</label>
-			) }
-
 			<FieldProvider value={ ctxValues }>
+				{ label }
+
 				<div { ...styles('control') }>
 					{ icon }{ control }
-					{ !!loading && <Box { ...styles('indicator') } as={ LoaderCircle } /> }
+					{ !!loading && <Box { ...styles('loader', true) } as={ LoaderCircle } /> }
 				</div>
-			</FieldProvider>
 
-			{ hasError && <p { ...styles('error') }>{ error }</p> }
+				{ hasError && <p { ...styles('error') }>{ error }</p> }
+			</FieldProvider>
 		</Box>
 	)
 }, { name: NAME, classes })

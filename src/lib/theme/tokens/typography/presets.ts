@@ -24,11 +24,14 @@ export interface FontPresetTokens {
 	h4: FluidFontGroup
 	body: FontProperties
 	section: LayoutFontGroup
-	label: FontProperties
 	control: FontProperties
 	navigation: FontProperties
 	prose: FontProperties
 
+	label: {
+		base: FontProperties
+		mono: FontProperties
+	}
 	caption: {
 		base: FontProperties
 		image: FontProperties
@@ -66,6 +69,12 @@ export const getFontPresetTokens = (): FontPresetTokens => {
 	const captionSharedProps = {
 		fontFamily: alias.fontFamily('mono'),
 		fontWeight: base.fontWeight('400'),
+		lineHeight: alias.lineHeight('label'),
+	}
+
+	const labelSharedProps = {
+		fontSize: 	alias.fontSize('label'),
+		fontWeight: base.fontWeight('600'),
 		lineHeight: alias.lineHeight('label'),
 	}
 
@@ -147,10 +156,15 @@ export const getFontPresetTokens = (): FontPresetTokens => {
 			},
 		},
 		label: {
-			fontFamily: alias.fontFamily('body'),
-			fontSize: 	alias.fontSize('label'),
-			fontWeight: base.fontWeight('600'),
-			lineHeight: alias.lineHeight('label'),
+			base: {
+				...labelSharedProps,
+				fontFamily: alias.fontFamily('body'),
+			},
+			mono: {
+				...labelSharedProps,
+				fontFamily: alias.fontFamily('mono'),
+				fontSize: 	alias.fontSize('label', 'sm'),
+			},
 		},
 		navigation: {
 			fontFamily: alias.fontFamily('body'),
