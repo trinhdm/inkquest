@@ -16,9 +16,9 @@ describe('Sidebar', () => {
 		{ id: 'discard', label: 'Discard' },
 	]
 
-	it('defaults `as` to "div", `scroll` to false, and `shallow` to true', () => {
-		const defaults = getDefaultProps<Sidebar.Props & { as: 'div' }>('Sidebar')
-		expect(defaults.as).toBe('div')
+	it('defaults `as` to "aside", `scroll` to false, and `shallow` to true', () => {
+		const defaults = getDefaultProps<Sidebar.Props & { as: 'aside' }>('Sidebar')
+		expect(defaults.as).toBe('aside')
 		expect(defaults.scroll).toBe(false)
 		expect(defaults.shallow).toBe(true)
 	})

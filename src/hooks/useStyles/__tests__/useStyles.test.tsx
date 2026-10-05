@@ -5,8 +5,10 @@ import type { ReactNode } from 'react'
 
 // `getClassName` and `getStyle` (the two functions `useStyles` composes) each
 // have their own suite — this one covers `useStyles`'s own composition:
-// pluralizing root results, memoizing the returned function, and caching
-// per-selector/per-config results within a single render.
+// pluralizing root results, and how the returned styles function behaves
+// across renders (see the dedicated identity test below for a flagged
+// performance concern: the per-selector memoisation this comment used to
+// describe no longer exists).
 const wrapper = ({ children }: { children: ReactNode }) => (
 	<ThemeProvider>{ children }</ThemeProvider>
 )
@@ -46,7 +48,15 @@ describe('useStyles', () => {
 		expect(result.current('icon').className).toContain('widget__icon')
 	})
 
-	it('caches the result for an identical selector+config pair within the same styles function', () => {
+	// SOURCE BUG (flagged, not asserted as desirable): the per-selector/per-config
+	// result cache was removed from `useStyles`, so calling the styles function
+	// twice with an identical selector+config pair now allocates a brand new
+	// result object each time rather than returning the memoized one. The two
+	// calls remain value-equal, but no longer share identity. This is a
+	// performance concern worth revisiting (it defeats downstream `React.memo`/
+	// `useMemo` consumers relying on referential stability), not a behavior
+	// change this suite endorses.
+	it('returns a value-equal but newly-allocated result for an identical selector+config pair within the same styles function', () => {
 		const { result } = renderHook(
 			() => useStyles('Widget', { props: {} }),
 			{ wrapper }
@@ -54,7 +64,8 @@ describe('useStyles', () => {
 
 		const first = result.current('icon')
 		const second = result.current('icon')
-		expect(first).toBe(second)
+		expect(first).not.toBe(second)
+		expect(first).toStrictEqual(second)
 	})
 
 	it('does not share a cache entry between different config objects for the same selector', () => {

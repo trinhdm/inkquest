@@ -2,11 +2,19 @@ import { getSharedTokens } from '../utils'
 import { rem } from '@/lib/general'
 
 describe('getSharedTokens', () => {
+	afterEach(() => {
+		// jsdom leaves the root font-size unset (computed fontSize === ''), so
+		// rem()'s internal base resolves to NaN unless a test opts in below.
+		// See src/lib/general/__tests__/unitConverter.test.ts for the same idiom.
+		document.documentElement.style.fontSize = ''
+	})
+
 	it('returns an empty object when no size is given', () => {
 		expect(getSharedTokens({})).toEqual({})
 	})
 
-	it('derives CSS custom properties for a non-steps layout, using the default order (3)', () => {
+	it('derives root CSS custom properties for a given size, using the default order (3)', () => {
+		document.documentElement.style.fontSize = '16px'
 		const result = getSharedTokens({ size: 'sm' })
 
 		expect(result.root).toEqual({
@@ -16,19 +24,18 @@ describe('getSharedTokens', () => {
 			'--accordion-indicator-size': 'var(--font-size-16)',
 			'--accordion-step-size': `calc((var(--accordion-text-size) - var(--accordion-indicator-size)) + (${ rem(3) } * 3) )`,
 			'--accordion-text-size': 'var(--inkq-font-size-heading-h5)',
-			'--accordion-content-indent': 'var(--accordion-indent)',
-			'--accordion-title-indent': 'var(--accordion-indent)',
 		})
 	})
 
-	it('leaves title/content indent overrides empty for a non-steps layout', () => {
+	it('returns only a `root` token group -- there is no longer a `title`/`content` split', () => {
+		document.documentElement.style.fontSize = '16px'
 		const result = getSharedTokens({ size: 'sm' })
 
-		expect(result.title).toEqual({})
-		expect(result.content).toEqual({})
+		expect(Object.keys(result)).toEqual(['root'])
 	})
 
 	it('uses a smaller step unit (rem(3)) for size="sm" than for "md"/"lg" (rem(6))', () => {
+		document.documentElement.style.fontSize = '16px'
 		const sm = getSharedTokens({ size: 'sm' })
 		const md = getSharedTokens({ size: 'md' })
 
@@ -51,16 +58,13 @@ describe('getSharedTokens', () => {
 		expect(result.root!['--accordion-text-size']).toBe('var(--inkq-font-size-heading-h1)')
 	})
 
-	it('shifts the indent tokens onto title/content for layout="steps"', () => {
-		const result = getSharedTokens({ layout: 'steps', order: 1, size: 'lg' })
+	it('ignores `layout` entirely -- the title/content indent tokens moved to AccordionTitle/AccordionContent, so passing `layout` produces the same root tokens as omitting it', () => {
+		document.documentElement.style.fontSize = '16px'
+		const withLayout = getSharedTokens({ layout: 'steps', order: 1, size: 'lg' })
+		const withoutLayout = getSharedTokens({ order: 1, size: 'lg' })
 
-		expect(result.root!['--accordion-content-indent']).toBe(
-			'calc(var(--accordion-column-width) + var(--accordion-gap))'
-		)
-		expect(result.root!['--accordion-title-indent']).toBe(0)
-		expect(result.title).toEqual({ '--accordion-indent': 0 })
-		expect(result.content).toEqual({
-			'--accordion-indent': 'calc(var(--accordion-column-width) + var(--accordion-gap))',
-		})
+		expect(withLayout).toEqual(withoutLayout)
+		expect(withLayout.root).not.toHaveProperty('--accordion-content-indent')
+		expect(withLayout.root).not.toHaveProperty('--accordion-title-indent')
 	})
 })

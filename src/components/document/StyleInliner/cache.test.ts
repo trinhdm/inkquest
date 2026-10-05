@@ -1,11 +1,17 @@
 import { buildVariantSchemes } from '@/lib/theme/buildVariantSchemes'
 import { resolveStyles } from './resolver'
-import { serializeStyles } from '@/hooks/useVariants/helpers'
+import { serializeStyles } from '@/hooks/useVariants/helpers/serializeStyles'
 import type { getSchemeCSS as GetSchemeCSS, getVariantCSS as GetVariantCSS } from './cache'
 import type { SiteTheme } from '@/lib/theme/types'
 
 jest.mock('./resolver', () => ({ resolveStyles: jest.fn() }))
-jest.mock('./serializer', () => ({ serializeStyles: jest.fn() }))
+// `cache.ts` imports `serializeStyles` through the `@/hooks/useVariants`
+// barrel, which re-exports it from `./helpers`, which re-exports it from
+// this exact leaf file -- so mocking the leaf (not either barrel) is what
+// every import path actually resolves to and intercepts. Mocking a barrel
+// instead would hand `cache.ts` the real function while this test's own
+// `serializeStyles` import silently points at a different module record.
+jest.mock('@/hooks/useVariants/helpers/serializeStyles', () => ({ serializeStyles: jest.fn() }))
 jest.mock('@/lib/theme/buildVariantSchemes', () => ({ buildVariantSchemes: jest.fn() }))
 
 const mockResolveStyles = resolveStyles as jest.Mock

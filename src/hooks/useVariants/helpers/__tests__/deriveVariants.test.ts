@@ -1,19 +1,21 @@
 import { deriveVariants } from '../deriveVariants'
-import { presets, tokens } from '@/lib/theme/reference'
+import { tokens } from '@/lib/theme/reference'
 import type { SiteThemeConfig } from '@/lib/theme/types'
 
-// SiteThemeConfig extends SemanticTokens, so a hand-typed fixture would need
-// to fake the entire accessor catalog. Since reference/semantic.ts is real,
-// deterministic logic (not the large token dataset) and is already covered
-// directly in reference/semantic.test.ts, we compose with it for real here
-// and only add the fields deriveVariants actually reads — `presets` is a
-// required field of `SiteThemeConfig` (`theme.types.ts`) even though
-// `deriveVariants` itself never touches it.
+// SiteThemeConfig extends ApiTokens, so a hand-typed fixture would need to
+// fake the entire accessor catalog. Since reference/api.ts is real,
+// deterministic logic (not the large token dataset) and its building block
+// (semantic.ts) is already covered directly in reference/semantic.test.ts,
+// we compose with the real `tokens` export here and only add the fields
+// deriveVariants actually reads. `tokens` (apiTokens) already carries
+// `presets` as a nested field — it's a required field of `SiteThemeConfig`
+// (`theme.types.ts`) even though `deriveVariants` itself never touches it —
+// so spreading `tokens` is enough; there's no standalone `presets` export
+// to reach for anymore.
 const makeTheme = (options: { prefix?: string } = { prefix: 'inkq' }): SiteThemeConfig => {
 	const { prefix } = options
 	return {
 		...tokens,
-		presets,
 		prefix,
 		prefixSelector: (name: string) => `.${prefix}-${name}`,
 	}

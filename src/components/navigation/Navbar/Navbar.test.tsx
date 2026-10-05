@@ -34,9 +34,12 @@ describe('Navbar', () => {
 	it('renders the login and signup actions grouped together', () => {
 		render(<Navbar />)
 
+		// both render `<Button href="...">`, which renders as an `<a href>` —
+		// so the accessible role is "link", not "button" (see Button.tsx's
+		// polymorphic href handling)
 		expect(screen.getByRole('group')).toBeInTheDocument()
-		expect(screen.getByRole('button', { name: 'Log in' })).toBeInTheDocument()
-		expect(screen.getByRole('button', { name: 'Sign up' })).toBeInTheDocument()
+		expect(screen.getByRole('link', { name: 'Log in' })).toBeInTheDocument()
+		expect(screen.getByRole('link', { name: 'Sign up' })).toBeInTheDocument()
 	})
 
 	it('renders no nav Menu at all when no routes prop is given', () => {

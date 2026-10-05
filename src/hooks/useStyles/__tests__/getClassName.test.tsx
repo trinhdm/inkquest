@@ -4,9 +4,14 @@ import type { SiteThemeConfig } from '@/lib/theme/types'
 
 const theme = { prefix: 'ink', prefixSelector: (name: string) => `.ink-${ name }` } as unknown as SiteThemeConfig
 
+interface TestSpecs {
+	props: Record<string, unknown>
+	selectors: 'root' | 'icon'
+}
+
 const args = (
-	overrides: Partial<SharedConfig<object>> = {}
-): SharedConfig<object> => ({
+	overrides: Partial<SharedConfig<TestSpecs>> = {}
+): SharedConfig<TestSpecs> => ({
 	check: { isRoot: true, isUnstyled: false },
 	classes: undefined,
 	config: undefined,
@@ -16,7 +21,7 @@ const args = (
 	selector: 'root',
 	theme,
 	...overrides,
-} as unknown as SharedConfig<object>)
+})
 
 describe('getClassName', () => {
 	describe('base naming', () => {
@@ -131,11 +136,17 @@ describe('getClassName', () => {
 			}))).toBe('ink-card')
 		})
 
-		it('drops an inherited class that does not carry the theme prefix and falls back to the base classname', () => {
+		it('keeps a non-prefixed inherited class as a passthrough class alongside the base classname, even when unstyled', () => {
 			expect(getClassName(args({
 				check: { isRoot: true, isUnstyled: true },
 				props: { className: 'not-prefixed' },
-			}))).toBe('ink-button')
+			}))).toBe(cxJoin('ink-button', 'not-prefixed'))
+		})
+
+		it('keeps a passthrough class alongside an inherited semantic class on the root selector, rather than dropping either', () => {
+			expect(getClassName(args({
+				props: { className: 'ink-card random-class' },
+			}))).toBe(cxJoin('ink-card', 'random-class'))
 		})
 
 		it('appends `__<selector>` to an inherited class for a non-root selector', () => {

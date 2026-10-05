@@ -1,4 +1,5 @@
 import { buildVariantSchemes } from '../buildVariantSchemes'
+import { enumerateVariantPalettes } from '../tokens/variants'
 
 // buildVariantSchemes composes enumerateVariantPalettes() (real, deterministic
 // logic — tested directly in tokens/variants.test.ts) with tokenGenerator()
@@ -8,12 +9,21 @@ import { buildVariantSchemes } from '../buildVariantSchemes'
 describe('buildVariantSchemes', () => {
 	it('generates one CssRule per enumerated variant palette', () => {
 		const rules = buildVariantSchemes()
-		expect(rules).toHaveLength(17) // 3 structural + 2 special + 4 tones * 3 priorities
+		// tied to the real enumeration output (not a pinned number) — buildVariantSchemes
+		// maps 1:1 over enumerateVariantPalettes(), so an axis change there
+		// surfaces here as a single assertion about that relationship, not a
+		// stale magic count
+		expect(rules).toHaveLength(enumerateVariantPalettes().length)
 	})
 
 	it('defaults to the unscoped "[data-variant]" attribute selector with no component name', () => {
 		const rules = buildVariantSchemes()
-		const light = rules.find(r => r.selector === '[data-variant="light"]')
+		// the FIRST rule emitted for a given variant gets the bare, unscoped
+		// selector as its leading clause; later rules for the SAME variant (a
+		// different tone) only add combinator clauses on top of it — assert on
+		// that leading segment, since which tone happens to be visited first is
+		// an enumeration-order detail, not anything under test here
+		const light = rules.find(r => r.selector.split(',\n')[0] === '[data-variant="light"]')
 		expect(light).toBeDefined()
 	})
 
@@ -60,30 +70,39 @@ describe('buildVariantSchemes', () => {
 		)
 	})
 
-	it('for a semantic tone + explicit priority, appends a redundant priority-only :is() clause alongside the base selector', () => {
-		// Because `priority` is truthy here, the `if (priority)` branch fires
-		// in ADDITION to the base `[data-variant="danger"]` selector already
-		// being pushed — the second clause
-		// `[data-variant="danger"]:is([data-priority="primary"])` is a strict
-		// subset of the first and therefore dead weight in the generated CSS.
-		// Locking in current behavior; see the Maintenance Note.
+	// FIX (cc32b37): semantic colour moved off `variant` onto a separate
+	// `tone` axis, so a "danger" entry is no longer `variant="danger"` — it is
+	// `variant="solid"` (primary maps to "solid" via VARIANT_ORDER) PLUS
+	// `tone="danger"`. `tone` is always set alongside `priority` on these
+	// "ordered" entries, and the `if (priority) { if (!tone) ... }` guard
+	// only pushes a priority clause when tone is ABSENT — so for every real
+	// tone+priority combo the priority clause is suppressed and only the
+	// tone clause survives. "solid"'s bare `[data-variant="solid"]` selector
+	// was already registered by the structural-variant entry (processed
+	// earlier in enumerateVariantPalettes()'s output), so it isn't repeated here.
+	it('for an ordered (tone + priority) entry, the tone clause wins and the priority clause is suppressed', () => {
 		const rules = buildVariantSchemes()
-		const dangerPrimary = rules.find(r => r.selector.includes('"danger"') && r.selector.includes('"primary"'))
+		const dangerPrimary = rules.find(r => r.selector.includes('"danger"') && r.selector.includes('"solid"'))
 
-		expect(dangerPrimary?.selector).toBe(
-			'[data-variant="danger"],\n[data-variant="danger"]:is([data-priority="primary"])'
-		)
+		expect(dangerPrimary?.selector).toBe('[data-variant="solid"]:is([data-tone="danger"])')
 	})
 
-	it('for a semantic tone + non-primary priority, only emits the single priority-scoped selector (no bare attribute selector)', () => {
+	it('the same priority-suppression applies at a non-primary priority — the surviving clause still keys off the mapped structural variant', () => {
+		// danger + "secondary" priority maps to variant="outline"
 		const rules = buildVariantSchemes()
-		const dangerSecondary = rules.find(r => r.selector === '[data-variant="danger"]:is([data-priority="secondary"])')
-		expect(dangerSecondary).toBeDefined()
+		const dangerSecondary = rules.find(r => r.selector.includes('"danger"') && r.selector.includes('"outline"'))
+
+		expect(dangerSecondary?.selector).toBe('[data-variant="outline"]:is([data-tone="danger"])')
 	})
 
-	it('does not append any extra priority selector for special variants (light/dark)', () => {
+	it('never appends a priority clause for special variants (light/dark/text), since they are not registered in VARIANT_ORDER — but still appends their tone clause', () => {
 		const rules = buildVariantSchemes()
-		const dark = rules.find(r => r.selector === '[data-variant="dark"]')
-		expect(dark).toBeDefined()
+		// the first "dark" rule enumerated pairs with the "action" tone (see
+		// tokens/variants.test.ts); pinning the full selector doubles as the
+		// positive control that its tone clause IS present, alongside the
+		// (implicit, by exact match) absence of any data-priority clause
+		const dark = rules.find(r => r.selector.startsWith('[data-variant="dark"]'))
+
+		expect(dark?.selector).toBe('[data-variant="dark"],\n[data-variant="dark"]:is([data-tone="action"])')
 	})
 })

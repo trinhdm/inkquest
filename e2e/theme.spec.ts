@@ -17,6 +17,13 @@ import { expect, test } from '@playwright/test'
 //   via a <Button.Group id="theme-selection"> with a "dark" button calling
 //   setColorScheme('dark') and a "light" button calling setColorScheme('light')
 //   (src/hooks/useColorScheme.tsx wires those calls to applyScheme + persistScheme).
+//
+// '/' itself renders no internal links at all today (only external vercel.com/nextjs.org
+// anchors - confirmed by reading src/app/page.tsx), so no client-side navigation is
+// reachable from the toggle's own page. The three tests below split what used to be one
+// "persists across navigation and a full reload" test into the three distinct mechanisms
+// that actually keep the scheme attribute correct, each exercised from wherever it is
+// actually reachable.
 
 const SCHEME_ATTR = 'data-inkq-scheme'
 const SCHEME_STORAGE_KEY = 'inkq-scheme'
@@ -58,7 +65,7 @@ test.describe('color scheme persistence', () => {
 		await expect(page.locator('html')).toHaveAttribute(JS_ANIMATE_ATTR, '')
 	})
 
-	test('persists a selected color scheme across client-side navigation and a full reload', async ({ page }) => {
+	test('persists a selected color scheme across a full reload', async ({ page }) => {
 		await page.goto('/')
 
 		// SELECTOR NOTE: src/app/page.tsx also renders an unrelated
@@ -75,15 +82,51 @@ test.describe('color scheme persistence', () => {
 			.poll(() => page.evaluate(key => localStorage.getItem(key), SCHEME_STORAGE_KEY))
 			.toBe('light')
 
-		// Client-side navigation via the primary nav (role="menuitem" per MenuItem.tsx -
-		// see navigation.spec.ts for why "link" is not the correct role here).
-		await page.getByRole('navigation').getByRole('menuitem', { name: 'Discover' }).click()
-		await expect(page).toHaveURL('/discover')
-		await expect(page.locator('html')).toHaveAttribute(SCHEME_ATTR, 'light')
-
-		// Full reload re-runs the injected ScriptInjector script from scratch; the
+		// A full reload re-runs the injected ScriptInjector script from scratch; the
 		// attribute should be re-derived from localStorage, not lost.
 		await page.reload()
+		await expect(page.locator('html')).toHaveAttribute(SCHEME_ATTR, 'light')
+	})
+
+	test('re-applies on a cold load of another route', async ({ page }) => {
+		await page.goto('/')
+
+		const themeToggle = page.locator('#theme-selection')
+		await themeToggle.getByRole('button', { name: 'light' }).click()
+		await expect(page.locator('html')).toHaveAttribute(SCHEME_ATTR, 'light')
+
+		// page.goto (not a click-through) - a genuinely cold load of a different route,
+		// so the only thing that can be re-applying the attribute here is the injected
+		// <script> reading localStorage before hydration. jsdom never executes injected
+		// <script> tags, so this is the one persistence path Jest structurally cannot
+		// cover, and the one that actually matters for a real user refreshing or
+		// deep-linking into the app with a scheme already chosen.
+		await page.goto('/discover')
+		await expect(page.locator('html')).toHaveAttribute(SCHEME_ATTR, 'light')
+	})
+
+	test('survives a soft client-side navigation', async ({ page }) => {
+		await page.goto('/')
+
+		const themeToggle = page.locator('#theme-selection')
+		await themeToggle.getByRole('button', { name: 'light' }).click()
+		await expect(page.locator('html')).toHaveAttribute(SCHEME_ATTR, 'light')
+
+		// '/' has no in-app links to soft-navigate from, so this reaches a page that
+		// renders a real next/link menuitem via a full load first. That full load is
+		// coupled to a Header-equipped layout - today that's src/app/(company)/layout.tsx
+		// (every (company) route) and src/app/discover/layout.tsx (/discover and
+		// /discover/style); /about is used here as the representative case.
+		await page.goto('/about')
+		await expect(page.locator('html')).toHaveAttribute(SCHEME_ATTR, 'light')
+
+		// This click is the actual soft navigation under test: a client-side Link
+		// transition does not unmount <html> or re-run the injected script, so the
+		// attribute must simply survive because the DOM node it lives on never goes away.
+		// (role="menuitem" per MenuItem.tsx - see navigation.spec.ts for why "link" is not
+		// the correct role here.)
+		await page.getByRole('banner').getByRole('menuitem', { name: 'FAQs' }).click()
+		await expect(page).toHaveURL('/faqs')
 		await expect(page.locator('html')).toHaveAttribute(SCHEME_ATTR, 'light')
 	})
 })

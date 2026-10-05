@@ -1,6 +1,7 @@
 import { renderHook } from '@testing-library/react'
 import { useVariants } from '../useVariants'
 import { resetVariantStyles } from '../variantsRegistry'
+import { resetComponentDefaults, setDefaultProps } from '@/hooks/useProps'
 import { ThemeProvider } from '@/providers/ThemeProvider'
 import type { ReactNode } from 'react'
 
@@ -9,10 +10,23 @@ const wrapperWithPrefix = (prefix: string) =>
 		<ThemeProvider prefix={ prefix }>{ children }</ThemeProvider>
 	)
 
+// `useVariants` only injects for names that have a registered `variant`
+// default (the gate at `useVariants.tsx:13`). These are fictional
+// component names with no real registration behind them, so each one
+// needs a stand-in `variant` default or the hook returns before doing
+// anything -- which is indistinguishable from "injection is broken".
+const VARIANT_COMPONENT_NAMES = ['TestComponent', 'ButtonGroup', 'PreSeeded']
+
 describe('useVariants', () => {
+	beforeEach(() => {
+		VARIANT_COMPONENT_NAMES.forEach(name => setDefaultProps(name, { variant: 'solid' }))
+	})
+
 	afterEach(() => {
 		document.querySelectorAll('style[data-target-vars]').forEach(node => node.remove())
 		resetVariantStyles()
+		VARIANT_COMPONENT_NAMES.forEach(name => resetComponentDefaults(name))
+		resetComponentDefaults('NoVariant')
 	})
 
 	it('injects a <style> tag scoped to the prefixed component selector on first render', () => {
@@ -122,5 +136,22 @@ describe('useVariants', () => {
 
 		expect(css).toContain('.test-component {')
 		expect(css).toContain('var(--undefined-background-backup)')
+	})
+
+	it('does not inject anything for a name with registered defaults but no "variant" key (gate stays shut)', () => {
+		setDefaultProps('NoVariant', { size: 'md' })
+
+		renderHook(() => useVariants('NoVariant'), {
+			wrapper: wrapperWithPrefix('ink'),
+		})
+		expect(document.querySelectorAll('style[data-target-vars="NoVariant"]')).toHaveLength(0)
+
+		// positive control, in the same test: a name registered WITH a
+		// `variant` key still injects, proving the absence above is the
+		// gate doing its job and not some unrelated breakage in the hook
+		renderHook(() => useVariants('TestComponent'), {
+			wrapper: wrapperWithPrefix('ink'),
+		})
+		expect(document.querySelectorAll('style[data-target-vars="TestComponent"]')).toHaveLength(1)
 	})
 })

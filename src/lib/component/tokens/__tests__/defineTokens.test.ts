@@ -14,7 +14,7 @@ import { defineTokens } from '../defineTokens'
 
 describe('defineTokens', () => {
 	it('returns the exact same function reference it was given (pure passthrough, no wrapping)', () => {
-		const settings = (_theme: unknown, _props: object, _ctx: unknown) => ({})
+		const settings = ({ context, props, theme }: { context: unknown, props: object, theme: unknown }) => ({})
 		expect(defineTokens(settings)).toBe(settings)
 	})
 

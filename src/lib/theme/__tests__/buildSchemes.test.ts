@@ -69,9 +69,9 @@ const fixtureTheme = {
 	easing: { base: 'ease' },
 	opacity: [1],
 	radius: [0],
-	iconSize: { md: 20 },
+	iconSize: [20],
 	screenSize: [320],
-} as SiteTheme
+} satisfies SiteTheme
 
 describe('buildSchemes', () => {
 	it('returns a "base" scheme plus one entry per THEME_CONFIGS color scheme (dark/light)', () => {

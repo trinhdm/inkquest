@@ -14,7 +14,7 @@ describe('polymorphic', () => {
 	it('marks the returned component with POLYMORPHIC_MARKER and renders its output', () => {
 		const Widget = polymorphic<WidgetSpecs>(props => (
 			<div data-testid="widget">{ props.label }</div>
-		))
+		), { name: 'Widget' })
 
 		expect(POLYMORPHIC_MARKER in Widget).toBe(true)
 

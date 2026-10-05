@@ -182,8 +182,7 @@ describe('Box', () => {
 			<div data-testid="marked" data-received-unstyled={ String(!!unstyled) }>
 				{ children }
 			</div>
-		))
-		Marked.displayName = 'Marked'
+		), { name: 'Marked' })
 
 		it('forwards unstyled to an "as" target marked with POLYMORPHIC_MARKER', () => {
 			render(<Box as={ Marked } unstyled>Content</Box>)

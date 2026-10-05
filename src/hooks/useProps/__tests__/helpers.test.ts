@@ -131,9 +131,10 @@ describe('extractOthers', () => {
 		expect(result).not.toHaveProperty('styles')
 	})
 
-	it('passes `animated` through untouched, since it is not a reserved key', () => {
+	it('strips `animated` out entirely, now that it is a reserved key', () => {
 		const result = extractOthers({ animated: true, id: 'x' })
-		expect(result).toEqual({ animated: true, id: 'x' })
+		expect(result).toEqual({ id: 'x' })
+		expect(result).not.toHaveProperty('animated')
 	})
 
 	it('passes `href` through untouched, since it is not a reserved key', () => {
@@ -171,5 +172,15 @@ describe('extractOthers', () => {
 	it('keeps a falsy-but-present leftover prop, showing filterProps is called without omitEmpty', () => {
 		expect(extractOthers({ id: '' })).toEqual({ id: '' })
 		expect(extractOthers({ hidden: false })).toEqual({ hidden: false })
+	})
+
+	it('keeps a reserved prop when it is named in the `keep` list, while still stripping other reserved props -- the escape hatch used by StatisticGroup to forward cascade props to Group', () => {
+		const result = extractOthers(
+			{ animated: true, duration: 3000, loading: true, id: 'x' },
+			['animated', 'duration'],
+		)
+
+		expect(result).toEqual({ animated: true, duration: 3000, id: 'x' })
+		expect(result).not.toHaveProperty('loading')
 	})
 })

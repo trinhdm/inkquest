@@ -1,101 +1,91 @@
 import { expect, test } from '@playwright/test'
 
-// Root layout (src/app/layout.tsx) renders <header><Navbar/><Subnav/></header>
-// and <Footer/> unconditionally around every route's children, so the banner
-// and contentinfo landmarks should be present everywhere.
-const TOP_LEVEL_ROUTES = [
-	'/',
-	'/discover',
-	'/marketplace',
-	'/community',
+// src/app/layout.tsx (the root layout) renders only <ScriptInjector/> + <AppProvider/> for
+// every route in the app - no header, no footer. The <Header/>+<Footer/> pair is mounted by
+// exactly two segment layouts instead:
+//   - src/app/(company)/layout.tsx, for /about, /careers, /faqs, /press, /support
+//   - src/app/discover/layout.tsx, for /discover and /discover/style
+// The second one is easy to miss - it lives outside any route group, so it is not visible
+// from the (company)/(legal)/(user) grouping alone. Verified directly (`curl` against the
+// running dev server) rather than assumed: /discover and /discover/style both render a
+// <header>/<nav>/<footer>, every other route - including '/' itself - renders none.
+const CHROME_ROUTES = [
 	'/about',
 	'/careers',
 	'/faqs',
 	'/press',
+	'/support',
+	'/discover',
+	'/discover/style',
 ] as const
 
-test.describe('global header and footer', () => {
-	for (const route of TOP_LEVEL_ROUTES) {
-		test(`renders the banner nav and footer landmarks on ${route}`, async ({ page }) => {
+const NO_CHROME_ROUTES = [
+	'/',
+	'/marketplace',
+	'/community',
+	'/community/events',
+	'/community/events/lineup',
+	'/community/feed',
+	'/community/feed/circle',
+	'/community/spotlights',
+	'/cookies',
+	'/privacy-policy',
+	'/terms-conditions',
+	'/login',
+	'/signup',
+	'/profile',
+	'/settings',
+	'/messages',
+] as const
+
+test.describe('routes with a Header/Footer layout', () => {
+	for (const route of CHROME_ROUTES) {
+		test(`renders the banner, contentinfo, and primary nav landmarks on ${route}`, async ({ page }) => {
 			await page.goto(route)
 
 			await expect(page.getByRole('banner')).toBeVisible()
 			await expect(page.getByRole('contentinfo')).toBeVisible()
 
-			// Navbar.tsx sets an explicit role="navigation" on its <Box as="nav">.
-			await expect(page.getByRole('navigation')).toBeVisible()
+			// Scoped to the banner: /faqs also mounts a second, unlabeled <nav> via
+			// Sidebar.tsx (used internally by FaqBrowser, at Sidebar.tsx:124), so an
+			// unscoped page.getByRole('navigation') is a strict-mode violation there.
+			await expect(page.getByRole('banner').getByRole('navigation')).toBeVisible()
 		})
 	}
 })
 
-test.describe('primary nav (Navbar)', () => {
-	// Navbar routes are filtered by layout.tsx to ['/discover', '/marketplace', '/community']
-	// (src/app/layout.tsx). Because filterNavigation() only keeps children whose own
-	// route also appears in that same routes array (src/utils/navigation.ts), the nested
-	// "Your Style" / community sub-routes never survive the filter here, so these three
-	// links render as plain, non-dropdown links (no disclosure trigger).
-	//
-	// SELECTOR NOTE: MenuItem.tsx's MenuLabel() renders these as `<Link>` but explicitly
-	// sets `role: 'menuitem'` in sharedProps, which overrides the anchor's implicit
-	// "link" role. The accessible role actually exposed to the page is "menuitem" (nested
-	// under the <ul role="menubar"> from Menu.tsx / <li role="none"> from MenuItem.tsx),
-	// so getByRole('menuitem', ...) is used here rather than getByRole('link', ...) -
-	// verified by reading MenuItem.tsx, not assumed from the visual "this is a nav link" intent.
-	test('Discover link in the primary nav navigates to /discover', async ({ page }) => {
-		await page.goto('/')
+test.describe('every other route has no page chrome', () => {
+	for (const route of NO_CHROME_ROUTES) {
+		test(`renders no banner or contentinfo landmark on ${route}`, async ({ page }) => {
+			await page.goto(route)
 
-		await page.getByRole('navigation').getByRole('menuitem', { name: 'Discover' }).click()
+			// toHaveCount(0), not .not.toBeVisible() - the latter would also pass if a
+			// second banner/contentinfo element appeared and merely failed a strict-mode
+			// check, silently hiding a regression instead of catching it.
+			await expect(page.getByRole('banner')).toHaveCount(0)
+			await expect(page.getByRole('contentinfo')).toHaveCount(0)
+		})
+	}
+})
+
+test.describe('primary nav (Navbar) and secondary nav (Subnav)', () => {
+	// Exactly one real click-through, so coverage of MenuItem's role="menuitem" link path
+	// (MenuItem.tsx's MenuLabel() renders nav links as next/link <a> elements but explicitly
+	// sets role="menuitem" in sharedProps, overriding the anchor's implicit "link" role -
+	// verified in MenuItem.tsx, not assumed) is not lost now that most routes have no nav to
+	// click through at all.
+	test('banner menuitem navigates to /discover, and the /about Subnav renders its own items', async ({ page }) => {
+		await page.goto('/about')
+
+		// (company)/layout.tsx's Subnav (category: 'Company', routes: ['/about', '/faqs',
+		// '/careers', '/press', '/support']) renders About/Careers/FAQs/Press/Support as flat
+		// menuitems - disjoint from the Navbar's Discover/Marketplace/Community - so this is
+		// unambiguous without scoping further or indexing into either <ul role="menubar">.
+		await expect(page.getByRole('banner').getByRole('menuitem', { name: 'FAQs' })).toBeVisible()
+
+		await page.getByRole('banner').getByRole('menuitem', { name: 'Discover' }).click()
 
 		await expect(page).toHaveURL('/discover')
 		await expect(page.getByRole('heading', { level: 1, name: 'Discover' })).toBeVisible()
-	})
-
-	test('Marketplace link in the primary nav navigates to /marketplace', async ({ page }) => {
-		await page.goto('/')
-
-		await page.getByRole('navigation').getByRole('menuitem', { name: 'Marketplace' }).click()
-
-		await expect(page).toHaveURL('/marketplace')
-		await expect(page.getByRole('heading', { level: 1, name: 'Marketplace' })).toBeVisible()
-	})
-
-	test('Community link in the primary nav navigates to /community', async ({ page }) => {
-		await page.goto('/')
-
-		await page.getByRole('navigation').getByRole('menuitem', { name: 'Community' }).click()
-
-		await expect(page).toHaveURL('/community')
-		await expect(page.getByRole('heading', { level: 1, name: 'Community' })).toBeVisible()
-	})
-
-	// NOTE: src/components/navigation/Menu/MenuItem/MenuItem.tsx leaves active-link
-	// marking as an unimplemented TODO ("add behavior for: aria-current=page"). There is
-	// no aria-current, data-active, or equivalent attribute in the rendered DOM to assert
-	// on today, so no active-link-state test is included here. See Maintenance Note.
-
-	// NOTE: the Navbar's "Log in" / "Sign up" buttons (src/components/navigation/Navbar/Navbar.tsx)
-	// are rendered via <Button> with no `href`, which src/components/core/Button/Button.tsx
-	// compiles to a plain <button> with no onClick — they are inert, not links to
-	// /login or /signup. Confirmed by reading Button.tsx's LinkButtonProps/NativeButtonProps
-	// union. No click-through test is written for them; see auth-pages.spec.ts, which
-	// reaches those routes via direct navigation instead.
-})
-
-test.describe('secondary nav (Subnav)', () => {
-	// layout.tsx always mounts <Subnav routes={['/community', '/community/feed', '/community/events', '/community/spotlights']} />
-	// regardless of the current route, so this bar (and its links) are present globally,
-	// not scoped to the community section.
-	// NOTE: Subnav.tsx renders a plain <div> with no role/landmark and no accessible
-	// label of its own (its "Community" <span> label text duplicates the Navbar's
-	// "Community" link name, so it cannot be targeted unambiguously by role/text -
-	// asserting on that label is intentionally skipped rather than reaching for a
-	// positional or class-based selector). The Events/Feed/Spotlights link names are
-	// unique across the page, so they can still be asserted directly.
-	test('Subnav renders Events, Feed, and Spotlights menu items on every page', async ({ page }) => {
-		await page.goto('/')
-
-		for (const label of ['Events', 'Feed', 'Spotlights']) {
-			await expect(page.getByRole('menuitem', { name: label })).toBeVisible()
-		}
 	})
 })
