@@ -173,19 +173,17 @@ export const Button = polymorphic<ButtonSpecs>((_props, { useProps, useStyles, u
 		</ButtonProvider>
 	)
 
-	if ('href' in others && keyHasValue(others, 'href')) {
+	if (keyHasValue(others, 'href')) {
 		// narrows `rest` typing (`LinkButtonProps | NativeButtonProps`)
 		// by excluding `NativeButtonProps` from `rest`
 		// this allows `rest` to be properly typed
 
-		const { href } = others
 		let linkProps = {
 			...sharedProps,
 			...others as Extract<typeof others, LinkButtonProps>,
-			href: href as Route<typeof href>,
 		}
 
-		if (isExternalLink(href)) {
+		if (isExternalLink(others.href)) {
 			const external = { target: '_blank', rel: 'noopener noreferrer' }
 			linkProps = { ...linkProps, ...external }
 		}

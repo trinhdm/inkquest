@@ -53,12 +53,18 @@ export const Menu = polymorphic<MenuSpecs>((_props, { useProps, useStyles }) => 
 	} = props
 
 	const others = extractOthers(rest)
-	const module = { [`${orientation}`]: (depth === 0 && !!orientation) || null }
-	const currentRoute = activeItem ?? (pathname as NavigationItem['route'])
+
+	const clsx = {
+		module: { [`${orientation}`]: (depth === 0 && !!orientation) || null },
+	}
+
+	const currentRoute = typeof activeItem === 'string' || activeItem === null
+		? activeItem
+		: (pathname as NavigationItem['route'])
 
 	return (
 		<Box
-			{ ...styles('root', { module }) }
+			{ ...styles('root', clsx) }
 			{ ...others }
 			as={ TAG }
 			role="menubar"

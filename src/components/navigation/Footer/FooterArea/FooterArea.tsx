@@ -44,9 +44,11 @@ export const FooterArea = polymorphic<FooterAreaSpecs>((_props, { useProps, useS
 			{ ...others }
 			as="div"
 		>
-			<div { ...styles('content') }>
-				{ children }
-			</div>
+			{ !!children && (
+				<div { ...styles('content') }>
+					{ children }
+				</div>
+			) }
 
 			{ !!items.length && (
 				<div { ...styles('navigation') }>
@@ -60,6 +62,7 @@ export const FooterArea = polymorphic<FooterAreaSpecs>((_props, { useProps, useS
 								) }
 								<Menu
 									{ ...styles('menu') }
+									activeItem={ null }
 									hasDropdowns={ false }
 									items={ menuItems }
 									orientation={ orientation ?? 'vertical' }

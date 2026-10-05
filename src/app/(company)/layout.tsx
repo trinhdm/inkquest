@@ -6,7 +6,7 @@ export default function CompanyLayout({
 }: Readonly<{ children: React.ReactNode }>) {
 	const subnav: Header.Props['subnav'] = {
 		category: 'Company',
-		routes: ['/about', '/faqs', '/careers', '/press'],
+		routes: ['/about', '/faqs', '/careers', '/press', '/support'],
 	}
 
 	return (

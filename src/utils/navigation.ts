@@ -28,7 +28,7 @@ export enum NavRoutes {
 }
 
 // checks if slugs exist
-const NAV_ROUTES = {
+export const NAV_ROUTES = {
 	HOME: '/',
 	DISCOVER: '/discover',
 	DISCOVER_STYLE: '/discover/style',
@@ -248,14 +248,14 @@ export const FOOTER_GLOBAL_NAV: FooterNavGroup[] = [
 
 interface SocialBrandGroup {
 	type: SocialBrand
-	url: string
+	url: Route<string>
 }
 
 const getSocials = (handle: string): SocialBrandGroup[] => {
 	const socials: SocialBrandGroup[] = []
 
 	for (const brand of SOCIAL_BRANDS) {
-		const url = `https://${brand}.com/${handle}`
+		const url: Route<string> = `https://${brand}.com/${handle}`
 		socials.push({ type: brand, url })
 	}
 

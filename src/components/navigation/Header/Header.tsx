@@ -19,8 +19,8 @@ const DEFAULT_PROPS = {
 } as const
 
 interface HeaderProps {
-	navbar?: Navbar.Props
-	subnav?: Subnav.Props
+	navbar?: Navbar.Props | null
+	subnav?: Subnav.Props | null
 }
 
 interface HeaderSpecs {
@@ -56,8 +56,8 @@ export const Header = polymorphic<HeaderSpecs>((_props, { useProps, useStyles })
 
 	return (
 		<Box { ...styles('root') } { ...others } as={ as }>
-			<Navbar routes={ navbar?.routes } />
-			<Subnav category={ subnav?.category } routes={ subnavRoutes } />
+			{ navbar !== null && <Navbar routes={ navbar?.routes } /> }
+			{ subnav !== null && <Subnav category={ subnav?.category } routes={ subnavRoutes } /> }
 		</Box>
 	)
 }, { name: NAME, classes })
