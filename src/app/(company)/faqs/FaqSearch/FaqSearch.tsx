@@ -58,7 +58,7 @@ export const FaqSearch = () => {
 	}
 
 	return (
-		<Field id="faq-search">
+		<Field id="faq-search" size="lg">
 			<Field.Input
 				onChange={ handleChange }
 				placeholder="Search all FAQs…"

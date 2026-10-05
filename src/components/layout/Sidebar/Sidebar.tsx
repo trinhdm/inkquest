@@ -10,7 +10,7 @@ import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Sidebar.module.scss'
 
 const NAME = 'Sidebar' as const,
-	TAG = 'div' as const
+	TAG = 'aside' as const
 
 const DEFAULT_PROPS = {
 	as: TAG,

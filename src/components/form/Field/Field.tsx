@@ -118,9 +118,16 @@ const buildField = (
 const tokens = defineTokens<FieldSpecs>(({ props, theme }) => {
 	const { size } = props
 
+	const step = size === 'sm' ? 2 : 1.25
+	const blockPadding = 'var(--field-padding-block)',
+		inlinePadding = `calc(${step} * ${blockPadding})`
+
 	return {
 		root: {
 			'--field-control-padding': !!size ? theme.el.field.padding(size) : undefined,
+			'--field-padding-block': !!size ? theme.el.field.padding(size) : undefined,
+			'--field-padding-inline': !!size ? inlinePadding : undefined,
+			'--field-icon-size': !!size ? `calc(${theme.el.icon.size(size)} - .125rem)` : undefined,
 		},
 	}
 })
@@ -161,11 +168,13 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 		idx, size, unstyled,
 	}), [
 		disabled, loading, required,
-		hasError, idx, size, unstyled,
-		icon,
+		hasError, unstyled,
+		icon, idx, size,
 	])
 
-	const clsx = { module: { [`${size}`]: size } }
+	const clsx = {
+		module: { [`${size}`]: size },
+	}
 
 	const data = {
 		disabled: !!disabled || null,

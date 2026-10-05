@@ -1,7 +1,7 @@
 .inkq-text-input {
 	$name: &;
 
-    --input-control-padding: var(--field-control-padding);
+    --input-control-padding: var(--field-control-padding) var(--field-padding-inline);
 
     align-items: center;
     display: flex;

@@ -1,7 +1,7 @@
 .inkq-field {
 	$name: &;
 
-    --field-control-padding: var(--inkq-field-padding-md);
+    --field-padding-inline: var(--inkq-field-padding-md);
     --field-icon-size: 1.125rem;
 
     position: relative;
@@ -15,7 +15,7 @@
 
         color: var(--inkq-color-placeholder);
         inset-block: 0;
-        margin: auto var(--field-control-padding);
+        margin: auto var(--field-padding-inline);
         max-height: fit-content;
         position: absolute;
         z-index: 5;

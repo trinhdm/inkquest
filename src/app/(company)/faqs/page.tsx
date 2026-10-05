@@ -24,7 +24,7 @@ export default function FAQs() {
 				<>Everything about bidding, booking, verification, and payouts — for clients, artists, and studios. Can&apos;t find it? <Link href="/messages" data-cta>Message us</Link>.</>
 
 				<Suspense fallback={ (
-					<Field disabled id="faq-search-disabled" label="Search FAQs">
+					<Field disabled id="faq-search-disabled" size="lg">
 						<Field.Input placeholder="Search all FAQs…" type="search" />
 					</Field>
 				) }>

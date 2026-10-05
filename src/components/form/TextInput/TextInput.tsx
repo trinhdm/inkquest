@@ -51,11 +51,20 @@ type TextInputTokens = {
 const tokens = defineTokens<TextInputSpecs>(({ context, props, theme }) => {
 	const { hasIcon } = context
 	const { size } = props
-	const fieldPadding = !!size ? theme.el.field.padding(size) : 'var(--field-control-padding)'
+
+	const step = hasIcon ? 2 : 1.5
+	const blockPadding = !!size ? theme.el.field.padding(size) : 'var(--field-control-padding)',
+		inlinePadding = `calc(${step} * ${blockPadding})`,
+		padding = `${blockPadding} ${inlinePadding}`
+
+	const iconMargin = size === 'sm' ? `calc(1.5 * ${inlinePadding})` : inlinePadding,
+		leftPadding = `calc(${iconMargin} + var(--field-icon-size))`
 
 	return {
 		root: {
-			'--input-control-padding': hasIcon ? `${fieldPadding} ${fieldPadding} ${fieldPadding} calc((2 * ${fieldPadding}) + var(--field-icon-size))` : undefined,
+			'--input-control-padding': hasIcon
+				? `${padding} ${blockPadding} ${leftPadding}`
+				: padding,
 		},
 	}
 })
