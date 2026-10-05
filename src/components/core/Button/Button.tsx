@@ -128,41 +128,42 @@ const buildSections = (
 
 const tokens = defineTokens<ButtonSpecs>()(({ props, theme }) => {
 	const { size } = props
-	if (!size) return {}
+	let buttonFontSize, buttonPadding, buttonTracking
 
-	const buttonFontSize: Record<Button.Size, string> = {
-		sm: theme.fontSize('label'),
-		md: theme.fontSize('body'),
-		lg: theme.fontSize('body'),
+	if (size) {
+		const buttonFontSizes: Record<Button.Size, string> = {
+			sm: theme.fontSize('label'),
+			md: theme.fontSize('body'),
+			lg: theme.fontSize('body'),
+		}
+
+		const buttonPaddings: Record<Button.Size, string> = {
+			sm: theme.padding('chip'),
+			md: theme.padding('item'),
+			lg: theme.padding('block'),
+		}
+
+		const buttonTrackings: Record<Button.Size, string> = {
+			sm: theme.letterSpacing('heading'),
+			md: theme.letterSpacing('display'),
+			lg: theme.letterSpacing('stat'),
+		}
+
+		buttonFontSize = buttonFontSizes[size]
+		buttonPadding = buttonPaddings[size]
+		buttonTracking = buttonTrackings[size]
 	}
 
-	const buttonGap: Record<Button.Size, string> = {
-		sm: theme.space('icon'),
-		md: theme.space('chip'),
-		lg: theme.space('chip'),
-	}
-
-	const buttonPadding: Record<Button.Size, string> = {
-		sm: theme.padding('chip'),
-		md: theme.padding('item'),
-		lg: theme.padding('block'),
-	}
-
-	const buttonTracking: Record<Button.Size, string> = {
-		sm: theme.letterSpacing('heading'),
-		md: theme.letterSpacing('display'),
-		lg: theme.letterSpacing('stat'),
-	}
 
 	return {
 		root: {
-			'--button-font-size': buttonFontSize[size],
-			'--button-icon-size': theme.el.icon.size(size),
-			'--button-tracking': buttonTracking[size],
+			'--button-font-size': buttonFontSize,
+			'--button-icon-size': !!size ? theme.el.icon.size(size) : undefined,
+			'--button-tracking': buttonTracking,
 		},
 		inner: {
-			'--button-gap': buttonGap[size],
-			'--button-padding': buttonPadding[size],
+			'--button-gap': theme.space('chip'),
+			'--button-padding': buttonPadding,
 		},
 	}
 })

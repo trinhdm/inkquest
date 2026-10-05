@@ -59,27 +59,35 @@ type StatisticTokens = {
 		| '--statistic-align'
 		| '--statistic-direction'
 		| '--statistic-font-caption'
-		| '--statistic-font-value'
+		| '--statistic-font-size'
+		| '--statistic-icon-size'
+		| '--statistic-row-gap'
 }
 
 const tokens = defineTokens<StatisticSpecs>()(({ props, theme }) => {
 	const { order, size } = props
-	const isDescend = order === 'descend'
+	const isDescend = order === 'descend',
+		isLarge = size === 'lg'
 
 	const align = isDescend ? 'start' : 'end',
 		direction = isDescend ? '' : '-reverse',
-		titleTag = size === 'lg' ? 'h3' : 'h4'
+		titleTag = isLarge ? 'h3' : 'h4'
 
-	const captionFont = size === 'lg'
+	const captionFont = isLarge
 		? theme.presets.text.caption('item')
 		: theme.presets.text.section('eyebrow')
+
+	const baseIcon = theme.el.icon.size('sm'),
+		iconSize = isLarge ? `calc(2 * ${baseIcon})` : baseIcon
 
 	return {
 		root: {
 			'--statistic-align': `flex-${align}`,
 			'--statistic-direction': `column${direction}`,
 			'--statistic-font-caption': !!size ? captionFont : undefined,
-			'--statistic-font-value': !!size ? theme.presets.text[titleTag]() : undefined,
+			'--statistic-font-size': !!size ? theme.fontSize(titleTag) : undefined,
+			'--statistic-icon-size': !!size ? iconSize : undefined,
+			'--statistic-row-gap': isLarge ? theme.space('icon') : theme.padding('menu'),
 		},
 	}
 })

@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import type { CSSVariable, Size, SizeRange } from '@/types/shared'
+import type { CSSVariable, Heading, Size, SizeRange } from '@/types/shared'
 import type { COLOR_TOKENS } from '../scales'
 
 export type TokenVar =
@@ -8,6 +8,9 @@ export type TokenVar =
 export type TokenVariableShape =
 	| `${TokenVar}`
 	| `${TokenVar} ${TokenVar}`
+
+export type TokenHeadingShape<T extends Heading = Exclude<Heading, 'h6'>> =
+	Record<T, TokenVariableShape>
 
 export type TokenSizeShape<S extends SizeRange = Size> =
 	Record<S, TokenVariableShape>

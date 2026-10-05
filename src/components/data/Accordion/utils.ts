@@ -69,7 +69,7 @@ export const getSharedTokens = <P extends AccordionPropsList>({
 			'--accordion-padding': `var(--space-${config.padding})`,
 			'--accordion-indicator-size': `var(--font-size-${config.indicator})`,
 			'--accordion-step-size': layout === 'steps' ? config.step : undefined,
-			'--accordion-title-size': `var(--inkq-font-size-heading-h${config.order})`,
+			'--accordion-title-size': `var(--inkq-font-size-h${config.order})`,
 		},
 	}
 }

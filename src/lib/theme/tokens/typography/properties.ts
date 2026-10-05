@@ -1,4 +1,5 @@
-import { base } from '../../reference'
+import { alias, base } from '../../reference'
+import type { TokenSizeShape } from '../../types/token.types'
 
 interface FontFamilyTokens {
 	display: string
@@ -7,18 +8,19 @@ interface FontFamilyTokens {
 	mono: string
 }
 
+interface HeadingFontGroup {
+	base: string
+	fluid: string
+}
 interface FontSizeTokens {
-	display: {
-		base: string
-		cta: string
-	}
-	heading: {
-		h1: string
-		h2: string
-		h3: string
-		h4: string
-		h5: string
-	}
+	h1: HeadingFontGroup
+	h2: HeadingFontGroup
+	h3: HeadingFontGroup
+	h4: HeadingFontGroup
+	h5: HeadingFontGroup
+
+	display: TokenSizeShape
+
 	body: {
 		base: string
 		lg: string
@@ -69,16 +71,30 @@ export const getFontPropertyTokens = (): FontPropertyTokens => ({
 		mono:		base.fontFamily('mono'),
 	},
 	fontSize: {
-		display:	{
-			base:	base.fontSize('96'),
-			cta:	base.fontSize('60'),
+		h1:	{
+			base:	base.fontSize('48'),
+			fluid:	`clamp(${alias.fontSize('h1')}, 4vw, ${alias.fontSize('display', 'lg')})`,
 		},
-		heading: {
-			h1:		base.fontSize('48'),
-			h2:		base.fontSize('40'),
-			h3:		base.fontSize('32'),
-			h4:		base.fontSize('20'),
-			h5:		base.fontSize('16'),
+		h2:	{
+			base:	base.fontSize('40'),
+			fluid: 	`clamp(${alias.fontSize('h2')}, 3vw, ${alias.fontSize('h1')})`,
+		},
+		h3:	{
+			base:	base.fontSize('32'),
+			fluid: 	`clamp(${alias.fontSize('h3')}, 3vw, ${alias.fontSize('h2')})`,
+		},
+		h4:	{
+			base:	base.fontSize('20'),
+			fluid: 	`clamp(${alias.fontSize('h4')}, 3vw, ${alias.fontSize('h3')})`,
+		},
+		h5:	{
+			base:	base.fontSize('16'),
+			fluid: 	`clamp(${alias.fontSize('h5')}, 3vw, ${alias.fontSize('h4')})`,
+		},
+		display:	{
+			sm:		base.fontSize('60'),
+			md:		base.fontSize('72'),
+			lg:		base.fontSize('96'),
 		},
 		body:		{
 			base:	base.fontSize('16'),

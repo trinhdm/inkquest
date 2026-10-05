@@ -44,7 +44,7 @@ export const Quote = polymorphic<QuoteSpecs>((_props, { useProps, useStyles }) =
 		>
 			<span { ...styles('rail', true) } />
 			<p { ...styles('content', { global: { h4: true } }) }>
-				"{ content }"
+				&quot;{ content }&quot;
 			</p>
 			<span { ...styles('caption', true) }>
 				{ author }

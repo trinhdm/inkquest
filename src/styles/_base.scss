@@ -2,28 +2,37 @@ body {
 	background-color: var(--inkq-background-page);
 	color: var(--inkq-color-text);
 	font: var(--inkq-text-body);
-	font-smooth: antialiased;
+	// -webkit-font-smoothing: antialiased;
 }
 
 h1,
 .inkq-h1 {
-	font: var(--inkq-text-h1-fluid);
+	font: var(--inkq-text-h1);
+	font-size: var(--inkq-font-size-h1-fluid);
 	letter-spacing: var(--inkq-font-tracking-display);
 	text-transform: uppercase;
 	text-wrap: balance;
+}
+
+.inkq-h1-display {
+	font-size: var( --inkq-font-size-display-md);
 }
 
 h2,
 .inkq-h2 {
-	font: var(--inkq-text-h2-fluid);
+	font: var(--inkq-text-h2);
+	font-size: var(--inkq-font-size-h2-fluid);
 	letter-spacing: var(--inkq-font-tracking-display);
 	text-transform: uppercase;
 	text-wrap: balance;
 }
 
+.inkq-h2-display {
+	font-size: var( --inkq-font-size-display-sm);
+}
+
 h3,
 .inkq-h3 {
-	// font: var(--inkq-text-h3-fluid);
 	font: var(--inkq-text-h3);
 	text-wrap: pretty;
 }
@@ -44,6 +53,10 @@ h5,
 h6,
 .inkq-h6 {
 	font: var(--inkq-text-h6);
+	text-wrap: pretty;
+}
+
+p {
 	text-wrap: pretty;
 }
 
@@ -161,9 +174,17 @@ textarea,
 	}
 }
 
-::selection {
+mark,
+::selection,
+.inkq-highlight {
 	background-color: var(--inkq-color-action-select, var(--inkq-color-action));
 	color: var(--inkq-color-text-on-accent);
+}
+
+mark {
+	&::selection {
+		background-color: var(--inkq-color-action);
+	}
 }
 
 :disabled,
@@ -249,11 +270,11 @@ textarea,
 
 .inkq-prose {
 	color: var(--inkq-color-text-secondary);
-	font: var(--inkq-text-section-body);
+	font: var(--inkq-text-prose);
 	text-wrap: pretty;
 }
 
-.inkq-highlight {
+.inkq-accent {
 	color: var(--inkq-color-action);
 }
 

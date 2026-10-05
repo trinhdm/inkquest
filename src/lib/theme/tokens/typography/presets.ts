@@ -7,25 +7,21 @@ interface FontProperties {
 	lineHeight: string
 }
 
-interface FluidFontGroup {
-	base: FontProperties
-	fluid: FontProperties
-}
-
 interface LayoutFontGroup {
-	body: FontProperties
+	// body: FontProperties
 	eyebrow: FontProperties
 }
 
 export interface FontPresetTokens {
-	h1: FluidFontGroup
-	h2: FluidFontGroup
-	h3: FluidFontGroup
-	h4: FluidFontGroup
+	h1: FontProperties
+	h2: FontProperties
+	h3: FontProperties
+	h4: FontProperties
 	body: FontProperties
 	section: LayoutFontGroup
 	control: FontProperties
 	navigation: FontProperties
+	numeric: FontProperties
 	prose: FontProperties
 
 	label: {
@@ -80,58 +76,32 @@ export const getFontPresetTokens = (): FontPresetTokens => {
 
 	return {
 		h1: {
-			base: {
-				...headingSharedProps,
-				fontSize: 	alias.fontSize('heading', 'h1'),
-			},
-			fluid: {
-				...displaySharedProps,
-				fontSize: 	`clamp(${alias.fontSize('heading', 'h1')}, 4vw, ${alias.fontSize('display')})`,
-			},
+			...displaySharedProps,
+			fontSize: 	alias.fontSize('h1'),
 		},
 		h2: {
-			base: {
-				...headingSharedProps,
-				fontSize: 	alias.fontSize('heading', 'h2'),
-			},
-			fluid: {
-				...displaySharedProps,
-				fontSize: 	`clamp(${alias.fontSize('heading', 'h2')}, 3vw, ${alias.fontSize('heading', 'h1')})`,
-			},
+			...displaySharedProps,
+			fontSize: 	alias.fontSize('h2'),
 		},
 		h3: {
-			base: {
-				...headingSharedProps,
-				fontSize: 	alias.fontSize('heading', 'h3'),
-			},
-			fluid: {
-				...displaySharedProps,
-				fontSize: 	`clamp(${alias.fontSize('heading', 'h3')}, 3vw, ${alias.fontSize('heading', 'h2')})`,
-			},
+			...headingSharedProps,
+			fontSize: 	alias.fontSize('h3'),
 		},
 		h4: {
-			base: {
-				...headingSharedProps,
-				fontSize: 	alias.fontSize('heading', 'h4'),
-				fontWeight: base.fontWeight('700'),
-				lineHeight: alias.lineHeight('label'),
-			},
-			fluid: {
-				...displaySharedProps,
-				fontSize: 	`clamp(${alias.fontSize('heading', 'h4')}, 3vw, ${alias.fontSize('heading', 'h3')})`,
-				fontWeight: base.fontWeight('700'),
-				lineHeight: alias.lineHeight('label'),
-			},
+			...headingSharedProps,
+			fontSize: 	alias.fontSize('h4'),
+			fontWeight: base.fontWeight('700'),
+			lineHeight: alias.lineHeight('label'),
 		},
 		body: {
 			...contentSharedProps,
 			fontSize: 	alias.fontSize('body'),
 		},
 		section: {
-			body: {
-				...contentSharedProps,
-				fontSize: 	alias.fontSize('body', 'lg'),
-			},
+			// body: {
+			// 	...contentSharedProps,
+			// 	fontSize: 	alias.fontSize('body', 'lg'),
+			// },
 			eyebrow: {
 				fontFamily: alias.fontFamily('mono'),
 				fontSize: 	alias.fontSize('caption'),
@@ -178,11 +148,15 @@ export const getFontPresetTokens = (): FontPresetTokens => {
 			fontWeight: base.fontWeight('700'),
 			lineHeight: alias.lineHeight('label'),
 		},
-		prose: {
+		numeric: {
 			fontFamily: alias.fontFamily('mono'),
 			fontSize: 	alias.fontSize('body'),
 			fontWeight: base.fontWeight('400'),
 			lineHeight: alias.lineHeight('body'),
+		},
+		prose: {
+			...contentSharedProps,
+			fontSize: 	alias.fontSize('body', 'lg'),
 		},
 	}
 }
