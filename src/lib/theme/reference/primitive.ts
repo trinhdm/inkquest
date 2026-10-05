@@ -47,7 +47,7 @@ export const primitiveTokens = {
 	...baseColorTokens,
 	...baseFontTokens,
 
-	icon: token.path<keyof typeof ICON_SCALE>(baseVar, 'iconSize'),
+	icon: token.path<`${typeof ICON_SCALE[number]}`>(baseVar, 'iconSize'),
 	screen: token.path<`${typeof SCREEN_SCALE[number]}`>(baseVar, 'screenSize'),
 
 	// small scale — step label = zero-padded position ('01'..'05')
@@ -56,7 +56,7 @@ export const primitiveTokens = {
 
 	duration: token.path<keyof typeof DURATION_SCALE>(baseVar, 'duration'),
 	easing: token.optPath<keyof typeof EASE_SCALE>(baseVar, 'easing'),
-}
+} as const
 
 /** The shape useTheme() exposes to components — see SiteTheme.alias in theme.types.ts. */
 export type PrimitiveTokens = typeof primitiveTokens

@@ -25,7 +25,7 @@ export const DEFAULT_THEME: SiteTheme = {
 
 	opacity: [...OPACITY_SCALE],
 
-	iconSize: ICON_SCALE,
+	iconSize: [...ICON_SCALE],
 	screenSize: [...SCREEN_SCALE],
 }
 

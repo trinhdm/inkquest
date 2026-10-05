@@ -48,19 +48,19 @@
 		border-radius: 50%;
 		border: var(--timeline-bullet-border) solid var(--inkq-color-text-tertiary);
 		display: block;
-		height: var(--inkq-icon-sm);
+		height: var(--inkq-dot-lg);
 		position: relative;
 		transition: border-color 260ms var(--easing-out), background 260ms var(--easing-out);
-		width: var(--inkq-icon-sm);
+		width: var(--inkq-dot-lg);
 		z-index: 2;
 	}
 
 	&__rail {
 		background-color: var(--inkq-border);
 		display: block;
-		height: calc(100% + var(--inkq-icon-sm) + (var(--timeline-space) / 2));
+		height: calc(100% + var(--inkq-dot-lg) + (var(--timeline-space) / 2));
 		position: absolute;
-		top: calc((2 * var(--timeline-space)) + (var(--inkq-icon-sm) / 2));
+		top: calc((2 * var(--timeline-space)) + (var(--inkq-dot-lg) / 2));
 		width: var(--timeline-bullet-border);
 		z-index: 1;
 	}
