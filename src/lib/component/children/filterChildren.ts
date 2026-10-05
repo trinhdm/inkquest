@@ -28,25 +28,34 @@ export const countChildren = (
 
 interface VerifyChildrenArgs {
 	children: ReactNode
-	// extras?: ReactNode[]
+	// extra?: ReactNode[]
+	max?: number
 	name: string
 	total?: number
 }
 
 export const verifyChildren = ({
 	children,
-	// extras,
+	// extra,
+	max,
 	name,
-	total = 1,
+	total,
 }: VerifyChildrenArgs) => {
 	if (process.env.NODE_ENV === 'production') return
-	const count = countChildren(children)
 
-	if (count === total) return
-	console.warn(`${name}: ${count} children found; a ${name} needs exactly ${total} children.`)
+	const count = countChildren(children),
+		foundText = `${name}: ${count} children found`
 
-	// if (!!extras?.length)
-	// 	console.warn(`${name}: ${extras?.length} extra subcomponent(s) found.`)
+	if (max) {
+		const maxed = max + 1
+		if (count < maxed) return
+		console.warn(`${foundText}; a ${name} needs less than ${maxed} children.`)
+	} else if (total) {
+		if (count === total) return
+		console.warn(`${foundText}; a ${name} needs exactly ${total} children.`)
+	}
+
+	// if (!!extra?.length) console.warn(`${name}: ${extra?.length} extra subcomponent(s) found.`)
 }
 
 export const filterChildren = (
@@ -77,6 +86,6 @@ export const filterChildren = (
 		}
 	})
 
-	if (verifyArgs) verifyChildren({ ...verifyArgs, children })
+	if (verifyArgs) verifyChildren({ ...verifyArgs, children: filtered })
 	return filtered
 }
