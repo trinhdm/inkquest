@@ -19,9 +19,28 @@ type _FactoryComponent<S extends Specs> =
 type _FactoryProps<S extends Specs> =
 	WithDefaults<FactoryPropsList<S>, SpecsDefaultProps<S>>
 
+interface _BaseFactoryStyles<S extends Specs>
+	extends Omit<StyleOptions<S>, 'classes'> {}
+
+interface _RootFactoryStyles<S extends Specs> {
+	context?: never
+	name?: FactoryConfig<S>['name']
+	withRootName?: never
+}
+
+interface _CompoundFactoryStyles<S extends Specs> {
+	context: NonNullable<_BaseFactoryStyles<S>['context']>
+	name?: never
+	withRootName?: true
+}
+
+type _NamedFactoryStyles<S extends Specs> =
+	| _RootFactoryStyles<S>
+	| _CompoundFactoryStyles<S>
+
 type _FactoryStyles<S extends Specs> =
-	& Omit<StyleOptions<S>, 'classes'>
-	& Partial<Pick<FactoryConfig<S>, 'name'>>
+	& Omit<_BaseFactoryStyles<S>, 'context'>
+	& _NamedFactoryStyles<S>
 
 type _FactoryTarget<S extends Specs> =
 	(_props: _FactoryProps<S>, tools: _FactoryTools<S>) => ReactNode
@@ -50,7 +69,12 @@ export const createFactory = <
 		useProps: function useProps(props) {
 			return usePropsHook(name, (props ?? _props) as NonNullable<typeof props>)
 		},
-		useStyles: function useStyles({ name: scope = name, ...options }) {
+		useStyles: function useStyles(options) {
+			let scope = options.name ?? name
+
+			if (Object.hasOwn(options, 'withRootName') && options.withRootName)
+				({ context: { rootName: scope } } = options)
+
 			const args = { ...options, classes: classes as StyleOptions<S>['classes'] }
 			return useStylesHook<S>(scope, args)
 		},
