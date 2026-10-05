@@ -2,12 +2,12 @@ import { createRootCtx } from '@/lib/component/context'
 import type { AnimationOptions } from '@/hooks/animation'
 import type { HeadingOrder } from '@/types/shared'
 
-export type AccordionIndicator =
+type AccordionIndicator =
 	| 'chevron'
 	| 'plus'
 	| 'none'
 
-export interface AccordionIds {
+interface AccordionIds {
 	content: string
 	root: string
 	title: string

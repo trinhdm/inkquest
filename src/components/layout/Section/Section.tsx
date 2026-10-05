@@ -98,13 +98,13 @@ export const Section = polymorphic<SectionSpecs>((_props, { useProps, useStyles 
 
 	const { others, ref, reveal } = useReveal<HTMLElement>(rest)
 
-	const module = {
-		[`${layout}`]: !!(layout && layout !== 'default')
+	const clsx = {
+		module: { [`${layout}`]: !!(layout && layout !== 'default') },
 	}
 
 	return (
 		<Box
-			{ ...styles('root', { module }) }
+			{ ...styles('root', clsx) }
 			{ ...others }
 			as={ Container }
 			ref={ ref }

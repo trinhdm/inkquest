@@ -46,10 +46,10 @@ export const pluralizeKeys = <T extends Record<string, any>>(obj: T): PluralizeK
 }
 
 
-const deepKeys = <T extends Record<string, unknown>>(obj: T, prefix = '') => {
+export const deepKeys = <T extends Record<string, unknown>>(obj: T, prefix = '') => {
 	let keys = [] as string[]
 
-	for (let key in obj) {
+	for (const key in obj) {
 		const value = obj[key]
 		const keyList = prefix ? `${prefix}-${key}` : key
 
@@ -120,7 +120,7 @@ export const deepSetMap = <V,>(
 }
 
 export const flattenMap = <V,>(map: DeepMap<V>): Record<string, V> => {
-	let result: Record<string, V> = {}
+	const result: Record<string, V> = {}
 
 	for (const [key, value] of map.entries()) {
 		if (value instanceof Map)

@@ -67,9 +67,11 @@ export const ButtonGroup = polymorphic<ButtonGroupSpecs>((_props, { useProps, us
 
 	const others = extractOthers(rest)
 
-	const module = {
-		[`${orientation}`]: !!orientation || null,
-		[`${size}`]: size,
+	const clsx = {
+		module: {
+			[`${orientation}`]: !!orientation || null,
+			[`${size}`]: size,
+		},
 	}
 
 	const items = filterChildren(children, 'Button'),
@@ -86,7 +88,7 @@ export const ButtonGroup = polymorphic<ButtonGroupSpecs>((_props, { useProps, us
 
 	return (
 		<Box
-			{ ...styles('root', { module }) }
+			{ ...styles('root', clsx) }
 			{ ...others }
 			as="div"
 			attributes={ {

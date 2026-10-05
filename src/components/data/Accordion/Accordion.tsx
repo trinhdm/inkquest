@@ -8,7 +8,7 @@ import { AccordionContent } from './AccordionContent'
 import { AccordionProvider } from './Accordion.context'
 import { AccordionTitle } from './AccordionTitle'
 import { Box } from '@/components/polymorphic/Box'
-import type { AccordionContext, AccordionIndicator } from './Accordion.context'
+import type { AccordionContext } from './Accordion.context'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Accordion.module.scss'
 
@@ -39,7 +39,7 @@ interface AccordionProps
 	// disabled?: boolean
 	id?: string
 	// index?: number
-	indicator?: AccordionIndicator
+	indicator?: AccordionContext['indicator']
 	// layout?: AccordionGroup.Context['layout']
 	// onItemToggle?: (index: number, open: boolean) => void
 	onToggle?: (open: boolean) => void
