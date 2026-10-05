@@ -27,6 +27,7 @@ type SectionLayout =
 	| 'blocks'
 	| 'default'
 	| 'hero'
+	| 'hero-split'
 	| 'split'
 
 interface BaseSectionProps {
@@ -45,9 +46,17 @@ interface SectionContentProps {
 	title?: string
 }
 
+interface SectionHeaderProps {
+	children?: never
+	eyebrow?: string
+	layout?: Extract<SectionLayout, 'default' | 'hero'>
+	title?: string
+}
+
 type LayoutSectionProps =
 	| SectionBlocksProps
 	| SectionContentProps
+	| SectionHeaderProps
 
 type SectionProps =
 	& BaseSectionProps
@@ -66,6 +75,7 @@ type SectionSelectors =
 	| 'root' | 'inner'
 	| 'eyebrow' | 'title'
 	| 'description' | 'body'
+	| 'content' | 'cta'
 
 type SectionTokens = {
 	root:

@@ -32,9 +32,19 @@
 		margin-top: var(--inkq-stack-gap-cta);
 		width: 100%;
 
-		&-content {
+		#{$name}__actions {
 			justify-self: stretch;
 		}
+	}
+
+	&__content {
+		display: flex;
+		flex-direction: column;
+		row-gap: var(--inkq-stack-gap-kicker);
+	}
+
+	&__cta {
+		align-self: end;
 	}
 
 	&:not(:last-child) {
@@ -42,14 +52,19 @@
 	}
 
 	&--hero,
+	&--hero-split {
+		--reveal-distance: 1rem;
+
+		#{$name}__eyebrow {
+			color: var(--inkq-color-action);
+		}
+	}
+
+	&--hero,
 	&--banner {
 		#{$name} {
 			&__inner {
 				max-width: var(--inkq-container-block);
-			}
-
-			&__eyebrow {
-				color: var(--inkq-color-action);
 			}
 
 			&__title:has(+ div) {
@@ -66,13 +81,24 @@
 	}
 
 	&--hero {
-		--reveal-distance: 1rem;
-
 		padding-block: var(--inkq-hero-padding);
 	}
 
-	&--blocks {
-		padding-block: 0;
+	&--hero-split {
+		padding-block: var(--space-10);
+
+		#{$name} {
+			&__eyebrow,
+			&__title,
+			&__body,
+			&__footer {
+				margin-block: 0;
+			}
+
+			&__footer {
+				justify-items: end;
+			}
+		}
 	}
 
 	&--split {
@@ -94,6 +120,10 @@
 		}
 	}
 
+	&--blocks {
+		padding-block: 0;
+	}
+
 	&--banner {
 		--reveal-distance: .5rem;
 
@@ -101,6 +131,10 @@
 			&__inner {
 				margin: 0 auto;
 				text-align: center;
+			}
+
+			&__eyebrow {
+				color: var(--inkq-color-action);
 			}
 
 			&__title {

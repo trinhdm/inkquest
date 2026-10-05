@@ -22,9 +22,22 @@ interface BuildSectionConfig {
 	styles: StyleFn<Section.Specs>
 }
 
-const buildHeader = ({ id, props, reveal, styles }: BuildSectionConfig): ReactNode[] => {
-	const { eyebrow, layout, title } = props,
-		header: ReactNode[] = []
+interface SectionParts {
+	body: ReactNode
+	eyebrow: ReactNode
+	footer: ReactNode
+	// footer: ReactElement<SectionFooter.Props> | undefined
+	title: ReactNode
+}
+
+const buildHeader = (
+	{ id, props, reveal, styles }: BuildSectionConfig
+): Pick<SectionParts, 'eyebrow' | 'title'> => {
+	const { eyebrow, layout, title } = props
+	const header: ReturnType<typeof buildHeader> = {
+		eyebrow: null,
+		title: null,
+	}
 
 	if (layout === 'blocks')
 		return header
@@ -35,23 +48,24 @@ const buildHeader = ({ id, props, reveal, styles }: BuildSectionConfig): ReactNo
 				{ eyebrow }
 			</span>
 		)
-		header.push(tagline)
+		header.eyebrow = tagline
 	}
 
 	if (!!title) {
-		const Tag = layout === 'hero' ? 'h1' : 'h2'
+		const Tag = layout?.includes('hero') ? 'h1' : 'h2',
+			clsx = layout === 'hero-split' ? { global: { [`${Tag}-display`]: true } } : {}
 		const headline = (
-			<Tag key={ `${id}-title` } { ...styles('title') } { ...reveal.next() }>
+			<Tag key={ `${id}-title` } { ...styles('title', clsx) } { ...reveal.next() }>
 				{ title }
 			</Tag>
 		)
-		header.push(headline)
+		header.title = headline
 	}
 
 	return header
 }
 
-const orderSection = ({ id, props, reveal }: Omit<BuildSectionConfig, 'styles'>) => {
+const sortContent = ({ id, props, reveal }: Omit<BuildSectionConfig, 'styles'>) => {
 	const { children } = props
 	const items: ReactNode[] = []
 	let footer: ReactElement<SectionFooter.Props> | undefined
@@ -78,9 +92,14 @@ const orderSection = ({ id, props, reveal }: Omit<BuildSectionConfig, 'styles'>)
 	return { footer, items }
 }
 
-const buildContent = ({ id, props, reveal, styles }: BuildSectionConfig): ReactNode[] => {
-	const { footer, items } = orderSection({ id, props, reveal }),
-		content: ReactNode[] = []
+const buildContent = (
+	{ id, props, reveal, styles }: BuildSectionConfig
+): Pick<SectionParts, 'body' | 'footer'> => {
+	const { footer, items } = sortContent({ id, props, reveal })
+	const content: ReturnType<typeof buildContent> = {
+		body: null,
+		footer: undefined,
+	}
 
 	const { eyebrow, layout, title } = props,
 		hasSiblings = !!(title || eyebrow || footer)
@@ -108,7 +127,7 @@ const buildContent = ({ id, props, reveal, styles }: BuildSectionConfig): ReactN
 				? <div key={ key } { ...styles('body') }>{ description }</div>
 				: <Fragment key={ key }>{ description }</Fragment>
 
-		content.push(body)
+		content.body = body
 	}
 
 	if (footer) {
@@ -119,11 +138,13 @@ const buildContent = ({ id, props, reveal, styles }: BuildSectionConfig): ReactN
 			size: layout === 'hero' ? 'lg' : 'md',
 		}
 
-		content.push(
+		const footnote = (
 			<SectionProvider key={ `${id}-footer` } value={ value }>
 				{ footer }
 			</SectionProvider>
 		)
+
+		content.footer = footnote
 	}
 
 	return content
@@ -133,14 +154,68 @@ export const buildSection = (config: Omit<BuildSectionConfig, 'id'>) => {
 	const { props: { id, layout }, styles } = config,
 		args = { ...config, id: id ?? `section` }
 
-	const header = buildHeader(args),
-		content = buildContent(args),
+	const { eyebrow, title } = buildHeader(args),
+		header = <>{ eyebrow }{ title }</>
+
+	const { body, footer } = buildContent(args),
+		content = <>{ body }{ footer }</>
+
+	const inner = <>{ header }{ content }</>
+
+	switch (layout) {
+		case 'hero':
+		case 'banner':
+			return <div { ...styles('inner') }>{ inner }</div>
+		case 'hero-split':
+			return (
+				<Grid columns={ 4 } { ...styles('inner') }>
+					<Grid.Item span={ 3 } { ...styles('content') }>
+						{ header }{ body }
+					</Grid.Item>
+					<Grid.Item span={ 1 } { ...styles('cta') }>
+						{ footer }
+					</Grid.Item>
+				</Grid>
+			)
+		case 'split':
+			return (
+				<Grid { ...styles('inner') }>
+					<Grid.Item>{ header }</Grid.Item>
+					<Grid.Item>{ content }</Grid.Item>
+				</Grid>
+			)
+		default:
+			return inner
+	}
+}
+
+
+export const SectionParts = (config: Omit<BuildSectionConfig, 'id'>) => {
+	const { props: { id, layout },  styles } = config,
+		args = { ...config, id: id ?? `section` }
+
+	const { eyebrow, title } = buildHeader(args),
+		{ body, footer } = buildContent(args)
+
+	const header = <>{ eyebrow }{ title }</>,
+		content = <>{ body }{ footer }</>,
 		inner = <>{ header }{ content }</>
 
 	switch (layout) {
 		case 'hero':
 		case 'banner':
 			return <div { ...styles('inner') }>{ inner }</div>
+		case 'hero-split':
+			return (
+				<Grid columns={ 4 } { ...styles('inner') }>
+					<Grid.Item span={ 3 } { ...styles('content') }>
+						{ header }{ body }
+					</Grid.Item>
+					<Grid.Item span={ 1 } { ...styles('cta') }>
+						{ footer }
+					</Grid.Item>
+				</Grid>
+			)
 		case 'split':
 			return (
 				<Grid { ...styles('inner') }>

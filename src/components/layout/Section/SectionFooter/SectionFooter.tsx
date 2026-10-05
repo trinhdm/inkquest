@@ -24,7 +24,7 @@ interface SectionFooterSpecs {
 }
 
 type SectionFooterSelectors =
-	| 'footer' | 'footer-content'
+	| 'footer' | 'actions'
 
 interface FooterParts {
 	buttons: ReactNode[]
@@ -68,7 +68,7 @@ export const SectionFooter = polymorphic<SectionFooterSpecs>((_props, { useProps
 	return (
 		<Box { ...styles(context.baseName) } { ...others } as="div">
 			{ hasContent && (
-				<div { ...styles(`${context.baseName}-content`) } { ...revealItemFrom(0, revealFrom) }>
+				<div { ...styles('actions') } { ...revealItemFrom(0, revealFrom) }>
 					{ content }
 				</div>
 			) }
