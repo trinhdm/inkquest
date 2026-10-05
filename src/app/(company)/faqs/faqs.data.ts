@@ -168,9 +168,6 @@ export const FAQ_CATEGORIES: Sidebar.LinkItem[] = FAQ_ITEMS.map(({ category, id 
 	url: `/faqs?category=${id}`,
 }))
 
-export const FAQ_CATEGORY_PARAM = 'category'
-export const FAQ_QUERY_PARAM = 'q'
-
 export const faqCategoryUrl = (id: string): Route<string> => `/faqs?category=${id}`
 
 export const resolveFaqGroup = (value?: string | string[]): FaqGroup => {

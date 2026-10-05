@@ -3,13 +3,14 @@
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useDebounce } from '@/hooks/useDebounce'
+import { useFaqsCtx, type FaqsContext } from '../faqs.context'
 import { Field } from '@/components/form/Field'
-import { FAQ_CATEGORY_PARAM, FAQ_QUERY_PARAM } from '../faqs.data'
 import type { ChangeEventHandler } from 'react'
 import type { Route } from 'next'
 
 interface FaqsUrlParams {
 	category?: string
+	params: FaqsContext['params']
 	query?: string
 }
 
@@ -18,20 +19,22 @@ interface FaqsUrlParams {
 // `URLSearchParams` entirely (not written as `category=`/`q=`) so clearing
 // the search field — or navigating with no category selected — lands on a
 // clean `/faqs`, never `/faqs?q=` or `/faqs?category=`.
-export const faqsUrl = ({ category, query }: FaqsUrlParams): Route<string> => {
-	const params = new URLSearchParams()
+export const faqsUrl = ({ category, params, query }: FaqsUrlParams): Route<string> => {
+	const urlParams = new URLSearchParams()
 
-	if (category) params.set(FAQ_CATEGORY_PARAM, category)
-	if (query) params.set(FAQ_QUERY_PARAM, query)
+	if (category) urlParams.set(params.category, category)
+	if (query) urlParams.set(params.query, query)
 
-	const search = params.toString()
+	const search = urlParams.toString()
 
 	// keeps the template-literal return form (not `as Route<string>`) — this
 	// is what satisfies `typedRoutes` today, same as the original `faqCategoryUrl`
-	return `/faqs${ search ? `?${ search }` : '' }` as Route<string>
+	return `/faqs${search ? `?${search}` : ''}` as Route<string>
 }
 
 export const FaqSearch = () => {
+	const { pageID, params, scroll } = useFaqsCtx()
+
 	const router = useRouter()
 	const searchParams = useSearchParams()
 
@@ -39,11 +42,11 @@ export const FaqSearch = () => {
 	// with the field pre-filled. Every keystroke after that is this
 	// component's own local state, never read back from `searchParams` — see
 	// the comment on `pushQuery` below for why no resync effect is needed.
-	const [draft, setDraft] = useState(() => searchParams.get(FAQ_QUERY_PARAM) ?? '')
+	const [draft, setDraft] = useState(() => searchParams.get(params.query) ?? '')
 
-	const { debounced: pushQuery } = useDebounce((query: string) => {
-		const category = searchParams.get(FAQ_CATEGORY_PARAM) ?? undefined
-		router.replace(faqsUrl({ category, query }), { scroll: false })
+	const { debounced: debounceQuery } = useDebounce((query: string) => {
+		const category = searchParams.get(params.category) ?? undefined
+		router.replace(faqsUrl({ category, params, query }), { scroll })
 	})
 
 	// No effect syncs `draft` back from `searchParams` after mount:
@@ -54,11 +57,11 @@ export const FaqSearch = () => {
 	const handleChange: ChangeEventHandler<HTMLInputElement> = event => {
 		const { value } = event.target
 		setDraft(value)
-		pushQuery(value)
+		debounceQuery(value)
 	}
 
 	return (
-		<Field id="faq-search" size="lg">
+		<Field id={ `${pageID}-search` } size="lg">
 			<Field.Input
 				onChange={ handleChange }
 				placeholder="Search all FAQs…"
