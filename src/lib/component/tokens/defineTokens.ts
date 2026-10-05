@@ -14,9 +14,6 @@ interface _DefineTokensProps<P = unknown, C = unknown> {
 	theme: SiteThemeConfig
 }
 
-type _DefineTokensParams<S extends TokensArgs> =
-	_DefineTokensProps<S['props'], SpecsContext<S>>
-
 type _CheckTokenGroup<R, G, K extends keyof R> =
 	K extends keyof G
 		? G[K] & (
@@ -37,11 +34,14 @@ type TokensFn<
 	C = unknown,
 > = ({ context, props, theme }: _DefineTokensProps<P, C>) => V
 
+type TokensParams<S extends TokensArgs> =
+	_DefineTokensProps<S['props'], SpecsContext<S>>
+
 export type TokensConfig<S extends TokensArgs> =
 	TokensFn<S['props'], SpecsTokens<S>, SpecsContext<S>>
 
 export const defineTokens =
 	<S extends TokensArgs>() =>
 		<R extends object>(
-			settings: (args: _DefineTokensParams<S>) => ExactTokens<R, SpecsTokenGroups<S>>
+			settings: (args: TokensParams<S>) => ExactTokens<R, SpecsTokenGroups<S>>
 		): TokensConfig<S> => settings as TokensConfig<S>

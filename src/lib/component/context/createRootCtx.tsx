@@ -4,7 +4,7 @@ import {
 } from 'react'
 import type { NoExcessKeys } from './props.types'
 
-export interface RootProviderProps<
+interface RootProviderProps<
 	T,
 	V extends T = T,
 	N extends string = string,
@@ -15,7 +15,7 @@ export interface RootProviderProps<
 	value: V & NoExcessKeys<T, V>
 }
 
-export type BaseName<C extends string, N extends string> =
+type BaseName<C extends string, N extends string> =
 	C extends N
 		? Lowercase<N>
 		: C extends `${N}.${infer Rest}`
@@ -62,12 +62,12 @@ export const createRootCtx = <
 	}
 
 	const useRootCtx = <C extends string>(componentName: C): RootCtxValue<T, N, C> => {
-		const ctx = use(RootCtx)
+		const context = use(RootCtx)
 
-		if (ctx === null)
+		if (context === null)
 			throw new Error(`<${componentName} /> must be rendered inside <${name}>`)
 
-		const { rootName } = ctx
+		const { rootName } = context
 		let baseName: string = rootName
 
 		if ((rootName as string) !== componentName) {
@@ -78,7 +78,7 @@ export const createRootCtx = <
 
 		baseName = baseName.toLowerCase()
 
-		return { ...ctx, baseName } as RootCtxValue<T, N, C>
+		return { ...context, baseName } as RootCtxValue<T, N, C>
 	}
 
 	const useSafeRootCtx = (): SafeRootCtxValue<T, N> =>
@@ -92,21 +92,23 @@ export const createRootCtx = <
 	// invert the precedence — `useRootProps` below is the only door in.
 	const inheritProps = <P extends object, K extends keyof T>(
 		_props: P,
-		ctx: SafeRootCtxValue<T, N>,
-		shared?: K[],
+		context: SafeRootCtxValue<T, N>,
+		selected?: K[],
 	): P => {
-		if (!ctx) return _props
+		if (!context) return _props
 
-		const sharedKeys = new Set<PropertyKey>(shared ?? []),
+		const shared = new Set<PropertyKey>(selected ?? []),
 			inherited = {} as Partial<T>,
 			uninherited: readonly PropertyKey[] = ['rootName']
 
-		;(Object.keys(ctx) as (keyof T)[]).forEach(key => {
-			if (uninherited.includes(key)) return
-			else if (ctx[key] === undefined || Object.hasOwn(_props, key)) return
-			else if (!!shared?.length && !sharedKeys.has(key)) return
+		;(Object.keys(context) as (keyof T)[]).forEach(key => {
+			const value = context[key]
 
-			Object.assign(inherited, { [key]: ctx[key] })
+			if (uninherited.includes(key)) return
+			else if (value === undefined || Object.hasOwn(_props, key)) return
+			else if (!!selected?.length && !shared.has(key)) return
+
+			Object.assign(inherited, { [key]: value })
 		})
 
 		return { ...inherited, ..._props }
@@ -117,9 +119,9 @@ export const createRootCtx = <
 	// with no way to get the precedence or the guard wrong
 	const useRootProps = <P extends object, K extends keyof T>(
 		_props: P,
-		...shared: K[]
+		...selected: K[]
 	): InheritedProps<T, P, K> =>
-		inheritProps(_props, use(RootCtx), shared)
+		inheritProps(_props, use(RootCtx), selected)
 
 	return {
 		RootProvider,
