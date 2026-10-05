@@ -44,7 +44,7 @@ export const FaqSearch = () => {
 	// the comment on `pushQuery` below for why no resync effect is needed.
 	const [draft, setDraft] = useState(() => searchParams.get(params.query) ?? '')
 
-	const { debounced: debounceQuery } = useDebounce((query: string) => {
+	const { debounce: debounceQuery } = useDebounce((query: string) => {
 		const category = searchParams.get(params.category) ?? undefined
 		router.replace(faqsUrl({ category, params, query }), { scroll })
 	})
