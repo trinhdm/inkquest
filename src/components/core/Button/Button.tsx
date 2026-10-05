@@ -1,6 +1,6 @@
 import { LoaderCircle } from 'lucide-react'
 import { isValidElement, useMemo, Children } from 'react'
-import { defineTokens, extractChildrenText } from '@/lib/component'
+import { defineTokens, extractText } from '@/lib/component'
 import { extractOthers } from '@/hooks/useProps'
 import { isExternalLink, keyHasValue } from '@/utils/helpers'
 import { polymorphic } from '@/lib/component'
@@ -195,7 +195,7 @@ export const Button = polymorphic<ButtonSpecs>((_props, { useProps, useStyles, u
 		global: { block: fullWidth },
 	}
 
-	const ariaLabel = extractChildrenText(children),
+	const ariaLabel = extractText(children),
 		aria = { label: !!(showLabel && ariaLabel.length) ? ariaLabel : undefined }
 
 	const data = {

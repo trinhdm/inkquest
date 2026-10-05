@@ -2,7 +2,7 @@
 
 import { useOptimistic, useTransition } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { extractChildrenText } from '@/lib/component'
+import { extractText } from '@/lib/component'
 import { FaqCategory } from '../FaqCategory'
 import { FaqResults } from '../FaqResults'
 import { Grid } from '@/components/layout/Grid'
@@ -29,7 +29,7 @@ const searchFaqs = (query?: string | string[]): FaqGroup[] => {
 
 	return FAQ_ITEMS.reduce<FaqGroup[]>((acc, group) => {
 		const questions = group.questions.filter(({ content, title }) => {
-			const haystack = `${title}${extractChildrenText(content)}`.toLowerCase()
+			const haystack = `${title}${extractText(content)}`.toLowerCase()
 			return terms.every(term => haystack.includes(term))
 		})
 

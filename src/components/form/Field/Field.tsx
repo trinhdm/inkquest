@@ -10,8 +10,8 @@ import {
 	Mail, Paperclip, Phone, Pipette, Search,
 } from 'lucide-react'
 
+import { defineTokens, filterChildren, polymorphic } from '@/lib/component'
 import { extractOthers } from '@/hooks/useProps'
-import { defineTokens, filterChildren, polymorphic, verifyChildren } from '@/lib/component'
 import { toKebabCase } from '@/utils/helpers'
 import { Box } from '@/components/polymorphic/Box'
 import { FieldProvider, type FieldContext } from './Field.context'
@@ -95,9 +95,7 @@ const buildField = (
 	styles: StyleFn<FieldSpecs>,
 ): FieldParts => {
 	const childNames = [TextInput.displayName]
-	const [control] = filterChildren(children, childNames)
-
-	verifyChildren({ children, name: NAME, total: 1 })
+	const [control] = filterChildren(children, childNames, { name: NAME, total: 1 })
 
 	const items = {
 		control,

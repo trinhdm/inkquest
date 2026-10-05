@@ -1,5 +1,5 @@
 import { Fragment, type ReactNode } from 'react'
-import { getChildKey } from './children'
+import { getChildKey } from '../children'
 import type { NoExcessKeys } from './props.types'
 import type { RootProviderFn } from './createRootCtx'
 
