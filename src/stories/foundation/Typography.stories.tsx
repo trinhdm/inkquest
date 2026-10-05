@@ -1,11 +1,11 @@
 // Foundation/Typography.
 //
 // IMPORTANT — a real gap was found while writing this page, not invented for
-// documentation purposes: `semanticTokens.font` (`reference/semantic.ts`)
-// declares four public accessors — `tokens.font.display()`, `.title()`,
+// documentation purposes: `semanticalias.font` (`reference/semantic.ts`)
+// declares four public accessors — `alias.font.display()`, `.title()`,
 // `.body()`, `.label()` — pointing at `--inkq-font-display`,
 // `--inkq-font-title`, `--inkq-font-body`, `--inkq-font-label`. Tracing the
-// actual token-generation pipeline (`buildSchemes.ts` -> `Tokens.typography()`
+// actual token-generation pipeline (`buildSchemes.ts` -> `alias.typography()`
 // in `tokens/typography/index.ts` -> `getFontPropertyTokens` /
 // `getFontPresetTokens`, flattened by `generate/strategies.ts`), NONE of
 // those four CSS custom properties are ever produced:
@@ -18,13 +18,13 @@
 //     prose/caption/section), emitted as `--inkq-text-*` shorthand vars
 //     (confirmed: `Button.stories.tsx` already reads
 //     `var(--inkq-text-control)` directly).
-// So `tokens.font.display/title/body/label` currently resolve to custom
+// So `alias.font.display/title/body/label` currently resolve to custom
 // properties that were never declared — this page renders them with the
 // real accessor anyway (per the "never hardcode" rule) and displays each
 // one's ACTUAL computed value live, so the gap is visible rather than
 // papered over. This is flagged in the agent report; fixing it is out of
 // scope (it would mean editing `src/lib/theme/`).
-import { base, tokens } from '@/lib/theme/reference'
+import { alias, base } from '@/lib/theme/reference'
 import {
 	FONT_FAMILY_SCALE, FONT_SIZE_SCALE, FONT_WEIGHT_SCALE,
 	LETTER_SPACING_SCALE, LINE_HEIGHT_SCALE,
@@ -45,7 +45,7 @@ const ResolvedVar = ({ varName }: { varName: string }) => {
 		if (!el) return
 		const computed = getComputedStyle(el).getPropertyValue(varName).trim()
 		setValue(computed.length ? computed : '(empty — not emitted by buildSchemes)')
-	})
+	}, [setValue, varName])
 
 	return (
 		<span ref={ ref } style={ metaStyle }>
@@ -74,10 +74,10 @@ const FontSample = ({ label, path, varName, font, sample = 'The quick brown fox 
 
 const SemanticFontTokens = () => (
 	<div style={ rowStyle }>
-		<FontSample label="font.display" path="tokens.font.display()" varName="--inkq-font-display" font={ tokens.font.display() } />
-		<FontSample label="font.title" path="tokens.font.title()" varName="--inkq-font-title" font={ tokens.font.title() } />
-		<FontSample label="font.body" path="tokens.font.body()" varName="--inkq-font-body" font={ tokens.font.body() } />
-		<FontSample label="font.label" path="tokens.font.label()" varName="--inkq-font-label" font={ tokens.font.label() } />
+		<FontSample label="font.display" path="alias.font.display()" varName="--inkq-font-display" font={ alias.font.display() } />
+		<FontSample label="font.title" path="alias.font.title()" varName="--inkq-font-title" font={ alias.font.title() } />
+		<FontSample label="font.body" path="alias.font.body()" varName="--inkq-font-body" font={ alias.font.body() } />
+		<FontSample label="font.label" path="alias.font.label()" varName="--inkq-font-label" font={ alias.font.label() } />
 	</div>
 )
 
@@ -102,10 +102,10 @@ const InternalPresets = () => (
 	<div>
 		<p style={ { fontSize: 12, opacity: 0.7, maxWidth: 680, marginBottom: 16 } }>
 			Internal — these are the presets that are actually composed and emitted as CSS
-			(<code>src/lib/theme/tokens/typography/presets.ts</code>'s <code>FontPresetTokens</code>,
+			(<code>src/lib/theme/tokens/typography/presets.ts</code>&apos;s <code>FontPresetTokens</code>,
 			flattened into shorthand <code>--inkq-text-*</code> variables). There is currently no
 			typed accessor for them in the public <code>tokens</code> object — components reference
-			them by literal CSS variable name today (e.g. <code>Button.stories.tsx</code>'s{ ' ' }
+			them by literal CSS variable name today (e.g. <code>Button.stories.tsx</code>&apos;s{ ' ' }
 			<code>font: &apos;var(--inkq-text-control)&apos;</code>).
 		</p>
 		<div style={ rowStyle }>

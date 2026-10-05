@@ -1,12 +1,12 @@
 .inkq-text-input {
 	$name: &;
 
-    --field-control-padding: 0 var(--space-4);
+    --input-control-padding: var(--field-control-padding);
 
     align-items: center;
     display: flex;
     gap: .5rem;
-    padding: var(--field-control-padding);
+    padding: var(--input-control-padding);
     position: relative;
 	width: 100%;
 }

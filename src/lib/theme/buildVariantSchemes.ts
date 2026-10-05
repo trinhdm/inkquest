@@ -23,7 +23,7 @@ export const buildVariantSchemes = (name?: string, prefix?: string): CssRule[] =
 		}
 
 		if (priority) {
-			selectors.push(`${selector}:is([data-priority="${priority}"])`)
+			if (!tone) selectors.push(`${selector}:is([data-priority="${priority}"])`)
 		} else if (variant in VARIANT_ORDER) {
 			const list = Object.keys(VARIANT_ORDER).reduce<string[]>((acc, k) => {
 				if (k !== variant) acc.push(`[data-variant="${k}"]`)

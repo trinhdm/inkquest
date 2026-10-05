@@ -8,14 +8,14 @@
 // exported as `alias` from `reference/index.ts`), which `@/lib/theme`'s
 // public barrel does NOT re-export. So this page documents border/radius
 // via their literal, generated CSS variable names (the only way to reach
-// them today) rather than a typed `tokens.*` accessor — unlike Colors,
+// them today) rather than a typed `alias.*` accessor — unlike Colors,
 // Typography, Spacing, and Motion's semantic sections, there's no
-// `tokens.border...` call to demonstrate here.
+// `alias.border...` call to demonstrate here.
 //
-// `opacity.disabled` IS public (`tokens.opacity.disabled()`) and is
+// `opacity.disabled` IS public (`alias.opacity.disabled()`) and is
 // documented on the Colors page (paired with a disabled-state swatch); it's
 // cross-referenced, not repeated, here.
-import { base, tokens } from '@/lib/theme/reference'
+import { alias, base } from '@/lib/theme/reference'
 import { RADIUS_SCALE } from '@/lib/theme/scales'
 import type { CSSProperties } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
@@ -33,7 +33,7 @@ const RadiusBox = ({ label, varName }: RadiusBoxProps) => (
 			style={ {
 				width: 64,
 				height: 64,
-				background: tokens.color.action(),
+				background: alias.color.action(),
 				borderRadius: `var(${ varName })`,
 			} }
 		/>
@@ -48,7 +48,7 @@ const InternalRadiusPresets = () => (
 			Internal — <code>BorderRadiusTokens</code> (<code>tokens/border/radius.ts</code>), emitted as
 			<code>--inkq-border-radius-*</code>. Referenced by literal CSS variable name; reachable
 			internally only via <code>alias.borderRadius(...)</code>
-			(<code>reference/semantic.ts</code>'s <code>propertyTokens</code>), which is not part of the
+			(<code>reference/semantic.ts</code>&apos;s <code>propertyTokens</code>), which is not part of the
 			public <code>tokens</code> barrel.
 		</p>
 		<div style={ { display: 'flex', gap: 24, flexWrap: 'wrap' } }>
@@ -75,7 +75,7 @@ const BorderSwatch = ({ label, varName }: BorderSwatchProps) => (
 				width: 120,
 				height: 56,
 				borderRadius: 8,
-				background: tokens.background.card(),
+				background: alias.background.card(),
 				border: `2px solid var(${ varName })`,
 			} }
 		/>
@@ -86,8 +86,8 @@ const BorderSwatch = ({ label, varName }: BorderSwatchProps) => (
 const InternalBorderColors = () => (
 	<div>
 		<p style={ { fontSize: 12, opacity: 0.7, maxWidth: 680, marginBottom: 16 } }>
-			Internal — <code>BorderColorTokens</code> (<code>tokens/border/color.ts</code>), themed
-			per-scheme (<code>colors.theme('500')</code> / <code>('600')</code>), emitted as{ ' ' }
+		Internal — <code>BorderColorTokens</code> (<code>tokens/border/color.ts</code>), themed
+			per-scheme (<code>colors.theme(&apos;500&apos;)</code> / <code>(&apos;600&apos;)</code>), emitted as{ ' ' }
 			<code>--inkq-border</code> / <code>--inkq-border-strong</code>. Reachable internally via{ ' ' }
 			<code>alias.border()</code>.
 		</p>
@@ -105,7 +105,7 @@ const PrimitiveRadiusScale = () => (
 		<p style={ { fontSize: 12, opacity: 0.7, maxWidth: 680, marginBottom: 16 } }>
 			Internal — not for direct use in components. { RADIUS_SCALE.length }-step scale{ ' ' }
 			(<code>RADIUS_SCALE = [{ RADIUS_SCALE.join(', ') }]</code>, <code>src/lib/theme/scales.ts</code>),
-			accessed through <code>primitiveTokens.radius</code> (exported as <code>base</code>). The
+			accessed through <code>primitivealias.radius</code> (exported as <code>base</code>). The
 			presets above alias these steps 1:1 (<code>none</code>→01, <code>sm</code>→02, <code>md</code>→03,
 			<code>lg</code>→04, <code>pill</code>→05).
 		</p>
@@ -116,7 +116,7 @@ const PrimitiveRadiusScale = () => (
 						style={ {
 							width: 64,
 							height: 64,
-							background: tokens.color.action(),
+							background: alias.color.action(),
 							borderRadius: base.radius(step),
 						} }
 					/>
@@ -129,7 +129,7 @@ const PrimitiveRadiusScale = () => (
 
 const OpacityCrossReference = () => (
 	<p style={ { fontSize: 13, maxWidth: 640 } }>
-		<code>tokens.opacity.disabled()</code> (the one public opacity token) and the full{ ' ' }
+		<code>alias.opacity.disabled()</code> (the one public opacity token) and the full{ ' ' }
 		<code>OPACITY_SCALE</code> primitive reference live on{ ' ' }
 		<strong>Foundation / Colors</strong> (paired with the disabled action-color swatch, since
 		opacity is almost always applied together with a color/background token in this system).

@@ -13,6 +13,7 @@ export interface TextColorTokens {
 		}
 	}
 	link: Pick<TokenStateHues, 'base' | 'hover' | 'focus' | 'disable'>
+	placeholder: string
 }
 
 export const getTextColorTokens = (
@@ -36,5 +37,6 @@ export const getTextColorTokens = (
 			focus: alias.secondary('muted'),
 			disable: alias.secondary('dim'),
 		},
+		placeholder: alias.secondary('muted'),
 	}
 }

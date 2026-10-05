@@ -1,10 +1,10 @@
 // Foundation/Spacing & Layout.
 //
-// Public semantic surface here is narrow: only `tokens.breakpoint` and
-// `tokens.container` are exported through `semanticTokens`
+// Public semantic surface here is narrow: only `alias.breakpoint` and
+// `alias.container` are exported through `semanticTokens`
 // (`reference/semantic.ts`) / the public `tokens` barrel (`@/lib/theme`).
-// There is no public `tokens.space.*` — the primitive `space` scale
-// (`primitiveTokens.space`, `reference/primitive.ts`) is only consumed
+// There is no public `alias.space.*` — the primitive `space` scale
+// (`primitivealias.space`, `reference/primitive.ts`) is only consumed
 // internally, composed into things like `SpaceTokens`/`PaddingTokens`/
 // `ElementTokens`/`GridTokens` (`tokens/layout/*.ts`), none of which are
 // re-exported as typed accessors from `@/lib/theme`. This page documents
@@ -12,7 +12,7 @@
 // composites (referenced by their literal generated CSS variable name, the
 // only way to reach them today) to show what the primitive scale is
 // actually used for.
-import { base, tokens } from '@/lib/theme/reference'
+import { alias, base } from '@/lib/theme/reference'
 import type { CSSProperties } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
@@ -27,7 +27,7 @@ interface BarProps {
 /** A horizontal bar sized to a real breakpoint/container/space token — visible and comparable at a glance. */
 const Bar = ({ label, path, width }: BarProps) => (
 	<div style={ { marginBottom: 12 } }>
-		<div style={ { height: 20, width, maxWidth: '100%', background: tokens.color.action(), borderRadius: 4 } } />
+		<div style={ { height: 20, width, maxWidth: '100%', background: alias.color.action(), borderRadius: 4 } } />
 		<div style={ metaStyle }>{ label } — <code>{ path }</code> — { width }</div>
 	</div>
 )
@@ -40,14 +40,14 @@ const SemanticLayoutTokens = () => (
 		<h3 style={ { fontSize: 14, marginBottom: 12 } }>breakpoint</h3>
 		<div style={ { marginBottom: 32 } }>
 			{ BREAKPOINT_KEYS.map(key => (
-				<Bar key={ key } label={ key } path={ `tokens.breakpoint('${ key }')` } width={ `min(100%, calc(${ tokens.breakpoint(key) } / 4))` } />
+				<Bar key={ key } label={ key } path={ `alias.breakpoint('${ key }')` } width={ `min(100%, calc(${ alias.breakpoint(key) } / 4))` } />
 			)) }
 		</div>
 
 		<h3 style={ { fontSize: 14, marginBottom: 12 } }>container</h3>
 		<div>
 			{ CONTAINER_KEYS.map(key => (
-				<Bar key={ key } label={ key } path={ `tokens.container('${ key }')` } width={ `min(100%, calc(${ tokens.container(key) } / 4))` } />
+				<Bar key={ key } label={ key } path={ `alias.container('${ key }')` } width={ `min(100%, calc(${ alias.container(key) } / 4))` } />
 			)) }
 		</div>
 	</div>
@@ -60,14 +60,14 @@ const PrimitiveSpaceScale = () => (
 		<p style={ { fontSize: 12, opacity: 0.7, maxWidth: 680, marginBottom: 16 } }>
 			Internal — not for direct use in components. 16-step scale generated from{ ' ' }
 			<code>SiteTheme.scale.space</code> (base unit <code>BASE_SCALE = 4</code>,{ ' ' }
-			<code>src/lib/theme/scales.ts</code>) via <code>generate/strategies.ts</code>'s{ ' ' }
-			<code>scaleStrategy</code>, accessed through <code>primitiveTokens.space</code>{ ' ' }
+			<code>src/lib/theme/scales.ts</code>) via <code>generate/strategies.ts</code>&apos;s{ ' ' }
+			<code>scaleStrategy</code>, accessed through <code>primitivealias.space</code>{ ' ' }
 			(exported as <code>base</code>).
 		</p>
 		<div style={ { display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap' } }>
 			{ SPACE_STEPS.map(step => (
 				<div key={ step } style={ { textAlign: 'center' } }>
-					<div style={ { width: base.space(step), height: base.space(step), background: tokens.color.action(), borderRadius: 4 } } />
+					<div style={ { width: base.space(step), height: base.space(step), background: alias.color.action(), borderRadius: 4 } } />
 					<div style={ metaStyle }>{ step }</div>
 				</div>
 			)) }
@@ -86,12 +86,12 @@ const ComposedBox = ({ label, varName, dimension = 'padding' }: ComposedBoxProps
 		<div
 			style={ {
 				display: 'inline-block',
-				background: tokens.background.card(),
-				border: `1px solid ${ tokens.color.action() }`,
+				background: alias.background.card(),
+				border: `1px solid ${ alias.color.action() }`,
 				borderRadius: 4,
 				...(dimension === 'padding' ? { padding: `var(${ varName })` } : {}),
 				...(dimension === 'width' ? { width: `var(${ varName })`, height: `var(${ varName })` } : {}),
-				...(dimension === 'gap' ? { width: `var(${ varName })`, height: 8, background: tokens.color.action() } : {}),
+				...(dimension === 'gap' ? { width: `var(${ varName })`, height: 8, background: alias.color.action() } : {}),
 			} }
 		>
 			{ dimension === 'padding' ? 'content' : null }

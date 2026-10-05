@@ -11,7 +11,7 @@ import {
 } from 'lucide-react'
 
 import { extractOthers } from '@/hooks/useProps'
-import { filterChildren, polymorphic, verifyChildren } from '@/lib/component'
+import { defineTokens, filterChildren, polymorphic, verifyChildren } from '@/lib/component'
 import { toKebabCase } from '@/utils/helpers'
 import { Box } from '@/components/polymorphic/Box'
 import { FieldProvider, type FieldContext } from './Field.context'
@@ -27,6 +27,7 @@ const NAME = 'Field' as const,
 const DEFAULT_PROPS = {
 	as: TAG,
 	required: false,
+	size: 'md',
 } as const
 
 const SUBCOMPONENTS = {
@@ -54,11 +55,17 @@ interface FieldSpecs {
 	props: FieldProps
 	selectors: FieldSelectors
 	subcomponents: typeof SUBCOMPONENTS
+	tokens: FieldTokens
 }
 
 type FieldSelectors =
 	| 'root' | 'label' | 'control'
 	| 'required' | 'icon' | 'indicator' | 'error'
+
+type FieldTokens = {
+	root:
+		| '--field-control-padding'
+}
 
 interface FieldParts {
 	control: ReactNode | null
@@ -108,9 +115,19 @@ const buildField = (
 	return items
 }
 
+const tokens = defineTokens<FieldSpecs>(({ props, theme }) => {
+	const { size } = props
+
+	return {
+		root: {
+			'--field-control-padding': !!size ? theme.el.field.padding(size) : undefined,
+		},
+	}
+})
+
 export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) => {
 	const props = useProps(_props)
-	const styles = useStyles({ props })
+	const styles = useStyles({ props, tokens })
 
 	const {
 		as,
@@ -148,6 +165,8 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 		icon,
 	])
 
+	const clsx = { module: { [`${size}`]: size } }
+
 	const data = {
 		disabled: !!disabled || null,
 		invalid: hasError || null,
@@ -156,7 +175,7 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 
 	return (
 		<Box
-			{ ...styles('root') }
+			{ ...styles('root', clsx) }
 			{ ...others }
 			as={ as }
 			attributes={ { data } }

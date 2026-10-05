@@ -2,7 +2,7 @@ import { aliasVar, token } from './utils'
 import type {
 	AccentTokens, BackgroundTokens,
 	BorderColorTokens, BorderRadiusTokens, ColorTokens,
-	LayoutTokens, SpaceTokens, TypographyTokens,
+	LayoutTokens, TypographyTokens,
 } from '../tokens'
 
 type FontTokens = TypographyTokens['font']
@@ -44,6 +44,8 @@ export const semanticTokens = {
 	color: {
 		text: token.optPath<ColorTokens['text']>(aliasVar, 'color', 'text'),
 		link: token.optPath<ColorTokens['link']>(aliasVar, 'color', 'link'),
+		placeholder: token.endPath(aliasVar, 'color', 'placeholder'),
+
 		action: token.optPath<ColorTokens['action']>(aliasVar, 'color', 'action'),
 		danger: token.optPath<ColorTokens['danger']>(aliasVar, 'color', 'danger'),
 		success: token.optPath<ColorTokens['success']>(aliasVar, 'color', 'success'),

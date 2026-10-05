@@ -45,15 +45,17 @@ type TextInputSelectors =
 
 type TextInputTokens = {
 	root:
-		| '--field-control-padding'
+		| '--input-control-padding'
 }
 
-const tokens = defineTokens<TextInputSpecs>(({ context }) => {
+const tokens = defineTokens<TextInputSpecs>(({ context, props, theme }) => {
 	const { hasIcon } = context
+	const { size } = props
+	const fieldPadding = !!size ? theme.el.field.padding(size) : 'var(--field-control-padding)'
 
 	return {
 		root: {
-			'--field-control-padding': hasIcon ? `var(--space-4) var(--space-4) var(--space-4) var(--space-11)` : undefined,
+			'--input-control-padding': hasIcon ? `${fieldPadding} ${fieldPadding} ${fieldPadding} calc((2 * ${fieldPadding}) + var(--field-icon-size))` : undefined,
 		},
 	}
 })

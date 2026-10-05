@@ -133,7 +133,8 @@ ul {
 
 input,
 select,
-textarea {
+textarea,
+.inkq-control {
 	--form-control-border: 1px;
 
     background-color: var(--inkq-background-card);
@@ -146,7 +147,7 @@ textarea {
 		box-shadow var(--duration-fast);
 
 	&::placeholder {
-		color: var(--inkq-color-link-focus);
+		color: var(--inkq-color-placeholder);
 	}
 
 	&:hover {

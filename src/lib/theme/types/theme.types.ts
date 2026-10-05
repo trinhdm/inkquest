@@ -2,7 +2,7 @@ import { COLOR_TOKENS, THEME_SCHEMES } from '../scales'
 import type { CSSProperties } from 'react'
 import type { AtLeastOneKeyOf, ExtractFrom } from '@/types/utils'
 import type { CSSVars, HexCode, Size, Unit } from '@/types/shared'
-import type { SemanticTokens, ShorthandTokens } from '../reference'
+import type { PublicTokens } from '../reference'
 
 export type ThemeName =
 	typeof THEME_SCHEMES[number]
@@ -51,16 +51,11 @@ export interface SiteTheme {
 }
 
 export interface SiteThemeConfig
-	extends SemanticTokens {
-	// css: SemanticTokens
+	extends PublicTokens {
 	prefix?: string
-	presets: ShorthandTokens
+	// presets: ShorthandTokens
 
 	prefixSelector: (name: string) => string
-
-	// subcomponents?: Record<string, {
-	// 	cssVars?: (theme: SiteTheme, props: unknown, ctx: unknown) => Partial<Record<string, CSSVars>>
-	// }>
 }
 
 export type ConfigOptions<K extends keyof SiteThemeConfig, T extends string> =

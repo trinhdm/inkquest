@@ -61,6 +61,14 @@ export interface GridTokens {
 
 	navbar: { size: string }
 	subnav: { size: string }
+
+	field: {
+		padding: {
+			sm: string
+			md: string
+			lg: string
+		}
+	}
 }
 
 export const getGridTokens = (): GridTokens => ({
@@ -91,4 +99,12 @@ export const getGridTokens = (): GridTokens => ({
 
 	navbar: { size: base.space('13') },
 	subnav: { size: base.space('10') },
+
+	field: {
+		padding: {
+			sm: base.space('2'),
+			md: base.space('3'),
+			lg: base.space('4'),
+		},
+	}
 })

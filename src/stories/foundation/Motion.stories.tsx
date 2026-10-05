@@ -1,7 +1,7 @@
 // Foundation/Motion.
 //
 // Same class of gap as Typography's `font.display/title/body/label`: the
-// declared semantic accessor `tokens.motion.interactive()`
+// declared semantic accessor `alias.motion.interactive()`
 // (`reference/semantic.ts` -> `--inkq-motion-interactive`) has no backing
 // value. `MotionTokens` (`tokens/motion/index.ts` = `TransitionPropertyTokens`
 // + `TransitionPresetTokens`) has no `interactive` key at all — the real,
@@ -11,7 +11,7 @@
 // Documented (and demonstrated live, via computed-value readback) rather
 // than silently worked around.
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
-import { base, tokens } from '@/lib/theme/reference'
+import { alias, base } from '@/lib/theme/reference'
 import { DURATION_SCALE, EASE_SCALE } from '@/lib/theme/scales'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
@@ -26,7 +26,7 @@ const ResolvedVar = ({ varName }: { varName: string }) => {
 		if (!el) return
 		const computed = getComputedStyle(el).getPropertyValue(varName).trim()
 		setValue(computed.length ? computed : '(empty — not emitted by buildSchemes)')
-	})
+	}, [setValue, varName])
 
 	return <span ref={ ref } style={ metaStyle }>{ varName } -&gt; { value }</span>
 }
@@ -39,11 +39,11 @@ const SemanticMotionToken = () => (
 				width: 96,
 				height: 48,
 				borderRadius: 8,
-				background: tokens.color.action(),
-				transition: tokens.motion.interactive(),
+				background: alias.color.action(),
+				transition: alias.motion.interactive(),
 			} }
 		/>
-		<div style={ metaStyle }>tokens.motion.interactive()</div>
+		<div style={ metaStyle }>alias.motion.interactive()</div>
 		<ResolvedVar varName="--inkq-motion-interactive" />
 	</div>
 )
@@ -62,7 +62,7 @@ const HoverDemo = ({ label, varName }: HoverDemoProps) => (
 				width: 80,
 				height: 48,
 				borderRadius: 8,
-				background: tokens.color.action(),
+				background: alias.color.action(),
 				transition: `var(${ varName })`,
 			} }
 		/>
@@ -83,7 +83,7 @@ const InternalPresets = () => (
 			Internal — the transition property/preset tokens actually emitted as CSS
 			(<code>tokens/motion/transitions/properties.ts</code>,{ ' ' }
 			<code>tokens/motion/presets.ts</code>), referenced by literal CSS variable name since
-			there is no typed accessor for them beyond the (unwired) <code>tokens.motion.interactive</code>.
+			there is no typed accessor for them beyond the (unwired) <code>alias.motion.interactive</code>.
 		</p>
 		<div style={ { display: 'flex', gap: 32, flexWrap: 'wrap' } }>
 			<HoverDemo label="motion.background" varName="--inkq-motion-background" />
@@ -101,7 +101,7 @@ const PrimitiveMotionScale = () => (
 		<p style={ { fontSize: 12, opacity: 0.7, maxWidth: 680, marginBottom: 16 } }>
 			Internal — not for direct use in components. Raw <code>DURATION_SCALE</code> /{ ' ' }
 			<code>EASE_SCALE</code> steps (<code>src/lib/theme/scales.ts</code>), accessed through{ ' ' }
-			<code>primitiveTokens.duration</code> / <code>.easing</code> (exported as{ ' ' }
+			<code>primitivealias.duration</code> / <code>.easing</code> (exported as{ ' ' }
 			<code>base</code>). Every preset above composes a duration with an easing curve.
 		</p>
 		<h4 style={ { fontSize: 13, marginBottom: 8 } }>duration</h4>
@@ -114,7 +114,7 @@ const PrimitiveMotionScale = () => (
 							width: 64,
 							height: 32,
 							borderRadius: 6,
-							background: tokens.color.action(),
+							background: alias.color.action(),
 							transition: `transform ${ base.duration(key) } linear`,
 						} }
 					/>
@@ -136,7 +136,7 @@ const PrimitiveMotionScale = () => (
 							width: 64,
 							height: 32,
 							borderRadius: 6,
-							background: tokens.color.action(),
+							background: alias.color.action(),
 							transition: `transform .6s ${ base.easing(key) }`,
 						} }
 					/>
