@@ -1,4 +1,4 @@
-import { useFieldCtx, useFieldProps, type Field } from '../Field'
+import { useChosenFieldProps, useFieldCtx, type Field } from '../Field'
 import { extractOthers } from '@/hooks/useProps'
 import { defineTokens, polymorphic } from '@/lib/component'
 import { Box } from '@/components/polymorphic/Box'
@@ -62,7 +62,7 @@ const tokens = defineTokens<TextInputSpecs>(({ context, props, theme }) => {
 
 export const TextInput = polymorphic<TextInputSpecs>((_props, { useProps, useStyles }) => {
 	const context = useFieldCtx(NAME)
-	const props = useProps(useFieldProps(_props, 'disabled', 'loading', 'required'))
+	const props = useProps(useChosenFieldProps(_props))
 	const styles = useStyles({ context, props, tokens })
 
 	const { hasError, idx } = context

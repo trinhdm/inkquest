@@ -1,2 +1,2 @@
 export { Field } from './Field'
-export { useFieldCtx, useFieldProps } from './Field.context'
+export { useChosenFieldProps, useFieldCtx } from './Field.context'

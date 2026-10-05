@@ -11,7 +11,7 @@ import type { TokensConfig } from '@/lib/component/tokens'
 
 export interface StyleOptions<S extends SpecsContract> {
 	readonly classes?: [SpecsSelectors<S>] extends [never] ? never : Record<string, string>
-	context?: SpecsContext<S>
+	context?: SpecsContext<S> | null
 	prefix?: string
 	props: S['props']
 	tokens?: TokensConfig<S>

@@ -37,6 +37,11 @@ export type SafeRootCtxValue<T, N extends string = string> =
 export type RootProviderFn<T, N extends string = string> =
 	<V extends T>(props: RootProviderProps<T, V, N>) => ReactElement
 
+type InheritedProps<T, P, S extends keyof T> =
+	[Exclude<S, keyof P>] extends [never]
+		? P
+		: P & Partial<Pick<T, Exclude<S, keyof P>>>
+
 export const createRootCtx = <
 	T extends object,
 	N extends string = string,
@@ -85,22 +90,23 @@ export const createRootCtx = <
 	// consumer had to call correctly by hand. Keeping it private here means
 	// there is no way for a consumer to skip the `Object.hasOwn` guard or
 	// invert the precedence — `useRootProps` below is the only door in.
-	const inheritProps = <P extends object>(
+	const inheritProps = <P extends object, K extends keyof T>(
 		_props: P,
 		ctx: SafeRootCtxValue<T, N>,
-		selected?: (keyof T)[],
+		shared?: K[],
 	): P => {
 		if (!ctx) return _props
 
-		const inherited = {} as Partial<T>,
-			uninherited = ['rootName'] as (keyof T)[]
+		const sharedKeys = new Set<PropertyKey>(shared ?? []),
+			inherited = {} as Partial<T>,
+			uninherited: readonly PropertyKey[] = ['rootName']
 
 		;(Object.keys(ctx) as (keyof T)[]).forEach(key => {
-			const propsHasKey = ctx[key] !== undefined && !Object.hasOwn(_props, key as string)
-			const isSelected = !!selected?.length ? selected.includes(key) : true
+			if (uninherited.includes(key)) return
+			else if (ctx[key] === undefined || Object.hasOwn(_props, key)) return
+			else if (!!shared?.length && !sharedKeys.has(key)) return
 
-			if (!uninherited.includes(key) && propsHasKey && isSelected)
-				Object.assign(inherited, { [key]: ctx[key] })
+			Object.assign(inherited, { [key]: ctx[key] })
 		})
 
 		return { ...inherited, ..._props }
@@ -109,8 +115,11 @@ export const createRootCtx = <
 	// reads the context AND applies the guarded merge in one call,
 	// so a consumer just does `useProps(NAME, useRootProps(_props))`
 	// with no way to get the precedence or the guard wrong
-	const useRootProps = <P extends object>(_props: P, ...selected: (keyof T)[]): P =>
-		inheritProps(_props, use(RootCtx), selected)
+	const useRootProps = <P extends object, K extends keyof T>(
+		_props: P,
+		...shared: K[]
+	): InheritedProps<T, P, K> =>
+		inheritProps(_props, use(RootCtx), shared)
 
 	return {
 		RootProvider,
