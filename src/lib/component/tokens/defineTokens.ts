@@ -22,6 +22,5 @@ type TokensFn<
 export type TokensConfig<S extends TokensArgs> =
 	TokensFn<S['props'], SpecsTokens<S>, SpecsContext<S>>
 
-export const defineTokens = <S extends TokensArgs>(
-	settings: TokensConfig<S>
-) => settings
+export const defineTokens =
+	<S extends TokensArgs>(settings: TokensConfig<S>) => settings

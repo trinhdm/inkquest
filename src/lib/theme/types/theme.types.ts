@@ -1,7 +1,7 @@
 import { COLOR_TOKENS, THEME_SCHEMES } from '../scales'
 import type { CSSProperties } from 'react'
+import type { ApiTokens } from '../reference'
 import type { AtLeastOneKeyOf, ExtractFrom } from '@/types/utils'
-import type { PublicTokens } from '../reference'
 import type { CSSVars, HexCode, Unit } from '@/types/shared'
 
 export type ThemeName =
@@ -52,10 +52,8 @@ export interface SiteTheme {
 }
 
 export interface SiteThemeConfig
-	extends PublicTokens {
+	extends ApiTokens {
 	prefix?: string
-	// presets: ShorthandTokens
-
 	prefixSelector: (name: string) => string
 }
 

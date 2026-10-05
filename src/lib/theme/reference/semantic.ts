@@ -1,7 +1,7 @@
 import { aliasVar, token } from './utils'
 import type {
-	AccentTokens, BackgroundTokens,
-	BorderColorTokens, BorderRadiusTokens, ColorTokens,
+	AccentTokens, BackgroundTokens, ColorTokens,
+	BorderColorTokens, BorderRadiusTokens,
 	LayoutTokens, TypographyTokens,
 } from '../tokens'
 
@@ -64,7 +64,7 @@ export const semanticTokens = {
 	motion: {
 		interactive: token.endPath(aliasVar, 'motion', 'interactive'),
 	},
-}
+} as const
 
 /** References into already-built semantic tokens. Nesting mirrors config/'s composition — a new semantic category needs a matching entry here. */
 export const aliasTokens = {

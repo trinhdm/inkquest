@@ -1,8 +1,9 @@
 import { aliasVar, token } from './utils'
-import { semanticTokens } from './semantic'
+import { aliasTokens } from './semantic'
 import type { LayoutTokens, TypographyTokens } from '../tokens'
 import type { TransitionPresetTokens } from '../tokens/motion/presets'
 
+type UITokens<T extends keyof LayoutTokens> = ReturnType<LayoutTokens[T]>
 type TextTokens = TypographyTokens['text']
 
 // limit component usage to only shorthand tokens
@@ -27,19 +28,26 @@ const shorthandTokens = {
 const componentTokens = {
 	el: {
 		field: {
-			padding: token.path<ReturnType<LayoutTokens['grid']>['field']['padding']>(aliasVar, 'field', 'padding'),
+			padding: token.path<UITokens<'grid'>['field']['padding']>(aliasVar, 'field', 'padding'),
 		},
 		icon: {
-			size: token.path<ReturnType<LayoutTokens['element']>['icon']>(aliasVar, 'icon'),
+			size: token.path<UITokens<'element'>['icon']>(aliasVar, 'icon'),
 		},
 	},
-}
+} as const
 
-export const publicTokens = {
+const propertyTokens = {
+	fontSize: aliasTokens.fontSize,
+	letterSpacing: aliasTokens.letterSpacing,
+	padding: token.path<UITokens<'padding'>>(aliasVar, 'pad'),
+} as const
+
+export const apiTokens = {
 	...componentTokens,
+	...propertyTokens,
 	presets: shorthandTokens,
-	space: semanticTokens.space,
+	space: aliasTokens.space,
 }
 
 /** The shape useTheme() exposes to components — see SiteTheme.alias in theme.types.ts. */
-export type PublicTokens = typeof publicTokens
+export type ApiTokens = typeof apiTokens
