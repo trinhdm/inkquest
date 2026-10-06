@@ -39,13 +39,13 @@ interface LogoProps {
 	width?: number
 }
 
-interface LogoConfig {
-	type: 'mark' | 'wordmark'
-	viewBox: number | {
-		height: number
-		width: number
-	}
-}
+// interface LogoConfig {
+// 	type: 'mark' | 'wordmark'
+// 	viewBox: number | {
+// 		height: number
+// 		width: number
+// 	}
+// }
 
 interface LogoSpecs {
 	defaults: { props: PropsDefaultList<typeof DEFAULT_PROPS> }
@@ -91,6 +91,7 @@ export const Logo = polymorphic<LogoSpecs>((_props, { useProps, useStyles }) => 
 				src={ `/logo/${filename}.svg` }
 				alt={ alt }
 				height={ height }
+				loading="eager"
 				width={ width }
 			/>
 		</Box>

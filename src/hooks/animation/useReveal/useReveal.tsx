@@ -100,7 +100,7 @@ export const useReveal = <T extends HTMLElement = HTMLElement>({
 			cancelled = true
 			cancelAnimationFrame(frame)
 		}
-	}, [visible])
+	}, [dataChild, dataRoot, setSettled, visible])
 
 	const item = useCallback((index: number = 0): RevealItemProps => (
 		isAnimated ? revealItem(index) : {}

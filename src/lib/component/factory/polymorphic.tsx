@@ -26,13 +26,13 @@ const polymorphicFactory = <
 	type _Methods = FactoryMethods<S, _Component, P<C>>
 	type _Properties = Required<FactoryDisplayName>
 
-	type PolymorphicComponent =
+	type _PolymorphicComponent =
 		& _Component
 		& _Subcomponents
 		& _Methods
 		& _Properties
 
-	return createFactory<S, PolymorphicComponent>(target, config)
+	return createFactory<S, _PolymorphicComponent>(target, config)
 }
 
 export const polymorphic = <
