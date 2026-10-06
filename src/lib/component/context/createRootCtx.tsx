@@ -1,5 +1,5 @@
 import {
-	createContext, use, useMemo,
+	createContext, use, useMemo, useState,
 	type ReactElement, type ReactNode,
 } from 'react'
 import type { NoExcessKeys } from '@/types/utils'
@@ -24,14 +24,21 @@ type BaseName<C extends string, N extends string> =
 				? Lowercase<Rest>
 				: Lowercase<C>
 
+type UpdateCtxFn<T> =
+	(next: Partial<T> | ((prev: T) => Partial<T>)) => void
+
 export type RootCtxValue<T, N extends string = string, C extends string = N> =
 	T & {
 		baseName: BaseName<C, N>
 		rootName: N
+		updateRootCtx: UpdateCtxFn<T>
 	}
 
 export type SafeRootCtxValue<T, N extends string = string> =
-	| (T & Required<Pick<RootProviderProps<T, T, N>, 'rootName'>>)
+	| (T & {
+		rootName: N
+		updateRootCtx: UpdateCtxFn<T>
+	})
 	| null
 
 export type RootProviderFn<T, N extends string = string> =
@@ -48,20 +55,27 @@ export const createRootCtx = <
 >(name: N) => {
 	const RootCtx = createContext<SafeRootCtxValue<T, N>>(null)
 
-	const RootProvider = <V extends T>({
-		children,
-		rootName,
-		value,
-	}: RootProviderProps<T, V, N>) => {
+	const RootProvider = <V extends T>({ children, value }: RootProviderProps<T, V, N>) => {
+		const [rootState, setRootState] = useState<T>(() => value)
+
+		const updateRootCtx = useMemo(() => (
+			(next: Partial<T> | ((prev: T) => Partial<T>)) => {
+				setRootState(prev => {
+					const nextValues = typeof next === 'function' ? next(prev) : next
+					return { ...prev, ...nextValues }
+				})
+			}
+		), [])
+
 		const ctxValue = useMemo(
-			() => ({ ...value, rootName: rootName ?? name }),
-			[rootName, value]
+			() => ({ ...rootState, rootName: name, updateRootCtx }),
+			[rootState, updateRootCtx]
 		)
 
 		return <RootCtx value={ ctxValue }>{ children }</RootCtx>
 	}
 
-	const useRootCtx = <C extends string>(componentName: C): RootCtxValue<T, N, C> => {
+	const useRootCtx = <C extends string>(componentName?: C): RootCtxValue<T, N, C> => {
 		const context = use(RootCtx)
 
 		if (context === null)
@@ -70,7 +84,7 @@ export const createRootCtx = <
 		const { rootName } = context
 		let baseName: string = rootName
 
-		if ((rootName as string) !== componentName) {
+		if (componentName && ((rootName as string) !== componentName)) {
 			const compoundName = componentName.replace(rootName, ''),
 				index = compoundName.startsWith('.') ? 1 : 0
 			baseName = compoundName.slice(index)
@@ -99,7 +113,7 @@ export const createRootCtx = <
 
 		const shared = new Set<PropertyKey>(selected ?? []),
 			inherited = {} as Partial<T>,
-			uninherited: readonly PropertyKey[] = ['rootName']
+			uninherited: readonly PropertyKey[] = ['baseName', 'rootName', 'updateRootCtx']
 
 		;(Object.keys(context) as (keyof T)[]).forEach(key => {
 			const value = context[key]

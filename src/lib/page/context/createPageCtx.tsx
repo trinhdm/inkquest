@@ -1,4 +1,4 @@
-import { createContext, use, useMemo, type ReactNode } from 'react'
+import { createContext, use, useMemo, useState, type ReactNode } from 'react'
 import type { NoExcessKeys } from '@/types/utils'
 
 export interface PageProviderProps<T, V extends T = T> {
@@ -7,8 +7,13 @@ export interface PageProviderProps<T, V extends T = T> {
 	value: V & NoExcessKeys<T, V>
 }
 
+type UpdateCtxFn<T> =
+	(next: Partial<T> | ((prev: T) => Partial<T>)) => void
+
 type PageCtxValue<T> =
-	T & Required<Pick<PageProviderProps<T>, 'pageID'>>
+	T
+	& Required<Pick<PageProviderProps<T>, 'pageID'>>
+	& { updatePageCtx: UpdateCtxFn<T> }
 
 type SafePageCtxValue<T> =
 	| PageCtxValue<T>
@@ -17,14 +22,21 @@ type SafePageCtxValue<T> =
 export const createPageCtx = <T extends object>(id: string) => {
 	const PageCtx = createContext<SafePageCtxValue<T>>(null)
 
-	const PageProvider = <V extends T>({
-		children,
-		pageID,
-		value,
-	}: PageProviderProps<T, V>) => {
+	const PageProvider = <V extends T>({ children, value }: PageProviderProps<T, V>) => {
+		const [pageState, setPageState] = useState<T>(() => value)
+
+		const updatePageCtx = useMemo(() => (
+			(next: Partial<T> | ((prev: T) => Partial<T>)) => {
+				setPageState(prev => {
+					const nextValues = typeof next === 'function' ? next(prev) : next
+					return { ...prev, ...nextValues }
+				})
+			}
+		), [])
+
 		const ctxValue = useMemo(
-			() => ({ ...value, pageID: pageID ?? id }),
-			[pageID, value]
+			() => ({ ...pageState, pageID: id, updatePageCtx }),
+			[pageState, updatePageCtx]
 		)
 
 		return <PageCtx value={ ctxValue }>{ children }</PageCtx>
