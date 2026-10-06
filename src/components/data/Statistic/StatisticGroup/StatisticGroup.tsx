@@ -1,5 +1,5 @@
 import { extractOthers } from '@/hooks/useProps'
-import { polymorphic } from '@/lib/component'
+import { polymorphic } from '@/lib/component/factory'
 import { Group, GROUP_CASCADE_PROPS } from '@/components/layout/Group'
 import { StatisticGroupProvider, type StatisticGroupContext } from './StatisticGroup.context'
 import type { PropsDefaultList } from '@/lib/component/factory/types'

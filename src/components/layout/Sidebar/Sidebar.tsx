@@ -1,5 +1,6 @@
-import { defineTokens, polymorphic } from '@/lib/component'
+import { defineTokens } from '@/lib/component/tokens'
 import { extractOthers } from '@/hooks/useProps'
+import { polymorphic } from '@/lib/component/factory'
 import { rem } from '@/lib/general'
 import { Box } from '@/components/polymorphic/Box'
 import { Button } from '@/components/core/Button'

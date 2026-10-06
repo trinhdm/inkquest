@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useOutsideClick } from '@/hooks/useOutsideClick'
 import { extractOthers } from '@/hooks/useProps'
-import { polymorphic } from '@/lib/component'
+import { polymorphic } from '@/lib/component/factory'
 import { toKebabCase } from '@/utils/helpers'
 import { Box } from '@/components/polymorphic/Box'
 import { Button } from '@/components/core/Button'

@@ -1,6 +1,6 @@
 import { extractOthers } from '@/hooks/useProps'
 import { isExternalLink, keyHasValue } from '@/utils/helpers'
-import { polymorphic } from '@/lib/component'
+import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import { ICON_MAP, type LucideType } from './IconMap'
 import type { ComponentPropsWithoutRef } from 'react'

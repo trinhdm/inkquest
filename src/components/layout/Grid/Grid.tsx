@@ -1,5 +1,6 @@
-import { defineTokens, polymorphic } from '@/lib/component'
+import { defineTokens } from '@/lib/component/tokens'
 import { extractOthers } from '@/hooks/useProps'
+import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import { GridItem } from './GridItem'
 import type { ReactNode } from 'react'

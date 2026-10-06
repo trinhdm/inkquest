@@ -10,8 +10,10 @@ import {
 	Mail, Paperclip, Phone, Pipette, Search,
 } from 'lucide-react'
 
-import { defineTokens, filterChildren, polymorphic } from '@/lib/component'
+import { defineTokens } from '@/lib/component/tokens'
 import { extractOthers } from '@/hooks/useProps'
+import { filterChildren } from '@/lib/component/children'
+import { polymorphic } from '@/lib/component/factory'
 import { toKebabCase } from '@/utils/helpers'
 import { Box } from '@/components/polymorphic/Box'
 import { FieldLabel } from './FieldLabel'

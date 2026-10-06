@@ -3,7 +3,7 @@
 import { useOptimistic, useTransition } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useFaqsCtx } from '../../faqs.context'
-import { extractText } from '@/lib/component'
+import { extractText } from '@/lib/component/children'
 import { resolveFaqGroup } from '../../utils'
 import { FaqCategory } from '../FaqCategory'
 import { FaqResults } from '../FaqResults'

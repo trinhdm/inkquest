@@ -1,7 +1,7 @@
 'use client'
 
 import { extractOthers } from '@/hooks/useProps'
-import { polymorphic } from '@/lib/component'
+import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import { FooterArea } from './FooterArea'
 import { Icon } from '@/components/core/Icon'

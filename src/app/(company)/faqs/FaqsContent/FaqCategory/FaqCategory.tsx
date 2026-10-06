@@ -1,7 +1,7 @@
 'use client'
 
 import { countFaqs } from '../../utils'
-import { highlightText } from '@/lib/component'
+import { highlightText } from '@/lib/component/children'
 import { Accordion } from '@/components/data/Accordion'
 import { Section } from '@/components/layout/Section'
 import type { FaqGroup } from '../../faqs.data'

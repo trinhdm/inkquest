@@ -1,5 +1,5 @@
 import { render, reset, screen } from '@/tests/test-utils'
-import { polymorphic } from '@/lib/component'
+import { polymorphic } from '@/lib/component/factory'
 import { Box } from './Box'
 import type { ReactNode } from 'react'
 

@@ -2,7 +2,7 @@
 
 import { extractOthers } from '@/hooks/useProps'
 import { filterNavigation, type NavigationGroup } from '@/utils/navigation'
-import { polymorphic } from '@/lib/component'
+import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import { Menu } from '../../Menu'
 import type { Orientation } from '@/types/shared'

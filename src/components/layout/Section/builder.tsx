@@ -8,7 +8,7 @@ import {
 } from 'react'
 
 import { partitionFooter, SectionFooter } from './SectionFooter'
-import { verifyChildren } from '@/lib/component'
+import { verifyChildren } from '@/lib/component/children'
 import { Grid } from '../Grid'
 import { SectionProvider } from './Section.context'
 import type { RevealCounter } from '@/hooks/animation'

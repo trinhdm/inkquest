@@ -1,5 +1,5 @@
 import { extractOthers } from '@/hooks/useProps'
-import { polymorphic } from '@/lib/component'
+import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Quote.module.scss'

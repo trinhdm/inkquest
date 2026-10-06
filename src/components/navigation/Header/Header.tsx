@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation'
 import { extractOthers } from '@/hooks/useProps'
-import { polymorphic } from '@/lib/component'
+import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import { Navbar } from '../Navbar'
 import { Subnav } from '../Subnav'

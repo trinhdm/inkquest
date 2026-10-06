@@ -1,6 +1,6 @@
 import { useRef, type ReactNode } from 'react'
 import { extractOthers } from '@/hooks/useProps'
-import { polymorphic } from '@/lib/component'
+import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import classes from '../Timeline.module.scss'
 

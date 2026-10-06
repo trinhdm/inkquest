@@ -1,7 +1,7 @@
 import { isValidElement, Children, type ReactNode } from 'react'
 import { useSectionCtx, useSectionProps } from '../Section.context'
 import { extractOthers } from '@/hooks/useProps'
-import { polymorphic } from '@/lib/component'
+import { polymorphic } from '@/lib/component/factory'
 import { revealItemFrom } from '@/hooks/animation'
 import { Box } from '@/components/polymorphic/Box'
 import { Button } from '@/components/core/Button'

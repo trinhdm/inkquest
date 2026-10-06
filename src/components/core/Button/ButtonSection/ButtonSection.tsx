@@ -1,6 +1,6 @@
 import { useButtonCtx } from '../Button.context'
 import { extractOthers } from '@/hooks/useProps'
-import { polymorphic } from '@/lib/component'
+import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import type { Button } from '../Button'
 import classes from '../Button.module.scss'

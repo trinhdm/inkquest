@@ -1,6 +1,7 @@
 import { useChosenFieldProps, useFieldCtx, type Field } from '../Field'
+import { defineTokens } from '@/lib/component/tokens'
 import { extractOthers } from '@/hooks/useProps'
-import { defineTokens, polymorphic } from '@/lib/component'
+import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import type { ChangeEventHandler, ComponentPropsWithoutRef } from 'react'
 import type { PropsDefaultList } from '@/lib/component/factory/types'

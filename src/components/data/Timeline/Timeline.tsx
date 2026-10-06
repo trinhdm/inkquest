@@ -1,6 +1,6 @@
 import { extractOthers } from '@/hooks/useProps'
-import { filterChildren } from '@/lib/component'
-import { polymorphic } from '@/lib/component'
+import { filterChildren } from '@/lib/component/children'
+import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import { TimelineItem } from './TimelineItem'
 import type { ReactNode } from 'react'

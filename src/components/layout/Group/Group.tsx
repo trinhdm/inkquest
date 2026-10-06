@@ -8,15 +8,12 @@ import {
 	type ReactNode,
 } from 'react'
 
-import {
-	defineTokens,
-	filterChildren,
-	polymorphic,
-	withProvider,
-} from '@/lib/component'
-
 import { useReplayInView, type MaybeAnimationProps } from '@/hooks/animation'
+import { defineTokens } from '@/lib/component/tokens'
 import { extractOthers, type ReservedProp } from '@/hooks/useProps'
+import { filterChildren } from '@/lib/component/children'
+import { polymorphic } from '@/lib/component/factory'
+import { withProvider } from '@/lib/component/context'
 import { Box } from '@/components/polymorphic/Box'
 import { GroupItem } from './GroupItem'
 import { GroupProvider, type GroupContext } from './Group.context'

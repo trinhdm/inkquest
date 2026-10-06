@@ -1,6 +1,6 @@
 import { useFieldCtx } from '../Field.context'
 import { extractOthers } from '@/hooks/useProps'
-import { polymorphic } from '@/lib/component'
+import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import type { ReactNode } from 'react'
 import type { Field } from '../Field'

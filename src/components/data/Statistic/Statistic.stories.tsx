@@ -206,6 +206,7 @@ export const Highlight: Story = {
 }
 
 export const Icon_: Story = {
+	// eslint-disable-next-line storybook/no-redundant-story-name
 	name: 'Icon',
 	render: (args) => (
 		<Row>

@@ -2,7 +2,7 @@
 
 import { extractOthers } from '@/hooks/useProps'
 import { filterNavigation, type NavRoute } from '@/utils/navigation'
-import { polymorphic } from '@/lib/component'
+import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import { Button } from '@/components/core/Button'
 import { Logo } from '../Logo'
