@@ -51,7 +51,7 @@ const OtherItem = ({ label }: { label: string }) => (
 OtherItem.displayName = 'OtherItem'
 
 // Local debug context — stands in for whatever a real `RootProviderFn`
-// consumer would build with `createRootCtx`. `Group` only cares that
+// consumer would build with `createCompoundCtx`. `Group` only cares that
 // `provider` is a function matching `RootProviderFn<GroupContext>`; this
 // one just exposes the per-child `value` it receives on a plain React
 // Context, so `DebugItem` can render it back out as inspectable `data-*`

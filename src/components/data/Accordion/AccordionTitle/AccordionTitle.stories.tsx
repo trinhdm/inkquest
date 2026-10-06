@@ -364,7 +364,7 @@ export const Unstyled: Story = {
 	},
 }
 
-// `useAccordionCtx(NAME)` (`createRootCtx`'s REQUIRED reader, not the
+// `useAccordionCtx(NAME)` (`createCompoundCtx`'s REQUIRED reader, not the
 // optional `useSafeRootCtx`) throws the instant `AccordionTitle` is rendered
 // with no wrapping `Accordion` at all, rather than silently rendering
 // unstyled/inert. A raw, uncaught render throw would crash every other

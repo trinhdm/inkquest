@@ -17,7 +17,7 @@ const Row = ({ children }: { children: ReactNode }) => (
 )
 
 // A plain label wrapper — `Group.Item` DOES require real context
-// (`useGroupCtx`, a REQUIRED `createRootCtx` reader), so every story except
+// (`useGroupCtx`, a REQUIRED `createCompoundCtx` reader), so every story except
 // `RequiresGroupParent` mounts it as a literal, direct JSX child of a real
 // `<Group>`, matching the default `childName`/`provider` pair `Group`
 // registers (`GroupItem.displayName` / `GroupProvider`).
@@ -31,7 +31,7 @@ const Labeled = ({ label, children }: { label: string, children: ReactNode }) =>
 )
 
 // `Group.Item`'s own base class. `GroupItem.tsx` calls `useGroupCtx(NAME)` to
-// read `{ baseName, rootName }` off `Group`'s `createRootCtx`, then renders
+// read `{ baseName, rootName }` off `Group`'s `createCompoundCtx`, then renders
 // `styles(rootName, { classes, props })` with `styles(baseName, true)` for
 // the root selector — `rootName` is `'Group'` (the enclosing `<Group>`'s own
 // name, or its `rootName` override) and `baseName` is derived by stripping
@@ -53,7 +53,7 @@ type GroupItemStoryProps = Parameters<typeof Group.Item>[0]
 type Story = StoryObj<GroupItemStoryProps>
 
 // Local, stories-file-only error boundary — mirrors the `RenderErrorBoundary`
-// pattern used elsewhere in this codebase for a REQUIRED `createRootCtx`
+// pattern used elsewhere in this codebase for a REQUIRED `createCompoundCtx`
 // reader (`useRootCtx`, not `useSafeRootCtx`). `useGroupCtx` throws
 // synchronously during render when there's no enclosing `<Group>`, so only
 // the misuse case in `RequiresGroupParent` needs to be wrapped in it.
@@ -203,7 +203,7 @@ export const Unstyled: Story = {
 
 /**
  * `Group.Item` reads `Group`'s context via `useGroupCtx(NAME)` —
- * `createRootCtx`'s REQUIRED reader (`useRootCtx`, not `useSafeRootCtx`) —
+ * `createCompoundCtx`'s REQUIRED reader (`useRootCtx`, not `useSafeRootCtx`) —
  * which throws synchronously during render when there's no enclosing
  * `<Group>`: `` `<${componentName} /> must be rendered inside <${name}>` ``,
  * i.e. exactly `<Group.Item /> must be rendered inside <Group>` (`NAME` is

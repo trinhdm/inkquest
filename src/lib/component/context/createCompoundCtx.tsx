@@ -49,7 +49,7 @@ type InheritedProps<T, P, S extends keyof T> =
 		? P
 		: P & Partial<Pick<T, Exclude<S, keyof P>>>
 
-export const createRootCtx = <
+export const createCompoundCtx = <
 	T extends object,
 	N extends string = string,
 >(name: N) => {

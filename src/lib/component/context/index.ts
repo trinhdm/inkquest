@@ -1,3 +1,3 @@
-export { createRootCtx } from './createRootCtx'
+export { createCompoundCtx } from './createCompoundCtx'
 export { withProvider } from './withProvider'
-export type { RootCtxValue, RootProviderFn, SafeRootCtxValue } from './createRootCtx'
+export type { RootCtxValue, RootProviderFn, SafeRootCtxValue } from './createCompoundCtx'

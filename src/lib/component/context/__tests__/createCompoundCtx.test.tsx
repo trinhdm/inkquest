@@ -1,5 +1,5 @@
 import { render, renderHook } from '@testing-library/react'
-import { createRootCtx } from '../createRootCtx'
+import { createCompoundCtx } from '../createCompoundCtx'
 import type { ReactNode } from 'react'
 
 interface TestCtxValue {
@@ -7,14 +7,16 @@ interface TestCtxValue {
 	size?: number
 }
 
-describe('createRootCtx', () => {
+describe('createCompoundCtx', () => {
 	const { RootProvider, useRootCtx, useSafeRootCtx, useRootProps } =
-		createRootCtx<TestCtxValue>('TestRoot')
+		createCompoundCtx<TestCtxValue>('TestRoot')
 
-	const wrapperWith = (value: TestCtxValue, rootName?: string) =>
-		({ children }: { children: ReactNode }) => (
+	const withWrapper = (value: TestCtxValue, rootName?: string) => {
+		const Wrapper = ({ children }: { children: ReactNode }) => (
 			<RootProvider value={ value } rootName={ rootName }>{ children }</RootProvider>
 		)
+		return Wrapper
+	}
 
 	describe('useRootCtx', () => {
 		it('throws a named error when used outside of its provider', () => {
@@ -34,7 +36,7 @@ describe('createRootCtx', () => {
 			// name like `TestRoot.Consumer` correctly yields `consumer`, not a
 			// mangled slice of it.
 			const { result } = renderHook(() => useRootCtx('TestRoot.Consumer'), {
-				wrapper: wrapperWith({ color: 'red', size: 12 }),
+				wrapper: withWrapper({ color: 'red', size: 12 }),
 			})
 
 			expect(result.current).toEqual({
@@ -47,7 +49,7 @@ describe('createRootCtx', () => {
 
 		it('derives baseName as the lowercased rootName when componentName equals rootName', () => {
 			const { result } = renderHook(() => useRootCtx('TestRoot'), {
-				wrapper: wrapperWith({ color: 'red' }),
+				wrapper: withWrapper({ color: 'red' }),
 			})
 
 			expect(result.current.baseName).toBe('testroot')
@@ -60,7 +62,7 @@ describe('createRootCtx', () => {
 			// `.slice(1)` used for the dotted case above is correctly skipped,
 			// so nothing gets eaten off the front.
 			const { result } = renderHook(() => useRootCtx('Consumer'), {
-				wrapper: wrapperWith({ color: 'red' }),
+				wrapper: withWrapper({ color: 'red' }),
 			})
 
 			expect(result.current.baseName).toBe('consumer')
@@ -68,7 +70,7 @@ describe('createRootCtx', () => {
 
 		it('lets the provider override `rootName`', () => {
 			const { result } = renderHook(() => useRootCtx('Consumer'), {
-				wrapper: wrapperWith({ color: 'blue' }, 'CustomRoot'),
+				wrapper: withWrapper({ color: 'blue' }, 'CustomRoot'),
 			})
 
 			expect(result.current.rootName).toBe('CustomRoot')
@@ -102,7 +104,7 @@ describe('createRootCtx', () => {
 
 		it('returns the context value inside a provider', () => {
 			const { result } = renderHook(() => useSafeRootCtx(), {
-				wrapper: wrapperWith({ color: 'green' }),
+				wrapper: withWrapper({ color: 'green' }),
 			})
 
 			expect(result.current).toEqual({ color: 'green', rootName: 'TestRoot' })
@@ -118,7 +120,7 @@ describe('createRootCtx', () => {
 
 		it('fills in a key absent from the caller props with the context value', () => {
 			const { result } = renderHook(() => useRootProps({ label: 'hi' } as { label: string, color?: string }), {
-				wrapper: wrapperWith({ color: 'red' }),
+				wrapper: withWrapper({ color: 'red' }),
 			})
 
 			expect(result.current).toEqual({ label: 'hi', color: 'red' })
@@ -127,7 +129,7 @@ describe('createRootCtx', () => {
 		it('lets an explicit own prop win over the inherited context value', () => {
 			const { result } = renderHook(
 				() => useRootProps({ color: 'blue' } as { color?: string }),
-				{ wrapper: wrapperWith({ color: 'red' }) }
+				{ wrapper: withWrapper({ color: 'red' }) }
 			)
 
 			expect(result.current).toEqual({ color: 'blue' })
@@ -138,7 +140,7 @@ describe('createRootCtx', () => {
 			// so this is treated as "explicitly unset", not "absent".
 			const { result } = renderHook(
 				() => useRootProps({ color: undefined } as { color?: string }),
-				{ wrapper: wrapperWith({ color: 'red' }) }
+				{ wrapper: withWrapper({ color: 'red' }) }
 			)
 
 			expect(result.current).toEqual({ color: undefined })
@@ -147,7 +149,7 @@ describe('createRootCtx', () => {
 
 		it('never inherits `rootName` from context even though it is present on the context value', () => {
 			const { result } = renderHook(() => useRootProps({}), {
-				wrapper: wrapperWith({ color: 'red' }, 'CustomRoot'),
+				wrapper: withWrapper({ color: 'red' }, 'CustomRoot'),
 			})
 
 			expect(result.current).toEqual({ color: 'red' })
@@ -156,7 +158,7 @@ describe('createRootCtx', () => {
 
 		it('does not inherit a context key whose value is undefined', () => {
 			const { result } = renderHook(() => useRootProps({} as { size?: number }), {
-				wrapper: wrapperWith({ size: undefined }),
+				wrapper: withWrapper({ size: undefined }),
 			})
 
 			expect(result.current).toEqual({})

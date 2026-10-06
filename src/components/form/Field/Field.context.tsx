@@ -1,4 +1,4 @@
-import { createRootCtx } from '@/lib/component/context'
+import { createCompoundCtx } from '@/lib/component/context'
 import { TextInput } from '../TextInput'
 import type { AnimationOptions } from '@/hooks/animation'
 import type { Size } from '@/types/shared'
@@ -41,7 +41,7 @@ export const {
 	RootProvider: FieldProvider,
 	useRootCtx: useFieldCtx,
 	useRootProps: useFieldProps,
-} = createRootCtx<FieldContext, 'Field'>('Field')
+} = createCompoundCtx<FieldContext, 'Field'>('Field')
 
 const fieldProps = [
 	'disabled',

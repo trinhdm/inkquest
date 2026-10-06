@@ -1,4 +1,4 @@
-import { createRootCtx } from '@/lib/component/context'
+import { createCompoundCtx } from '@/lib/component/context'
 import type { AnimationOptions } from '@/hooks/animation'
 
 export interface ButtonContext
@@ -8,4 +8,4 @@ export const {
 	RootProvider: ButtonProvider,
 	useRootCtx: useButtonCtx,
 	useRootProps: useButtonProps,
-} = createRootCtx<ButtonContext, 'Button'>('Button')
+} = createCompoundCtx<ButtonContext, 'Button'>('Button')

@@ -1,4 +1,4 @@
-import { createRootCtx } from '@/lib/component/context'
+import { createCompoundCtx } from '@/lib/component/context'
 import type { Button } from '@/components/core/Button'
 
 export interface SectionContext {
@@ -10,4 +10,4 @@ export const {
 	RootProvider: SectionProvider,
 	useRootCtx: useSectionCtx,
 	useRootProps: useSectionProps,
-} = createRootCtx<SectionContext, 'Section'>('Section')
+} = createCompoundCtx<SectionContext, 'Section'>('Section')

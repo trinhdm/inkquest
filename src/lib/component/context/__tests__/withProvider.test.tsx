@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react'
-import { createRootCtx } from '../createRootCtx'
+import { createCompoundCtx } from '../createCompoundCtx'
 import { withProvider } from '../withProvider'
 
 interface TestCtxValue {
@@ -12,7 +12,7 @@ const Consumer = ({ useRootCtx }: { useRootCtx: (name: string) => TestCtxValue &
 }
 
 describe('withProvider', () => {
-	const { RootProvider, useRootCtx } = createRootCtx<TestCtxValue>('TestRoot')
+	const { RootProvider, useRootCtx } = createCompoundCtx<TestCtxValue>('TestRoot')
 
 	it('wraps each item with its own Provider instance, matched to it by index', () => {
 		const items = [

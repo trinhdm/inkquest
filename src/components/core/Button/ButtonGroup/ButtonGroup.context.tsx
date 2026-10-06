@@ -1,4 +1,4 @@
-import { createRootCtx } from '@/lib/component/context'
+import { createCompoundCtx } from '@/lib/component/context'
 import type { AnimationOptions, RevealItemProps } from '@/hooks/animation'
 import type { Button } from '../Button'
 
@@ -14,4 +14,4 @@ export const {
 	RootProvider: ButtonGroupProvider,
 	useSafeRootCtx: useButtonGroupCtx,
 	useRootProps: useButtonGroupProps,
-} = createRootCtx<ButtonGroupContext>('Button.Group')
+} = createCompoundCtx<ButtonGroupContext>('Button.Group')

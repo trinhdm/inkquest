@@ -239,13 +239,13 @@ export const Unstyled: Story = {
 // `ButtonSection` now reads `Button.context` via the REQUIRED reader
 // (`useButtonCtx` = `useRootCtx`, not the optional `useSafeRootCtx`) —
 // `const { rootName } = useButtonCtx(NAME)` in `ButtonSection.tsx` throws
-// (`createRootCtx.tsx`'s `useRootCtx`: `<Button.Section /> must be rendered
+// (`createCompoundCtx.tsx`'s `useRootCtx`: `<Button.Section /> must be rendered
 // inside <Button>`) the instant it's rendered with no wrapping `Button` at
 // all, rather than silently falling back to styling under its own name.
 // There's also no more dynamic per-parent naming to demonstrate even if it
 // didn't throw: `Button.tsx`'s `ButtonProvider` never passes an explicit
-// `rootName`, so `createRootCtx`'s own default (`rootName ?? name`, `name`
-// being the fixed `'Button'` passed to `createRootCtx<ButtonContext>('Button')`)
+// `rootName`, so `createCompoundCtx`'s own default (`rootName ?? name`, `name`
+// being the fixed `'Button'` passed to `createCompoundCtx<ButtonContext>('Button')`)
 // always resolves to `'Button'` — `rootName` is no longer derived from a
 // `ctx.displayName` that could vary.
 //

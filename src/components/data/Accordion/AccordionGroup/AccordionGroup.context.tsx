@@ -1,4 +1,4 @@
-import { createRootCtx } from '@/lib/component/context'
+import { createCompoundCtx } from '@/lib/component/context'
 import type { Accordion } from '../Accordion'
 import type { AnimateInViewConfig } from '@/hooks/animation'
 
@@ -22,4 +22,4 @@ export const {
 	RootProvider: AccordionGroupProvider,
 	useSafeRootCtx: useAccordionGroupCtx,
 	useRootProps: useAccordionGroupProps,
-} = createRootCtx<AccordionGroupContext>('Accordion.Group')
+} = createCompoundCtx<AccordionGroupContext>('Accordion.Group')

@@ -1,7 +1,7 @@
 import { Fragment, type ReactNode } from 'react'
 import { getChildKey } from '../children'
 import type { NoExcessKeys } from '@/types/utils'
-import type { RootProviderFn } from './createRootCtx'
+import type { RootProviderFn } from './createCompoundCtx'
 
 export const withProvider = <
 	T,

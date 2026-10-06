@@ -1,4 +1,4 @@
-import { createRootCtx } from '@/lib/component/context'
+import { createCompoundCtx } from '@/lib/component/context'
 import type { AnimationOptions } from '@/hooks/animation'
 import type { Size } from '@/types/shared'
 
@@ -15,4 +15,4 @@ export const {
 	RootProvider: StatisticGroupProvider,
 	useSafeRootCtx: useStatisticGroupCtx,
 	useRootProps: useStatisticGroupProps,
-} = createRootCtx<StatisticGroupContext>('Statistic.Group')
+} = createCompoundCtx<StatisticGroupContext>('Statistic.Group')
