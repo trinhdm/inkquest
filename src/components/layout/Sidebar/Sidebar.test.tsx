@@ -50,7 +50,7 @@ describe('Sidebar', () => {
 			<Sidebar
 				active="save"
 				items={ actionItems }
-				onItemChange={ jest.fn() }
+				onChange={ jest.fn() }
 			/>
 		)
 		expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument()
@@ -62,26 +62,26 @@ describe('Sidebar', () => {
 			<Sidebar
 				active="save"
 				items={ actionItems }
-				onItemChange={ jest.fn() }
+				onChange={ jest.fn() }
 			/>
 		)
 		expect(screen.getByRole('button', { name: 'Save' })).toHaveAttribute('aria-current', 'true')
 	})
 
-	it('calls onItemChange with the clicked action item id', async () => {
+	it('calls onChange with the clicked action item id', async () => {
 		const user = userEvent.setup()
-		const onItemChange = jest.fn()
+		const onChange = jest.fn()
 
 		render(
 			<Sidebar
 				active="save"
 				items={ actionItems }
-				onItemChange={ onItemChange }
+				onChange={ onChange }
 			/>
 		)
 
 		await user.click(screen.getByRole('button', { name: 'Discard' }))
-		expect(onItemChange).toHaveBeenCalledWith('discard')
+		expect(onChange).toHaveBeenCalledWith('discard')
 	})
 
 	it('renders passed children alongside the nav', () => {

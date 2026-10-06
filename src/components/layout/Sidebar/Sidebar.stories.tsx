@@ -74,19 +74,19 @@ type SidebarStoryProps = Parameters<typeof Sidebar>[0]
 // MaybeAnimationProps`), not a top-level union — same shape category as
 // `SectionProps` (`Section.stories.tsx` documents this exact caveat there):
 // `Extract`/`Exclude` can't distribute over a union nested inside an
-// intersection, so `Exclude<SidebarStoryProps, { onItemChange: ... }>`
+// intersection, so `Exclude<SidebarStoryProps, { onChange: ... }>`
 // silently returns the type UNCHANGED rather than isolating a branch.
 // `Section.stories.tsx`'s own workaround applies here too: `Omit` away every
 // key that actually DIFFERS in shape/requiredness between
 // `ActionSidebarProps`/`LinkedSidebarProps` (`active`, `items`,
-// `onItemChange`, `scroll`, `shallow`) — once those are gone, what's left is
+// `onChange`, `scroll`, `shallow`) — once those are gone, what's left is
 // a single, unambiguous object type with no residual union to fight. Each
 // story then supplies the omitted, branch-specific props explicitly in JSX
 // (never spread), which both keeps the JSX call typechecking against the
 // REAL narrow branch AND still forwards `args`' real registered defaults
 // (`scroll`/`shallow`) at runtime via the spread, since `Omit` only narrows
 // the TypeScript view of `args`, not its actual enumerable properties.
-type SidebarBaseArgs = Omit<SidebarStoryProps, 'active' | 'items' | 'onItemChange' | 'scroll' | 'shallow'>
+type SidebarBaseArgs = Omit<SidebarStoryProps, 'active' | 'items' | 'onChange' | 'scroll' | 'shallow'>
 
 type Story = StoryObj<SidebarStoryProps>
 
@@ -100,13 +100,13 @@ const meta: Meta<SidebarStoryProps> = {
 		},
 		active: {
 			control: 'text',
-			description: 'REQUIRED on the action branch (`ActionSidebarProps`), optional on the linked branch (`LinkedSidebarProps`, where `onItemChange`/`items[].url` differ). Drives two independent things: (1) which item gets `aria-current` (`\'page\'` on the linked/`url` branch, literal `true` on the action branch — `Sidebar.tsx`\'s two separate `attributes.aria.current` expressions differ per branch) and the `inkq-sidebar__item--active` modifier class; (2) the themed `--sidebar-rail-position` offset, computed from `items.findIndex(item => active === item.id)` — an `active` that matches NO item resolves to `-1`, NOT `0`. See the `Default`, `ActiveNoMatch`, and `ActionBranch` stories.',
+			description: 'REQUIRED on the action branch (`ActionSidebarProps`), optional on the linked branch (`LinkedSidebarProps`, where `onChange`/`items[].url` differ). Drives two independent things: (1) which item gets `aria-current` (`\'page\'` on the linked/`url` branch, literal `true` on the action branch — `Sidebar.tsx`\'s two separate `attributes.aria.current` expressions differ per branch) and the `inkq-sidebar__item--active` modifier class; (2) the themed `--sidebar-rail-position` offset, computed from `items.findIndex(item => active === item.id)` — an `active` that matches NO item resolves to `-1`, NOT `0`. See the `Default`, `ActiveNoMatch`, and `ActionBranch` stories.',
 		},
 		items: {
 			control: false,
-			description: 'The nav item list — `SidebarActionItem[]` (`{ id, label, url?: never }`) on the action branch, `SidebarLinkItem[]` (`{ id, label, url: Route<string> }`) on the linked branch. Each entry renders as an `<li>` wrapping a `Button`: with a `url`, a real anchor (`Button`\'s `href` branch, via `next/link`); without one, a native `<button>` with `onClick={() => onItemChange?.(id)}`. See the `Default` (linked) and `ActionBranch` (action) stories.',
+			description: 'The nav item list — `SidebarActionItem[]` (`{ id, label, url?: never }`) on the action branch, `SidebarLinkItem[]` (`{ id, label, url: Route<string> }`) on the linked branch. Each entry renders as an `<li>` wrapping a `Button`: with a `url`, a real anchor (`Button`\'s `href` branch, via `next/link`); without one, a native `<button>` with `onClick={() => onChange?.(id)}`. See the `Default` (linked) and `ActionBranch` (action) stories.',
 		},
-		onItemChange: {
+		onChange: {
 			action: 'itemChanged',
 			description: 'REQUIRED on the action branch (`(id: string) => void`, called with the clicked item\'s `id`); `?: never` on the linked branch, where routing is handled entirely by `Button`\'s own `href`/`next/link` plumbing instead. See the `ActionBranch` and `KeyboardActivation` stories.',
 		},
@@ -237,20 +237,20 @@ export const EmptyItems: Story = {
 }
 
 /**
- * The action branch (`onItemChange`, no `url` on any item) — each item
- * renders as a native `<button>` with `onClick={() => onItemChange?.(id)}`.
+ * The action branch (`onChange`, no `url` on any item) — each item
+ * renders as a native `<button>` with `onClick={() => onChange?.(id)}`.
  * Clicking exercises exact call counts AND the exact `id` argument per click,
  * not just "was called".
  */
 export const ActionBranch: Story = {
-	args: { onItemChange: fn() },
+	args: { onChange: fn() },
 	parameters: { layout: 'padded' },
 	render: (args) => (
 		<Sidebar
 			{ ...args as SidebarBaseArgs }
 			active="overview"
 			items={ ACTION_ITEMS }
-			onItemChange={ args.onItemChange as (id: string) => void }
+			onChange={ args.onChange as (id: string) => void }
 		/>
 	),
 	play: async ({ args, canvasElement }) => {
@@ -269,33 +269,33 @@ export const ActionBranch: Story = {
 		await expect(billing).not.toHaveAttribute('aria-current')
 
 		await userEvent.click(settings)
-		await expect(args.onItemChange).toHaveBeenCalledTimes(1)
-		await expect(args.onItemChange).toHaveBeenLastCalledWith('settings')
+		await expect(args.onChange).toHaveBeenCalledTimes(1)
+		await expect(args.onChange).toHaveBeenLastCalledWith('settings')
 
 		await userEvent.click(billing)
-		await expect(args.onItemChange).toHaveBeenCalledTimes(2)
-		await expect(args.onItemChange).toHaveBeenLastCalledWith('billing')
+		await expect(args.onChange).toHaveBeenCalledTimes(2)
+		await expect(args.onChange).toHaveBeenLastCalledWith('billing')
 
 		await userEvent.click(overview)
-		await expect(args.onItemChange).toHaveBeenCalledTimes(3)
-		await expect(args.onItemChange).toHaveBeenLastCalledWith('overview')
+		await expect(args.onChange).toHaveBeenCalledTimes(3)
+		await expect(args.onChange).toHaveBeenLastCalledWith('overview')
 	},
 }
 
 /**
  * Keyboard activation on the action branch — `Tab` reaches each native
  * `<button>` in order, and BOTH `Enter` and `Space` trigger the same
- * `onClick={() => onItemChange?.(id)}` a native `<button>` gets for free.
+ * `onClick={() => onChange?.(id)}` a native `<button>` gets for free.
  */
 export const KeyboardActivation: Story = {
-	args: { onItemChange: fn() },
+	args: { onChange: fn() },
 	parameters: { layout: 'padded' },
 	render: (args) => (
 		<Sidebar
 			{ ...args as SidebarBaseArgs }
 			active="overview"
 			items={ ACTION_ITEMS }
-			onItemChange={ args.onItemChange as (id: string) => void }
+			onChange={ args.onChange as (id: string) => void }
 		/>
 	),
 	play: async ({ args, canvasElement }) => {
@@ -308,11 +308,11 @@ export const KeyboardActivation: Story = {
 		await expect(overview).toHaveFocus()
 
 		await userEvent.keyboard('{Enter}')
-		await expect(args.onItemChange).toHaveBeenCalledTimes(1)
-		await expect(args.onItemChange).toHaveBeenLastCalledWith('overview')
+		await expect(args.onChange).toHaveBeenCalledTimes(1)
+		await expect(args.onChange).toHaveBeenLastCalledWith('overview')
 
 		await userEvent.keyboard(' ')
-		await expect(args.onItemChange).toHaveBeenCalledTimes(2)
+		await expect(args.onChange).toHaveBeenCalledTimes(2)
 	},
 }
 

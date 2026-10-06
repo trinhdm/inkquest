@@ -40,7 +40,7 @@ interface SidebarLinkItem
 interface ActionSidebarProps {
 	active: string
 	items: SidebarActionItem[]
-	onItemChange: (id: string) => void
+	onChange: (id: string) => void
 	scroll?: never
 	shallow?: never
 }
@@ -48,18 +48,27 @@ interface ActionSidebarProps {
 interface LinkedSidebarProps {
 	active?: string
 	items: SidebarLinkItem[]
-	onItemChange?: never
+	onChange?: never
 	scroll?: Button.Props['scroll']
 	shallow?: boolean
 }
 
-type SidebarNavProps =
+interface DisplaySidebarProps {
+	active: never
+	items?: never
+	onChange?: never
+	scroll?: never
+	shallow?: never
+}
+
+type SidebarLayoutProps =
 	| ActionSidebarProps
+	| DisplaySidebarProps
 	| LinkedSidebarProps
 
 type SidebarProps =
 	& BaseSidebarProps
-	& SidebarNavProps
+	& SidebarLayoutProps
 	& MaybeAnimationProps
 
 interface SidebarSpecs {
@@ -84,6 +93,8 @@ type SidebarTokens = {
 
 const tokens = defineTokens<SidebarSpecs>()(({ props }) => {
 	const { active, items } = props
+	if (!items?.length) return {}
+
 	const activeIndex = items.findIndex(item => active === item.id)
 	const height = 48
 
@@ -95,6 +106,12 @@ const tokens = defineTokens<SidebarSpecs>()(({ props }) => {
 	}
 })
 
+const replaceUrl = (url: SidebarLinkItem['url']) =>
+	(event: { preventDefault: () => void }) => {
+		event.preventDefault()
+		window.history.pushState(null, '', url)
+	}
+
 export const Sidebar = polymorphic<SidebarSpecs>((_props, { useProps, useStyles }) => {
 	const props = useProps(_props)
 	const styles = useStyles({ props, tokens })
@@ -104,60 +121,64 @@ export const Sidebar = polymorphic<SidebarSpecs>((_props, { useProps, useStyles 
 		active,
 		children,
 		items,
-		onItemChange,
+		onChange,
 		scroll,
 		shallow,
 		...rest
 	} = props
 
 	const others = extractOthers(rest)
+	const sharedProps = { ...styles('root'), ...others, as }
 
-	const replaceUrl = (url: SidebarLinkItem['url']) => (event: { preventDefault: () => void }) => {
-		event.preventDefault()
-		window.history.pushState(null, '', url)
+	if (items) {
+		return (
+			<Box { ...sharedProps }>
+				<nav { ...styles('inner') }>
+					<span { ...styles('rail') } />
+					<ul { ...styles('wrapper') } role="menu">
+						{ items.map(({ id, label, url }) => {
+							const itemProps = { ...styles('button'), unstyled: true }
+							const isActive = active === id,
+								selector = { active: isActive }
+
+							return (
+								<li key={ `sidebar-item-${id}` } { ...styles('item', { selector }) }>
+									{ url ? (
+										<Button
+											{ ...itemProps }
+											attributes={ { aria: { current: isActive ? 'page' : undefined } } }
+											href={ url }
+											onNavigate={ shallow ? replaceUrl(url) : undefined }
+											scroll={ scroll }
+										>
+											{ label }
+										</Button>
+									) : (
+										<Button
+											{ ...itemProps }
+											attributes={ { aria: { current: isActive || undefined } } }
+											onClick={ () => onChange?.(id) }
+										>
+											{ label }
+										</Button>
+									) }
+								</li>
+							)
+						}) }
+					</ul>
+				</nav>
+			</Box>
+		)
 	}
 
 	return (
-		<Box
-			{ ...styles('root') }
-			{ ...others }
-			as={ as }
-		>
-			<nav { ...styles('inner') }>
-				<span { ...styles('rail') } />
-				<ul { ...styles('wrapper') } role="menu">
-					{ items.map(({ id, label, url }) => {
-						const isActive = active === id,
-							selector = { active: isActive }
-						const itemProps = { ...styles('button'), unstyled: true }
+		<Box { ...sharedProps }>
+			<div { ...styles('inner') }>
+				<div { ...styles('wrapper') }>
+					{ children }
+				</div>
+			</div>
 
-						return (
-							<li key={ `sidebar-item-${id}` } { ...styles('item', { selector }) }>
-								{ url ? (
-									<Button
-										{ ...itemProps }
-										attributes={ { aria: { current: isActive ? 'page' : undefined } } }
-										href={ url }
-										onNavigate={ shallow ? replaceUrl(url) : undefined }
-										scroll={ scroll }
-									>
-										{ label }
-									</Button>
-								) : (
-									<Button
-										{ ...itemProps }
-										attributes={ { aria: { current: isActive || undefined } } }
-										onClick={ () => onItemChange?.(id) }
-									>
-										{ label }
-									</Button>
-								) }
-							</li>
-						)
-					}) }
-				</ul>
-			</nav>
-			{ children }
 		</Box>
 	)
 }, { name: NAME, classes })
