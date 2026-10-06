@@ -18,7 +18,7 @@ const DEFAULT_PROPS = {
 } as const
 
 interface MenuProps {
-	activeItem?: NavigationItem['route'] | null
+	active?: NavigationItem['route'] | null
 	depth?: number
 	hasDropdowns?: boolean
 	items: NavigationItem['menu']
@@ -43,7 +43,7 @@ export const Menu = polymorphic<MenuSpecs>((_props, { useProps, useStyles }) => 
 	const styles = useStyles({ props })
 
 	const {
-		activeItem,
+		active,
 		as,
 		className,
 		depth,
@@ -59,8 +59,8 @@ export const Menu = polymorphic<MenuSpecs>((_props, { useProps, useStyles }) => 
 		module: { [`${orientation}`]: (depth === 0 && !!orientation) || null },
 	}
 
-	const currentRoute = typeof activeItem === 'string' || activeItem === null
-		? activeItem
+	const currentRoute = typeof active === 'string' || active === null
+		? active
 		: (pathname as NavigationItem['route'])
 
 	return (
@@ -73,7 +73,7 @@ export const Menu = polymorphic<MenuSpecs>((_props, { useProps, useStyles }) => 
 			{ items?.map(item => (
 				<MenuItem
 					key={ item.label }
-					activeItem={ currentRoute }
+					active={ currentRoute }
 					className={ className }
 					depth={ depth }
 					hasDropdowns={ hasDropdowns }

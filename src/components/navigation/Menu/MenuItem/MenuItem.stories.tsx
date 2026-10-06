@@ -73,9 +73,9 @@ const meta: Meta<MenuItemStoryProps> = {
 			control: 'boolean',
 			description: 'Selects between `MenuItem`\'s three render branches when `menu` is present: `undefined`/`false` returns a flat ARRAY of the children\'s `<li>`s (the item\'s own label is dropped); `true` renders the label plus a trigger `<button>` and a nested `Menu`. Has no effect when `menu` is absent.',
 		},
-		activeItem: {
+		active: {
 			control: 'text',
-			description: 'Typed `NavigationItem[\'route\'] | null`. `MenuItem.tsx`\'s own `isCurrentRoute` (`!!item.route && item.route === activeItem`) treats `null` and `undefined` IDENTICALLY — neither can ever `===` a real route string, so both simply fail the match, same as any other non-matching string. The two are only distinguished one level up, in `Menu.tsx`: a route string or `null` is used AS-IS; `undefined` is replaced with `usePathname()` before ever reaching `MenuItem`. So from `MenuItem`\'s own perspective there is no pathname fallback to skip — that distinction belongs to `Menu.tsx`\'s `ActiveFromPathname` story, not here. Drives `data-current` on the wrapping `<li>` and `aria-current="page"` on the rendered label. An item with no `route` can never match. See `ActiveItem`/`ActiveItemFlattened`.',
+			description: 'Typed `NavigationItem[\'route\'] | null`. `MenuItem.tsx`\'s own `isCurrentRoute` (`!!item.route && item.route === active`) treats `null` and `undefined` IDENTICALLY — neither can ever `===` a real route string, so both simply fail the match, same as any other non-matching string. The two are only distinguished one level up, in `Menu.tsx`: a route string or `null` is used AS-IS; `undefined` is replaced with `usePathname()` before ever reaching `MenuItem`. So from `MenuItem`\'s own perspective there is no pathname fallback to skip — that distinction belongs to `Menu.tsx`\'s `ActiveFromPathname` story, not here. Drives `data-current` on the wrapping `<li>` and `aria-current="page"` on the rendered label. An item with no `route` can never match. See `ActiveItem`/`ActiveItemFlattened`.',
 		},
 		label: {
 			control: 'text',
@@ -302,31 +302,31 @@ export const DataCurrentHook: Story = {
 }
 
 /**
- * `activeItem` matching an exact `route`: `data-current` on the wrapping `<li>`,
+ * `active` matching an exact `route`: `data-current` on the wrapping `<li>`,
  * `aria-current="page"` on the rendered label.
  *
  * `null` and `undefined` are rendered alongside the match for contrast, but —
- * per `isCurrentRoute` (`!!item.route && item.route === activeItem`) — they
+ * per `isCurrentRoute` (`!!item.route && item.route === active`) — they
  * behave IDENTICALLY to each other at this level: neither can ever `===` a
  * real route string, so both simply fail to match, same as any other
  * non-matching value. The asymmetry the two carry at the `Menu` level (`null`
  * = explicitly no active item; `undefined` = fall back to `usePathname()`) is
- * resolved one level up, in `Menu.tsx`, before `activeItem` ever reaches
+ * resolved one level up, in `Menu.tsx`, before `active` ever reaches
  * `MenuItem` — see `Menu.stories.tsx`'s `ActiveFromPathname` story for that
  * distinction in action.
  */
 export const ActiveItem: Story = {
-	parameters: { controls: { exclude: ['activeItem'] } },
+	parameters: { controls: { exclude: ['active'] } },
 	render: (args) => (
 		<Row>
-			<Group label="activeItem: route match">
-				<MenuItem { ...args } activeItem={ NavRoutes.HOME } label="Home" route={ NavRoutes.HOME } />
+			<Group label="active: route match">
+				<MenuItem { ...args } active={ NavRoutes.HOME } label="Home" route={ NavRoutes.HOME } />
 			</Group>
-			<Group label="activeItem: null">
-				<MenuItem { ...args } activeItem={ null } label="Home (null)" route={ NavRoutes.HOME } />
+			<Group label="active: null">
+				<MenuItem { ...args } active={ null } label="Home (null)" route={ NavRoutes.HOME } />
 			</Group>
-			<Group label="activeItem: undefined">
-				<MenuItem { ...args } activeItem={ undefined } label="Home (undefined)" route={ NavRoutes.HOME } />
+			<Group label="active: undefined">
+				<MenuItem { ...args } active={ undefined } label="Home (undefined)" route={ NavRoutes.HOME } />
 			</Group>
 		</Row>
 	),
@@ -354,7 +354,7 @@ export const ActiveItem: Story = {
  */
 export const ActiveItemFlattened: Story = {
 	args: {
-		activeItem: NavRoutes.SETTINGS,
+		active: NavRoutes.SETTINGS,
 		hasDropdowns: false,
 		label: 'User',
 		route: undefined,

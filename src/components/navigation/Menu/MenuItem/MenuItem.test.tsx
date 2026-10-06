@@ -1,10 +1,10 @@
 import { act, fireEvent, render, reset, screen } from '@/tests/test-utils'
 import { MenuItem } from './MenuItem'
 
-// `MenuItem.tsx` renders `activeItem` matching purely from the `route` it's
+// `MenuItem.tsx` renders `active` matching purely from the `route` it's
 // handed as a prop — it has no `next/navigation` import of its own, and
 // doesn't need one: `Menu` (its parent) is the only place `usePathname` is
-// read, and it forwards the resolved route down as `activeItem`. No router
+// read, and it forwards the resolved route down as `active`. No router
 // mock is required for these tests.
 
 describe('MenuItem', () => {
@@ -34,13 +34,13 @@ describe('MenuItem', () => {
 		})
 
 		it('marks the matching item current: data-current on the li, aria-current on the link', () => {
-			render(<MenuItem activeItem="/marketplace" label="Marketplace" route="/marketplace" />)
+			render(<MenuItem active="/marketplace" label="Marketplace" route="/marketplace" />)
 			const link = screen.getByRole('menuitem', { name: 'Marketplace' })
 			expect(link).toHaveAttribute('aria-current', 'page')
 			expect(link.closest('li')).toHaveAttribute('data-current')
 		})
 		it('does not mark a non-matching item current', () => { /* ... */ })
-		it('never marks a routeless item current, even if activeItem happens to be falsy', () => { /* ... */ })
+		it('never marks a routeless item current, even if active happens to be falsy', () => { /* ... */ })
 		it('preserves a consumer-supplied attributes.data bag alongside the computed data-current', () => { /* ... */ })
 	})
 

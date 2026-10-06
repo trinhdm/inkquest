@@ -25,7 +25,7 @@ const DEFAULT_PROPS = {
 
 interface MenuItemProps
 	extends NavigationItem {
-	activeItem?: NavigationItem['route'] | null
+	active?: NavigationItem['route'] | null
 	depth?: number
 	hasDropdowns?: boolean
 }
@@ -50,8 +50,8 @@ const getSubmenuItems = (root: HTMLLIElement | null) =>
 
 const isCurrentRoute = (
 	item: NavigationItem,
-	activeItem?: MenuItemProps['activeItem']
-) => !!item.route && item.route === activeItem
+	active?: MenuItemProps['active']
+) => !!item.route && item.route === active
 
 const MenuLabel = (
 	item: NavigationItem,
@@ -98,7 +98,7 @@ export const MenuItem = polymorphic<MenuItemSpecs>((_props, { useProps, useStyle
 	}, [])
 
 	const {
-		activeItem,
+		active,
 		as,
 		attributes,
 		depth,
@@ -180,7 +180,7 @@ export const MenuItem = polymorphic<MenuItemSpecs>((_props, { useProps, useStyle
 		},
 	})
 
-	const isActive = isCurrentRoute({ label, route }, activeItem),
+	const isActive = isCurrentRoute({ label, route }, active),
 		wrappedLabel = MenuLabel({ label, route }, styles, isActive)
 
 	const sharedProps = {
@@ -200,7 +200,7 @@ export const MenuItem = polymorphic<MenuItemSpecs>((_props, { useProps, useStyle
 
 	if (!hasDropdowns) {
 		return menu?.map(item => {
-			const isCurrent = isCurrentRoute(item, activeItem)
+			const isCurrent = isCurrentRoute(item, active)
 
 			return (
 				<Box
@@ -248,7 +248,7 @@ export const MenuItem = polymorphic<MenuItemSpecs>((_props, { useProps, useStyle
 
 			{ isOpen && (
 				<Menu
-					activeItem={ activeItem }
+					active={ active }
 					attributes={ { aria: { labelledby: triggerID } } }
 					depth={ typeof depth === 'number' ? depth + 1 : undefined }
 					id={ menuID }

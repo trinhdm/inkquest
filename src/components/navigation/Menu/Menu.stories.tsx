@@ -80,9 +80,9 @@ const meta: Meta<MenuStoryProps> = {
 			control: 'boolean',
 			description: 'Forwarded to every `MenuItem`. When `true`, an item that has its own `menu` renders a trigger `<button>` plus a nested `Menu` (opened on hover/click). When `false`, such an item renders NO trigger and NO label of its own — `MenuItem` returns a flat ARRAY of its children\'s `<li>`s instead (see the `FlattenedItems` story).',
 		},
-		activeItem: {
+		active: {
 			control: 'text',
-			description: 'A `NavRoute` to mark active (exact match against each item\'s own `route`); `null` to explicitly mark NO item active; or `undefined` to fall back to `usePathname()`. `Menu.tsx` resolves this itself, BEFORE forwarding: `const currentRoute = typeof activeItem === \'string\' || activeItem === null ? activeItem : (pathname as NavigationItem[\'route\'])` — so a route string or `null` is passed down to every top-level `MenuItem` (and, one level further, into any dropdown\'s own nested `Menu`) AS-IS, while `undefined` is replaced with the real pathname first. `null` and `undefined` are NOT equivalent: only `undefined` triggers the pathname fallback. See the `ActiveItem` and `ActiveFromPathname` stories.',
+			description: 'A `NavRoute` to mark active (exact match against each item\'s own `route`); `null` to explicitly mark NO item active; or `undefined` to fall back to `usePathname()`. `Menu.tsx` resolves this itself, BEFORE forwarding: `const currentRoute = typeof active === \'string\' || active === null ? active : (pathname as NavigationItem[\'route\'])` — so a route string or `null` is passed down to every top-level `MenuItem` (and, one level further, into any dropdown\'s own nested `Menu`) AS-IS, while `undefined` is replaced with the real pathname first. `null` and `undefined` are NOT equivalent: only `undefined` triggers the pathname fallback. See the `ActiveItem` and `ActiveFromPathname` stories.',
 		},
 		items: {
 			control: 'object',
@@ -654,14 +654,14 @@ export const KeyboardActivation: Story = {
 }
 
 /**
- * An explicit `activeItem` prop marks exactly one item — its `route` must
+ * An explicit `active` prop marks exactly one item — its `route` must
  * match exactly, so `Discover` (whose own route is `/discover`, distinct from
  * its child `/discover/style`) stays unmarked here.
  */
 export const ActiveItem: Story = {
 	parameters: { layout: 'padded' },
 	args: {
-		activeItem: NavRoutes.MARKETPLACE,
+		active: NavRoutes.MARKETPLACE,
 		items: itemsFor('Home', 'Marketplace', 'Discover'),
 	},
 	play: async ({ canvasElement }) => {
@@ -682,10 +682,10 @@ export const ActiveItem: Story = {
  * `parameters.nextjs.navigation.pathname` is left unset. A meta-level default
  * would retroactively mark `Home` active in every OTHER story in this file.
  *
- * Renders `activeItem: undefined` alongside `activeItem: null` under the SAME
+ * Renders `active: undefined` alongside `active: null` under the SAME
  * mocked pathname, to make `Menu.tsx`'s own resolution concrete:
- * `const currentRoute = typeof activeItem === 'string' || activeItem === null
- * ? activeItem : (pathname as NavigationItem['route'])`. Only `undefined`
+ * `const currentRoute = typeof active === 'string' || active === null
+ * ? active : (pathname as NavigationItem['route'])`. Only `undefined`
  * takes the `pathname` branch — `null` is passed straight through as "no
  * active item", explicitly SKIPPING the fallback, which is exactly how
  * `FooterArea` uses it (see `FooterArea.stories.tsx`).
@@ -697,11 +697,11 @@ export const ActiveFromPathname: Story = {
 	},
 	render: (args) => (
 		<Row>
-			<Group label="activeItem: undefined (falls back to pathname)">
-				<Menu { ...args } activeItem={ undefined } items={ itemsFor('Home', 'Marketplace') } />
+			<Group label="active: undefined (falls back to pathname)">
+				<Menu { ...args } active={ undefined } items={ itemsFor('Home', 'Marketplace') } />
 			</Group>
-			<Group label="activeItem: null (explicitly no active item)">
-				<Menu { ...args } activeItem={ null } items={ itemsFor('Home', 'Marketplace') } />
+			<Group label="active: null (explicitly no active item)">
+				<Menu { ...args } active={ null } items={ itemsFor('Home', 'Marketplace') } />
 			</Group>
 		</Row>
 	),
