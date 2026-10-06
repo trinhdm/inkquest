@@ -95,7 +95,7 @@ export const FaqBrowser = () => {
 			<Sidebar
 				active={ activeGroup.id }
 				items={ categories }
-				onItemChange={ selectCategory }
+				onChange={ selectCategory }
 				scroll={ scroll }
 			/>
 			<FaqCategory group={ activeGroup } />
