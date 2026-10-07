@@ -4,17 +4,21 @@ import {
 	type ReactNode,
 } from 'react'
 
+import {
+	FieldProvider,
+	type FieldContext,
+	type SharedFieldProps,
+} from './Field.context'
+
 import { LoaderCircle } from 'lucide-react'
 import { defineTokens } from '@/lib/component/tokens'
 import { extractOthers } from '@/hooks/useProps'
-import { filterChildren, getDisplayNames } from '@/lib/component/children'
+import { filterChildren } from '@/lib/component/children'
 import { getIcon, type FieldPropsList } from '../utils'
 import { keyHasValue, toKebabCase } from '@/utils/helpers'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import { FieldGroup } from './FieldGroup'
-import { FieldLabel } from './FieldLabel'
-import { FieldProvider, type FieldContext, type SharedFieldProps } from './Field.context'
 import { Radio } from '../Radio'
 import { TextArea } from '../TextArea'
 import { TextInput } from '../TextInput'
@@ -28,6 +32,7 @@ const NAME = 'Field' as const,
 
 const DEFAULT_PROPS = {
 	as: TAG,
+	labelPosition: 'first',
 	preserveOrder: true,
 	required: false,
 	size: 'md',
@@ -38,7 +43,6 @@ export const SUBCOMPONENTS = {
 	Choice: Radio,
 	Group: FieldGroup,
 	Input: TextInput,
-	Label: FieldLabel,
 	Textarea: TextArea,
 } as const
 
@@ -47,6 +51,8 @@ interface FieldProps {
 	disabled?: boolean
 	error?: string
 	id: string
+	label?: string
+	labelPosition?: 'first' | 'last'
 	loading?: boolean
 	preserveOrder?: boolean
 	required?: boolean
@@ -67,6 +73,7 @@ interface FieldSpecs {
 type FieldSelectors =
 	| 'root' | 'control' | 'error'
 	| 'icon' | 'loader'
+	| 'label' | 'star'
 
 type FieldTokens = {
 	root:
@@ -78,32 +85,7 @@ type FieldTokens = {
 interface FieldParts {
 	control: ReactNode
 	icon: ReactNode
-	label: ReactNode
 	loader: ReactNode
-}
-
-const nameSubcomponents = (list = SUBCOMPONENTS) => {
-	const labelKey: keyof typeof list = 'Label'
-	const { [labelKey]: value, Group, ...rest } = list,
-		reordered = { [labelKey]: value, ...rest }
-
-	return Object.values(reordered).map(sub => sub.displayName)
-}
-
-const orderSubcomponents = (
-	props: FieldProps,
-	parts: FieldParts,
-): ReactNode[] => {
-	const { children, preserveOrder } = props
-	const { control, label } = parts
-
-	if (!preserveOrder) return [label, control]
-	const displayNames = getDisplayNames(children)
-
-	if (displayNames[0] === FieldLabel.displayName)
-		return [label, control]
-
-	return [control, label]
 }
 
 const buildField = (
@@ -112,21 +94,16 @@ const buildField = (
 ): FieldParts => {
 	const { children, loading } = props
 
-	const [labelName, ...displayNames] = nameSubcomponents(),
+	const displayNames = Object.values(SUBCOMPONENTS).map(sub => sub.displayName),
 		verifyArgs = { name: NAME, max: 1 }
 
-	const [label] = filterChildren(children, labelName, verifyArgs),
-		control = filterChildren(children, displayNames, verifyArgs).find(Boolean)
+	const control = filterChildren(children, displayNames, verifyArgs).find(Boolean)
 
 	const parts: FieldParts = {
 		control: null,
 		icon: null,
-		label: null,
 		loader: null,
 	}
-
-	if (isValidElement<FieldPropsList>(label))
-		parts.label = label
 
 	if (isValidElement<FieldPropsList>(control)) {
 		const { props: childProps } = control
@@ -165,13 +142,13 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 	const styles = useStyles({ props, tokens })
 
 	const {
-		as, children, disabled,
-		error, id, loading,
+		as, children, disabled, error,
+		id, label, labelPosition, loading,
 		required, size, unstyled,
 		...rest
 	} = props
 
-	const parts = buildField(props, styles)
+	const { control, icon, loader } = buildField(props, styles)
 
 	const others = extractOthers(rest)
 	const hasError = !!error?.trim()
@@ -197,14 +174,21 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 	}), [hasError, size])
 
 	const ctxValues = useMemo(() => ({
-		aria, clsx, disabled, hasError, idx,
-		icon: parts.icon, loader: parts.loader,
-		loading, required, size, unstyled,
+		aria, clsx, disabled, hasError,
+		icon,  idx, loader, loading,
+		required, size, unstyled,
 	}), [
 		aria, clsx, disabled, hasError,
-		idx, loading, parts,
+		icon, idx, loader, loading,
 		required, size, unstyled,
 	])
+
+	const labelEl = label && (
+		<label { ...styles('label') } htmlFor={ idx.control }>
+			{ label }
+			{ !!required && <span { ...styles('star') } aria-hidden="true">*</span> }
+		</label>
+	)
 
 	return (
 		<Box
@@ -218,7 +202,9 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 			} } }
 		>
 			<FieldProvider value={ ctxValues }>
-				{ orderSubcomponents(props, parts) }
+				{ labelPosition === 'first' && labelEl }
+				{ control }
+				{ labelPosition === 'last' && labelEl }
 				{ hasError && <p { ...styles('error') }>{ error }</p> }
 			</FieldProvider>
 		</Box>
@@ -241,11 +227,6 @@ export declare namespace Field {
 	export namespace Group {
 		export type Props = FieldGroup.Props
 		export type Specs = FieldGroup.Specs
-	}
-
-	export namespace Label {
-		export type Props = FieldLabel.Props
-		export type Specs = FieldLabel.Specs
 	}
 
 	export namespace Choice {
