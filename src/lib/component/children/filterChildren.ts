@@ -26,17 +26,41 @@ export const countChildren = (
 	}, 0)
 }
 
-interface VerifyChildrenArgs {
+interface BaseVerifyChildren {
 	children: ReactNode
-	// extra?: ReactNode[]
-	max?: number
 	name: string
+}
+
+interface VerifyExtraChildren {
+	extra: ReactNode[]
+	max?: number
 	total?: number
 }
 
+interface VerifyMaxChildren {
+	extra?: ReactNode[]
+	max: number
+	total?: number
+}
+
+interface VerifyTotalChildren {
+	extra?: ReactNode[]
+	max?: number
+	total: number
+}
+
+type VerifyChildrenVariations =
+	| VerifyExtraChildren
+	| VerifyMaxChildren
+	| VerifyTotalChildren
+
+type VerifyChildrenArgs =
+	& BaseVerifyChildren
+	& VerifyChildrenVariations
+
 export const verifyChildren = ({
 	children,
-	// extra,
+	extra,
 	max,
 	name,
 	total,
@@ -47,15 +71,14 @@ export const verifyChildren = ({
 		foundText = `${name}: ${count} children found`
 
 	if (max) {
-		const maxed = max + 1
-		if (count < maxed) return
-		console.warn(`${foundText}; a ${name} needs less than ${maxed} children.`)
+		if (count < max + 1) return
+		console.warn(`${foundText}; a ${name} needs less than ${max} children.`)
 	} else if (total) {
 		if (count === total) return
 		console.warn(`${foundText}; a ${name} needs exactly ${total} children.`)
+	} else if (!!extra?.length) {
+		console.warn(`${name}: ${extra?.length} extra subcomponent(s) found.`)
 	}
-
-	// if (!!extra?.length) console.warn(`${name}: ${extra?.length} extra subcomponent(s) found.`)
 }
 
 export const filterChildren = (
@@ -64,13 +87,21 @@ export const filterChildren = (
 	verifyArgs?: Omit<VerifyChildrenArgs, 'children'>,
 ): ReactNode[] => {
 	const filtered: ReactNode[] = Array.isArray(displayName)
-		? new Array(displayName.length).fill(null)
+		? Array(displayName.length).fill(null)
 		: []
 
 	Children.toArray(children).forEach(child => {
 		if (isValidElement<WithChildren>(child)) {
-			if (child.type === Fragment)
-				return filterChildren(child.props.children, displayName)
+			if (!child.type) return
+
+			if (child.type === Fragment) {
+				filterChildren(child.props.children, displayName).forEach((nested, i) => {
+					if (nested == null) return
+					if (typeof displayName === 'string') filtered.push(nested)
+					else if (filtered[i] == null) filtered[i] = nested
+				})
+				return
+			}
 
 			const { displayName: childName } = child.type as ComponentType
 			if (!childName) return
@@ -80,12 +111,12 @@ export const filterChildren = (
 				filtered.push(child)
 			} else if (Array.isArray(displayName)) {
 				const i = displayName.indexOf(childName)
-				if (i < 0) return
+				if (i < 0 || filtered[i] != null) return
 				filtered[i] = child
 			}
 		}
 	})
 
-	if (verifyArgs) verifyChildren({ ...verifyArgs, children: filtered })
+	if (verifyArgs) verifyChildren({ ...verifyArgs, children: filtered.filter(Boolean) } as VerifyChildrenArgs)
 	return filtered
 }
