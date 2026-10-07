@@ -82,3 +82,16 @@
 		}
 	}
 }
+
+@mixin form-control-icon {
+	--icon-size: var(--field-icon-size);
+
+	color: var(--inkq-color-placeholder);
+	display: block;
+	inset-block: 0;
+	inset-inline: var(--form-control-icon-inset);
+	margin: auto var(--field-padding-inline);
+	max-height: fit-content;
+	position: absolute;
+	z-index: 2;
+}

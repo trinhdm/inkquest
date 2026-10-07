@@ -33,7 +33,6 @@ const NAME = 'Field' as const,
 
 const DEFAULT_PROPS = {
 	as: TAG,
-	labelPosition: 'first',
 	required: false,
 	size: 'md',
 } as const
@@ -64,6 +63,7 @@ interface FieldDefaultLayout {
 }
 
 interface FieldButtonLayout {
+	iconPosition?: never
 	labelPosition?: never
 	layout: 'button'
 	size?: never
@@ -92,7 +92,7 @@ interface FieldSpecs {
 type FieldSelectors =
 	| 'root' | 'control' | 'button'
 	| 'error' | 'caption' | 'loader'
-	| 'icon' | 'label' | 'required'
+	| 'label' | 'required'
 
 type FieldTokens = {
 	root:
@@ -114,9 +114,8 @@ const buildField = (
 	const { children, loading } = props
 
 	const displayNames = Object.values(SUBCOMPONENTS).map(sub => sub.displayName),
-		verifyArgs = { name: NAME, max: 1 }
-
-	const control = filterChildren(children, displayNames, verifyArgs).find(Boolean)
+		verifyArgs = { name: NAME, max: 1 },
+		control = filterChildren(children, displayNames, verifyArgs).find(Boolean)
 
 	const parts: FieldParts = {
 		control: null,
@@ -130,7 +129,7 @@ const buildField = (
 
 		if (keyHasValue(childProps, 'type')) {
 			const icon = getIcon((childProps as TextInput.Props).type)
-			if (icon) parts.icon = <div { ...styles('icon') }>{ icon }</div>
+			if (icon) parts.icon = icon
 		}
 
 		if (!!loading || keyHasValue(childProps, { loading: true }))
@@ -143,9 +142,8 @@ const buildField = (
 const tokens = defineTokens<FieldSpecs>()(({ props, theme }) => {
 	const { size } = props
 
-	const step = size === 'sm' ? 2 : 1.25
 	const blockPadding = 'var(--field-padding-block)',
-		inlinePadding = `calc(${step} * ${blockPadding})`
+		inlinePadding = `calc(${theme.space('icon')} + ${blockPadding})`
 
 	return {
 		root: {
@@ -223,7 +221,7 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 				<FieldProvider value={ ctxValues }>
 					{ control }
 					<label { ...styles('button') } htmlFor={ idx.control }>
-						{ label }
+						<span { ...styles('label', { global: { h4: true } }) }>{ label }</span>
 						{ captionEl }
 					</label>
 				</FieldProvider>
@@ -240,7 +238,7 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 
 	return (
 		<Box { ...sharedProps }>
-			{ labelPosition === 'first' && labelEl }
+			{ (!labelPosition || labelPosition === 'first') && labelEl }
 
 			<FieldProvider value={ ctxValues }>
 				{ control }
@@ -285,6 +283,8 @@ export declare namespace Field {
 	export namespace Input {
 		export type Props = TextInput.Props
 		export type Specs = TextInput.Specs
+
+		export type Types = TextInput.Types
 	}
 
 	export namespace Textarea {

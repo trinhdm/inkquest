@@ -17,7 +17,7 @@
 }
 
 .inkq-field {
-    @include shared.form-tokens();
+    @include shared.form-tokens;
 
 	$name: &;
 
@@ -37,21 +37,6 @@
         position: relative;
     }
 
-    &__icon,
-    &__loader {
-        --icon-size: var(--field-icon-size);
-
-        color: var(--inkq-color-placeholder);
-        inset-block: 0;
-        margin: auto var(--field-padding-inline);
-        position: absolute;
-    }
-
-    &__icon {
-        max-height: fit-content;
-        z-index: 2;
-    }
-
     &__caption,
     &__error {
         display: block;
@@ -59,15 +44,23 @@
     }
 
     &__button {
-        @include shared.form-control-content();
+        @include shared.form-control-content;
 
         cursor: pointer;
         display: flex;
         flex-direction: column;
+        font-weight: var(--inkq-font-weight-semibold);
+        height: 100%;
         padding-block: var(--form-control-padding-inline);
         row-gap: var(--space-1);
         text-align: left;
         transition: var(--form-control-transition-bg-border);
+    }
+
+    &__loader {
+        @include shared.form-control-icon;
+
+        z-index: 3;
     }
 
     &:where([data-loading]) #{$name} {
@@ -76,18 +69,17 @@
         }
 	}
 
-    &:has(input[type="checkbox"], input[type="radio"]) #{$name}__label,
-    &--button {
-        color: var(--inkq-color-text-secondary);
-        font: var(--inkq-text-label);
-        font-weight: var(--inkq-font-weight-normal);
-        letter-spacing: var(--inkq-font-tracking-prefix);
-        text-transform: none;
-    }
-
-    &:has(input[type="checkbox"], input[type="radio"]) {
+    &:not([class$="button"]):has(input[type="checkbox"], input[type="radio"]) {
         column-gap: var(--space-3);
         flex-direction: row;
+
+        #{$name}__label {
+            color: var(--inkq-color-text-secondary);
+            font-weight: var(--inkq-font-weight-normal);
+            font: var(--inkq-text-label);
+            letter-spacing: var(--inkq-font-tracking-prefix);
+            text-transform: none;
+        }
 
         &:focus-within input {
             @include shared.focused-form-control;
@@ -95,19 +87,33 @@
     }
 
     &--button {
-        color: var(--inkq-color-text-secondary);
-        font: var(--inkq-text-label);
-        font-weight: var(--inkq-font-weight-normal);
-        letter-spacing: var(--inkq-font-tracking-prefix);
-        text-transform: none;
+        &,
+        #{$name}__caption {
+            font: var(--inkq-text-label);
+            letter-spacing: 0;
+            text-transform: none;
+        }
 
-        #{$name}__control {
-            clip-path: inset(50%);
-            height: 1px;
-            overflow: hidden;
-            position: absolute;
-            white-space: nowrap;
-            width: 1px;
+        #{$name} {
+            &__caption {
+                font-weight: var(--inkq-font-weight-normal);
+            }
+
+            &__control {
+                clip-path: inset(50%);
+                height: 1px;
+                overflow: hidden;
+                position: absolute;
+                white-space: nowrap;
+                width: 1px;
+            }
+
+            &__label {
+                font: var(--inkq-text-body);
+                font-weight: var(--inkq-font-weight-semibold);
+                letter-spacing: 0;
+                text-transform: none;
+            }
         }
 
         &:has(:focus-within) #{$name}__button {

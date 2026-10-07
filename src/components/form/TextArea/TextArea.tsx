@@ -32,7 +32,7 @@ interface TextAreaSpecs {
 }
 
 type TextAreaSelectors =
-	| 'root'
+	| 'root' | 'icon'
 
 const tokens = defineTokens<TextAreaSpecs>()(args => getSharedTokens(args))
 

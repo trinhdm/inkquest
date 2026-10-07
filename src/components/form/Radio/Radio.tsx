@@ -46,7 +46,7 @@ interface RadioSpecs {
 }
 
 type RadioSelectors =
-	| 'root'
+	| 'root' | 'icon'
 
 const tokens = defineTokens<RadioSpecs>()(args => getSharedTokens(args))
 

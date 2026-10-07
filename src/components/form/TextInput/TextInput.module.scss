@@ -4,4 +4,8 @@
     @include shared.form-control-text;
 
 	$name: &;
+
+	&__icon {
+		@include shared.form-control-icon;
+	}
 }
