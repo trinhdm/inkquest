@@ -1,14 +1,11 @@
 import { createCompoundCtx } from '@/lib/component/context'
 import type { AnimationOptions } from '@/hooks/animation'
-import type { Size } from '@/types/shared'
-
-type StatisticGroupOrder =
-	'ascend' | 'descend'
+import type { Statistic } from '../Statistic'
 
 export interface StatisticGroupContext
 	extends AnimationOptions {
-	order?: StatisticGroupOrder
-	size?: Exclude<Size, 'md'>
+	order?: Statistic.Props['order']
+	size?: Statistic.Props['size']
 }
 
 export const {

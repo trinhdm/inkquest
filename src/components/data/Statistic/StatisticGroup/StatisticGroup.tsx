@@ -3,6 +3,7 @@ import { polymorphic } from '@/lib/component/factory'
 import { Group, GROUP_CASCADE_PROPS } from '@/components/layout/Group'
 import { StatisticGroupProvider, type StatisticGroupContext } from './StatisticGroup.context'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
+import type { Statistic } from '../Statistic'
 import classes from '../Statistic.module.scss'
 
 const NAME = 'Statistic.Group' as const
@@ -16,8 +17,10 @@ const DEFAULT_PROPS = {
 } as const
 
 interface StatisticGroupProps
-	extends Omit<Group.Props, 'childName' | 'provider' | 'valuesCtx'>,
-		Pick<StatisticGroupContext, 'order' | 'size'> {}
+	extends Group.CompoundProps {
+	order?: Statistic.Props['order']
+	size?: Statistic.Props['size']
+}
 
 type StatisticGroupSpecs = {
 	defaults: { props: PropsDefaultList<typeof DEFAULT_PROPS> }
@@ -33,7 +36,12 @@ export const StatisticGroup = polymorphic<StatisticGroupSpecs>((_props, { usePro
 	const props = useProps(_props)
 	const styles = useStyles({ props })
 
-	const { children, order, size, ...rest } = props
+	const {
+		children, order,
+		size, unstyled,
+		...rest
+	} = props
+
 	const others = extractOthers(rest, GROUP_CASCADE_PROPS)
 
 	return (
@@ -42,7 +50,7 @@ export const StatisticGroup = polymorphic<StatisticGroupSpecs>((_props, { usePro
 			{ ...others }
 			childName="Statistic"
 			provider={ StatisticGroupProvider }
-			valuesCtx={ { order, size } }
+			values={ { order, size, unstyled } }
 		>
 			{ children }
 		</Group>
@@ -57,6 +65,5 @@ StatisticGroup.set({
 export declare namespace StatisticGroup {
 	export type Context = StatisticGroupContext
 	export type Props = StatisticGroupProps
-	export type Selectors = StatisticGroupSelectors
 	export type Specs = StatisticGroupSpecs
 }

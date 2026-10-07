@@ -141,11 +141,11 @@ const meta: Meta<GroupStoryProps> = {
 		},
 		provider: {
 			control: false,
-			description: 'A `RootProviderFn<GroupContext>` that receives a per-child context value via `withProvider` (`@/lib/component`). The value handed to each child is `{ animated, duration, index, stagger, unstyled, withinView, ...valuesCtx }` — `valuesCtx` is spread LAST, so it can override any of the auto-computed fields. Without a `provider`, filtered children render unwrapped in a plain `Fragment` instead — no context is published at all. See the `AnimatedState`/`ValuesCtx` stories.',
+			description: 'A `RootProviderFn<GroupContext>` that receives a per-child context value via `withProvider` (`@/lib/component/context`). The value handed to each child is `{ animated, duration, index, stagger, unstyled, withinView, ...values }` — `values` is spread LAST, so it can override any of the auto-computed fields. `provider` has a registered default (`GroupProvider`), and `useProps` ignores an incoming `undefined`, so a `Group` always has a provider — there is no reachable provider-less path through `Group` itself. See the `AnimatedState`/`values` stories.',
 		},
-		valuesCtx: {
+		values: {
 			control: 'object',
-			description: 'Extra fields spread into every child\'s context value AFTER the auto-computed ones (`{ animated, duration, index, stagger, unstyled, withinView, ...valuesCtx }`), so `valuesCtx` can override any of them per-`Group`. Registered default is `{}`. Only meaningful paired with a custom `provider` — the default `GroupProvider`/`GroupContext` shape only reads the animation-related keys. See the `ValuesCtx` story.',
+			description: 'Extra fields spread into every child\'s context value AFTER the auto-computed ones (`{ animated, duration, index, stagger, unstyled, withinView, ...values }`), so `values` can override any of them per-`Group`. Registered default is `{}`. Only meaningful paired with a custom `provider` — the default `GroupProvider`/`GroupContext` shape only reads the animation-related keys. See the `values` story.',
 		},
 		amount: {
 			control: false,
@@ -424,15 +424,15 @@ export const AnimatedState: Story = {
 	},
 }
 
-// `valuesCtx` is spread LAST into each child's context value (`{ animated,
-// duration, index, stagger, unstyled, withinView, ...valuesCtx }`), so it can
+// `values` is spread LAST into each child's context value (`{ animated,
+// duration, index, stagger, unstyled, withinView, ...values }`), so it can
 // override any of the auto-computed fields — here it overrides `index` (which
 // would otherwise auto-number from `0`) to a fixed, shared value on every
 // child.
-export const ValuesCtx: Story = {
+export const values: Story = {
 	parameters: { layout: 'padded' },
 	render: () => (
-		<Group childName="DebugItem" provider={ DebugProvider } valuesCtx={ { index: 99 } }>
+		<Group childName="DebugItem" provider={ DebugProvider } values={ { index: 99 } }>
 			<DebugItem label="Item 1" />
 			<DebugItem label="Item 2" />
 		</Group>
@@ -444,7 +444,7 @@ export const ValuesCtx: Story = {
 		await expect(items).toHaveLength(2)
 
 		// Both children get the SAME overridden `index`, not the auto-computed
-		// `0`/`1` — `valuesCtx` wins because it's spread after the auto fields.
+		// `0`/`1` — `values` wins because it's spread after the auto fields.
 		await expect(items[0]).toHaveAttribute('data-index', '99')
 		await expect(items[1]).toHaveAttribute('data-index', '99')
 	},

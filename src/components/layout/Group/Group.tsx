@@ -1,10 +1,7 @@
 import {
-	useMemo,
-	useRef,
-	type CSSProperties,
-	type ElementType,
-	type ReactElement,
-	type ReactNode,
+	useMemo, useRef,
+	type CSSProperties, type ElementType,
+	type ReactElement, type ReactNode,
 } from 'react'
 
 import { useReplayInView, type MaybeAnimationProps } from '@/hooks/animation'
@@ -29,7 +26,7 @@ const DEFAULT_PROPS = {
 	childName: GroupItem.displayName,
 	divider: false,
 	provider: GroupProvider,
-	valuesCtx: {},
+	values: {},
 } as const
 
 const SUBCOMPONENTS = {
@@ -42,10 +39,13 @@ export const GROUP_CASCADE_PROPS = [
 	'lead', 'revealFrom', 'withinView',
 ] as const satisfies readonly ReservedProp[]
 
+const GROUP_TAGS: readonly ElementType[] = ['fieldset', 'hgroup', 'optgroup']
+
 interface BaseGroupProps {
 	children: ReactNode
 	columns?: number
 	divider?: boolean
+	header?: ReactNode
 	fullWidth?: boolean
 	justify?: CSSProperties['justifyContent']
 	orientation?: Orientation
@@ -54,7 +54,7 @@ interface BaseGroupProps {
 interface CompoundGroupProps {
 	childName?: never
 	provider?: never
-	valuesCtx?: never
+	values?: never
 }
 
 interface NamedGroupProps<
@@ -63,7 +63,7 @@ interface NamedGroupProps<
 > {
 	childName: string
 	provider?: RootProviderFn<Ctx, N>
-	valuesCtx?: Partial<Ctx>
+	values?: Partial<Ctx>
 }
 
 type NestedGroupProps<
@@ -98,10 +98,11 @@ type GroupSelectors =
 type GroupTokens = {
 	root:
 		| '--group-item-count'
+		| '--group-justify'
 }
 
 const tokens = defineTokens<GroupSpecs>()(({ props }) => {
-	const { columns, children, orientation } = props
+	const { columns, children, justify, orientation } = props
 	const hasColumns = !!(columns && columns > 0)
 	let numCols: number | undefined = hasColumns ? columns : undefined
 
@@ -113,6 +114,7 @@ const tokens = defineTokens<GroupSpecs>()(({ props }) => {
 	return {
 		root: {
 			'--group-item-count': numCols,
+			'--group-justify': justify ?? undefined,
 		},
 	}
 })
@@ -125,9 +127,9 @@ export const GroupBase = polymorphic<GroupSpecs>((_props, { useProps, useStyles 
 		as, amount, animated,
 		childName, children, columns,
 		divider, duration, fullWidth,
-		once, orientation,
+		header, once, orientation,
 		provider: Provider,
-		stagger, unstyled, valuesCtx,
+		stagger, unstyled, values,
 		...rest
 	} = props
 
@@ -139,7 +141,7 @@ export const GroupBase = polymorphic<GroupSpecs>((_props, { useProps, useStyles 
 		divide: !!divider || null,
 	}
 
-	const items = filterChildren(children, childName),
+	const items = filterChildren(children, childName, { name: NAME }),
 		total = items.length
 
 	// one observer for the whole group, so children stagger off a single t=0
@@ -151,10 +153,14 @@ export const GroupBase = polymorphic<GroupSpecs>((_props, { useProps, useStyles 
 	// stable across renders even though each child gets its own object
 	const ctxValues = useMemo(
 		() => Array.from({ length: total }, (_, index) => ({
-			animated, duration, index, stagger, unstyled, withinView,
-			...valuesCtx,
+			animated, duration, index, stagger,
+			unstyled, withinView,
+			...values,
 		})),
-		[animated, duration, stagger, total, unstyled, valuesCtx, withinView]
+		[
+			animated, duration, stagger, total,
+			unstyled, values, withinView,
+		]
 	)
 
 	return (
@@ -164,8 +170,9 @@ export const GroupBase = polymorphic<GroupSpecs>((_props, { useProps, useStyles 
 			as={ as }
 			attributes={ { aria, data } }
 			ref={ ref }
-			role="group"
+			role={ !!as && GROUP_TAGS.includes(as) ? undefined : 'group' }
 		>
+			{ header }
 			{ withProvider(items, Provider, ctxValues) }
 		</Box>
 	)
@@ -194,6 +201,8 @@ export declare namespace Group {
 		N extends string = typeof NAME,
 	> = GroupProps<Ctx, N>
 	export type Specs = GroupSpecs
+
+	export type CompoundProps = Omit<Group.Props, 'childName' | 'header' | 'provider' | 'values'>
 
 	export namespace Item {
 		export type Props = GroupItem.Props

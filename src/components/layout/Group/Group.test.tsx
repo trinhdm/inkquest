@@ -55,7 +55,7 @@ describe('Group', () => {
 			childName: 'Group.Item',
 			divider: false,
 			provider: expect.any(Function),
-			valuesCtx: {},
+			values: {},
 		})
 	})
 

@@ -7,6 +7,7 @@ import { Box } from '@/components/polymorphic/Box'
 import { StatisticGroup } from './StatisticGroup'
 import type { ReactNode } from 'react'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
+import type { Size } from '@/types/shared'
 import classes from './Statistic.module.scss'
 
 const NAME = 'Statistic' as const,
@@ -30,8 +31,8 @@ interface BaseStatisticProps {
 	caption?: string
 	highlight?: boolean
 	icon?: ReactNode
-	order?: StatisticGroup.Props['order']
-	size?: StatisticGroup.Props['size']
+	order?: 'ascend' | 'descend'
+	size?: Exclude<Size, 'md'>
 	value: number | string
 }
 
@@ -98,18 +99,10 @@ export const Statistic = polymorphic<StatisticSpecs>((_props, { useProps, useSty
 	const styles = useStyles({ props, tokens })
 
 	const {
-		animated,
-		as,
-		caption,
-		duration,
-		highlight,
-		icon,
-		index,
-		order,
-		size,
-		stagger,
-		value,
-		withinView,
+		animated, as, caption,
+		duration, highlight, icon,
+		index, order, size,
+		stagger, value, withinView,
 		...rest
 	} = props
 

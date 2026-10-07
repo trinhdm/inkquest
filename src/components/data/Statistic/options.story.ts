@@ -9,7 +9,7 @@ import type { Statistic } from './Statistic'
 export const BOOLEAN_OPTIONS = [true, false] as const
 
 // `Statistic.Group.Props` (`Omit<Group.Props, 'childName' | 'provider' |
-// 'valuesCtx'>`) inherits `orientation` verbatim from `layout/Group`'s own
+// 'values'>`) inherits `orientation` verbatim from `layout/Group`'s own
 // `'horizontal' | 'vertical'` literal union — read off the namespace type
 // itself rather than re-declared by hand, so this can't drift if `Group`
 // ever adds a third orientation.
