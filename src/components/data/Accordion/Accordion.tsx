@@ -66,8 +66,9 @@ type AccordionSelectors =
 	| 'root' | 'wrapper' | 'divider'
 
 const buildAccordion = (children: AccordionProps['children']) => {
-	const childNames = [AccordionTitle.displayName, AccordionContent.displayName],
-		[title, content] = filterChildren(children, childNames, { name: NAME, total: 2 })
+	const displayNames = [AccordionTitle.displayName, AccordionContent.displayName],
+		verifyArgs = { name: NAME, total: 2 },
+		[title, content] = filterChildren(children, displayNames, verifyArgs)
 
 	if (!title || !content) return null
 	return <>{ title }{ content }</>
@@ -83,21 +84,11 @@ export const Accordion = polymorphic<AccordionSpecs>((_props, { useProps, useSty
 	const styles = useStyles({ props, tokens })
 
 	const {
-		as,
-		children,
-		collapsible,
-		defaultOpen,
-		disabled,
-		id,
-		index,
-		indicator,
-		layout,
-		onItemToggle,
-		onToggle,
-		open,
-		order,
-		size,
-		unstyled,
+		as, children, collapsible,
+		defaultOpen, disabled,
+		id, index, indicator,
+		layout, onItemToggle, onToggle,
+		open, order, size, unstyled,
 		...rest
 	} = props
 
@@ -152,7 +143,10 @@ export const Accordion = polymorphic<AccordionSpecs>((_props, { useProps, useSty
 			{ ...styles('root') }
 			{ ...others }
 			as={ as }
-			attributes={ { data: { open: isOpen || null, step } } }
+			attributes={ { data: {
+				open: isOpen || null,
+				step,
+			} } }
 			id={ idx.root }
 		>
 			<AccordionProvider value={ ctxValues }>

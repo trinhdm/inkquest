@@ -5,18 +5,20 @@ import type { AnimateInViewConfig } from '@/hooks/animation'
 export type AccordionGroupType =
 	'single' | 'multiple'
 
-export interface AccordionGroupContext {
-	collapsible?: Accordion.Props['collapsible']
-	disabled?: Accordion.Props['disabled']
-	index?: Accordion.Props['index']
-	layout?: Accordion.Props['layout']
-	onItemToggle?: Accordion.Props['onItemToggle']
-	open?: Accordion.Props['open']
-	order?: Accordion.Props['order']
-	size?: Accordion.Props['size']
-	unstyled?: AnimateInViewConfig['unstyled']
-	withinView?: AnimateInViewConfig['withinView']
-}
+type SharedAccordionProp =
+	| 'collapsible'
+	| 'disabled'
+	| 'index'
+	| 'layout'
+	| 'onItemToggle'
+	| 'open'
+	| 'order'
+	| 'size'
+
+export interface AccordionGroupContext
+	extends
+		Pick<Accordion.Props, SharedAccordionProp>,
+		Pick<AnimateInViewConfig, 'unstyled' | 'withinView'> {}
 
 export const {
 	RootProvider: AccordionGroupProvider,

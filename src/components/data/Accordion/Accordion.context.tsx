@@ -8,17 +8,21 @@ interface AccordionIds {
 	title: string
 }
 
-export interface AccordionContext {
-	collapsible?: Accordion.Props['collapsible']
-	disabled?: Accordion.Props['disabled']
+type SharedAccordionProp =
+	| 'collapsible'
+	| 'disabled'
+	| 'indicator'
+	| 'order'
+	| 'size'
+
+export interface AccordionContext
+	extends
+		Pick<Accordion.Props, SharedAccordionProp>,
+		Pick<AnimationOptions, 'unstyled'> {
 	handleToggle: () => void
 	idx: AccordionIds
-	indicator?: Accordion.Props['indicator']
 	isOpen: boolean
-	order: Accordion.Props['order']
-	size?: Accordion.Props['size']
 	step?: `${number}`
-	unstyled?: AnimationOptions['unstyled']
 }
 
 export const {

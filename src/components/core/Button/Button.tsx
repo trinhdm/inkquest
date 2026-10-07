@@ -202,9 +202,7 @@ export const Button = polymorphic<ButtonSpecs>((_props, { useProps, useStyles, u
 		aria = { label: !!(showLabel && ariaLabel.length) ? ariaLabel : undefined }
 
 	const data = {
-		variant,
-		tone,
-		priority,
+		variant, tone, priority,
 		block: !!fullWidth || null,
 		disabled: !!disabled || null,
 		loading: !!loading || null,

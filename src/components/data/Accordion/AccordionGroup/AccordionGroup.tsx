@@ -60,6 +60,7 @@ export const AccordionGroup = polymorphic<AccordionGroupSpecs>((_props, { usePro
 		disabled,
 		layout,
 		order,
+		size,
 		unstyled,
 		...rest
 	} = props
@@ -94,12 +95,12 @@ export const AccordionGroup = polymorphic<AccordionGroupSpecs>((_props, { usePro
 			disabled, index, layout,
 			onItemToggle: handleItemToggle,
 			open: openItems.includes(index),
-			order, unstyled, withinView,
+			order, size, unstyled, withinView,
 		})),
 		[
 			collapsible, disabled, handleItemToggle,
-			layout, openItems, total,
-			order, unstyled, withinView,
+			layout, openItems, order, size,
+			total, unstyled, withinView,
 		]
 	)
 
