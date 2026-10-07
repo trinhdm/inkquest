@@ -1,7 +1,6 @@
 import {
 	useMemo,
 	useRef,
-	Children,
 	type CSSProperties,
 	type ElementType,
 	type ReactElement,
@@ -11,7 +10,7 @@ import {
 import { useReplayInView, type MaybeAnimationProps } from '@/hooks/animation'
 import { defineTokens } from '@/lib/component/tokens'
 import { extractOthers, type ReservedProp } from '@/hooks/useProps'
-import { filterChildren } from '@/lib/component/children'
+import { countChildren, filterChildren } from '@/lib/component/children'
 import { polymorphic } from '@/lib/component/factory'
 import { withProvider } from '@/lib/component/context'
 import { Box } from '@/components/polymorphic/Box'
@@ -107,7 +106,7 @@ const tokens = defineTokens<GroupSpecs>()(({ props }) => {
 	let numCols: number | undefined = hasColumns ? columns : undefined
 
 	if (!!orientation && !hasColumns) {
-		const count = Children.count(children)
+		const count = countChildren(children)
 		numCols = count > 1 ? count - 1 : count
 	}
 
@@ -123,21 +122,12 @@ export const GroupBase = polymorphic<GroupSpecs>((_props, { useProps, useStyles 
 	const styles = useStyles({ props, tokens })
 
 	const {
-		as,
-		amount,
-		animated,
-		childName,
-		children,
-		columns,
-		divider,
-		duration,
-		fullWidth,
-		once,
-		orientation,
+		as, amount, animated,
+		childName, children, columns,
+		divider, duration, fullWidth,
+		once, orientation,
 		provider: Provider,
-		stagger,
-		unstyled,
-		valuesCtx,
+		stagger, unstyled, valuesCtx,
 		...rest
 	} = props
 

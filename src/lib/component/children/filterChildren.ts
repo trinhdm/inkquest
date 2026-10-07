@@ -6,25 +6,8 @@ import {
 	type ReactNode,
 } from 'react'
 
+import { countChildren } from './countChildren'
 import type { WithChildren } from './types'
-
-export const countChildren = (
-	children: ReactNode,
-	displayName?: string,
-): number => {
-	if (!displayName) return Children.count(children)
-
-	return Children.toArray(children).reduce<number>((count, child) => {
-		if (isValidElement<WithChildren>(child)) {
-			if (child.type === Fragment)
-				return count + countChildren(child.props.children, displayName)
-			if (displayName === (child.type as ComponentType).displayName)
-				return count + 1
-		}
-
-		return count
-	}, 0)
-}
 
 interface BaseVerifyChildren {
 	children: ReactNode

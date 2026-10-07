@@ -1,3 +1,4 @@
+export { countChildren } from './countChildren'
 export { extractText } from './extractText'
 export { filterChildren, verifyChildren } from './filterChildren'
 export { getChildKey } from './getChildKey'
