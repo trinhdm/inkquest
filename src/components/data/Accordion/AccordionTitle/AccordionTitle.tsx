@@ -65,8 +65,13 @@ export const AccordionTitle = polymorphic<AccordionTitleSpecs>((_props, { usePro
 		const group = event.currentTarget.closest('[data-group]')
 		if (!group) return
 
-		const titles = [...group.querySelectorAll<HTMLButtonElement>('button[data-title]')],
+		const titles = [...group.children]
+				.map(item => document.getElementById(`${item.id}-title`))
+				.filter((title): title is HTMLButtonElement =>
+					title instanceof HTMLButtonElement && !title.disabled),
 			current = titles.indexOf(event.currentTarget)
+
+		if (current < 0) return
 
 		let next = -1
 		switch (event.key) {
