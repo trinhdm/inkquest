@@ -19,6 +19,7 @@
 	touch-action: manipulation;
 	transition: var(--inkq-motion-colors);
 	vertical-align: middle;
+	width: fit-content;
 
 	&__inner {
 		--icon-size: var(--button-icon-size, var(--inkq-icon-md));
