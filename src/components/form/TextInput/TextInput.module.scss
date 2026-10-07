@@ -1,6 +1,9 @@
+@import '../shared';
+
 .inkq-text-input {
 	$name: &;
 
+    @include form-control;
     --input-control-padding: var(--inkq-field-padding-md);
 
     align-items: center;
