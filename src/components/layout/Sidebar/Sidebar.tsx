@@ -17,10 +17,12 @@ const DEFAULT_PROPS = {
 	as: TAG,
 	scroll: false,
 	shallow: true,
+	sticky: true,
 } as const
 
 interface BaseSidebarProps {
 	children?: ReactNode
+	sticky?: boolean
 }
 
 interface BaseSidebarItem {
@@ -118,25 +120,24 @@ export const Sidebar = polymorphic<SidebarSpecs>((_props, { useProps, useStyles 
 	const styles = useStyles({ props, tokens })
 
 	const {
-		as,
-		active,
-		children,
-		items,
-		onChange,
-		scroll,
-		shallow,
+		as, active, children,
+		items, onChange, scroll,
+		shallow, sticky,
 		...rest
 	} = props
 
 	const others = extractOthers(rest)
-	const sharedProps = { ...styles('root'), ...others, as }
+	const hasItems = !!items?.length
 
-	if (items) {
+	const clsx = { selector: { nav: hasItems, sticky }}
+	const sharedProps = { ...styles('root', clsx), ...others, as }
+
+	if (hasItems) {
 		return (
 			<Box { ...sharedProps }>
-				<nav { ...styles('inner') }>
+				<nav { ...styles('wrapper') }>
 					<span { ...styles('rail') } />
-					<ul { ...styles('wrapper') } role="menu">
+					<ul { ...styles('inner') } role="menu">
 						{ items.map(({ id, label, url }) => {
 							const itemProps = { ...styles('button'), unstyled: true }
 							const isActive = active === id,
@@ -174,8 +175,8 @@ export const Sidebar = polymorphic<SidebarSpecs>((_props, { useProps, useStyles 
 
 	return (
 		<Box { ...sharedProps }>
-			<div { ...styles('inner') }>
-				<div { ...styles('wrapper') }>
+			<div { ...styles('wrapper') }>
+				<div { ...styles('inner') }>
 					{ children }
 				</div>
 			</div>
