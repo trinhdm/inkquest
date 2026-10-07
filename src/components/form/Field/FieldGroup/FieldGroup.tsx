@@ -1,20 +1,21 @@
-import { useMemo } from 'react'
 import { extractOthers } from '@/hooks/useProps'
-import { filterChildren } from '@/lib/component/children'
 import { polymorphic } from '@/lib/component/factory'
-import { withProvider } from '@/lib/component/context'
-import { Box } from '@/components/polymorphic/Box'
 import { FieldGroupProvider, type FieldGroupContext } from './FieldGroup.context'
+import { Group, GROUP_CASCADE_PROPS } from '@/components/layout/Group'
 import type { Field } from '../Field'
 import classes from '../Field.module.scss'
 
 const NAME = 'Field.Group' as const
 
-interface FieldGroupProps {
-	labelPosition?: Field.Props['labelPosition']
+interface BaseFieldGroupProps {
 	legend: string
 	required?: Field.Props['required']
 }
+
+type FieldGroupProps =
+	& BaseFieldGroupProps
+	& Group.CompoundProps
+	& Field.LayoutProps
 
 interface FieldGroupSpecs {
 	isCompound: true
@@ -23,43 +24,40 @@ interface FieldGroupSpecs {
 }
 
 type FieldGroupSelectors =
-	| 'root' | 'label' | 'star'
+	| 'root' | 'label' | 'required'
 
 export const FieldGroup = polymorphic<FieldGroupSpecs>((_props, { useProps, useStyles }) => {
 	const props = useProps(_props)
 	const styles = useStyles({ props })
 
 	const {
-		children, labelPosition,
+		children, labelPosition, layout,
 		legend, required, unstyled,
 		...rest
 	} = props
 
-	const others = extractOthers(rest)
+	const others = extractOthers(rest, GROUP_CASCADE_PROPS)
+	const clsx = { global: { eyebrow: true } }
 
-	const items = filterChildren(children, 'Field'),
-		total = items.length
-
-	const ctxValues = useMemo(
-		() => Array.from({ length: total }, (_, index): FieldGroupContext => ({
-			labelPosition, index, unstyled,
-		})),
-		[labelPosition, total, unstyled]
+	const header = (
+		<legend { ...styles('label') }>
+			{ legend }
+			{ !!required && <span { ...styles('required') } aria-hidden="true">*</span> }
+		</legend>
 	)
 
 	return (
-		<Box
-			{ ...styles('root', { global: { eyebrow: true } }) }
+		<Group
+			{ ...styles('root', clsx) }
 			{ ...others }
 			as="fieldset"
+			childName="Field"
+			header={ header }
+			provider={ FieldGroupProvider }
+			values={ { labelPosition, layout, unstyled } }
 		>
-			<legend { ...styles('label') }>
-				{ legend }
-				{ !!required && <span { ...styles('star') } aria-hidden="true">*</span> }
-			</legend>
-
-			{ withProvider(items, FieldGroupProvider, ctxValues) }
-		</Box>
+			{ children }
+		</Group>
 	)
 }, { name: NAME, classes })
 

@@ -10,14 +10,13 @@ interface FieldIds {
 
 interface FieldAria {
 	busy: boolean | undefined
-	describedby: string
+	describedby: string | undefined
 	invalid: boolean | undefined
 	required: boolean | undefined
 }
 
 interface FieldClsx {
-	module: Pick<Field.Props, 'size'>
-	selector: {
+	selector: Pick<Field.Props, 'layout'> & {
 		error: boolean
 	}
 }

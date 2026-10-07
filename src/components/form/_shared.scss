@@ -1,15 +1,21 @@
 @mixin form-tokens {
 	--form-control-background: var(--inkq-background-card);
+	--form-control-background-active: var(--inkq-background-card-hover);
+
 	--form-control-border: var(--inkq-border);
+	--form-control-border-hover: var(--inkq-border-strong);
+	--form-control-border-focus: var(--inkq-color-action);
+	--form-control-border-active: var(--inkq-color-action-hover);
+	--form-control-border-radius: var(--inkq-border-radius-md);
+	--form-control-border-width: 1px;
+
 	--form-control-color: var(--inkq-color-link);
 
-	--form-control-border-hover: var(--inkq-border-strong);
-
-	--form-control-border-focus: var(--inkq-color-action);
+	--form-control-shadow: none;
 	--form-control-shadow-focus: 0 0 0 calc(var(--space-1) - var(--form-control-border-width)) rgb(from var(--form-control-border-focus) r g b / .25);
 
-	--form-control-border-width: 1px;
-    --form-control-padding: var(--inkq-field-padding-md);
+	--form-control-padding-inline: calc(1.5 * var(--inkq-field-padding-md));
+    --form-control-padding: var(--inkq-field-padding-md) var(--form-control-padding-inline);
 
 	--form-control-duration: var(--duration-fast);
 	--form-control-easing: var(--easing);
@@ -17,6 +23,9 @@
 	--form-control-transition-border:
 		border-color var(--form-control-transition),
 		box-shadow var(--form-control-transition);
+	--form-control-transition-bg-border:
+		background-color var(--form-control-transition),
+        var(--form-control-transition-border);
 }
 
 @mixin focused-form-control {
@@ -29,9 +38,9 @@
 	@include form-tokens();
 
     background-color: var(--form-control-background);
-    border-radius: var(--inkq-border-radius-md);
+    border-radius: var(--form-control-border-radius);
     border: var(--form-control-border-width) solid var(--form-control-border);
-    box-shadow: none;
+    box-shadow: var(--form-control-shadow);
 	position: relative;
     transition: var(--form-control-transition-border);
 
@@ -42,15 +51,23 @@
 	&:focus-visible {
 		@include focused-form-control;
 	}
+
+	&:disabled {
+		cursor: not-allowed;
+	}
 }
 
-@mixin form-control-text {
+@mixin form-control-content {
 	@include form-control();
 
 	color: var(--form-control-color);
 	font: var(--inkq-text-body);
 	padding: var(--form-control-padding);
 	width: 100%;
+}
+
+@mixin form-control-text {
+	@include form-control-content();
 
 	&::placeholder {
 		color: var(--inkq-color-placeholder);

@@ -3,6 +3,7 @@ import type { Field } from '../Field'
 
 type SharedFieldProp =
 	| 'labelPosition'
+	| 'layout'
 
 export interface FieldGroupContext
 	extends Pick<Field.Props, SharedFieldProp> {

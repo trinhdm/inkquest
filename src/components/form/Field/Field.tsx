@@ -46,18 +46,36 @@ export const SUBCOMPONENTS = {
 	Textarea: TextArea,
 } as const
 
-interface FieldProps {
+interface BaseFieldProps {
 	caption?: string
 	children: ReactNode
 	disabled?: boolean
 	error?: string
 	id: string
 	label?: string
-	labelPosition?: 'first' | 'last'
 	loading?: boolean
 	required?: boolean
+}
+
+interface FieldDefaultLayout {
+	labelPosition?: 'first' | 'last'
+	layout?: 'default'
 	size?: Size
 }
+
+interface FieldButtonLayout {
+	labelPosition?: never
+	layout: 'button'
+	size?: never
+}
+
+type FieldLayoutProps =
+	| FieldButtonLayout
+	| FieldDefaultLayout
+
+type FieldProps =
+	& BaseFieldProps
+	& FieldLayoutProps
 
 interface FieldSpecs {
 	context: FieldGroup.Context
@@ -72,10 +90,9 @@ interface FieldSpecs {
 }
 
 type FieldSelectors =
-	| 'root' | 'control'
-	| 'label' | 'star'
-	| 'icon' | 'loader'
-	| 'error' | 'caption'
+	| 'root' | 'control' | 'button'
+	| 'error' | 'caption' | 'loader'
+	| 'icon' | 'label' | 'required'
 
 type FieldTokens = {
 	root:
@@ -144,9 +161,10 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 	const styles = useStyles({ props, tokens })
 
 	const {
-		as, caption, children, disabled, error,
-		id, label, labelPosition, loading,
-		required, size, unstyled,
+		as, caption, children,
+		disabled, error, id,
+		label, labelPosition, layout,
+		loading, required, size, unstyled,
 		...rest
 	} = props
 
@@ -163,15 +181,17 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 
 	const aria = useMemo(() => ({
 		busy: !!loading || undefined,
-		describedby: idx.error,
+		describedby: hasError ? idx.error : undefined,
 		invalid: hasError || undefined,
 		required: !!required || undefined,
 	}), [hasError, idx, loading, required])
 
 	const clsx = useMemo(() => ({
-		module: { [`${size}`]: size },
-		selector: { error: hasError },
-	}), [hasError, size])
+		selector: {
+			error: hasError,
+			[`${layout}`]: layout,
+		},
+	}), [hasError, layout])
 
 	const clsxText = { global: { caption: true } }
 
@@ -185,24 +205,41 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 		required, size, unstyled,
 	])
 
+	const sharedProps = {
+		...styles('root', clsx),
+		...others,
+		attributes: { data: {
+			disabled: !!disabled || null,
+			invalid: hasError || null,
+			loading: !!loading || null,
+		} },
+	}
+
+	const captionEl = caption && <span { ...styles('caption', clsxText) }>{ caption }</span>
+
+	if (layout === 'button') {
+		return (
+			<Box { ...sharedProps }>
+				<FieldProvider value={ ctxValues }>
+					{ control }
+					<label { ...styles('button') } htmlFor={ idx.control }>
+						{ label }
+						{ captionEl }
+					</label>
+				</FieldProvider>
+			</Box>
+		)
+	}
+
 	const labelEl = label && (
 		<label { ...styles('label') } htmlFor={ idx.control }>
 			{ label }
-			{ !!required && <span { ...styles('star') } aria-hidden="true">*</span> }
+			{ !!required && <span { ...styles('required') } aria-hidden="true">*</span> }
 		</label>
 	)
 
 	return (
-		<Box
-			{ ...styles('root', clsx) }
-			{ ...others }
-			as={ as }
-			attributes={ { data: {
-				disabled: !!disabled || null,
-				invalid: hasError || null,
-				loading: !!loading || null,
-			} } }
-		>
+		<Box { ...sharedProps }>
 			{ labelPosition === 'first' && labelEl }
 
 			<FieldProvider value={ ctxValues }>
@@ -210,9 +247,13 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 			</FieldProvider>
 
 			{ labelPosition === 'last' && labelEl }
+			{ captionEl }
 
-			{ caption && <p { ...styles('caption', clsxText) }>{ caption }</p> }
-			{ hasError && <span { ...styles('error', clsxText) }>{ error }</span> }
+			{ hasError && (
+				<span { ...styles('error', clsxText) } id={ idx.error }>
+					{ error }
+				</span>
+			) }
 		</Box>
 	)
 }, { name: NAME, classes })
@@ -228,6 +269,7 @@ export declare namespace Field {
 	export type Props = FieldProps
 	export type Specs = FieldSpecs
 
+	export type LayoutProps = FieldLayoutProps
 	export type SharedProps = SharedFieldProps
 
 	export namespace Group {

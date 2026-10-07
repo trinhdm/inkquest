@@ -2,10 +2,6 @@
 
 .inkq-field,
 .inkq-field-group {
-    &__star {
-        color: var(--inkq-color-action-active);
-    }
-
     &__label {
         color: var(--inkq-color-text-tertiary);
         column-gap: var(--space-1);
@@ -14,9 +10,15 @@
         letter-spacing: var(--inkq-font-tracking-wide);
         text-transform: uppercase;
     }
+
+    &__required {
+        color: var(--inkq-color-action-active);
+    }
 }
 
 .inkq-field {
+    @include shared.form-tokens();
+
 	$name: &;
 
     --field-icon-size: var(--inkq-icon-md);
@@ -24,6 +26,7 @@
     --field-padding-inline: var(--inkq-field-padding-md);
 
     display: flex;
+    flex: 1;
     flex-flow: column wrap;
     position: relative;
     row-gap: var(--inkq-field-gap);
@@ -55,26 +58,78 @@
         flex: 1 1 100%;
     }
 
+    &__button {
+        @include shared.form-control-content();
+
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        padding-block: var(--form-control-padding-inline);
+        row-gap: var(--space-1);
+        text-align: left;
+        transition: var(--form-control-transition-bg-border);
+    }
+
     &:where([data-loading]) #{$name} {
 		&__icon {
             animation: fadeOut var(--duration-default) var(--easing-out) forwards;
         }
 	}
 
+    &:has(input[type="checkbox"], input[type="radio"]) #{$name}__label,
+    &--button {
+        color: var(--inkq-color-text-secondary);
+        font: var(--inkq-text-label);
+        font-weight: var(--inkq-font-weight-normal);
+        letter-spacing: var(--inkq-font-tracking-prefix);
+        text-transform: none;
+    }
+
     &:has(input[type="checkbox"], input[type="radio"]) {
         column-gap: var(--space-3);
         flex-direction: row;
 
-        #{$name}__label {
-            color: var(--inkq-color-text-secondary);
-            font: var(--inkq-text-label);
-            font-weight: var(--inkq-font-weight-normal);
-            letter-spacing: var(--inkq-font-tracking-prefix);
-            text-transform: none;
-        }
-
         &:focus-within input {
             @include shared.focused-form-control;
+        }
+    }
+
+    &--button {
+        color: var(--inkq-color-text-secondary);
+        font: var(--inkq-text-label);
+        font-weight: var(--inkq-font-weight-normal);
+        letter-spacing: var(--inkq-font-tracking-prefix);
+        text-transform: none;
+
+        #{$name}__control {
+            clip-path: inset(50%);
+            height: 1px;
+            overflow: hidden;
+            position: absolute;
+            white-space: nowrap;
+            width: 1px;
+        }
+
+        &:has(:focus-within) #{$name}__button {
+            @include shared.focused-form-control;
+        }
+
+        &:has(input:checked) #{$name}__button {
+            background-color: var(--form-control-background-active);
+            border-color: var(--form-control-border-active);
+
+            // &::after {
+            //     border: var(--form-control-border-width) solid var(--form-control-border-active);
+            //     border-radius: calc(var(--form-control-border-radius) - var(--form-control-border-width));
+            //     content: '';
+            //     inset: 0;
+            //     pointer-events: none;
+            //     position: absolute;
+            // }
+        }
+
+        &:has(input:disabled) #{$name}__button {
+            cursor: not-allowed;
         }
     }
 }

@@ -14,11 +14,10 @@
     position: relative;
     height: 1rem;
     width: 1rem;
-    transition: background-color var(--form-control-transition),
-        var(--form-control-transition-border);
+    transition: var(--form-control-transition-bg-border);
 
     &::before {
-        background-color: var(--inkq-color-action);
+        background-color: var(--form-control-border-active);
         border-radius: 50%;
         content: "";
         height: .5rem;
@@ -28,7 +27,8 @@
     }
 
     &:checked {
-        border-color: var(--inkq-color-action);
+        background-color: var(--form-control-background-active);
+        border-color: var(--form-control-border-active);
 
         &::before {
             transform: scale(1);
