@@ -4,13 +4,13 @@ import {
 	type ReactNode,
 } from 'react'
 
+import { LoaderCircle } from 'lucide-react'
 import { defineTokens } from '@/lib/component/tokens'
 import { extractOthers } from '@/hooks/useProps'
 import { filterChildren } from '@/lib/component/children'
 import { getIcon } from '../utils'
-import { LoaderCircle } from 'lucide-react'
+import { keyHasValue, toKebabCase } from '@/utils/helpers'
 import { polymorphic } from '@/lib/component/factory'
-import { toKebabCase } from '@/utils/helpers'
 import { Box } from '@/components/polymorphic/Box'
 import { FieldLabel } from './FieldLabel'
 import { FieldProvider, type FieldContext, type SharedFieldProps } from './Field.context'
@@ -34,7 +34,7 @@ export const SUBCOMPONENTS = {
 	// FileUpload,
 	Input: TextInput,
 	Label: FieldLabel,
-	TextArea,
+	Textarea: TextArea,
 } as const
 
 interface FieldProps {
@@ -76,20 +76,25 @@ interface FieldParts {
 	loader: ReactNode
 }
 
+const nameFieldParts = (parts = SUBCOMPONENTS) => {
+	const labelKey: keyof typeof parts = 'Label'
+	const { [labelKey]: value, ...rest } = parts,
+		reordered = { [labelKey]: value, ...rest }
+
+	return Object.values(reordered).map(sub => sub.displayName)
+}
+
 const buildField = (
 	props: FieldProps,
 	styles: StyleFn<FieldSpecs>,
 ): FieldParts => {
 	const { children, loading } = props
 
-	const displayNames = [
-		FieldLabel.displayName,
-		TextInput.displayName,
-		TextArea.displayName,
-	]
+	const [labelName, ...displayNames] = nameFieldParts(),
+		verifyArgs = { name: NAME, max: 1 }
 
-	const verifyArgs = { name: NAME, max: 2 }
-	const [label, control] = filterChildren(children, displayNames, verifyArgs)
+	const [label] = filterChildren(children, labelName, verifyArgs),
+		control = filterChildren(children, displayNames, verifyArgs).find(Boolean)
 
 	const items = {
 		control,
@@ -98,11 +103,16 @@ const buildField = (
 		loader: null,
 	} as FieldParts
 
-	if (isValidElement<TextInput.Props>(control)) {
-		const icon = getIcon(control.props.type)
+	if (isValidElement<TextArea.Props | TextInput.Props>(control)) {
+		const { props: childProps } = control
 
-		if (icon) items.icon = <div { ...styles('icon') }>{ icon }</div>
-		if (loading) items.loader = <LoaderCircle { ...styles('loader', true) } />
+		if (keyHasValue(childProps, 'type')) {
+			const icon = getIcon((childProps as TextInput.Props).type)
+			if (icon) items.icon = <div { ...styles('icon') }>{ icon }</div>
+		}
+
+		if (!!loading || keyHasValue(childProps, { loading: true }))
+			items.loader = <LoaderCircle { ...styles('loader', true) } />
 	}
 
 	return items
@@ -208,4 +218,19 @@ export declare namespace Field {
 	export type Specs = FieldSpecs
 
 	export type SharedProps = SharedFieldProps
+
+	export namespace Label {
+		export type Props = FieldLabel.Props
+		export type Specs = FieldLabel.Specs
+	}
+
+	export namespace Input {
+		export type Props = TextInput.Props
+		export type Specs = TextInput.Specs
+	}
+
+	export namespace Textarea {
+		export type Props = TextArea.Props
+		export type Specs = TextArea.Specs
+	}
 }

@@ -1,5 +1,6 @@
 @mixin form-control {
 	--form-control-border: 1px;
+    --form-control-padding: var(--inkq-field-padding-md) calc(1.25 * var(--field-padding-block));
 
     background-color: var(--inkq-background-card);
     border-radius: var(--inkq-border-radius-md);
@@ -7,8 +8,10 @@
     box-shadow: none;
 	color: var(--inkq-color-link);
 	font: var(--inkq-text-body);
+	padding: var(--form-control-padding);
     transition: border-color var(--duration-fast),
 		box-shadow var(--duration-fast);
+	width: 100%;
 
 	&::placeholder {
 		color: var(--inkq-color-placeholder);

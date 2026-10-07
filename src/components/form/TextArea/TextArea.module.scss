@@ -1,0 +1,7 @@
+@import '../shared';
+
+.inkq-text-area {
+	$name: &;
+
+    @include form-control;
+}
