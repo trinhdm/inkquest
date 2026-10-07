@@ -1,4 +1,3 @@
-import { _is } from './checks'
 import { toKebabCase } from '@/utils/helpers'
 import type { BaseVarKey } from '../types/theme.types'
 import type { CSSVars } from '@/types/shared'
@@ -31,10 +30,8 @@ const formatRoute = <T,>({ path }: CSSVarArgs<T>): CSSVarArgs<T>['path'] => {
 		return part
 	})
 
-	if (route.length !== path.length) {
-		const unique = new Set(route)
-		route = [...unique]
-	}
+	if (route.length !== path.length)
+		route = route.filter((word, i) => word !== route[i - 1])
 
 	if (route.at(-1) === ('base' as BaseVarKey))
 		route = route.slice(0, -1)
@@ -44,9 +41,8 @@ const formatRoute = <T,>({ path }: CSSVarArgs<T>): CSSVarArgs<T>['path'] => {
 
 export const formatToken = <T,>(args: CSSVarArgs<T>): keyof CSSVars => {
 	const name = formatName(args),
-		route = formatRoute(args)
+		segments = formatRoute(args)
 
-	const segments = [name, ...route.slice(1)]
 	const { prefix } = args
 
 	if (prefix && !name.startsWith(`--${prefix}`))
