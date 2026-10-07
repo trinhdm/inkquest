@@ -11,6 +11,7 @@ import {
 } from './Field.context'
 
 import { LoaderCircle } from 'lucide-react'
+import { useFieldGroupProps } from './FieldGroup'
 import { defineTokens } from '@/lib/component/tokens'
 import { extractOthers } from '@/hooks/useProps'
 import { filterChildren } from '@/lib/component/children'
@@ -138,7 +139,7 @@ const tokens = defineTokens<FieldSpecs>()(({ props, theme }) => {
 })
 
 export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) => {
-	const props = useProps(_props)
+	const props = useProps(useFieldGroupProps(_props))
 	const styles = useStyles({ props, tokens })
 
 	const {

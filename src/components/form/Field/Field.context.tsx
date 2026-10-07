@@ -48,7 +48,7 @@ export const {
 	useRootProps: useFieldProps,
 } = createCompoundCtx<FieldContext, 'Field'>('Field')
 
-const fieldProps = [
+const sharedFieldProps = [
 	'disabled',
 	'loading',
 	'required',
@@ -57,4 +57,4 @@ const fieldProps = [
 ] as const satisfies readonly (keyof SharedFieldProps)[]
 
 export const useChosenFieldProps = <P extends object>(_props: P) =>
-	useFieldProps(_props, ...fieldProps)
+	useFieldProps(_props, ...sharedFieldProps)
