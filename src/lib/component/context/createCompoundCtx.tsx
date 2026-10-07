@@ -1,7 +1,8 @@
 import {
-	createContext, use, useMemo, useState,
+	createContext, use, useMemo,
 	type ReactElement, type ReactNode,
 } from 'react'
+
 import type { NoExcessKeys } from '@/types/utils'
 
 interface RootProviderProps<
@@ -11,7 +12,6 @@ interface RootProviderProps<
 > {
 	children: ReactNode
 	rootName?: N
-	unstyled?: boolean
 	value: V & NoExcessKeys<T, V>
 }
 
@@ -24,21 +24,14 @@ type BaseName<C extends string, N extends string> =
 				? Lowercase<Rest>
 				: Lowercase<C>
 
-type UpdateCtxFn<T> =
-	(next: Partial<T> | ((prev: T) => Partial<T>)) => void
-
 export type RootCtxValue<T, N extends string = string, C extends string = N> =
 	T & {
 		baseName: BaseName<C, N>
 		rootName: N
-		updateRootCtx: UpdateCtxFn<T>
 	}
 
 export type SafeRootCtxValue<T, N extends string = string> =
-	| (T & {
-		rootName: N
-		updateRootCtx: UpdateCtxFn<T>
-	})
+	| (T & { rootName: N })
 	| null
 
 export type RootProviderFn<T, N extends string = string> =
@@ -55,55 +48,30 @@ export const createCompoundCtx = <
 >(name: N) => {
 	const RootCtx = createContext<SafeRootCtxValue<T, N>>(null)
 
+	const toBaseName = <C extends string>(component: C, root: N): BaseName<C, N> =>
+		(component.startsWith(root) ? component.slice(root.length) : component)
+			.replace(/^\./, '')
+			.toLowerCase() as BaseName<C, N>
+
 	const RootProvider = <V extends T>({ children, value }: RootProviderProps<T, V, N>) => {
-		const [rootState, setRootState] = useState<T>(() => value)
-
-		const updateRootCtx = useMemo(() => (
-			(next: Partial<T> | ((prev: T) => Partial<T>)) => {
-				setRootState(prev => {
-					const nextValues = typeof next === 'function' ? next(prev) : next
-					return { ...prev, ...nextValues }
-				})
-			}
-		), [])
-
-		const ctxValue = useMemo(
-			() => ({ ...rootState, rootName: name, updateRootCtx }),
-			[rootState, updateRootCtx]
-		)
-
+		const ctxValue = useMemo(() => ({ ...value, rootName: name }), [value])
 		return <RootCtx value={ ctxValue }>{ children }</RootCtx>
 	}
 
-	const useRootCtx = <C extends string>(componentName?: C): RootCtxValue<T, N, C> => {
+	const useRootCtx = <C extends string>(component: C): RootCtxValue<T, N, C> => {
 		const context = use(RootCtx)
 
 		if (context === null)
-			throw new Error(`${name}: <${componentName} /> must be rendered inside <${name}>`)
+			throw new Error(`${name}: <${component} /> must be rendered inside <${name}>`)
 
-		const { rootName } = context
-		let baseName: string = rootName
-
-		if (componentName && ((rootName as string) !== componentName)) {
-			const compoundName = componentName.replace(rootName, ''),
-				index = compoundName.startsWith('.') ? 1 : 0
-			baseName = compoundName.slice(index)
-		}
-
-		baseName = baseName.toLowerCase()
-
-		return { ...context, baseName } as RootCtxValue<T, N, C>
+		return { ...context, baseName: toBaseName(component, name) } as RootCtxValue<T, N, C>
 	}
 
 	const useSafeRootCtx = (): SafeRootCtxValue<T, N> =>
 		use(RootCtx)
 
-	/** Fills keys absent from `_props` with context values. Own prop always wins. */
-	// refactor: NEW — and deliberately not exported. Previously this lived as
-	// a public `inheritProps` util in `lib/component/index.ts` that every
-	// consumer had to call correctly by hand. Keeping it private here means
-	// there is no way for a consumer to skip the `Object.hasOwn` guard or
-	// invert the precedence — `useRootProps` below is the only door in.
+	//	fills keys absent from `_props` with context values
+	//	own prop always wins
 	const inheritProps = <P extends object, K extends keyof T>(
 		_props: P,
 		context: SafeRootCtxValue<T, N>,
@@ -113,7 +81,7 @@ export const createCompoundCtx = <
 
 		const shared = new Set<PropertyKey>(selected ?? []),
 			inherited = {} as Partial<T>,
-			uninherited: readonly PropertyKey[] = ['baseName', 'rootName', 'updateRootCtx']
+			uninherited: readonly PropertyKey[] = ['baseName', 'rootName']
 
 		;(Object.keys(context) as (keyof T)[]).forEach(key => {
 			const value = context[key]

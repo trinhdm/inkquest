@@ -13,10 +13,12 @@ export const withProvider = <
 	values: (V & NoExcessKeys<T, V>)[],
 ): ReactNode[] =>
     items.map((child, index) => {
+		if (process.env.NODE_ENV !== 'production' && Provider && values.length !== items.length)
+			console.error(`withProvider: got ${items.length} items but ${values.length} values`)
+
 		const key = getChildKey(child, index)
 
-		if (Provider)
-			return <Provider key={ key } value={ values[index] }>{ child }</Provider>
-
-		return <Fragment key={ key }>{ child }</Fragment>
+		return !!Provider
+			? <Provider key={ key } value={ values[index] }>{ child }</Provider>
+			: <Fragment key={ key }>{ child }</Fragment>
 	})
