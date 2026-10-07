@@ -7,7 +7,6 @@ interface TokensArgs {
 	props: object
 	tokens?: Record<string, CSSVariable>
 }
-
 interface _DefineTokensProps<P = unknown, C = unknown> {
 	context: C
 	props: P

@@ -4,12 +4,12 @@
 	$name: &;
 
     @include form-control;
-    --input-control-padding: var(--inkq-field-padding-md);
+    --form-control-padding: var(--inkq-field-padding-md);
 
     align-items: center;
     display: flex;
     gap: .5rem;
-    padding: var(--input-control-padding);
+    padding: var(--form-control-padding);
     position: relative;
 	width: 100%;
 }

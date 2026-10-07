@@ -1,4 +1,6 @@
+import { defineTokens } from '@/lib/component/tokens'
 import { extractOthers } from '@/hooks/useProps'
+import { getSharedTokens, type FieldTokens as TextAreaTokens } from '../utils'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import { useChosenFieldProps, useFieldCtx, type Field } from '../Field'
@@ -28,15 +30,18 @@ interface TextAreaSpecs {
 	defaults: { props: PropsDefaultList<typeof DEFAULT_PROPS> }
 	props: TextAreaProps
 	selectors: TextAreaSelectors
+	tokens: TextAreaTokens
 }
 
 type TextAreaSelectors =
 	| 'root'
 
+const tokens = defineTokens<TextAreaSpecs>()(args => getSharedTokens(args))
+
 export const TextArea = polymorphic<TextAreaSpecs>((_props, { useProps, useStyles }) => {
 	const context = useFieldCtx(NAME)
 	const props = useProps(useChosenFieldProps(_props))
-	const styles = useStyles({ context, props })
+	const styles = useStyles({ context, props, tokens })
 
 	const { aria, clsx, idx } = context
 

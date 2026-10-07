@@ -1,6 +1,7 @@
 import { useChosenFieldProps, useFieldCtx, type Field } from '../Field'
 import { defineTokens } from '@/lib/component/tokens'
 import { extractOthers } from '@/hooks/useProps'
+import { getSharedTokens, type FieldTokens as TextInputTokens } from '../utils'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import type { ChangeEventHandler, ComponentPropsWithoutRef } from 'react'
@@ -35,31 +36,7 @@ interface TextInputSpecs {
 type TextInputSelectors =
 	| 'root'
 
-type TextInputTokens = {
-	root:
-		| '--input-control-padding'
-}
-
-const tokens = defineTokens<TextInputSpecs>()(({ context, props, theme }) => {
-	const { icon } = context
-	const { size } = props
-
-	const step = !!icon ? 2 : 1.5
-	const blockPadding = !!size ? theme.el.field.padding(size) : 'var(--field-padding-block)',
-		inlinePadding = `calc(${step} * ${blockPadding})`,
-		padding = `${blockPadding} ${inlinePadding}`
-
-	const iconMargin = size === 'sm' ? `calc(1.5 * ${inlinePadding})` : inlinePadding,
-		leftPadding = `calc(${iconMargin} + var(--field-icon-size))`
-
-	return {
-		root: {
-			'--input-control-padding': !!icon
-				? `${padding} ${blockPadding} ${leftPadding}`
-				: padding,
-		},
-	}
-})
+const tokens = defineTokens<TextInputSpecs>()(args => getSharedTokens(args))
 
 export const TextInput = polymorphic<TextInputSpecs>((_props, { useProps, useStyles }) => {
 	const context = useFieldCtx(NAME)

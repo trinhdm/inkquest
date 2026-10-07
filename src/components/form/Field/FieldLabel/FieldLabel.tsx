@@ -2,7 +2,6 @@ import { useFieldCtx } from '../Field.context'
 import { extractOthers } from '@/hooks/useProps'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
-import type { ReactNode } from 'react'
 import type { Field } from '../Field'
 import classes from '../Field.module.scss'
 
@@ -10,7 +9,7 @@ const NAME = 'Field.Label' as const,
 	TAG = 'label' as const
 
 interface FieldLabelProps {
-	children: ReactNode
+	text: string
 }
 
 interface FieldLabelSpecs {
@@ -29,11 +28,9 @@ export const FieldLabel = polymorphic<FieldLabelSpecs>((_props, { useProps, useS
 	const styles = useStyles({ context, props, withRootName: true })
 
 	const { baseName, idx, required } = context
-	const { children, ...rest } = props
+	const { text, ...rest } = props
 
 	const others = extractOthers(rest)
-
-	if (!children) return null
 
 	return (
 		<Box
@@ -42,7 +39,7 @@ export const FieldLabel = polymorphic<FieldLabelSpecs>((_props, { useProps, useS
 			as={ TAG }
 			htmlFor={ idx.control }
 		>
-			{ children }
+			{ text }
 			{ !!required && <span { ...styles('star') } aria-hidden="true">*</span> }
 		</Box>
 	)
