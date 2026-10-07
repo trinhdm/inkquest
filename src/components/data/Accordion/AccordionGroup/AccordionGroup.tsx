@@ -54,14 +54,9 @@ export const AccordionGroup = polymorphic<AccordionGroupSpecs>((_props, { usePro
 	const styles = useStyles({ props, tokens })
 
 	const {
-		children,
-		collapsible,
-		defaultOpen,
-		disabled,
-		layout,
-		order,
-		size,
-		unstyled,
+		children, collapsible, defaultOpen,
+		disabled, layout, order,
+		size, unstyled,
 		...rest
 	} = props
 
@@ -86,7 +81,7 @@ export const AccordionGroup = polymorphic<AccordionGroupSpecs>((_props, { usePro
 		})
 	}, [collapsible])
 
-	const items = filterChildren(children, 'Accordion'),
+	const items = filterChildren(children, 'Accordion', { name: NAME }),
 		total = items.length
 
 	const ctxValues = useMemo(

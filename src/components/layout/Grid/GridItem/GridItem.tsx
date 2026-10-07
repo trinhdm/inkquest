@@ -3,9 +3,15 @@ import { extractOthers } from '@/hooks/useProps'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import type { ReactNode } from 'react'
+import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from '../Grid.module.scss'
 
-const NAME = 'Grid.Item' as const
+const NAME = 'Grid.Item' as const,
+	TAG = 'div' as const
+
+const DEFAULT_PROPS = {
+	as: TAG,
+} as const
 
 interface GridItemProps {
 	children: ReactNode
@@ -13,7 +19,10 @@ interface GridItemProps {
 }
 
 interface GridItemSpecs {
-	isCompound: true
+	defaults: {
+		as: typeof TAG
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
+	}
 	props: GridItemProps
 	selectors: GridItemSelectors
 	tokens: GridItemTokens
@@ -41,17 +50,20 @@ export const GridItem = polymorphic<GridItemSpecs>((_props, { useProps, useStyle
 	const props = useProps(_props)
 	const styles = useStyles({ props, tokens })
 
-	const { children, ...rest } = props
+	const { as, children, span, ...rest } = props
 	const others = extractOthers(rest)
 
 	return (
-		<Box { ...styles('root') } { ...others } as="div">
+		<Box { ...styles('root') } { ...others } as={ as }>
 			{ children }
 		</Box>
 	)
 }, { name: NAME, classes })
 
-GridItem.set({ displayName: NAME })
+GridItem.set({
+	defaultProps: DEFAULT_PROPS,
+	displayName: NAME,
+})
 
 export declare namespace GridItem {
 	export type Props = GridItemProps

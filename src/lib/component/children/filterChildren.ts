@@ -9,97 +9,100 @@ import {
 import { countChildren } from './countChildren'
 import type { WithChildren } from './types'
 
-interface BaseVerifyChildren {
+interface VerifyChildrenArgs {
 	children: ReactNode
+	max?: number
 	name: string
-}
-
-interface VerifyExtraChildren {
-	extra: ReactNode[]
-	max?: number
+	repeated?: ReactNode[]
 	total?: number
+	unrelated?: ReactNode[]
 }
 
-interface VerifyMaxChildren {
-	extra?: ReactNode[]
-	max: number
-	total?: number
+type VerifyArgs =
+	Pick<VerifyChildrenArgs, 'max' | 'name' | 'total'>
+
+const labelChild = (child: ReactNode) => {
+	if (!isValidElement(child)) return `text "${String(child).trim().slice(0, 24)}"`
+	if (typeof child.type === 'string') return `<${child.type}>`
+	return (child.type as ComponentType).displayName ?? 'unnamed component'
 }
-
-interface VerifyTotalChildren {
-	extra?: ReactNode[]
-	max?: number
-	total: number
-}
-
-type VerifyChildrenVariations =
-	| VerifyExtraChildren
-	| VerifyMaxChildren
-	| VerifyTotalChildren
-
-type VerifyChildrenArgs =
-	& BaseVerifyChildren
-	& VerifyChildrenVariations
 
 export const verifyChildren = ({
 	children,
-	extra,
 	max,
 	name,
+	repeated = [],
 	total,
+	unrelated = [],
 }: VerifyChildrenArgs) => {
 	if (process.env.NODE_ENV === 'production') return
 
 	const count = countChildren(children),
 		foundText = `${name}: ${count} children found`
 
-	if (max) {
-		if (count < max + 1) return
-		console.warn(`${foundText}; a ${name} needs less than ${max} children.`)
-	} else if (total) {
-		if (count === total) return
+	if (max && count > max)
+		console.warn(`${foundText}; a ${name} needs less than ${max + 1} children.`)
+
+	if (total && count !== total)
 		console.warn(`${foundText}; a ${name} needs exactly ${total} children.`)
-	} else if (!!extra?.length) {
-		console.warn(`${name}: ${extra?.length} extra subcomponent(s) found.`)
-	}
+
+	if (repeated.length)
+		console.warn(`${name}: ignored repeated ${repeated.map(labelChild).join(', ')}; only the first is used.`)
+
+	if (unrelated.length)
+		console.warn(`${name}: ignored unrelated ${unrelated.map(labelChild).join(', ')}.`)
+}
+
+interface SortedChildren {
+	filtered: ReactNode[]
+	repeated: ReactNode[]
+	unrelated: ReactNode[]
+}
+
+const sortChildren = (
+	children: ReactNode,
+	displayName: string | string[],
+	sorted: SortedChildren,
+) => {
+	Children.toArray(children).forEach(child => {
+		if (typeof child === 'string' && !child.trim()) return
+
+		if (isValidElement<WithChildren>(child) && child.type === Fragment) {
+			sortChildren(child.props.children, displayName, sorted)
+			return
+		}
+
+		const childName = isValidElement(child)
+			? (child.type as ComponentType).displayName
+			: undefined
+
+		if (typeof displayName === 'string') {
+			if (childName === displayName) sorted.filtered.push(child)
+			else sorted.unrelated.push(child)
+			return
+		}
+
+		const i = childName ? displayName.indexOf(childName) : -1
+
+		if (i < 0) sorted.unrelated.push(child)
+		else if (sorted.filtered[i] != null) sorted.repeated.push(child)
+		else sorted.filtered[i] = child
+	})
 }
 
 export const filterChildren = (
 	children: ReactNode,
 	displayName: string | string[],
-	verifyArgs?: Omit<VerifyChildrenArgs, 'children'>,
+	verifyArgs?: VerifyArgs,
 ): ReactNode[] => {
-	const filtered: ReactNode[] = Array.isArray(displayName)
-		? Array(displayName.length).fill(null)
-		: []
+	const sorted: SortedChildren = {
+		filtered: Array.isArray(displayName) ? Array(displayName.length).fill(null) : [],
+		repeated: [],
+		unrelated: [],
+	}
 
-	Children.toArray(children).forEach(child => {
-		if (isValidElement<WithChildren>(child)) {
-			if (!child.type) return
+	sortChildren(children, displayName, sorted)
 
-			if (child.type === Fragment) {
-				filterChildren(child.props.children, displayName).forEach((nested, i) => {
-					if (nested == null) return
-					if (typeof displayName === 'string') filtered.push(nested)
-					else if (filtered[i] == null) filtered[i] = nested
-				})
-				return
-			}
-
-			const { displayName: childName } = child.type as ComponentType
-			if (!childName) return
-
-			if (typeof displayName === 'string') {
-				if (childName !== displayName) return
-				filtered.push(child)
-			} else if (Array.isArray(displayName)) {
-				const i = displayName.indexOf(childName)
-				if (i < 0 || filtered[i] != null) return
-				filtered[i] = child
-			}
-		}
-	})
-
-	if (verifyArgs) verifyChildren({ ...verifyArgs, children: filtered.filter(Boolean) } as VerifyChildrenArgs)
-	return filtered
+	if (verifyArgs) verifyChildren({ ...verifyArgs, ...sorted, children: sorted.filtered })
+	return sorted.filtered
 }

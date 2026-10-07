@@ -48,6 +48,7 @@ type ButtonGroupSelectors =
 type ButtonGroupTokens = {
 	root:
 		| '--button-group-gap'
+		| '--button-group-justify'
 }
 
 const derivePriority = (index: number): Button.Priority => {
@@ -57,7 +58,7 @@ const derivePriority = (index: number): Button.Priority => {
 }
 
 const tokens = defineTokens<ButtonGroupSpecs>()(({ props, theme }) => {
-	const { size } = props
+	const { justify, size } = props
 	if (!size) return {}
 
 	const groupGap: Record<Button.Size, string> = {
@@ -69,6 +70,7 @@ const tokens = defineTokens<ButtonGroupSpecs>()(({ props, theme }) => {
 	return {
 		root: {
 			'--button-group-gap': groupGap[size],
+			'--button-group-justify': justify ?? undefined,
 		},
 	}
 })
@@ -78,14 +80,9 @@ export const ButtonGroup = polymorphic<ButtonGroupSpecs>((_props, { useProps, us
 	const styles = useStyles({ props, tokens })
 
 	const {
-		children,
-		disabled,
-		fullWidth,
-		hasPriority,
-		loading,
-		orientation,
-		revealFrom,
-		size,
+		children, disabled, fullWidth,
+		hasPriority, justify, loading,
+		orientation, revealFrom, size,
 		unstyled,
 		...rest
 	} = props
@@ -96,7 +93,7 @@ export const ButtonGroup = polymorphic<ButtonGroupSpecs>((_props, { useProps, us
 		module: { [`${orientation}`]: !!orientation || null },
 	}
 
-	const items = filterChildren(children, 'Button'),
+	const items = filterChildren(children, 'Button', { name: NAME }),
 		total = items.length
 
 	const ctxValues = useMemo(

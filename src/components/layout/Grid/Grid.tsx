@@ -67,7 +67,12 @@ export const Grid = polymorphic<GridSpecs>((_props, { useProps, useStyles }) => 
 	const props = useProps(_props)
 	const styles = useStyles({ props, tokens })
 
-	const { as, children, columns, ...rest } = props
+	const {
+		as, children,
+		columns, gap,
+		...rest
+	} = props
+
 	const others = extractOthers(rest)
 
 	return (

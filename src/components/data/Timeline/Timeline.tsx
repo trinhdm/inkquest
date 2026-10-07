@@ -49,7 +49,8 @@ export const Timeline = polymorphic<TimelineSpecs>((_props, { useProps, useStyle
 			as={ as }
 			attributes={ { data: { timeline: true } } }
 		>
-			{ filterChildren(children, TimelineItem.displayName).map(child => child) }
+			{ filterChildren(children, TimelineItem.displayName, { name: NAME })
+				.map(child => child) }
 		</Box>
 	)
 }, { name: NAME, classes })
