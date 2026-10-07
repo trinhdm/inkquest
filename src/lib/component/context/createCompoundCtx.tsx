@@ -5,13 +5,8 @@ import {
 
 import type { NoExcessKeys } from '@/types/utils'
 
-interface RootProviderProps<
-	T,
-	V extends T = T,
-	N extends string = string,
-> {
+interface RootProviderProps<T, V extends T = T> {
 	children: ReactNode
-	rootName?: N
 	value: V & NoExcessKeys<T, V>
 }
 
@@ -34,8 +29,8 @@ export type SafeRootCtxValue<T, N extends string = string> =
 	| (T & { rootName: N })
 	| null
 
-export type RootProviderFn<T, N extends string = string> =
-	<V extends T>(props: RootProviderProps<T, V, N>) => ReactElement
+export type RootProviderFn<T> =
+	<V extends T>(props: RootProviderProps<T, V>) => ReactElement
 
 type InheritedProps<T, P, S extends keyof T> =
 	[Exclude<S, keyof P>] extends [never]
@@ -48,12 +43,14 @@ export const createCompoundCtx = <
 >(name: N) => {
 	const RootCtx = createContext<SafeRootCtxValue<T, N>>(null)
 
-	const toBaseName = <C extends string>(component: C, root: N): BaseName<C, N> =>
-		(component.startsWith(root) ? component.slice(root.length) : component)
+	const toBaseName = <C extends string>(component: C, root: N): BaseName<C, N> => {
+		if ((component as string) === root) return root.toLowerCase() as BaseName<C, N>
+		return (component.startsWith(root) ? component.slice(root.length) : component)
 			.replace(/^\./, '')
 			.toLowerCase() as BaseName<C, N>
+	}
 
-	const RootProvider = <V extends T>({ children, value }: RootProviderProps<T, V, N>) => {
+	const RootProvider = <V extends T>({ children, value }: RootProviderProps<T, V>) => {
 		const ctxValue = useMemo(() => ({ ...value, rootName: name }), [value])
 		return <RootCtx value={ ctxValue }>{ children }</RootCtx>
 	}
@@ -62,7 +59,7 @@ export const createCompoundCtx = <
 		const context = use(RootCtx)
 
 		if (context === null)
-			throw new Error(`${name}: <${component} /> must be rendered inside <${name}>`)
+			throw new Error(`${name}: <${component} /> must be a direct child of <${name}>; it can't be returned from another component`)
 
 		return { ...context, baseName: toBaseName(component, name) } as RootCtxValue<T, N, C>
 	}

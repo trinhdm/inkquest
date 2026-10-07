@@ -57,28 +57,19 @@ interface CompoundGroupProps {
 	values?: never
 }
 
-interface NamedGroupProps<
-	Ctx extends GroupContext = GroupContext,
-	N extends string = string,
-> {
+interface NamedGroupProps<Ctx extends GroupContext = GroupContext> {
 	childName: string
-	provider?: RootProviderFn<Ctx, N>
+	provider?: RootProviderFn<Ctx>
 	values?: Partial<Ctx>
 }
 
-type NestedGroupProps<
-	Ctx extends GroupContext = GroupContext,
-	N extends string = string,
-> =
+type NestedGroupProps<Ctx extends GroupContext = GroupContext> =
 	| CompoundGroupProps
-	| NamedGroupProps<Ctx, N>
+	| NamedGroupProps<Ctx>
 
-type GroupProps<
-	Ctx extends GroupContext = GroupContext,
-	N extends string = string,
-> =
+type GroupProps<Ctx extends GroupContext = GroupContext> =
 	& BaseGroupProps
-	& NestedGroupProps<Ctx, N>
+	& NestedGroupProps<Ctx>
 	& MaybeAnimationProps
 
 type GroupSpecs = {
@@ -86,7 +77,7 @@ type GroupSpecs = {
 		as: typeof TAG
 		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
-	props: GroupProps<GroupContext, typeof NAME>
+	props: GroupProps<GroupContext>
 	selectors: GroupSelectors
 	subcomponents: typeof SUBCOMPONENTS
 	tokens: GroupTokens
@@ -181,9 +172,8 @@ export const GroupBase = polymorphic<GroupSpecs>((_props, { useProps, useStyles 
 type GroupComponent =
 	& (<
 		Ctx extends GroupContext,
-		U extends ElementType = typeof TAG,
-		N extends string = typeof NAME,
-	>(props: PolymorphicProps<GroupProps<Ctx, N>, U>) => ReactElement)
+		U extends ElementType = typeof TAG
+	>(props: PolymorphicProps<GroupProps<Ctx>, U>) => ReactElement)
 	& typeof GroupBase
 
 export const Group = GroupBase as unknown as GroupComponent
@@ -196,10 +186,7 @@ Group.set({
 
 export declare namespace Group {
 	export type Context = GroupContext
-	export type Props<
-		Ctx extends GroupContext = GroupContext,
-		N extends string = typeof NAME,
-	> = GroupProps<Ctx, N>
+	export type Props<Ctx extends GroupContext = GroupContext> = GroupProps<Ctx>
 	export type Specs = GroupSpecs
 
 	export type CompoundProps = Omit<Group.Props, 'childName' | 'header' | 'provider' | 'values'>

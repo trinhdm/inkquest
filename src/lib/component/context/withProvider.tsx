@@ -3,13 +3,9 @@ import { getChildKey } from '../children'
 import type { NoExcessKeys } from '@/types/utils'
 import type { RootProviderFn } from './createCompoundCtx'
 
-export const withProvider = <
-	T,
-	V extends T,
-	N extends string = string,
->(
+export const withProvider = <T, V extends T>(
 	items: ReactNode[],
-	Provider: RootProviderFn<T, N> | undefined,
+	Provider: RootProviderFn<T> | undefined,
 	values: (V & NoExcessKeys<T, V>)[],
 ): ReactNode[] =>
     items.map((child, index) => {
