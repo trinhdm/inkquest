@@ -5,7 +5,6 @@ import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import type { ChangeEventHandler, ComponentPropsWithoutRef } from 'react'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
-import type { Size } from '@/types/shared'
 import classes from './TextInput.module.scss'
 
 const NAME = 'TextInput' as const,
@@ -16,19 +15,15 @@ const DEFAULT_PROPS = {
 	type: 'text',
 } as const
 
-interface TextInputProps {
-	disabled?: boolean
-	loading?: boolean
+interface TextInputProps
+	extends Field.SharedProps {
 	name?: string
 	onChange?: ChangeEventHandler<HTMLInputElement>
 	placeholder?: string
 	readOnly?: boolean
-	required?: boolean
-	size?: Size
 	type?: ComponentPropsWithoutRef<'input'>['type']
 	value?: string
 }
-
 interface TextInputSpecs {
 	context: Field.Context
 	defaults: { props: PropsDefaultList<typeof DEFAULT_PROPS> }
@@ -71,50 +66,39 @@ export const TextInput = polymorphic<TextInputSpecs>((_props, { useProps, useSty
 	const props = useProps(useChosenFieldProps(_props))
 	const styles = useStyles({ context, props, tokens })
 
-	const { hasError, icon, idx, loader } = context
+	const {
+		aria, clsx, icon,
+		idx, loader,
+	} = context
 
 	const {
-		disabled,
-		loading,
-		onChange,
-		readOnly,
-		required,
-		size,
-		value,
+		disabled, loading, name, onChange,
+		placeholder, readOnly, required,
+		size, type, value,
 		...rest
 	} = props
 
 	const others = extractOthers(rest)
 
-	const aria = {
-		busy: !!loading || undefined,
-		describedby: idx.error,
-		invalid: hasError || undefined,
-		required: !!required || undefined,
-	}
-
-	const data = {
-		// disabled: !!disabled || null,
-		// invalid: hasError || null,
-		loading: !!loading || null,
-		// required: !!required || null,
-	}
-
 	return (
 		<>
 			{ icon }
 			<Box
-				{ ...styles('root') }
+				{ ...styles('root', clsx) }
 				{ ...others }
 				as={ TAG }
-				attributes={ { aria, data } }
+				attributes={ { aria } }
 				disabled={ disabled }
 				id={ idx.control }
+				name={ name }
 				onChange={ onChange }
+				placeholder={ placeholder }
 				readOnly={ readOnly || (value !== undefined && !onChange) }
+				required={ required }
+				type={ type }
 				value={ value }
 			/>
-			{ !!loading && loader }
+			{ loader }
 		</>
 	)
 }, { name: NAME, classes })

@@ -4,25 +4,22 @@ import {
 	type ReactNode,
 } from 'react'
 
-import {
-	Calendar, Calendar1, CalendarDays,
-	Clock, Globe, Hash, LoaderCircle,
-	Mail, Paperclip, Phone, Pipette, Search,
-} from 'lucide-react'
-
 import { defineTokens } from '@/lib/component/tokens'
 import { extractOthers } from '@/hooks/useProps'
 import { filterChildren } from '@/lib/component/children'
+import { getIcon } from '../utils'
+import { LoaderCircle } from 'lucide-react'
 import { polymorphic } from '@/lib/component/factory'
 import { toKebabCase } from '@/utils/helpers'
 import { Box } from '@/components/polymorphic/Box'
 import { FieldLabel } from './FieldLabel'
-import { FieldProvider, type FieldContext } from './Field.context'
+import { FieldProvider, type FieldContext, type SharedFieldProps } from './Field.context'
 import { TextInput } from '../TextInput'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import type { Size } from '@/types/shared'
 import type { StyleFn } from '@/hooks/useStyles'
 import classes from './Field.module.scss'
+import { TextArea } from '../TextArea'
 
 const NAME = 'Field' as const,
 	TAG = 'div' as const
@@ -34,10 +31,10 @@ const DEFAULT_PROPS = {
 } as const
 
 export const SUBCOMPONENTS = {
-	// FileUpload: FileUpload,
-	// TextArea: TextArea,
+	// FileUpload,
 	Input: TextInput,
 	Label: FieldLabel,
+	TextArea,
 } as const
 
 interface FieldProps {
@@ -79,31 +76,20 @@ interface FieldParts {
 	loader: ReactNode
 }
 
-const getIcon = (type?: TextInput.Props['type']) => {
-	switch (type) {
-		case 'color':	return <Pipette />
-		case 'date':	return <Calendar />
-		case 'email':	return <Mail />
-		case 'file':	return <Paperclip />
-		case 'month':	return <Calendar1 />
-		case 'number':	return <Hash />
-		case 'search':	return <Search />
-		case 'tel':		return <Phone />
-		case 'time':	return <Clock />
-		case 'url':		return <Globe />
-		case 'week':	return <CalendarDays />
-		default:		return null
-	}
-}
-
 const buildField = (
 	props: FieldProps,
 	styles: StyleFn<FieldSpecs>,
 ): FieldParts => {
 	const { children, loading } = props
 
-	const childNames = [FieldLabel.displayName, TextInput.displayName]
-	const [label, control] = filterChildren(children, childNames, { name: NAME, max: 2 })
+	const displayNames = [
+		FieldLabel.displayName,
+		TextInput.displayName,
+		TextArea.displayName,
+	]
+
+	const verifyArgs = { name: NAME, max: 2 }
+	const [label, control] = filterChildren(children, displayNames, verifyArgs)
 
 	const items = {
 		control,
@@ -113,8 +99,8 @@ const buildField = (
 	} as FieldParts
 
 	if (isValidElement<TextInput.Props>(control)) {
-		const { props: { type } } = control,
-			icon = getIcon(type)
+		const icon = getIcon(control.props.type)
+
 		if (icon) items.icon = <div { ...styles('icon') }>{ icon }</div>
 		if (loading) items.loader = <LoaderCircle { ...styles('loader', true) } />
 	}
@@ -143,21 +129,19 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 	const styles = useStyles({ props, tokens })
 
 	const {
-		as,
-		children,
-		disabled,
-		error,
-		id,
-		loading,
-		required,
-		size,
-		unstyled,
+		as, children, disabled,
+		error, id, loading,
+		required, size, unstyled,
 		...rest
 	} = props
 
+	const {
+		control, icon,
+		label, loader,
+	} = buildField(props, styles)
+
 	const others = extractOthers(rest)
 	const hasError = !!error?.trim()
-	const { control, icon, label, loader } = buildField(props, styles)
 
 	const uid = useId()
 	const idx = useMemo(() => {
@@ -167,32 +151,37 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 		return { control, error }
 	}, [id, uid])
 
-	const ctxValues = useMemo(() => ({
-		disabled, hasError, required,
-		icon, loader, loading,
-		idx, size, unstyled,
-	}), [
-		disabled, loading, required,
-		hasError, unstyled,
-		icon, loader, idx, size,
-	])
+	const aria = useMemo(() => ({
+		busy: !!loading || undefined,
+		describedby: idx.error,
+		invalid: hasError || undefined,
+		required: !!required || undefined,
+	}), [hasError, idx, loading, required])
 
-	const clsx = {
+	const clsx = useMemo(() => ({
 		module: { [`${size}`]: size },
-	}
+	}), [size])
 
-	const data = {
-		disabled: !!disabled || null,
-		invalid: hasError || null,
-		loading: !!loading || null,
-	}
+	const ctxValues = useMemo(() => ({
+		aria, clsx, disabled, hasError,
+		icon, loader, loading,
+		idx, required, size, unstyled,
+	}), [
+		aria, clsx, disabled, hasError,
+		icon, loader, loading,
+		idx, required, size, unstyled,
+	])
 
 	return (
 		<Box
 			{ ...styles('root', clsx) }
 			{ ...others }
 			as={ as }
-			attributes={ { data } }
+			attributes={ { data: {
+				disabled: !!disabled || null,
+				invalid: hasError || null,
+				loading: !!loading || null,
+			} } }
 		>
 			<FieldProvider value={ ctxValues }>
 				{ label }
@@ -217,4 +206,6 @@ export declare namespace Field {
 	export type Context = FieldContext
 	export type Props = FieldProps
 	export type Specs = FieldSpecs
+
+	export type SharedProps = SharedFieldProps
 }

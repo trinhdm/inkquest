@@ -1,40 +1,42 @@
 import { createCompoundCtx } from '@/lib/component/context'
-import { TextInput } from '../TextInput'
-import type { AnimationOptions } from '@/hooks/animation'
-import type { Size } from '@/types/shared'
 import type { ReactNode } from 'react'
-
-export const FIELD_TYPES = [
-	TextInput,
-	// TextInput.displayName
-] as const
-
-export type FieldType =
-	typeof FIELD_TYPES[number]
+import type { AnimationOptions } from '@/hooks/animation'
+import type { Field } from './Field'
 
 interface FieldIds {
 	control: string
 	error: string
 }
 
-interface SharedFieldProps
-	extends Pick<AnimationOptions, 'unstyled'> {
-	disabled?: boolean
-	loading?: boolean
-	required?: boolean
-	size?: Size
+interface FieldAria {
+	busy: boolean | undefined
+	describedby: string
+	invalid: boolean | undefined
+	required: boolean | undefined
 }
 
+interface FieldClsx {
+	module: Pick<Field.Props, 'size'>
+}
+
+type SharedFieldProp =
+	| 'disabled'
+	| 'loading'
+	| 'required'
+	| 'size'
+
+export interface SharedFieldProps
+	extends Pick<Field.Props, SharedFieldProp>,
+		Pick<AnimationOptions, 'unstyled'> {}
+
 export interface FieldContext
-	extends Pick<AnimationOptions, 'unstyled'>  {
-	disabled?: boolean
+	extends SharedFieldProps {
+	aria: FieldAria
+	clsx: FieldClsx
 	hasError: boolean
 	icon?: ReactNode
 	idx: FieldIds
 	loader?: ReactNode
-	loading?: boolean
-	required?: boolean
-	size?: Size
 }
 
 export const {
