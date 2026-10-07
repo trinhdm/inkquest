@@ -154,4 +154,18 @@ describe('schemeControls', () => {
 			expect(() => persistScheme('light')).not.toThrow()
 		})
 	})
+
+	describe('getAltScheme', () => {
+		it('returns the opposite of a given scheme', () => {
+			const { getAltScheme } = schemeControls()
+
+			expect(getAltScheme('dark')).toBe('light')
+			expect(getAltScheme('light')).toBe('dark')
+		})
+
+		it('uses the configured default scheme when none is given', () => {
+			expect(schemeControls({ scheme: 'dark' }).getAltScheme()).toBe('light')
+			expect(schemeControls({ scheme: 'light' }).getAltScheme()).toBe('dark')
+		})
+	})
 })
