@@ -50,7 +50,7 @@ const numericArrayStrategy: GeneratorStrategy<number[]> = {
 			if (path[0].toLowerCase().includes('size')) {
 				step = `${v}`
 				output = rem(v)
-			} else if (is.percent(v)) {
+			} else if (is.percent(v) || (v === 0 && is.scalePercent(value))) {
 				const label = is.integer(v) ? v : 100 * v
 				step = `${label}`
 			} else if (is.weight(v)) {

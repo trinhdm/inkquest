@@ -1,7 +1,7 @@
 import type { AriaAttributes, ComponentPropsWithoutRef, ElementType } from 'react'
 
 export type HeadingOrder =
-	1 | 2 | 3 | 4 | 5 | 6
+	1 | 2 | 3 | 4 | 5
 
 export type Heading =
 	`h${HeadingOrder}`

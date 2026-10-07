@@ -9,7 +9,7 @@ export type TokenVariableShape =
 	| `${TokenVar}`
 	| `${TokenVar} ${TokenVar}`
 
-export type TokenHeadingShape<T extends Heading = Exclude<Heading, 'h6'>> =
+export type TokenHeadingShape<T extends Heading = Heading> =
 	Record<T, TokenVariableShape>
 
 export type TokenSizeShape<S extends SizeRange = Size> =
