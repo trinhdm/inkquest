@@ -30,7 +30,13 @@ export type FieldTokens = {
 		| '--form-control-padding'
 }
 
+export type FieldPropsList =
+	| Field.Choice.Props
+	| Field.Input.Props
+	| Field.Textarea.Props
+
 type FieldSpecsList =
+	| Field.Choice.Specs
 	| Field.Input.Specs
 	| Field.Textarea.Specs
 

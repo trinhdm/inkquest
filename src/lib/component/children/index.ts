@@ -1,5 +1,6 @@
 export { extractText } from './extractText'
 export { filterChildren, verifyChildren } from './filterChildren'
 export { getChildKey } from './getChildKey'
+export { getDisplayNames } from './getDisplayNames'
 export { highlightText } from './highlightText'
 export { withInlineWrap } from './withInlineWrap'

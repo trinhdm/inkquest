@@ -7,31 +7,36 @@ import {
 import { LoaderCircle } from 'lucide-react'
 import { defineTokens } from '@/lib/component/tokens'
 import { extractOthers } from '@/hooks/useProps'
-import { filterChildren } from '@/lib/component/children'
-import { getIcon } from '../utils'
+import { filterChildren, getDisplayNames } from '@/lib/component/children'
+import { getIcon, type FieldPropsList } from '../utils'
 import { keyHasValue, toKebabCase } from '@/utils/helpers'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
+import { FieldGroup } from './FieldGroup'
 import { FieldLabel } from './FieldLabel'
 import { FieldProvider, type FieldContext, type SharedFieldProps } from './Field.context'
+import { Radio } from '../Radio'
+import { TextArea } from '../TextArea'
 import { TextInput } from '../TextInput'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import type { Size } from '@/types/shared'
 import type { StyleFn } from '@/hooks/useStyles'
 import classes from './Field.module.scss'
-import { TextArea } from '../TextArea'
 
 const NAME = 'Field' as const,
 	TAG = 'div' as const
 
 const DEFAULT_PROPS = {
 	as: TAG,
+	preserveOrder: true,
 	required: false,
 	size: 'md',
 } as const
 
 export const SUBCOMPONENTS = {
 	// FileUpload,
+	Choice: Radio,
+	Group: FieldGroup,
 	Input: TextInput,
 	Label: FieldLabel,
 	Textarea: TextArea,
@@ -43,6 +48,7 @@ interface FieldProps {
 	error?: string
 	id: string
 	loading?: boolean
+	preserveOrder?: boolean
 	required?: boolean
 	size?: Size
 }
@@ -76,12 +82,28 @@ interface FieldParts {
 	loader: ReactNode
 }
 
-const nameFieldParts = (parts = SUBCOMPONENTS) => {
-	const labelKey: keyof typeof parts = 'Label'
-	const { [labelKey]: value, ...rest } = parts,
+const nameSubcomponents = (list = SUBCOMPONENTS) => {
+	const labelKey: keyof typeof list = 'Label'
+	const { [labelKey]: value, Group, ...rest } = list,
 		reordered = { [labelKey]: value, ...rest }
 
 	return Object.values(reordered).map(sub => sub.displayName)
+}
+
+const orderSubcomponents = (
+	props: FieldProps,
+	parts: FieldParts,
+): ReactNode[] => {
+	const { children, preserveOrder } = props
+	const { control, label } = parts
+
+	if (!preserveOrder) return [label, control]
+	const displayNames = getDisplayNames(children)
+
+	if (displayNames[0] === FieldLabel.displayName)
+		return [label, control]
+
+	return [control, label]
 }
 
 const buildField = (
@@ -90,32 +112,36 @@ const buildField = (
 ): FieldParts => {
 	const { children, loading } = props
 
-	const [labelName, ...displayNames] = nameFieldParts(),
+	const [labelName, ...displayNames] = nameSubcomponents(),
 		verifyArgs = { name: NAME, max: 1 }
 
 	const [label] = filterChildren(children, labelName, verifyArgs),
 		control = filterChildren(children, displayNames, verifyArgs).find(Boolean)
 
-	const items = {
-		control,
+	const parts: FieldParts = {
+		control: null,
 		icon: null,
-		label,
+		label: null,
 		loader: null,
-	} as FieldParts
+	}
 
-	if (isValidElement<TextArea.Props | TextInput.Props>(control)) {
+	if (isValidElement<FieldPropsList>(label))
+		parts.label = label
+
+	if (isValidElement<FieldPropsList>(control)) {
 		const { props: childProps } = control
+		parts.control = <div { ...styles('control') }>{ control }</div>
 
 		if (keyHasValue(childProps, 'type')) {
 			const icon = getIcon((childProps as TextInput.Props).type)
-			if (icon) items.icon = <div { ...styles('icon') }>{ icon }</div>
+			if (icon) parts.icon = <div { ...styles('icon') }>{ icon }</div>
 		}
 
 		if (!!loading || keyHasValue(childProps, { loading: true }))
-			items.loader = <LoaderCircle { ...styles('loader', true) } />
+			parts.loader = <LoaderCircle { ...styles('loader', true) } />
 	}
 
-	return items
+	return parts
 }
 
 const tokens = defineTokens<FieldSpecs>()(({ props, theme }) => {
@@ -145,10 +171,7 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 		...rest
 	} = props
 
-	const {
-		control, icon,
-		label, loader,
-	} = buildField(props, styles)
+	const parts = buildField(props, styles)
 
 	const others = extractOthers(rest)
 	const hasError = !!error?.trim()
@@ -170,16 +193,17 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 
 	const clsx = useMemo(() => ({
 		module: { [`${size}`]: size },
-	}), [size])
+		selector: { error: hasError },
+	}), [hasError, size])
 
 	const ctxValues = useMemo(() => ({
-		aria, clsx, disabled, hasError,
-		icon, loader, loading,
-		idx, required, size, unstyled,
+		aria, clsx, disabled, hasError, idx,
+		icon: parts.icon, loader: parts.loader,
+		loading, required, size, unstyled,
 	}), [
 		aria, clsx, disabled, hasError,
-		icon, loader, loading,
-		idx, required, size, unstyled,
+		idx, loading, parts,
+		required, size, unstyled,
 	])
 
 	return (
@@ -194,12 +218,7 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 			} } }
 		>
 			<FieldProvider value={ ctxValues }>
-				{ label }
-
-				<div { ...styles('control') }>
-					{ control }
-				</div>
-
+				{ orderSubcomponents(props, parts) }
 				{ hasError && <p { ...styles('error') }>{ error }</p> }
 			</FieldProvider>
 		</Box>
@@ -219,9 +238,19 @@ export declare namespace Field {
 
 	export type SharedProps = SharedFieldProps
 
+	export namespace Group {
+		export type Props = FieldGroup.Props
+		export type Specs = FieldGroup.Specs
+	}
+
 	export namespace Label {
 		export type Props = FieldLabel.Props
 		export type Specs = FieldLabel.Specs
+	}
+
+	export namespace Choice {
+		export type Props = Radio.Props
+		export type Specs = Radio.Specs
 	}
 
 	export namespace Input {

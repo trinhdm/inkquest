@@ -17,6 +17,9 @@ interface FieldAria {
 
 interface FieldClsx {
 	module: Pick<Field.Props, 'size'>
+	selector: {
+		error: boolean
+	}
 }
 
 type SharedFieldProp =
