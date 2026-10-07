@@ -6,7 +6,7 @@ export type {
 } from './specs.types'
 
 export type {
-	FactoryComponent, FactorySubcomponents,
+	FactoryAsComponent, FactoryComponent, FactorySubcomponents,
 	FactoryDisplayName, FactoryMethods, FactoryPropsList,
 } from './factory.types'
 

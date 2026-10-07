@@ -4,10 +4,11 @@ import { useStyles as useStylesHook, type StyleOptions } from '@/hooks/useStyles
 import { useVariants as useVariantsHook } from '@/hooks/useVariants'
 import { keyHasValue } from '@/utils/helpers'
 import { POLYMORPHIC_MARKER } from './constants'
+import type { DistributiveOmit } from '@/types/utils'
+
 import type {
-	FactoryComponent, FactorySubcomponents,
-	FactoryMethods, FactoryPropsList,
-	Specs, SpecsDefaultProps,
+	FactoryAsComponent, FactoryComponent, FactorySubcomponents,
+	FactoryMethods, FactoryPropsList, Specs, SpecsDefaultProps,
 	WithDefaults,
 } from './types'
 
@@ -16,8 +17,12 @@ type _FactoryComponent<S extends Specs> =
 	& FactorySubcomponents<S>
 	& FactoryMethods<S>
 
+type _FactoryAs<S extends Specs> =
+	& DistributiveOmit<FactoryPropsList<S>, 'as'>
+	& FactoryAsComponent<S>
+
 type _FactoryProps<S extends Specs> =
-	WithDefaults<FactoryPropsList<S>, SpecsDefaultProps<S>>
+	WithDefaults<_FactoryAs<S>, SpecsDefaultProps<S>>
 
 interface _BaseFactoryStyles<S extends Specs>
 	extends Omit<StyleOptions<S>, 'classes'> {}

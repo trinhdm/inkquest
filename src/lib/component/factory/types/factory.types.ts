@@ -1,5 +1,14 @@
-import type { CSSProperties, FunctionComponent, NamedExoticComponent, ReactNode } from 'react'
-import type { AsPolymorphic, Specs, SpecsDefaultProps } from './specs.types'
+import type {
+	CSSProperties, ElementType,
+	FunctionComponent, NamedExoticComponent,
+	ReactNode,
+} from 'react'
+
+import type {
+	AsPolymorphic, IsPolymorphic,
+	Specs, SpecsDefaultProps,
+} from './specs.types'
+
 import type { DistributiveOmit } from '@/types/utils'
 import type { SpecAttributes } from '@/types/shared'
 
@@ -21,6 +30,11 @@ export type FactoryPropsList<S extends Specs> =
 
 export type FactoryComponent<S extends Specs> =
 	NamedExoticComponent<FactoryPropsList<S>>
+
+export type FactoryAsComponent<S extends Specs> =
+	IsPolymorphic<S> extends true
+		? { as?: ElementType }
+		: { as?: never }
 
 //	factory: .set() method
 
