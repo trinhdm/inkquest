@@ -1,16 +1,55 @@
-@mixin form-control {
-	--form-control-border: 1px;
-    --form-control-padding: var(--inkq-field-padding-md) calc(1.25 * var(--field-padding-block));
+@mixin form-tokens {
+	--form-control-background: var(--inkq-background-card);
+	--form-control-border: var(--inkq-border);
+	--form-control-color: var(--inkq-color-link);
 
-    background-color: var(--inkq-background-card);
+	--form-control-border-hover: var(--inkq-border-strong);
+
+	--form-control-border-focus: var(--inkq-color-action);
+	--form-control-shadow-focus: 0 0 0 calc(var(--space-1) - var(--form-control-border-width)) rgb(from var(--form-control-border-focus) r g b / .25);
+
+	--form-control-border-width: 1px;
+    --form-control-padding: var(--inkq-field-padding-md);
+
+	--form-control-duration: var(--duration-fast);
+	--form-control-easing: var(--easing);
+	--form-control-transition: var(--form-control-duration) var(--form-control-easing);
+	--form-control-transition-border:
+		border-color var(--form-control-transition),
+		box-shadow var(--form-control-transition);
+}
+
+@mixin focused-form-control {
+	border-color: var(--form-control-border-focus);
+	box-shadow: var(--form-control-shadow-focus);
+	outline: 0 solid transparent;
+}
+
+@mixin form-control {
+	@include form-tokens();
+
+    background-color: var(--form-control-background);
     border-radius: var(--inkq-border-radius-md);
-    border: var(--form-control-border) solid var(--inkq-border);
+    border: var(--form-control-border-width) solid var(--form-control-border);
     box-shadow: none;
-	color: var(--inkq-color-link);
+	position: relative;
+    transition: var(--form-control-transition-border);
+
+	&:hover {
+		border-color: var(--form-control-border-hover);
+	}
+
+	&:focus-visible {
+		@include focused-form-control;
+	}
+}
+
+@mixin form-control-text {
+	@include form-control();
+
+	color: var(--form-control-color);
 	font: var(--inkq-text-body);
 	padding: var(--form-control-padding);
-    transition: border-color var(--duration-fast),
-		box-shadow var(--duration-fast);
 	width: 100%;
 
 	&::placeholder {
@@ -22,17 +61,7 @@
 			background-clip: content-box;
 			box-shadow: 0 0 0 1000px transparent inset;
 			transition: background-color 5000s ease-in-out 0s;
-			-webkit-text-fill-color: var(--inkq-color-link);
+			-webkit-text-fill-color: var(--form-control-color);
 		}
-	}
-
-	&:hover {
-		border-color: var(--inkq-border-strong);
-	}
-
-	&:focus-visible {
-		border-color: var(--inkq-color-action);
-		box-shadow: 0 0 0 calc(var(--space-1) - var(--form-control-border)) rgb(from var(--inkq-color-action) r g b / .25);
-		outline: 0 solid transparent;
 	}
 }

@@ -1,5 +1,37 @@
 @use '../shared' as shared;
 
 .inkq-radio {
+    @include shared.form-control();
+
 	$name: &;
+
+    align-items: center;
+	appearance: none;
+    border-radius: 50%;
+    display: flex;
+	justify-content: center;
+    margin: 0;
+    position: relative;
+    height: 1rem;
+    width: 1rem;
+    transition: background-color var(--form-control-transition),
+        var(--form-control-transition-border);
+
+    &::before {
+        background-color: var(--inkq-color-action);
+        border-radius: 50%;
+        content: "";
+        height: .5rem;
+        transform: scale(0);
+        transition: transform var(--duration-instant) var(--form-control-easing);
+        width: .5rem;
+    }
+
+    &:checked {
+        border-color: var(--inkq-color-action);
+
+        &::before {
+            transform: scale(1);
+        }
+    }
 }

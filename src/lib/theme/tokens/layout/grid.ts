@@ -60,6 +60,7 @@ export interface GridTokens {
 	subnav: { size: string }
 
 	field: {
+		gap: TokenVariableShape
 		padding: TokenSizeShape
 	}
 }
@@ -94,6 +95,7 @@ export const getGridTokens = (): GridTokens => ({
 	subnav: { size: base.space('10') },
 
 	field: {
+		gap: base.space('3'),
 		padding: {
 			sm: base.space('2'),
 			md: base.space('3'),

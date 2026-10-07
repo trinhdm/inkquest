@@ -1,3 +1,21 @@
+@use '../shared' as shared;
+
+.inkq-field,
+.inkq-field-group {
+    &__star {
+        color: var(--inkq-color-action-active);
+    }
+
+    &__label {
+        color: var(--inkq-color-text-tertiary);
+        column-gap: var(--space-1);
+        display: flex;
+        font: var(--inkq-text-label-mono);
+        letter-spacing: var(--inkq-font-tracking-wide);
+        text-transform: uppercase;
+    }
+}
+
 .inkq-field {
 	$name: &;
 
@@ -6,7 +24,7 @@
     --field-padding-inline: var(--inkq-field-padding-md);
 
     display: flex;
-    flex-direction: column;
+    flex-flow: column wrap;
     position: relative;
     row-gap: var(--inkq-field-gap);
 
@@ -31,17 +49,10 @@
         z-index: 2;
     }
 
-    &__label {
-        color: var(--inkq-color-text-tertiary);
-        column-gap: var(--space-1);
-        display: flex;
-        font: var(--inkq-text-label-mono);
-        letter-spacing: var(--inkq-font-tracking-wide);
-        text-transform: uppercase;
-    }
-
-    &__star {
-        color: var(--inkq-color-action-active);
+    &__caption,
+    &__error {
+        display: block;
+        flex: 1 1 100%;
     }
 
     &:where([data-loading]) #{$name} {
@@ -51,8 +62,20 @@
 	}
 
     &:has(input[type="checkbox"], input[type="radio"]) {
-        column-gap: var(--space-2);
+        column-gap: var(--space-3);
         flex-direction: row;
+
+        #{$name}__label {
+            color: var(--inkq-color-text-secondary);
+            font: var(--inkq-text-label);
+            font-weight: var(--inkq-font-weight-normal);
+            letter-spacing: var(--inkq-font-tracking-prefix);
+            text-transform: none;
+        }
+
+        &:focus-within input {
+            @include shared.focused-form-control;
+        }
     }
 }
 
@@ -60,9 +83,13 @@
     border: none;
     display: flex;
     gap: var(--space-5);
+    margin-inline: 0;
+    padding-block: 0;
+    padding-inline: 0;
 
-    &__legend {
+    &__label {
         margin-bottom: var(--inkq-field-gap);
+        padding-inline: 0;
     }
 }
 

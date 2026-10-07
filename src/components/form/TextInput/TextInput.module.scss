@@ -1,15 +1,7 @@
-@import '../shared';
+@use '../shared' as shared;
 
 .inkq-text-input {
+    @include shared.form-control-text;
+
 	$name: &;
-
-    @include form-control;
-    --form-control-padding: var(--inkq-field-padding-md);
-
-    align-items: center;
-    display: flex;
-    gap: .5rem;
-    padding: var(--form-control-padding);
-    position: relative;
-	width: 100%;
 }

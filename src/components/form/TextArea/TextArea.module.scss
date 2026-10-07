@@ -1,7 +1,7 @@
-@import '../shared';
+@use '../shared' as shared;
 
 .inkq-text-area {
-	$name: &;
+    @include shared.form-control-text;
 
-    @include form-control;
+	$name: &;
 }
