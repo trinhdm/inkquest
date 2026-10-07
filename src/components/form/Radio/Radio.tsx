@@ -4,7 +4,7 @@ import { extractOthers } from '@/hooks/useProps'
 import { getSharedTokens, type FieldTokens as RadioTokens } from '../utils'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
-import type { ChangeEventHandler } from 'react'
+import type { ChangeEventHandler, MouseEventHandler } from 'react'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Radio.module.scss'
 
@@ -12,12 +12,30 @@ const NAME = 'Radio' as const
 const DEFAULT_PROPS = {
 } as const
 
-interface RadioProps
+interface BaseRadioProps
 	extends Field.SharedProps {
 	name: string
-	onChange?: ChangeEventHandler<HTMLInputElement>
+	onClick?: MouseEventHandler<HTMLInputElement>
 	value: string
 }
+
+interface ControlledRadioProps {
+	checked?: boolean
+	onChange?: ChangeEventHandler<HTMLInputElement>
+}
+
+interface UncontrolledRadioProps {
+	checked?: never
+	onChange?: never
+}
+
+type RadioControlProps =
+	| ControlledRadioProps
+	| UncontrolledRadioProps
+
+type RadioProps =
+	& BaseRadioProps
+	& RadioControlProps
 
 interface RadioSpecs {
 	context: Field.Context

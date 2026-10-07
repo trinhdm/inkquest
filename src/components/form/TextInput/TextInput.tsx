@@ -4,13 +4,11 @@ import { extractOthers } from '@/hooks/useProps'
 import { getSharedTokens, type FieldTokens as TextInputTokens } from '../utils'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
-import type { ChangeEventHandler, ComponentPropsWithoutRef } from 'react'
+import type { ChangeEventHandler, HTMLInputTypeAttribute } from 'react'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './TextInput.module.scss'
 
-const NAME = 'TextInput' as const,
-	TAG = 'input' as const
-
+const NAME = 'TextInput' as const
 const DEFAULT_PROPS = {
 	required: false,
 	type: 'text',
@@ -18,11 +16,11 @@ const DEFAULT_PROPS = {
 
 interface TextInputProps
 	extends Field.SharedProps {
-	name?: string
+	name: string
 	onChange?: ChangeEventHandler<HTMLInputElement>
 	placeholder?: string
 	readOnly?: boolean
-	type?: ComponentPropsWithoutRef<'input'>['type']
+	type?: Extract<HTMLInputTypeAttribute, 'email' | 'number' | 'search' | 'tel' | 'text' | 'url'>
 	value?: string
 }
 interface TextInputSpecs {
@@ -63,7 +61,7 @@ export const TextInput = polymorphic<TextInputSpecs>((_props, { useProps, useSty
 			<Box
 				{ ...styles('root', clsx) }
 				{ ...others }
-				as={ TAG }
+				as="input"
 				attributes={ { aria } }
 				disabled={ disabled }
 				id={ idx.control }

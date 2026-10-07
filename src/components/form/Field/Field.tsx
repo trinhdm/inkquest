@@ -34,7 +34,6 @@ const NAME = 'Field' as const,
 const DEFAULT_PROPS = {
 	as: TAG,
 	labelPosition: 'first',
-	preserveOrder: true,
 	required: false,
 	size: 'md',
 } as const
@@ -48,6 +47,7 @@ export const SUBCOMPONENTS = {
 } as const
 
 interface FieldProps {
+	caption?: string
 	children: ReactNode
 	disabled?: boolean
 	error?: string
@@ -55,12 +55,12 @@ interface FieldProps {
 	label?: string
 	labelPosition?: 'first' | 'last'
 	loading?: boolean
-	preserveOrder?: boolean
 	required?: boolean
 	size?: Size
 }
 
 interface FieldSpecs {
+	context: FieldGroup.Context
 	defaults: {
 		as: typeof TAG
 		props: PropsDefaultList<typeof DEFAULT_PROPS>
@@ -72,9 +72,10 @@ interface FieldSpecs {
 }
 
 type FieldSelectors =
-	| 'root' | 'control' | 'error'
-	| 'icon' | 'loader'
+	| 'root' | 'control'
 	| 'label' | 'star'
+	| 'icon' | 'loader'
+	| 'error' | 'caption'
 
 type FieldTokens = {
 	root:
@@ -143,7 +144,7 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 	const styles = useStyles({ props, tokens })
 
 	const {
-		as, children, disabled, error,
+		as, caption, children, disabled, error,
 		id, label, labelPosition, loading,
 		required, size, unstyled,
 		...rest
@@ -156,10 +157,8 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 
 	const uid = useId()
 	const idx = useMemo(() => {
-		const root = toKebabCase(id ?? uid),
-			control = `${root}-control`,
-			error = `${root}-error`
-		return { control, error }
+		const root = toKebabCase(id ?? uid)
+		return { control: `${root}-control`, error: `${root}-error` }
 	}, [id, uid])
 
 	const aria = useMemo(() => ({
@@ -173,6 +172,8 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 		module: { [`${size}`]: size },
 		selector: { error: hasError },
 	}), [hasError, size])
+
+	const clsxText = { global: { caption: true } }
 
 	const ctxValues = useMemo(() => ({
 		aria, clsx, disabled, hasError,
@@ -202,12 +203,16 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 				loading: !!loading || null,
 			} } }
 		>
+			{ labelPosition === 'first' && labelEl }
+
 			<FieldProvider value={ ctxValues }>
-				{ labelPosition === 'first' && labelEl }
 				{ control }
-				{ labelPosition === 'last' && labelEl }
-				{ hasError && <p { ...styles('error') }>{ error }</p> }
 			</FieldProvider>
+
+			{ labelPosition === 'last' && labelEl }
+
+			{ caption && <p { ...styles('caption', clsxText) }>{ caption }</p> }
+			{ hasError && <span { ...styles('error', clsxText) }>{ error }</span> }
 		</Box>
 	)
 }, { name: NAME, classes })

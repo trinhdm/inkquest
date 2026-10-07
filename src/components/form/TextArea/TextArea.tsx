@@ -1,23 +1,21 @@
+import { useChosenFieldProps, useFieldCtx, type Field } from '../Field'
 import { defineTokens } from '@/lib/component/tokens'
 import { extractOthers } from '@/hooks/useProps'
 import { getSharedTokens, type FieldTokens as TextAreaTokens } from '../utils'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
-import { useChosenFieldProps, useFieldCtx, type Field } from '../Field'
 import type { ChangeEventHandler } from 'react'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './TextArea.module.scss'
 
-const NAME = 'TextArea' as const,
-	TAG = 'textarea' as const
-
+const NAME = 'TextArea' as const
 const DEFAULT_PROPS = {
 	rows: 4,
 } as const
 
 interface TextAreaProps
 	extends Field.SharedProps {
-	name?: string
+	name: string
 	onChange?: ChangeEventHandler<HTMLTextAreaElement>
 	placeholder?: string
 	readOnly?: boolean
@@ -48,7 +46,7 @@ export const TextArea = polymorphic<TextAreaSpecs>((_props, { useProps, useStyle
 	const {
 		disabled, loading, name,
 		onChange, placeholder, readOnly,
-		required, size, value,
+		required, rows, size, value,
 		...rest
 	} = props
 
@@ -58,7 +56,7 @@ export const TextArea = polymorphic<TextAreaSpecs>((_props, { useProps, useStyle
 		<Box
 			{ ...styles('root', clsx) }
 			{ ...others }
-			as={ TAG }
+			as="textarea"
 			attributes={ { aria } }
 			disabled={ disabled }
 			id={ idx.control }
@@ -67,6 +65,7 @@ export const TextArea = polymorphic<TextAreaSpecs>((_props, { useProps, useStyle
 			placeholder={ placeholder }
 			readOnly={ readOnly || (value !== undefined && !onChange) }
 			required={ required }
+			rows={ rows }
 			value={ value }
 		/>
 	)

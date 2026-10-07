@@ -4,11 +4,11 @@ import {
 	Phone, Pipette, Search,
 } from 'lucide-react'
 
-import type { ComponentPropsWithoutRef } from 'react'
+import type { HTMLInputTypeAttribute } from 'react'
 import type { Field } from './Field'
 import type { TokensConfig } from '@/lib/component/tokens/defineTokens'
 
-export const getIcon = (type?: ComponentPropsWithoutRef<'input'>['type']) => {
+export const getIcon = (type?: HTMLInputTypeAttribute) => {
 	switch (type) {
 		case 'color':	return <Pipette />
 		case 'date':	return <Calendar />
