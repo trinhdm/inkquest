@@ -3,8 +3,9 @@ import { getDefaultProps } from '@/hooks/useProps'
 import { Button } from './Button'
 import { Icon } from '../Icon'
 import {
-	BOOLEAN_OPTIONS, PRIORITY_OPTIONS,
-	SIZE_OPTIONS, TONE_OPTIONS, VARIANT_OPTIONS,
+	BOOLEAN_OPTIONS, FONT_SIZE_BY_SIZE, ICON_SIZE_BY_SIZE,
+	PADDING_BY_SIZE, PRIORITY_OPTIONS, SIZE_OPTIONS,
+	TONE_OPTIONS, TRACKING_BY_SIZE, VARIANT_OPTIONS,
 } from './options.story'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
@@ -38,7 +39,7 @@ type ButtonStoryProps = Parameters<typeof Button>[0]
 
 // Still `BoxProps & (LinkButtonProps | NativeButtonProps) & {...}` under the
 // hood — same conditional-interface shape `Button.tsx` itself narrows via
-// `rest as Extract<typeof rest, LinkButtonProps>`. These stories only ever
+// `others as Extract<typeof others, LinkButtonProps>`. These stories only ever
 // render the native `<button>` branch, so cast the other way: exclude the
 // `href`-carrying (link) branch, leaving a spreadable, non-union shape.
 type NativeButtonArgs = Exclude<ButtonStoryProps, { href: string }>
@@ -67,7 +68,7 @@ const meta: Meta<ButtonStoryProps> = {
 		size: {
 			control: 'select',
 			options: SIZE_OPTIONS,
-			description: '`Button.module.scss` declares `&--sm`, `&--md`, and `&--lg` modifier rules — every `SIZE_OPTIONS` value (exercised by the `Sizes` story) matches a compiled rule. `size` is expressed purely as a `module` modifier class (via `clsx.module`), so for all three sizes it resolves to a hashed CSS-module class rather than a literal `inkq-button--${size}` class.',
+			description: 'Sizing is token-driven: `size` adds NO modifier class and NO `data-size` attribute. The `tokens` function in `Button.tsx` turns it into inline CSS custom properties — `--button-font-size`, `--button-icon-size` and `--button-tracking` on the root element, and `--button-padding` on the inner element — which `Button.module.scss` reads (with fallbacks). Registered default is `md` (`DEFAULT_PROPS` in `Button.tsx`). `unstyled` skips these inline tokens. Also inheritable from an enclosing `Button.Group` (own prop wins). See the `Sizes` story.',
 		},
 		disabled: {
 			control: 'boolean',
@@ -79,11 +80,11 @@ const meta: Meta<ButtonStoryProps> = {
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Button`\'s own `ButtonProps`. The semantic base class (`inkq-button`, `inkq-button__inner`, `inkq-button__label`) is ALWAYS emitted regardless of this prop — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it, for every selector this component styles (`root`, `inner`, `label`) — see the `Unstyled` story. Also inheritable from an enclosing `Button.Group`, via the same `ButtonGroupProvider` / `useButtonGroupProps` own-prop-wins precedence as `disabled`/`loading`/`priority`.',
+			description: 'Part of the shared `FactoryContract` (`unstyled` on `_PolymorphicContract`), not `Button`\'s own `ButtonProps`. The semantic base class (`inkq-button`, `inkq-button__inner`, `inkq-button__label`, and `inkq-button__loader` while loading) is emitted regardless of this prop (an inherited semantic `className` could replace it). `unstyled` drops the CSS-module-hashed class for every selector this component styles (`root`, `inner`, `label`, `loader`), the config classes (the global `inkq-block` from `fullWidth` and `inkq-loader` on the loader, since `getConfigClasses` returns early), and the inline size tokens (`getStyle` returns early). `Button` also forwards `unstyled` to its root `Box`, which strips the non-state `data-*` attributes (`data-variant`, `data-tone`, `data-priority`, `data-block`) while keeping the state ones (`data-disabled` is dropped on a native `<button>`, which has real `disabled`) — see the `Unstyled` story. Also inheritable from an enclosing `Button.Group`, via the same `ButtonGroupProvider` / `useButtonGroupProps` own-prop-wins precedence as `disabled`/`loading`/`priority`.',
 		},
 		showLabel: {
 			control: 'boolean',
-			description: 'Gates whether an `aria-label` is emitted at all: `Button.tsx` derives `ariaLabel` from `extractChildrenText(children)`, then only sets `aria-label` when `!!(showLabel && ariaLabel.length)` — an undefined/falsy `showLabel` (the default; not registered via `Button.set({ defaultProps: DEFAULT_PROPS, displayName: NAME, subcomponents: SUBCOMPONENTS })`) means NO `aria-label` is ever emitted, regardless of children content. See the `ShowLabel` story, and `AriaLabel` (which sets `showLabel` explicitly to exercise the text-extraction logic itself).',
+			description: 'Gates whether an `aria-label` is emitted at all: `Button.tsx` derives `ariaLabel` from `extractText(children)` (`@/lib/component/children`), then only sets `aria-label` when `!!(showLabel && ariaLabel.length)` — an undefined/falsy `showLabel` (the default; not registered via `Button.set({ defaultProps: DEFAULT_PROPS, displayName: NAME, subcomponents: SUBCOMPONENTS })`) means NO `aria-label` is ever emitted, regardless of children content. See the `ShowLabel` story, and `AriaLabel` (which sets `showLabel` explicitly to exercise the text-extraction logic itself).',
 		},
 		onClick: { action: 'clicked' },
 	},
@@ -162,6 +163,21 @@ export const Priorities: Story = {
 			)) }
 		</Row>
 	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			buttons = canvas.getAllByRole('button')
+
+		await expect(buttons).toHaveLength(PRIORITY_OPTIONS.length)
+
+		// Each button carries its own `data-priority` (exact-value match) and
+		// none of its siblings' values.
+		for (const [i, priority] of PRIORITY_OPTIONS.entries()) {
+			await expect(buttons[i]).toHaveAttribute('data-priority', priority)
+
+			for (const other of PRIORITY_OPTIONS.filter(p => p !== priority))
+				await expect(buttons[i]).not.toHaveAttribute('data-priority', other)
+		}
+	},
 }
 
 export const Sizes: Story = {
@@ -174,6 +190,53 @@ export const Sizes: Story = {
 			)) }
 		</Row>
 	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			buttons = canvas.getAllByRole('button')
+
+		expect(buttons).toHaveLength(SIZE_OPTIONS.length)
+
+		// `size` has no modifier class and no data attribute — it only shows up
+		// as inline tokens: three on the root, `--button-padding` on the inner.
+		const readTokens = (button: HTMLElement) => {
+			const inner = button.querySelector('.inkq-button__inner') as HTMLElement
+
+			return {
+				fontSize: button.style.getPropertyValue('--button-font-size'),
+				iconSize: button.style.getPropertyValue('--button-icon-size'),
+				padding: inner.style.getPropertyValue('--button-padding'),
+				tracking: button.style.getPropertyValue('--button-tracking'),
+			}
+		}
+
+		const actual = buttons.map(readTokens)
+
+		for (const [i, size] of SIZE_OPTIONS.entries()) {
+			await expect(buttons[i]).not.toHaveAttribute('data-size')
+
+			for (const other of SIZE_OPTIONS)
+				await expect(buttons[i]).not.toHaveClass(`inkq-button--${other}`)
+
+			// This size's own token values...
+			await expect(actual[i]).toEqual({
+				fontSize: FONT_SIZE_BY_SIZE[size],
+				iconSize: ICON_SIZE_BY_SIZE[size],
+				padding: PADDING_BY_SIZE[size],
+				tracking: TRACKING_BY_SIZE[size],
+			})
+
+			// ...and they differ from every other size's. Compared as whole
+			// objects, since `md` and `lg` share one font size.
+			for (const [j, other] of SIZE_OPTIONS.entries()) {
+				if (other !== size) await expect(actual[i]).not.toEqual(actual[j])
+			}
+		}
+
+		// Padding, icon size and tracking are unique per size, so each of them
+		// tells the three sizes apart on its own.
+		for (const key of ['iconSize', 'padding', 'tracking'] as const)
+			await expect(new Set(actual.map(tokens => tokens[key])).size).toBe(SIZE_OPTIONS.length)
+	},
 }
 
 // `fullWidth` maps to two independent things on the root `<button>`: a
@@ -189,11 +252,15 @@ export const FullWidth: Story = {
 		layout: 'padded',
 		controls: { exclude: ['fullWidth'] },
 	},
+	// Each button sits in a block wrapper (`data-width-container`) with a fixed
+	// 400px width, so its content width is known for the stretch check below.
 	render: args => (
 		<div style={ { display: 'flex', flexDirection: 'column', gap: 24 } }>
 			{ BOOLEAN_OPTIONS.map(fullWidth => (
 				<Group key={ String(fullWidth) } label={ String(fullWidth) }>
-					<Button { ...args as NativeButtonArgs } fullWidth={ fullWidth } />
+					<div data-width-container style={ { width: 400 } }>
+						<Button { ...args as NativeButtonArgs } fullWidth={ fullWidth } />
+					</div>
 				</Group>
 			)) }
 		</div>
@@ -205,6 +272,20 @@ export const FullWidth: Story = {
 		expect(buttons).toHaveLength(2)
 
 		const [isFullWidth, isNotFullWidth] = buttons
+
+		// `.inkq-block` (`_base.scss`) makes the button a block, and
+		// `Button.module.scss` only applies `width: fit-content` under
+		// `&:not([data-block])`, so the `true` button stretches to its
+		// container's width while the `false` one stays at its content width.
+		const containerWidth = (el: HTMLElement) =>
+			el.closest<HTMLElement>('[data-width-container]')!.getBoundingClientRect().width
+
+		const fullRect = isFullWidth.getBoundingClientRect().width,
+			naturalRect = isNotFullWidth.getBoundingClientRect().width
+
+		expect(Math.abs(fullRect - containerWidth(isFullWidth))).toBeLessThanOrEqual(1)
+		expect(naturalRect).toBeLessThan(containerWidth(isNotFullWidth) - 1)
+		expect(naturalRect).toBeLessThan(fullRect)
 
 		await expect(isFullWidth).toHaveAttribute('data-block')
 		await expect(isFullWidth).toHaveClass('inkq-block')
@@ -220,16 +301,24 @@ export const AsLink: Story = {
 		<div style={ { display: 'flex', flexDirection: 'column', gap: 24 } }>
 			<Row>
 				<Group label="href">
-					<Button href="#">Link button</Button>
+					<Button href="#">Internal link</Button>
 				</Group>
 				<Group label='as="a" (no href)'>
-					<Button as="a">Link button</Button>
+					<Button as="a">Anchor without href</Button>
 				</Group>
 				<Group label="disabled">
-					<Button href="#" disabled>Link button</Button>
+					<Button href="#" disabled>Disabled link</Button>
 				</Group>
 				<Group label="loading">
-					<Button href="#" loading>Link button</Button>
+					<Button href="#" loading>Loading link</Button>
+				</Group>
+			</Row>
+			<Row>
+				<Group label="external http(s) href">
+					<Button href="https://example.com">External link</Button>
+				</Group>
+				<Group label="non-http scheme (mailto:)">
+					<Button href="mailto:hello@example.com">Mail link</Button>
 				</Group>
 			</Row>
 			<Row>
@@ -248,13 +337,59 @@ export const AsLink: Story = {
 			</Row>
 		</div>
 	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			anchorOf = (text: string) => canvas.getByText(text).closest('a') as HTMLAnchorElement
+
+		// A `href` makes `Button.tsx` render the `next/link` branch: a real
+		// `<a>` carrying the `href`.
+		const internal = anchorOf('Internal link')
+		await expect(internal.tagName).toBe('A')
+		await expect(internal).toHaveAttribute('href', '#')
+
+		// `isExternalLink` (`@/utils/helpers`) is false for hashes and for
+		// non-http schemes, so neither gets `target`/`rel`.
+		await expect(internal).not.toHaveAttribute('target')
+		await expect(internal).not.toHaveAttribute('rel')
+
+		const mail = anchorOf('Mail link')
+		await expect(mail).toHaveAttribute('href', 'mailto:hello@example.com')
+		await expect(mail).not.toHaveAttribute('target')
+		await expect(mail).not.toHaveAttribute('rel')
+
+		// An external http(s) host gets `target="_blank"` and
+		// `rel="noopener noreferrer"` added by `Button.tsx`.
+		const external = anchorOf('External link')
+		await expect(external).toHaveAttribute('href', 'https://example.com')
+		await expect(external).toHaveAttribute('target', '_blank')
+		await expect(external).toHaveAttribute('rel', 'noopener noreferrer')
+
+		// `as="a"` without `href` skips the link branch: an anchor tag, but
+		// not a real link.
+		const bare = anchorOf('Anchor without href')
+		await expect(bare.tagName).toBe('A')
+		await expect(bare).not.toHaveAttribute('href')
+
+		// `disabled`/`loading` on a link button are reflected as data
+		// attributes only (the siblings stay free of them).
+		const disabled = anchorOf('Disabled link'),
+			loading = anchorOf('Loading link')
+
+		await expect(disabled).toHaveAttribute('data-disabled')
+		await expect(disabled).not.toHaveAttribute('data-loading')
+		await expect(loading).toHaveAttribute('data-loading')
+		await expect(loading).not.toHaveAttribute('data-disabled')
+		await expect(internal).not.toHaveAttribute('data-disabled')
+		await expect(internal).not.toHaveAttribute('data-loading')
+	},
 }
 
-// `extractChildrenText` (`Button.tsx`) walks `Button`'s own `children` and
-// recurses into ANY child element that has a `children` prop — including a
-// `Button.Section` — accumulating string/number leaves into the derived
-// `ariaLabel`. An icon-only `Button.Section` contributes nothing (`Icon`
-// has no `children` prop to recurse into), so the label stays empty. Either
+// `extractText` (`@/lib/component/children`, called from `Button.tsx`) walks
+// `Button`'s own `children` and recurses into ANY child element that has a
+// `children` prop — including a `Button.Section` — accumulating string/number
+// leaves into the derived `ariaLabel`. An icon-only `Button.Section`
+// contributes nothing (`Icon` has no `children` prop to recurse into), so the
+// label stays empty. Either
 // way, none of this even reaches the DOM unless `showLabel` is also truthy
 // (`aria = { label: !!(showLabel && ariaLabel.length) ? ariaLabel :
 // undefined }`) — see the `ShowLabel` story for that gate in isolation; this
@@ -321,6 +456,11 @@ export const ShowLabel: Story = {
 	},
 }
 
+// `loading` does two things: a valueless `data-loading` attribute on the root,
+// and a `loader` part — a spinner icon rendered inside the inner element
+// (`styles('loader', true)` in `Button.tsx`), carrying the semantic
+// `inkq-button__loader` class plus the global `inkq-loader` class. Neither
+// exists when `loading` is false.
 export const LoadingState: Story = {
 	parameters: { controls: { exclude: ['loading'] } },
 	render: args => (
@@ -332,6 +472,26 @@ export const LoadingState: Story = {
 			)) }
 		</Row>
 	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			buttons = canvas.getAllByRole('button')
+
+		expect(buttons).toHaveLength(2)
+
+		// `BOOLEAN_OPTIONS` is `[true, false]`, matching the render order above.
+		const [isLoading, isNotLoading] = buttons
+
+		await expect(isLoading).toHaveAttribute('data-loading', '')
+		await expect(isNotLoading).not.toHaveAttribute('data-loading')
+
+		await expect(isLoading.querySelectorAll('.inkq-button__loader')).toHaveLength(1)
+		const loader = isLoading.querySelector('.inkq-button__loader')
+		await expect(loader).toBeInTheDocument()
+		await expect(loader).toHaveClass('inkq-loader')
+
+		await expect(isNotLoading.querySelector('.inkq-button__loader')).not.toBeInTheDocument()
+		await expect(isNotLoading.querySelector('.inkq-loader')).not.toBeInTheDocument()
+	},
 }
 
 export const DisabledState: Story = {
@@ -372,12 +532,14 @@ export const DisabledState: Story = {
 
 // `unstyled` does NOT remove `Button`'s own semantic base classes
 // (`inkq-button`, `inkq-button__inner`, `inkq-button__label`) — per
-// `getClassName.tsx`, the base class is now ALWAYS emitted
-// (`classList = [baseClass]` unconditionally). It only suppresses the
-// CSS-module-hashed class normally appended alongside it (`classes[baseClass]`),
+// `getClassName.tsx`, the first `classList` entry (`namespace ?? baseName`)
+// is not gated on `check.isUnstyled`. It suppresses the CSS-module-hashed
+// class normally appended alongside it (`styleName`, from `classes`),
 // for every selector this component styles (`root`, `inner`, `label`) — not
 // just the root element — since `check.isUnstyled` is derived once from
 // `props.unstyled` and reused across every `styles(...)` call `Button` makes.
+// It also skips the inline size tokens (`getStyle.tsx` returns early when
+// unstyled, so `--button-tracking` and `--button-padding` are not set).
 // Verified against `Button.tsx`'s own render: root is the `<button>` itself
 // (`inkq-button`), wrapping an inner `<span>` (`inkq-button__inner`) that
 // wraps a label `<span>` (`inkq-button__label`).
@@ -402,16 +564,12 @@ export const Unstyled: Story = {
 
 		// The hashed CSS-module class is build-generated (e.g.
 		// `_inkq-button_q68tq_12`), so assert on its presence/shape rather than a
-		// literal hash. Can't just check "any class beyond the base" though:
-		// `getConfigClasses` (`getClassName.tsx`) runs regardless of `unstyled`
-		// (only `getStyleClass` — the base/selector hash — checks
-		// `check.isUnstyled`), so a `module`/`global` modifier class (here,
-		// `inkq-button--md` from `clsx.module`, present via `Button`'s registered
-		// default `size: 'md'` (`DEFAULT_PROPS` in `Button.tsx`, read through
-			// `getDefaultProps` — NOT a hand-typed story default) survives on BOTH
-					// the styled and unstyled instance —
-		// exclude the base itself AND any `${base}--*` modifier class before
-		// treating a leftover class as evidence the CSS-module hash survived.
+		// literal hash: any class beyond the semantic base means the hash
+		// survived. `size` no longer adds a modifier class, and
+		// `getConfigClasses` (`getClassName.tsx`) returns early when unstyled, so
+		// no config-driven class lands on the unstyled instance either. The
+		// `${base}--*` exclusion is a guard so a future modifier class is not
+		// mistaken for the hash.
 		const hasModuleClass = (el: Element, base: string) =>
 			Array.from(el.classList).some(c => c !== base && !c.startsWith(`${base}--`))
 
@@ -435,6 +593,13 @@ export const Unstyled: Story = {
 		await expect(unstyledLabel).toHaveClass('inkq-button__label')
 		expect(hasModuleClass(styledLabel!, 'inkq-button__label')).toBe(true)
 		expect(hasModuleClass(unstyledLabel!, 'inkq-button__label')).toBe(false)
+
+		// Inline size tokens: set on the styled instance (registered default
+		// `size`), skipped entirely on the unstyled one.
+		await expect(isStyled.style.getPropertyValue('--button-tracking')).not.toBe('')
+		await expect(styledInner!.style.getPropertyValue('--button-padding')).not.toBe('')
+		await expect(isUnstyled.style.getPropertyValue('--button-tracking')).toBe('')
+		await expect(unstyledInner!.style.getPropertyValue('--button-padding')).toBe('')
 	},
 }
 

@@ -69,7 +69,7 @@ const meta: Meta<BadgeStoryProps> = {
 		variant: {
 			control: 'select',
 			options: VARIANT_OPTIONS,
-			description: 'The SHAPE axis only — `solid`/`outline`/`ghost`/`light`/`dark`/`text`. Semantic colours (`danger`, `warning`, `success`, `info`) are NOT variants; they are `tone` values, and the two props are fully orthogonal. `Badge.tsx` reflects each on its own data attribute (`data = { tone, variant, block }`), so a red outline badge is `variant="outline" tone="danger"`, which renders `data-variant="outline" data-tone="danger"` — not `variant="danger"`. Registered as a default (`DEFAULT_PROPS` in `Badge.tsx`, `variant: \'light\'`), so `data-variant` is always present. See the `Variants` story.',
+			description: 'The SHAPE axis only — `solid`/`outline`/`ghost`/`light`/`dark`/`text`. Semantic colours (`danger`, `warning`, `success`, `info`) are NOT variants; they are `tone` values, and the two props are fully orthogonal. `Badge.tsx` reflects each on its own data attribute (passed inline as `attributes={ { data: { tone, variant, block } } }`), so a red outline badge is `variant="outline" tone="danger"`, which renders `data-variant="outline" data-tone="danger"` — not `variant="danger"`. Registered as a default (`DEFAULT_PROPS` in `Badge.tsx`, `variant: \'light\'`), so `data-variant` is always present. See the `Variants` story.',
 		},
 		tone: {
 			control: 'select',
@@ -79,12 +79,12 @@ const meta: Meta<BadgeStoryProps> = {
 		shape: {
 			control: 'select',
 			options: SHAPE_OPTIONS,
-			description: 'Corner treatment of the badge.',
+			description: 'Intended corner treatment of the badge (`round` or `pill`; registered default `pill`). **Currently has no effect**: `Badge.tsx` destructures `shape` out of its props but never uses it afterwards — no class, no data attribute, no style — so every value renders identically. See the `Shape` story.',
 		},
 		size: {
 			control: 'select',
 			options: SIZE_OPTIONS,
-			description: '`size` is expressed as a `module` modifier class (via the `clsx.module` config passed to `styles(\'root\', clsx)` in `Badge.tsx`), formatted as `inkq-badge--${size}`. `Badge.module.scss` declares no matching `&--sm`/`&--lg` rule, so — unlike `Button`\'s `size`, which resolves to a CSS-module hash — this stays a LITERAL, unhashed class. `Badge` registers no default `size` (`DEFAULT_PROPS` in `Badge.tsx` omits it), so leaving it unset emits no size class at all. See the `Size` story.',
+			description: '`size` is expressed as a `module` modifier class (via the `clsx.module` config passed to `styles(\'root\', clsx)` in `Badge.tsx`), formatted as `inkq-badge--${size}`. `Badge.module.scss` declares no matching `&--sm`/`&--lg` rule, so there is no CSS-module hash to resolve and this stays a LITERAL, unhashed class. `Badge` registers no default `size` (`DEFAULT_PROPS` in `Badge.tsx` omits it), so leaving it unset emits no size class at all. See the `Size` story.',
 		},
 		fullWidth: {
 			control: 'boolean',
@@ -92,7 +92,7 @@ const meta: Meta<BadgeStoryProps> = {
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Badge`\'s own `BadgeProps`. The semantic base class (`inkq-badge`, `inkq-badge__inner`) is ALWAYS emitted regardless of this prop — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it, for every `styles(selector)` call `Badge` makes (`root` and `inner`). It also strips non-state `data-*` attributes (like `data-variant`) from the root element — see the `Unstyled` story.',
+			description: 'Part of the shared `FactoryContract` (`unstyled` on `_PolymorphicContract`), not `Badge`\'s own `BadgeProps`. The semantic base class (`inkq-badge`, `inkq-badge__inner`) is emitted regardless of this prop (an inherited semantic `className` could replace it). `unstyled` drops the CSS-module-hashed class for every `styles(selector)` call `Badge` makes (`root` and `inner`), plus the config classes (`inkq-badge--${size}` and the global `inkq-block` from `fullWidth`), since `getConfigClasses` returns early. `Badge` has no tokens. Because `unstyled` reaches `Badge`\'s root `Box` through `others`, `Box` also strips the non-state `data-*` attributes (`data-variant`, `data-tone`, `data-block`) — see the `Unstyled` story.',
 		},
 	},
 	args: {
@@ -115,12 +115,30 @@ export const Variants: Story = {
 			)) }
 		</Row>
 	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			badges = canvas.getAllByText('Badge')
+
+		await expect(badges).toHaveLength(VARIANT_OPTIONS.length)
+
+		const roots = badges.map(badge => badge.closest('[data-variant]') as HTMLElement)
+
+		// Each root carries exactly its own group's `data-variant` value
+		// (an exact-value match), and every other variant's value is
+		// asserted absent as well.
+		for (const [i, variant] of VARIANT_OPTIONS.entries()) {
+			await expect(roots[i]).toHaveAttribute('data-variant', variant)
+
+			for (const other of VARIANT_OPTIONS.filter(v => v !== variant))
+				await expect(roots[i]).not.toHaveAttribute('data-variant', other)
+		}
+	},
 }
 
 // `tone` is the semantic COLOUR axis, orthogonal to `variant` (the SHAPE
 // axis) — every group below renders under the SAME, unchanged `variant`,
-// each carrying its own `data-tone` on top (`Badge.tsx`'s
-// `data = { tone, variant, block }`).
+// each carrying its own `data-tone` on top (`Badge.tsx` passes
+// `tone`/`variant`/`block` inline via `attributes={ { data: {...} } }`).
 export const Tones: Story = {
 	render: (args) => (
 		<Row>
@@ -152,6 +170,9 @@ export const Tones: Story = {
 	},
 }
 
+// Shows every `shape` value side by side, but deliberately asserts nothing:
+// `Badge.tsx` currently ignores `shape` (see the argType description), so
+// there is no behavior to verify. Add assertions once the prop is wired up.
 export const Shape: Story = {
 	render: (args) => (
 		<Row>
@@ -219,8 +240,9 @@ export const FullWidth: Story = {
 		await expect(badges).toHaveLength(2)
 
 		// `fullWidth` maps to a `data-block` attribute on the root element
-		// (see `Badge.tsx`'s `data={ { block: !!fullWidth || null } }`, which
-		// `filterProps` only keeps when truthy) — the inner text node sits one
+		// (see `Badge.tsx`'s `attributes={ { data: { block: !!fullWidth || null } } }`,
+		// which `prefixAttributes` only keeps when `hasValue` passes, so `null`
+		// is dropped) — the inner text node sits one
 		// level down inside the `<Box as="span">` wrapper, so walk up to it.
 		const [isFullWidth, isNotFullWidth] = badges.map(
 			badge => badge.closest('[data-variant]') as HTMLElement
@@ -228,6 +250,12 @@ export const FullWidth: Story = {
 
 		await expect(isFullWidth).toHaveAttribute('data-block')
 		await expect(isNotFullWidth).not.toHaveAttribute('data-block')
+
+		// `fullWidth` also feeds `global: { block: fullWidth }` in `Badge.tsx`'s
+		// `clsx`, which `getClassName.tsx` emits as the literal global class
+		// `inkq-block` (prefix + modifier), only when truthy.
+		await expect(isFullWidth).toHaveClass('inkq-block')
+		await expect(isNotFullWidth).not.toHaveClass('inkq-block')
 	},
 }
 
@@ -260,9 +288,12 @@ export const AsElement: Story = {
 
 // `unstyled` does NOT remove the base `inkq-badge`/`inkq-badge__inner`
 // classes `useStyles`/`getClassName.tsx` applies to the root and inner
-// wrapper elements — per `getClassName.tsx`, the base class is now ALWAYS
-// emitted (`classList = [baseClass]` unconditionally). It only suppresses
-// the CSS-module-hashed class normally appended alongside it — verified
+// wrapper elements — per `getClassName.tsx`, the first entry of its
+// `classList` is `namespace ?? baseName`, which is not gated on
+// `check.isUnstyled` (an inherited semantic `className` can replace it, but
+// this story passes none). `unstyled` suppresses the CSS-module-hashed
+// class (`styleName`) normally appended alongside it (asserted below), and
+// the config classes and non-state `data-*` attributes described next — verified
 // against `Badge.tsx`'s own render, which calls `styles('root')` on the root
 // `Box` and `styles('inner')` on the nested `<Box as="span">` wrapping
 // `children`.

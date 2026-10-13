@@ -1,7 +1,7 @@
 import { expect, within } from 'storybook/test'
 import { getDefaultProps } from '@/hooks/useProps'
 import { Navbar } from './Navbar'
-import { NavRoutes, type NavRoute } from '@/utils/navigation'
+import { HEADER_GLOBAL_NAV, NavRoutes, type NavRoute } from '@/utils/navigation'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import moduleClasses from './Navbar.module.scss'
@@ -28,7 +28,7 @@ const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 // NO menu items at all, not "the full tree" (see the dedicated `NoRoutes` story). A
 // meaningful `Default` therefore needs an EXPLICIT, representative `routes` list.
 // This one includes `Discover`'s and `Community`'s own children (unlike
-// `FilteredRoutes`' narrower, real app-shell list), so at least one dropdown trigger
+// `FilteredRoutes`' narrower `HEADER_GLOBAL_NAV` list), so at least one dropdown trigger
 // survives the filter.
 const DEFAULT_ROUTES = [
 	NavRoutes.DISCOVER, NavRoutes.DISCOVER_STYLE,
@@ -63,15 +63,15 @@ const meta: Meta<NavbarStoryProps> = {
 		routes: {
 			control: 'multi-select',
 			options: Object.values(NavRoutes),
-			description: 'Allow-list handed to `filterNavigation(routes, NAVIGATION_DATA)`. `Navbar` calls it with `filterNavigation(routes)` — leaving `isEmptyReturn` at its `true` default — so omitted/empty means NO items render at all (see `NoRoutes`), not "the full tree". A route-less parent (`User`) is never itself kept, but its OWN matching children still surface, FLATTENED to the top level, if any of ITS children match (see `NoMatchingRoutes`).',
+			description: 'Allow-list handed to `filterNavigation(routes)`. `Navbar` passes only `routes` — leaving `layout` at `\'dropdown\'`, `isEmptyReturn` at `true` and `navitems` at `NAVIGATION_DATA` — so omitted/empty means NO items render at all (see `NoRoutes`), not "the full tree". A route-less parent (`User`) is never itself kept, but its OWN matching children still surface, FLATTENED to the top level, if any of ITS children match (see `NoMatchingRoutes`).',
 		},
 		as: {
 			control: false,
-			description: '`Navbar` forwards `as` to its root `<Box>` via `extractOthers`, so the rendered tag genuinely changes — see `AsElement`. Note `Navbar` also hardcodes `role="navigation"` on that same root `<Box>`, independent of `as` — that\'s the only reason `getAllByRole(\'navigation\')` still resolves the `as="div"`/`as="section"` cases in `AsElement`, which otherwise carry no implicit navigation landmark role.',
+			description: '`Navbar.tsx` destructures `as` and passes it to its root `<Box>` (`as={ as }`), so the rendered tag genuinely changes — see `AsElement`. Note `Navbar` also hardcodes `role="navigation"` on that same root `<Box>`, independent of `as` — that\'s the only reason `getAllByRole(\'navigation\')` still resolves the `as="div"`/`as="section"` cases in `AsElement`, which otherwise carry no implicit navigation landmark role.',
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Navbar`\'s own `NavbarProps`. The semantic base class (`inkq-navbar`, `inkq-navbar__wrapper`, `inkq-navbar__inner`, `inkq-navbar__col`, `inkq-navbar__menu`, `inkq-navbar__buttons`) is ALWAYS emitted regardless. The render tree is root → wrapper (`styles(\'wrapper\', true)`) → inner → col ×3, with `menu` (`styles(\'menu\')`, no config) applied to the `<Menu>` inside the 2nd col and `buttons` (`styles(\'buttons\')`, no config) applied to the auth `Button.Group` inside the 3rd col — both land on the nested component\'s own root, not the `col` div wrapping it. `styles(\'wrapper\', true)` is the BOOLEAN-shorthand config form — `getConfigClasses` now checks `check.isUnstyled` FIRST, before the boolean-shorthand branch, so the global `inkq-wrapper` class it emits is suppressed entirely when `unstyled`, same as any object-config class. `unstyled` otherwise only suppresses the CSS-module hash normally appended alongside a plain `styles(selector)` call, and only where `Navbar.module.scss` actually declares a rule to hash — `&__inner`/`&__col`/`&__buttons` do; `&__wrapper`/`&__menu` have no SCSS rule at all, so those two never carry a hash, styled or unstyled. See the `Unstyled` story.',
+			description: 'Comes from `FactoryContract` (via `_PolymorphicContract`), not `Navbar`\'s own `NavbarProps`. The semantic classes (`inkq-navbar`, `inkq-navbar__wrapper`, `inkq-navbar__inner`, `inkq-navbar__col`, `inkq-navbar__menu`, `inkq-navbar__buttons`) are still emitted regardless; `unstyled` also reaches the root `<Box>` through `others`, where it would drop non-state `data-*` attributes (`Navbar` sets none). `Navbar` defines no tokens, so there are none to drop. `Navbar.tsx` does not forward `unstyled` to the nested `Menu`/`Button.Group`, so those keep their own styling. The render tree is root → wrapper (`styles(\'wrapper\', true)`) → inner → col ×3, with `menu` (`styles(\'menu\')`, no config) applied to the `<Menu>` inside the 2nd col and `buttons` (`styles(\'buttons\')`, no config) applied to the auth `Button.Group` inside the 3rd col — both land on the nested component\'s own root, not the `col` div wrapping it. `styles(\'wrapper\', true)` is the BOOLEAN-shorthand config form — `getConfigClasses` now checks `check.isUnstyled` FIRST, before the boolean-shorthand branch, so the global `inkq-wrapper` class it emits is suppressed entirely when `unstyled`, same as any object-config class. For the other plain `styles(selector)` calls (no config) the effect is dropping the CSS-module hash normally appended alongside, and only where `Navbar.module.scss` actually declares a rule to hash — `&__inner`/`&__col`/`&__buttons` do; `&__wrapper`/`&__menu` have no SCSS rule at all, so those two never carry a hash, styled or unstyled. See the `Unstyled` story.',
 		},
 	},
 	args: {
@@ -88,14 +88,14 @@ export default meta
  * 2 dropdown triggers (`Discover`, `Community`).
  *
  * Note: `Navbar` passes `{ ...styles('menu') }` (a `className`/`style` pair)
- * to `<Menu>`. `Menu.tsx` destructures `className` out of its own props
- * BEFORE spreading `...rest` onto its root `<ul>` — so that className never
- * lands on the `<ul>` itself at all. Instead it's forwarded as the `className`
- * prop of every top-level `MenuItem`, which `getClassName.tsx`'s
- * `inheritClasses` logic then uses to rename each item's own root class from
- * `inkq-menu-item` to `inkq-navbar__menu-item` (since `'menu-item'.startsWith('menu')`).
- * Assertions below stick to roles/ARIA rather than literal class names for
- * that reason.
+ * to `<Menu>`. `Menu.tsx` destructures `className` out of its own props, so it is
+ * not spread onto the root through `others` — but it hands its full props to
+ * `useStyles`, so the root `<ul>`'s own `inkq-menu` class is replaced by
+ * `inkq-navbar__menu`. `className` is also forwarded as the `className` prop of
+ * every top-level `MenuItem`, which `getClassName.tsx`'s `inheritClasses` logic
+ * then uses to rename each item's own root class from `inkq-menu-item` to
+ * `inkq-navbar__menu-item` (since `'menu-item'.startsWith('menu')`).
+ * Assertions below stick to roles/ARIA rather than literal class names.
  */
 export const Default: Story = {
 	args: { routes: DEFAULT_ROUTES },
@@ -155,10 +155,11 @@ export const NoRoutes: Story = {
 }
 
 /**
- * The exact `routes` allow-list used by the app shell (`src/app/layout.tsx`).
- * Every child route is excluded, so no kept item retains a non-empty `menu` —
- * no dropdown triggers survive. `filterNavigation` computes each kept item's
- * `menu` as `item.menu && filterNavigation(routes, item.menu)`: `Discover`
+ * The `HEADER_GLOBAL_NAV` allow-list (`@/utils/navigation`), which `Header` applies as
+ * its default `navbar` routes. Every child route is excluded, so no kept item
+ * retains a non-empty `menu` — no dropdown triggers survive. In its default
+ * `'dropdown'` layout, `filterNavigation`'s inner `filterNavitems` computes each
+ * item's `submenu` as `item.menu && filterNavitems(item.menu, routes)`: `Discover`
  * and `Community` both HAD a `menu` array, so they get filtered down to `[]`
  * (all their children's routes are excluded); `Marketplace` had no `menu` at
  * all, so it alone gets `undefined`. Either way `MenuItem.tsx` gates its
@@ -166,13 +167,7 @@ export const NoRoutes: Story = {
  * `undefined` render as a plain link — the assertions below hold regardless.
  */
 export const FilteredRoutes: Story = {
-	args: {
-		routes: [
-			NavRoutes.DISCOVER,
-			NavRoutes.MARKETPLACE,
-			NavRoutes.COMMUNITY,
-		],
-	},
+	args: { routes: HEADER_GLOBAL_NAV },
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement),
 			menubar = canvas.getByRole('menubar'),
@@ -233,8 +228,8 @@ export const NoMatchingRoutes: Story = {
 }
 
 /**
- * `Navbar` forwards `as` to its root `<Box>` (via `extractOthers`), so the
- * rendered tag genuinely changes. `Navbar` also hardcodes `role="navigation"`
+ * `Navbar.tsx` destructures `as` and passes it to its root `<Box>` (`as={ as }`),
+ * so the rendered tag genuinely changes. `Navbar` also hardcodes `role="navigation"`
  * on that same root `<Box>`, independent of `as` — that's the ONLY reason
  * `getAllByRole('navigation')` resolves the `as="div"`/`as="section"` cases
  * below, since neither tag carries an implicit navigation landmark role.

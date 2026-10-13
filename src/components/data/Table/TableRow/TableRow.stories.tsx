@@ -6,7 +6,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import moduleClasses from '../Table.module.scss'
 
 // `Table.Row` has no enum-valued or boolean props of its own — just
-// `children` (plus the polymorphic `as`/Box escape hatches) — so there is
+// `children` (`as` is typed `never`, see the `as` argType) — so there is
 // nothing to move into a shared `options.story.ts`.
 
 const Row = ({ children }: { children: ReactNode }) => (
@@ -38,14 +38,11 @@ const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 // real CSS-module hash. See the `Unstyled` story.
 const ROOT_SELECTOR = '.inkq-table-row'
 
-// `Table` does NOT re-export a nested `Row` namespace the way `Grid`/`Group`
-// re-export `Item` (`Grid.tsx`/`Group.tsx` both declare `export namespace Item
-// { export type Props = ... }` inside their `declare namespace`; `Table.tsx`
-// declares only `Props`/`Specs` for itself) — so `Table.Row.Props` doesn't
-// resolve as a type. `Parameters<typeof Table.Row>[0]` reads the real,
-// wrapped prop type straight off the component value instead, which works
-// regardless of that gap and is what both `getDefaultProps` below and the
-// `Story` type use. `TableRowSpecs` declares `isCompound: true` with no
+// `Table` attaches `Row` (`Table.tsx`'s `SUBCOMPONENTS`) and also declares a
+// nested `Row` namespace, so `Table.Row.Props` resolves as a type.
+// `Parameters<typeof Table.Row>[0]` is used instead because it reads the
+// real, wrapped prop type (including `unstyled` and friends) straight off the
+// component value — that is what the `Story` type below uses. `TableRowSpecs` declares `isCompound: true` with no
 // `defaults.as`, so the generic call signature's non-polymorphic branch types
 // `as` as `never`, and `TableRow.set({ displayName: NAME })` (no `defaultProps`
 // key) registers no defaults at all.
@@ -59,11 +56,11 @@ const meta: Meta<TableRowStoryProps> = {
 	argTypes: {
 		as: {
 			control: false,
-			description: 'NOT part of `Table.Row`\'s accepted props. `TableRowSpecs` declares `isCompound: true` with no `defaults.as`, which is the codebase-wide signal for a compound part with a fixed tag — `polymorphic()`\'s non-polymorphic call-signature branch then types `as` as `never`, so only `undefined` is assignable and passing a tag is a type error. `Table.Row` correspondingly hardcodes `as="tr"` on its `Box` and takes only `{ others }` from `extractOthers`. This is the same deliberate contract used by `Grid.Item`, `Group.Item`, `Timeline.Item`, `Table.Cell`, `Button.Section` and the `Accordion` parts (see `Table.test.tsx`, which asserts it directly) — not an oversight. See the `FixedTag` story.',
+			description: 'NOT part of `Table.Row`\'s accepted props. `TableRowSpecs` declares `isCompound: true` with no `defaults.as`, which is the codebase-wide signal for a compound part with a fixed tag — `polymorphic()`\'s non-polymorphic call-signature branch then types `as` as `never`, so only `undefined` is assignable and passing a tag is a type error. `Table.Row` correspondingly hardcodes `as="tr"` on its `Box` and takes only `{ others }` from `extractOthers`. This is the same deliberate contract used by `Grid.Item`, `Group.Item`, `Timeline.Item`, `Table.Cell`, `Button.Section` and the `Accordion` parts (`Table.test.tsx` asserts the fixed `<tr>`/`<td>` tags at runtime; the type-level rejection of `as` is not asserted by any test there) — not an oversight. See the `FixedTag` story.',
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Table.Row`\'s own props. The semantic base class (`inkq-table-row`) is ALWAYS emitted regardless of this prop — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it. See the `Unstyled` story.',
+			description: 'Part of `PolymorphicProps` (via the shared `FactoryContract`), not `Table.Row`\'s own props. The semantic base class (`inkq-table-row`) is ALWAYS emitted regardless of this prop — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it. See the `Unstyled` story.',
 		},
 	},
 	args: {
@@ -96,7 +93,9 @@ export const Default: Story = {
  * declares no `defaults.as`, so `polymorphic()` types `as` as `never` and the
  * component hardcodes `as="tr"` on its `Box`. The rendered tag is part of the
  * contract, not a caller decision — `<Table.Row as="div">` doesn't "get
- * ignored", it doesn't typecheck. `Table.test.tsx` asserts this directly.
+ * ignored", it doesn't typecheck. (`Table.test.tsx` asserts the rendered
+ * `<tr>` at runtime, but has no `@ts-expect-error` for the type-level
+ * rejection.)
  *
  * This story pins that fixed tag so a future refactor can't quietly change it.
  * The same contract governs `Grid.Item`, `Group.Item`, `Timeline.Item`,

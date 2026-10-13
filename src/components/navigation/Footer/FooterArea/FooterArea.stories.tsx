@@ -1,4 +1,5 @@
 import { expect, within } from 'storybook/test'
+import { getDefaultProps } from '@/hooks/useProps'
 import { Footer } from '../Footer'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
@@ -26,10 +27,9 @@ const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 	</div>
 )
 
-// `About`/`Careers` are real leaf children of the route-less `Company`
-// `NavigationItem`, and `Privacy`/`Terms` are real leaf children of the route-less
-// `Legal` item — reused from `@/utils/navigation`'s own `NAVIGATION_DATA` so these
-// fixtures can't drift from the app's real nav tree. `filterNavigation`'s
+// The route lists below are hand-typed here; only the resulting labels (`About`/
+// `Careers` under the route-less `Company` item, `Privacy`/`Terms` under the route-less
+// `Legal` item) come from `@/utils/navigation`'s `NAVIGATION_DATA`. `filterNavigation`'s
 // non-`'dropdown'` (`'breadcrumbs'`) layout flattens both parents into their matched
 // children directly, with no nesting.
 const SAMPLE_ITEMS: Footer.Area.Props['items'] = [
@@ -51,7 +51,7 @@ const WRAPPER_SELECTOR = '.inkq-footer__wrapper'
 // `isCompound: true` instead), so `Box`'s `as` is hardcoded to `'div'` in
 // `FooterArea.tsx` and never exposed as a control. `Parameters<typeof Footer.Area>[0]`
 // reads the real, wrapped prop type straight off the component itself (including
-// `unstyled`/`attributes`/etc. from the shared `SpecsContract`), without needing to
+// `unstyled`, from `FactoryContract`, plus the other shared polymorphic props), without needing to
 // import `FooterArea`'s own file.
 type FooterAreaStoryProps = Parameters<typeof Footer.Area>[0]
 type Story = StoryObj<FooterAreaStoryProps>
@@ -60,16 +60,21 @@ const meta: Meta<FooterAreaStoryProps> = {
 	component: Footer.Area,
 	title: 'Navigation/Footer/Footer.Area',
 	argTypes: {
+		children: {
+			control: false,
+			description: 'Rendered inside a `styles(\'content\')` `<div>` (`.inkq-footer__content`), ABOVE the navigation block. That wrapper is guarded by `!!children` in `FooterArea.tsx`, so with no (or falsy) children the content `<div>` is NOT rendered at all. See the `NoChildren` story.',
+		},
 		items: {
 			control: 'object',
 			description: 'Required — a `readonly` list of `{ category?, location?, orientation?, routes }` groups. Each group renders its own `<Menu hasDropdowns={ false }>` populated via `filterNavigation(routes, \'breadcrumbs\')`; a `category` renders a label `<span>` above its group, and an absent `category` renders no label at all. The whole `.inkq-footer__navigation` block is guarded by `!!items.length` — an empty array renders no navigation at all (only `children`). `location`/`orientation` are read by the PARENT `Footer`/passed straight through to the per-group `Menu`, respectively — `FooterArea` itself never inspects `location`. Every per-group `<Menu>` is also hardcoded with `active={ null }` — per `Menu.tsx`\'s own resolution (`typeof active === \'string\' || active === null ? active : (pathname as NavigationItem[\'route\'])`), `null` is passed straight through rather than falling back to `usePathname()`, so NO footer menu item is ever marked active from the current page.',
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `FooterArea`\'s own props. The semantic base classes are always emitted. `styles(\'wrapper\', true)` is the BOOLEAN-shorthand config form — `getConfigClasses` now checks `check.isUnstyled` FIRST, before the boolean-shorthand branch, so the `inkq-wrapper` class it emits is suppressed entirely when `unstyled`, same as its CSS-module HASH (a separate mechanism, `getStyleClass`). See the `Unstyled` story.',
+			description: 'Comes from `FactoryContract` (via `_PolymorphicContract`), not `FooterArea`\'s own props. When set it drops the CSS-module hash and config classes on `FooterArea`\'s own `styles(...)` calls (`FooterArea` defines no tokens, so there are none to drop), and — through `others` on the root `<Box>` — non-state `data-*` attributes (`FooterArea` sets none). The semantic base classes are still emitted (no inherited className replaces them here). `styles(\'wrapper\', true)` is the BOOLEAN-shorthand config form — `getConfigClasses` now checks `check.isUnstyled` FIRST, before the boolean-shorthand branch, so the `inkq-wrapper` class it emits is suppressed entirely when `unstyled`, same as its CSS-module HASH (a separate mechanism, `getStyleClass`). See the `Unstyled` story.',
 		},
 	},
 	args: {
+		...getDefaultProps<Footer.Area.Props>('Footer.Area'),
 		items: SAMPLE_ITEMS,
 		children: <span>Sample children content</span>,
 	},
@@ -140,6 +145,50 @@ export const EmptyItems: Story = {
 }
 
 /**
+ * `FooterArea.tsx` renders the `.inkq-footer__content` wrapper only when
+ * `!!children`. Both cases side by side: with children the wrapper holds them; with
+ * none the wrapper is absent entirely, while the navigation block (driven by `items`)
+ * is unaffected.
+ */
+export const NoChildren: Story = {
+	parameters: {
+		layout: 'padded',
+		controls: { exclude: ['children'] },
+	},
+	render: (args) => {
+		const { children: _children, ...withoutChildren } = args
+
+		return (
+			<Row>
+				<Group label="children: set">
+					<Footer.Area { ...args } />
+				</Group>
+				<Group label="children: none">
+					<Footer.Area { ...withoutChildren } />
+				</Group>
+			</Row>
+		)
+	},
+	play: async ({ canvasElement }) => {
+		const wrappers = Array.from(canvasElement.querySelectorAll(WRAPPER_SELECTOR)) as HTMLElement[]
+		await expect(wrappers).toHaveLength(2)
+
+		const [withChildren, withoutChildren] = wrappers
+
+		const content = withChildren.querySelector('.inkq-footer__content') as HTMLElement
+		await expect(content).toBeInTheDocument()
+		await expect(within(content).getByText('Sample children content')).toBeInTheDocument()
+
+		await expect(withoutChildren.querySelector('.inkq-footer__content')).toBeNull()
+		await expect(within(withoutChildren).queryByText('Sample children content')).not.toBeInTheDocument()
+
+		// Navigation is independent of `children`.
+		await expect(within(withChildren).getByRole('menubar')).toBeInTheDocument()
+		await expect(within(withoutChildren).getByRole('menubar')).toBeInTheDocument()
+	},
+}
+
+/**
  * Each item's own `orientation` (default `'vertical'` per `FooterArea.tsx`'s
  * `orientation={ orientation ?? 'vertical' }`) is forwarded straight to that group's
  * `<Menu>`. `'vertical'` has a real SCSS rule (`Menu.module.scss`'s `&--vertical`), so
@@ -156,7 +205,7 @@ export const Orientation: Story = {
 	parameters: { layout: 'padded' },
 	args: {
 		items: [
-			{ category: 'Vertical (default)', orientation: 'vertical', routes: ['/about', '/careers'] },
+			{ category: 'Vertical (default)', routes: ['/about', '/careers'] },
 			{ category: 'Horizontal', orientation: 'horizontal', routes: ['/privacy-policy', '/terms-conditions'] },
 		],
 	},
@@ -167,14 +216,17 @@ export const Orientation: Story = {
 		const hasClassLike = (el: Element, substring: string) =>
 			Array.from(el.classList).some(c => c.includes(substring))
 
+		// Unset orientation falls back to 'vertical'; the explicit 'horizontal' group does not.
 		expect(hasClassLike(verticalMenu, 'inkq-menu--vertical')).toBe(true)
+		expect(hasClassLike(verticalMenu, 'inkq-menu--horizontal')).toBe(false)
 		await expect(horizontalMenu).toHaveClass('inkq-menu--horizontal')
+		expect(hasClassLike(horizontalMenu, 'inkq-menu--vertical')).toBe(false)
 	},
 }
 
 /**
  * `unstyled` never removes the semantic base classes (`inkq-footer__wrapper`,
- * `inkq-footer__content`) — only their CSS-module hash is suppressed (both have
+ * `inkq-footer__content`) — they lose their CSS-module hash (both have
  * plain, config-less SCSS declarations nested under `Footer.module.scss`'s
  * `&__info`/`&__legal` blocks, which still generate a hash for the shared class
  * TOKEN regardless of which ancestor context it's compiled under). The boolean-config

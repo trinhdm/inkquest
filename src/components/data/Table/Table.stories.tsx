@@ -6,8 +6,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import moduleClasses from './Table.module.scss'
 
 // `Table` has no enum-valued or boolean props of its own — just `children`
-// (plus the polymorphic `as`/Box escape hatches) — so there is nothing to
-// move into a shared `options.story.ts`.
+// — so there is nothing to move into a shared `options.story.ts`.
 
 const Row = ({ children }: { children: ReactNode }) => (
 	<div style={ { display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'flex-start' } }>
@@ -36,17 +35,10 @@ const ROOT_SELECTOR = '.inkq-table'
 // interface — it doesn't include `as`/`unstyled`/`attributes`/etc., which only
 // exist on the actual accepted prop type, `PolymorphicProps<TableProps, C>`.
 // `Parameters<typeof Table>[0]` reads that real, wrapped type straight off the
-// component itself — the generic call signature's default `C` resolves to
-// `'table'` here, since `TableSpecs`'s `defaults.as` is `'table'` (`Table.tsx`'s
-// local `TAG` constant), and `Table.set({ defaultProps: DEFAULT_PROPS })`
-// (where `DEFAULT_PROPS = { as: TAG }`) registers that same `'table'` as the
-// registered default — so `meta.args` (via `getDefaultProps`) already carries
-// `as: 'table'` before any story overrides it. KNOWN REGRESSION, not a
-// deliberate quirk: `Table.tsx` hardcodes `as={ TAG }` on its own `Box` and
-// never forwards the caller's `as` at all (it's destructured out along with
-// everything else via `extractOthers`), so overriding `as` away from
-// `'table'` compiles (the type still accepts it) but has NO effect at
-// runtime — a real `<table>` is always rendered. See the `AsElement` story.
+// component itself. `TableSpecs` declares no `defaults.as`, and `Table.set`
+// registers only `displayName`/`subcomponents` (no `defaultProps`), so
+// `getDefaultProps` has no defaults to return. `Table.tsx` renders its `Box`
+// with a fixed tag (`as={ TAG }`, `TAG = 'table'`). See the `FixedTag` story.
 type TableStoryProps = Parameters<typeof Table>[0]
 type Story = StoryObj<TableStoryProps>
 
@@ -55,16 +47,16 @@ const meta: Meta<TableStoryProps> = {
 	title: 'Data/Table',
 	argTypes: {
 		as: {
-			control: 'text',
-			description: '`Table` is polymorphic — `TableSpecs`\'s `defaults.as` is `\'table\'` (`Table.tsx`\'s local `TAG`), so `IsPolymorphic<S>` resolves `true` and `as` accepts any element type, registered via `Table.set({ defaultProps: DEFAULT_PROPS })`. KNOWN REGRESSION, not a deliberate design choice: `Table.tsx` renders `<Box as={ TAG } ...>` with `TAG` hardcoded to `\'table\'`, and the caller\'s own `as` is silently stripped out by `extractOthers` before it ever reaches the `Box` — so passing `as="section"` type-checks but is ignored at runtime, and a `<table>` is always rendered regardless. See the `AsElement` story.',
+			control: false,
+			description: 'NOT part of `Table`\'s accepted props. `Table` is no longer polymorphic: `TableSpecs` declares no `defaults.as`, so `polymorphic()`\'s non-polymorphic call-signature branch types `as` as `never` — only `undefined` is assignable, and passing a tag is a type error. `Table.tsx` correspondingly renders its `Box` with a fixed tag (`as={ TAG }`, `TAG = \'table\'`). Same contract as `Table.Cell` and `Table.Row`. See the `FixedTag` story.',
 		},
 		children: {
 			control: false,
-			description: 'Rendered as the single child of a hardcoded `<tbody>` — `Table.tsx` always renders `<Box as={as} {...styles(\'root\')}><tbody>{children}</tbody></Box>`, regardless of `as`. Pass `Table.Row` elements here. See the `TbodyWrapping` story for the resulting DOM shape.',
+			description: 'Rendered as the single child of a hardcoded `<tbody>` — `Table.tsx` always renders `<Box as={ TAG }><tbody>{ children }</tbody></Box>`. Pass `Table.Row` elements here. See the `TbodyWrapping` story for the resulting DOM shape.',
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Table`\'s own `TableProps`. The semantic base class (`inkq-table`) is ALWAYS emitted regardless of this prop — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it. See the `Unstyled` story.',
+			description: 'Part of `PolymorphicProps` (via the shared `FactoryContract`), not `Table`\'s own `TableProps`. The semantic base class (`inkq-table`) is ALWAYS emitted regardless of this prop — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it. See the `Unstyled` story.',
 		},
 	},
 	args: {
@@ -104,50 +96,35 @@ export const Default: Story = {
 	},
 }
 
-// /**
-//  * `Table` is polymorphic: `TableSpecs`'s `defaults.as` is `'table'`
-//  * (`Table.tsx`'s local `TAG`), registered as the actual runtime default via
-//  * `Table.set({ defaultProps: DEFAULT_PROPS })`. `as` TYPE-CHECKS as
-//  * overridable to a different tag, but `Table.tsx` renders `<Box as={ TAG }
-//  * ...>` with `TAG` hardcoded, and the caller's own `as` is stripped out by
-//  * `extractOthers` before it reaches the `Box` — so the override compiles but
-//  * is silently ignored at runtime. This is a KNOWN REGRESSION awaiting a
-//  * source fix, NOT a deliberate design quirk — this story documents the
-//  * attempted override (two groups) while asserting the actual current
-//  * behavior: both groups render a `<table>`.
-//  */
-// export const AsElement: Story = {
-// 	parameters: { layout: 'padded' },
-// 	render: (args) => (
-// 		<Row>
-// 			<Group label='as="table" (default)'>
-// 				<Table { ...args as TableStoryProps }>table content</Table>
-// 			</Group>
-// 			<Group label='as="section" (attempted override — currently ignored, see comment above)'>
-// 				<Table { ...args as TableStoryProps } as="section">section content</Table>
-// 			</Group>
-// 		</Row>
-// 	),
-// 	play: async ({ canvasElement }) => {
-// 		const canvas = within(canvasElement),
-// 			asTable = canvas.getByText('table content').closest(ROOT_SELECTOR) as HTMLElement,
-// 			asSection = canvas.getByText('section content').closest(ROOT_SELECTOR) as HTMLElement
+/**
+ * `Table` renders a fixed `<table>` tag: `TableSpecs` declares no
+ * `defaults.as`, so `as` is typed `never` and `Table.tsx` hardcodes the tag on
+ * its `Box`. The tag is part of the contract, not a caller decision. This
+ * story pins it so a future refactor can't quietly change it.
+ */
+export const FixedTag: Story = {
+	parameters: { layout: 'padded' },
+	render: (args) => (
+		<Row>
+			<Group label="table (fixed)">
+				<Table { ...args }>
+					<Table.Row><Table.Cell>table cell</Table.Cell></Table.Row>
+				</Table>
+			</Group>
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			root = canvas.getByText('table cell').closest(ROOT_SELECTOR) as HTMLElement
 
-// 		// `meta.args` already carries the REGISTERED default (`as: 'table'`, via
-// 		// `getDefaultProps`/`Table.set`) — leaving `as` unset here renders
-// 		// `table`. The second group's `as="section"` override is silently
-// 		// dropped at runtime (KNOWN REGRESSION — see comment above), so it ALSO
-// 		// renders `table`, not `section`.
-// 		await expect(asTable.tagName).toBe('TABLE')
-// 		await expect(asSection.tagName).toBe('TABLE')
-// 	},
-// }
+		await expect(root.tagName).toBe('TABLE')
+	},
+}
 
 /**
  * `Table.tsx` always wraps `children` in a hardcoded, literal `<tbody>` —
- * regardless of how many `Table.Row`s are passed, or whether `as` is
- * overridden — pinning that DOM shape directly (`Table.test.tsx` asserts the
- * same thing).
+ * regardless of how many `Table.Row`s are passed — pinning that DOM shape
+ * directly (`Table.test.tsx` asserts the same thing).
  */
 export const TbodyWrapping: Story = {
 	args: {

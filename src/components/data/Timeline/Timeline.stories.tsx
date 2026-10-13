@@ -53,11 +53,11 @@ const meta: Meta<TimelineStoryProps> = {
 	argTypes: {
 		children: {
 			control: false,
-			description: 'Required. Rendered through `filterChildren(children, TimelineItem.displayName)` — only elements whose `displayName` is `\'Timeline.Item\'` (the dotted `NAME` registered on `TimelineItem.tsx`) survive; everything else (including `Fragment`-wrapped content, which `filterChildren` recurses into and flattens) is dropped entirely before rendering, not merely hidden. See the `NonTimelineItemChildren` story.',
+			description: 'Required. Rendered through `filterChildren(children, TimelineItem.displayName)` — only elements whose `displayName` is `\'Timeline.Item\'` (the dotted `NAME` registered on `TimelineItem.tsx`) survive. `Timeline.Item`s wrapped in a `Fragment` are KEPT (`filterChildren` recurses into Fragments and flattens them into the same list); every other child (a plain element, text, a number) is dropped entirely before rendering, not merely hidden. See the `NonTimelineItemChildren` story.',
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps`, not `Timeline`\'s own `TimelineProps`. `Timeline.tsx` only ever calls `styles(\'root\')` — no other selector — and `.inkq-timeline` has a real declaration in `Timeline.module.scss`, so the semantic base class is ALWAYS emitted and only the CSS-module hash is suppressed by `unstyled`. See the `Unstyled` story.',
+			description: 'Part of `PolymorphicProps`, not `Timeline`\'s own `TimelineProps`. `Timeline.tsx` only ever calls `styles(\'root\')` — no other selector — and `.inkq-timeline` has a real declaration in `Timeline.module.scss`, so the semantic base class is ALWAYS emitted and `unstyled` suppresses the CSS-module hash. `Timeline` has no tokens and passes no config classes, so there are none of those to drop; but `unstyled` is also forwarded to the root `Box` (it is not destructured out), which drops the non-state `data-*` attributes — here `data-timeline`. See the `Unstyled` story.',
 		},
 	},
 	args: {
@@ -139,10 +139,13 @@ export const NonTimelineItemChildren: Story = {
 }
 
 // `unstyled` does NOT remove `Timeline`'s semantic base class
-// (`inkq-timeline`) — per `getClassName.tsx`, the base class is now ALWAYS
-// emitted. It only suppresses the CSS-module-hashed class normally appended
-// alongside it. `Timeline.tsx` only ever styles the root selector, so this is
-// the only class pair to verify (unlike `Timeline.Item`, which styles six).
+// (`inkq-timeline`) — per `getClassName.tsx`, the base class is ALWAYS
+// emitted. It suppresses the CSS-module-hashed class normally appended
+// alongside it, and — because `Timeline` forwards `unstyled` on to its root
+// `Box` — the non-state `data-timeline` attribute (`buildAttributes.ts` keeps
+// only state attributes when unstyled). `Timeline.tsx` only ever styles the
+// root selector and has no tokens or config classes, so those are the only
+// effects to verify (unlike `Timeline.Item`, which styles seven selectors).
 export const Unstyled: Story = {
 	parameters: { controls: { exclude: ['unstyled'] } },
 	render: (args) => (
@@ -168,5 +171,8 @@ export const Unstyled: Story = {
 		await expect(unstyledRoot).toHaveClass('inkq-timeline')
 		expect(hasModuleClass(styledRoot, 'inkq-timeline')).toBe(true)
 		expect(hasModuleClass(unstyledRoot, 'inkq-timeline')).toBe(false)
+
+		await expect(styledRoot).toHaveAttribute('data-timeline')
+		await expect(unstyledRoot).not.toHaveAttribute('data-timeline')
 	},
 }

@@ -10,7 +10,7 @@ import moduleClasses from './Grid.module.scss'
 // `as`/Box escape hatches). `columns` is a plain `number`, not a fixed enum,
 // so there is nothing to move into a shared `options.story.ts` — the
 // representative values exercised below (`COLUMN_VALUES`) live locally,
-// same precedent as `Button`/`Badge`/`Container`/`Section`.
+// alongside `Grid`'s own `GAP_OPTIONS` below.
 const COLUMN_VALUES = [2, 3, 4] as const
 
 // `gap`'s type (`Grid.tsx`): `Exclude<UnpackArray<GridGapOptions>, 'grid'>`,
@@ -20,10 +20,12 @@ const COLUMN_VALUES = [2, 3, 4] as const
 // — the commented-out `sm` entry there is dead, not a live option). That
 // yields exactly `['grid'] | ['grid', 'lg']`, unpacked to `'grid' | 'lg'`,
 // with the `'grid'` bare-default excluded — so `'lg'` is the ONLY valid,
-// non-default `gap` value. Read off `Grid.Props['gap']` itself (not
-// hand-typed) so this can't silently drift if `SpaceTokens.grid` ever grows a
-// new step. Single value, but still a real enum worth its own shared-shape
-// story, same treatment as every other enumerable prop in this codebase.
+// non-default `gap` value. Only the ELEMENT TYPE (`GridGap`) is derived from
+// `Grid.Props['gap']`; the `['lg']` list itself is hand-typed, so it must be
+// updated by hand if `SpaceTokens.grid` ever grows a new step (the
+// `readonly GridGap[]` annotation only rejects values the type no longer
+// allows, it doesn't force new ones in). Single value, but still a real enum
+// worth its own story, same treatment as every other enumerable prop.
 type GridGap = NonNullable<Grid.Props['gap']>
 const GAP_OPTIONS: readonly GridGap[] = ['lg']
 
@@ -76,22 +78,26 @@ const meta: Meta<GridStoryProps> = {
 	component: Grid,
 	title: 'Layout/Grid',
 	argTypes: {
+		as: {
+			control: 'text',
+			description: 'Polymorphic escape hatch via the shared `Box` contract. `GridSpecs` declares `defaults: { as: \'div\' }` and `Grid.tsx` destructures `as` and forwards it to its root `<Box>`, so it sets the root element\'s tag. See the `AsElement` story.',
+		},
 		children: {
 			control: false,
-			description: 'Rendered completely as-is — `Grid.tsx` spreads `{ children }` directly into its root `<Box>` with NO flattening or filtering applied. `filterChildren` is still imported but its call site is commented out (`Grid.tsx` line 55); it is dead code. Every child is preserved verbatim regardless of whether it\'s a `Grid.Item`, a plain element, a `Fragment`, or a bare string. See the `RawChildren` story.',
+			description: 'Rendered completely as-is — `Grid.tsx` spreads `{ children }` directly into its root `<Box>` with NO flattening or filtering applied, and `Grid.tsx` doesn\'t import `filterChildren` at all. Every child is preserved verbatim regardless of whether it\'s a `Grid.Item`, a plain element, a `Fragment`, or a bare string. See the `RawChildren` story.',
 		},
 		columns: {
 			control: 'number',
-			description: 'Feeds a `--grid-cols` CSS custom property on the root via an inline style (the `tokens` function built with `defineTokens`), NOT a class — `Grid.tsx` calls `styles(\'root\')` with no `module`/`global`/`selector` config at all, so `columns` never produces any `inkq-grid--*` modifier class. `--grid-cols` is only set inline when `columns` is a positive number (`!!(columns && columns > 0)`); otherwise it is absent from the inline style, and `Grid.module.scss`\'s own base rule (`--grid-cols: auto-fit`) applies instead. See the `Columns` story.',
+			description: 'Feeds a `--grid-cols` CSS custom property on the root via an inline style (the `tokens` function built with `defineTokens`), NOT a class — `Grid.tsx` calls `styles(\'root\')` with no `module`/`global`/`selector` config at all, so `columns` never produces any `inkq-grid--*` modifier class. `--grid-cols` is only set inline when `columns` is a positive number (`!!(columns && columns > 0)`); otherwise it is absent from the inline style, and `Grid.module.scss`\'s `grid-template-columns` rule falls back to `auto-fit` (the fallback of `var(--grid-cols, auto-fit)`; it is not a declaration). See the `Columns` story.',
 		},
 		gap: {
 			control: 'select',
 			options: GAP_OPTIONS,
-			description: 'Feeds a `--grid-gap` CSS custom property on the root (the `tokens` function built with `defineTokens`, via `theme.space(...gridGap)` where `gridGap` starts as `[\'grid\']` and pushes `gap` when set) — NOT a class. `\'lg\'` is the only valid, non-default value (`Grid.Props[\'gap\']` resolves to exactly `\'lg\'` — see the type note above); leaving it unset resolves `--grid-gap` to `var(--inkq-space-grid)` (the semantic `space.grid.base` token), while `gap="lg"` resolves it to `var(--inkq-space-grid-lg)` (`space.grid.lg`). See the `Gap` story.',
+			description: 'Feeds a `--grid-gap` CSS custom property on the root (the `tokens` function built with `defineTokens`, via `theme.space(...gridGap)` where `gridGap` starts as `[\'grid\']` and pushes `gap` when set) — NOT a class. `\'lg\'` is the only valid, non-default value (`Grid.Props[\'gap\']` resolves to exactly `\'lg\'` — see the type note above); leaving it unset resolves `--grid-gap` to `var(--inkq-space-grid)` (the semantic `space.grid.base` token), while `gap="lg"` resolves it to `var(--inkq-space-grid-lg)` (`space.grid.lg`). `Grid` destructures `gap` out of its props, so it is not forwarded to the DOM as a `gap` attribute. See the `Gap` story.',
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Grid`\'s own `GridProps`. The semantic base class (`inkq-grid`) is ALWAYS emitted regardless of this prop — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it.',
+			description: 'Part of the factory\'s `FactoryContract` (`_PolymorphicContract.unstyled`), not `Grid`\'s own `GridProps`. The semantic base class (`inkq-grid`) is emitted regardless of this prop (`namespace ?? baseName`). When `unstyled` is true, `Grid` loses the CSS-module-hashed class and the inline `--grid-cols`/`--grid-gap` tokens (`getStyle` returns only inherited styles); it has no config classes. `Grid` forwards `unstyled` to its `Box` via `others` but sets no `data-*`.',
 		},
 	},
 	args: {
@@ -101,15 +107,12 @@ const meta: Meta<GridStoryProps> = {
 
 export default meta
 
-// NOTE: `Grid`'s BASE rule — `grid-template-columns: repeat(var(--grid-cols),
-// var(--grid-item-width))`, where `--grid-item-width: minmax(var(--inkq-breakpoint-min),
-// 1fr)` in `Grid.module.scss` — references `--inkq-breakpoint-min`, which is
-// defined nowhere in the repo, so that `minmax()` argument is invalid and the
-// browser falls back to a single column. This is a source-side gap: no
-// COMPUTED-layout assertions (actual column count/widths) are made anywhere
-// in this file, for the base rule OR the `columns` token below — only the
-// inline `--grid-cols` custom property IS reliably verifiable regardless of
-// whether the underlying CSS value resolves.
+// NOTE: `Grid`'s BASE rule in `Grid.module.scss` is
+// `grid-template-columns: repeat(var(--grid-cols, auto-fit), var(--grid-width, minmax(0, 1fr)))`.
+// Both custom properties have fallbacks, so the rule is valid whether or not
+// `columns` is set. `--grid-width` is not set by `Grid` itself. With `columns`
+// set, the computed `grid-template-columns` should resolve to that many
+// tracks, which the `Columns` story asserts.
 export const Default: Story = {
 	args: {
 		children: (
@@ -167,6 +170,12 @@ export const Columns: Story = {
 		await expect(root3.style.getPropertyValue('--grid-cols')).toBe('3')
 		await expect(root4.style.getPropertyValue('--grid-cols')).toBe('4')
 
+		// `repeat(var(--grid-cols), ...)` resolves to one track per column.
+		for (const [root, columns] of [[root2, 2], [root3, 3], [root4, 4]] as const) {
+			const tracks = getComputedStyle(root).gridTemplateColumns.split(' ')
+			await expect(tracks).toHaveLength(columns)
+		}
+
 		// No `inkq-grid--*` modifier class exists for any value — `Grid` never
 		// passes a `module`/`global`/`selector` config to `styles('root')`.
 		for (const root of [root2, root3, root4]) {
@@ -219,27 +228,56 @@ export const Gap: Story = {
 		await expect(unsetRoot.style.getPropertyValue('--grid-gap')).toBe('var(--inkq-space-grid)')
 		await expect(lgRoot.style.getPropertyValue('--grid-gap')).toBe('var(--inkq-space-grid-lg)')
 
-		// No `inkq-grid--*` modifier class exists for either value.
+		// No `inkq-grid--*` modifier class exists for either value, and — since
+		// `Grid` destructures `gap` out of its props — no `gap` DOM attribute.
 		for (const root of [unsetRoot, lgRoot]) {
 			const modifiers = Array.from(root.classList).filter(c => c.includes('--'))
 			await expect(modifiers).toHaveLength(0)
+			await expect(root).not.toHaveAttribute('gap')
 		}
 	},
 }
 
 /**
- * **Re-verified against the LIVE `Grid.tsx`**: `Grid` no longer calls
- * `filterChildren` at all — the call is present in source but commented out
- * (`Grid.tsx` line 55, `{/* { filterChildren(children, 'GridItem').map(...) } *\/}`),
- * and the actual render is a bare `{ children }` spread (line 54). There is
- * NO flattening and NO filtering anymore: `Fragment`s are not unwrapped (React
- * renders their contents natively either way, so this makes no visible
- * difference), and — the behavioral change that matters — a plain ELEMENT
- * child that isn't a `Grid.Item` is NO LONGER dropped; it renders straight
- * through, unwrapped by any `.inkq-grid-item`, exactly like the bare string
- * child already did. `filterChildren` (`src/utils/helpers/children.ts`) is
- * still imported by `Grid.tsx` but is now dead code — worth flagging as an
- * unused import, separate from the filtering behavior change itself.
+ * `as` is forwarded to the root `<Box>`: the registered default (`div`) vs.
+ * an explicit `section` override, side by side.
+ */
+export const AsElement: Story = {
+	parameters: {
+		layout: 'padded',
+		controls: { exclude: ['as'] },
+	},
+	render: (args) => (
+		<Row>
+			<Group label='as="div" (default)'>
+				<Grid { ...args }>
+					<Grid.Item>{ tile('as-default') }</Grid.Item>
+				</Grid>
+			</Group>
+			<Group label='as="section"'>
+				<Grid { ...args } as="section">
+					<Grid.Item>{ tile('as-section') }</Grid.Item>
+				</Grid>
+			</Group>
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			defaultRoot = canvas.getByText('as-default').closest(ROOT_SELECTOR) as HTMLElement,
+			sectionRoot = canvas.getByText('as-section').closest(ROOT_SELECTOR) as HTMLElement
+
+		await expect(defaultRoot.tagName).toBe('DIV')
+		await expect(sectionRoot.tagName).toBe('SECTION')
+	},
+}
+
+/**
+ * **Re-verified against the LIVE `Grid.tsx`**: `Grid` doesn't import or call
+ * `filterChildren`; its render is a bare `{ children }` spread into the root
+ * `Box`. There is NO flattening and NO filtering: `Fragment`s are not
+ * unwrapped (React renders their contents natively anyway), a plain ELEMENT
+ * child that isn't a `Grid.Item` renders straight through unwrapped by any
+ * `.inkq-grid-item`, and a bare string child renders as-is too.
  */
 export const RawChildren: Story = {
 	args: {
@@ -304,8 +342,10 @@ export const EmptyGrid: Story = {
 }
 
 // `unstyled` does NOT remove `Grid`'s semantic base class (`inkq-grid`) — per
-// `getClassName.tsx` the base class is now ALWAYS emitted. It only suppresses
-// the CSS-module-hashed class normally appended alongside it. `Grid` makes
+// `getClassName.tsx` the base class (`namespace ?? baseName`) is emitted
+// regardless. It also suppresses the CSS-module-hashed class normally appended
+// alongside it and the inline `--grid-cols`/`--grid-gap` tokens (`getStyle`
+// returns only inherited styles); this story asserts only the hash. `Grid` makes
 // exactly one `styles(...)` call (`root`), so the root element is the only
 // one to check here.
 export const Unstyled: Story = {

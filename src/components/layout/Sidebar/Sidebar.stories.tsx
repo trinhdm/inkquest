@@ -70,15 +70,15 @@ const ACTION_ITEMS: Sidebar.ActionItem[] = [
 type SidebarStoryProps = Parameters<typeof Sidebar>[0]
 
 // `SidebarProps` is an INTERSECTION that CONTAINS a union
-// (`BaseSidebarProps & (ActionSidebarProps | LinkedSidebarProps) &
-// MaybeAnimationProps`), not a top-level union — same shape category as
+// (`BaseSidebarProps & (ActionSidebarProps | DisplaySidebarProps |
+// LinkedSidebarProps) & MaybeAnimationProps`), not a top-level union — same shape category as
 // `SectionProps` (`Section.stories.tsx` documents this exact caveat there):
 // `Extract`/`Exclude` can't distribute over a union nested inside an
 // intersection, so `Exclude<SidebarStoryProps, { onChange: ... }>`
 // silently returns the type UNCHANGED rather than isolating a branch.
 // `Section.stories.tsx`'s own workaround applies here too: `Omit` away every
 // key that actually DIFFERS in shape/requiredness between
-// `ActionSidebarProps`/`LinkedSidebarProps` (`active`, `items`,
+// `ActionSidebarProps`/`DisplaySidebarProps`/`LinkedSidebarProps` (`active`, `items`,
 // `onChange`, `scroll`, `shallow`) — once those are gone, what's left is
 // a single, unambiguous object type with no residual union to fight. Each
 // story then supplies the omitted, branch-specific props explicitly in JSX
@@ -120,15 +120,19 @@ const meta: Meta<SidebarStoryProps> = {
 		},
 		children: {
 			control: 'text',
-			description: 'Optional (`BaseSidebarProps.children?: ReactNode`), rendered AFTER the `<nav>` (item list), not inside it — `Sidebar.tsx`\'s render ends with `<nav>...</nav>{ children }` inside the root `<Box>`. See the `AdditionalChildren` story.',
+			description: 'Optional (`BaseSidebarProps.children?: ReactNode`), and only rendered when `items` is NOT passed: then `Sidebar.tsx` renders `children` inside a `div` `wrapper` > `div` `inner` pair with no `<nav>`. The same plain version renders for `items: []` (`hasItems` is `!!items?.length`) — see the `EmptyItems` story. When `items` is passed, only the `<nav>` item list renders and `children` is silently dropped, even though the types allow it. See the `DisplayBranch` (children render) and `DroppedChildren` (children dropped) stories.',
+		},
+		sticky: {
+			control: 'boolean',
+			description: 'Registered default is `true`. Adds a `sticky` selector modifier to the root via `styles(\'root\', { selector: { nav: hasItems, sticky } })`, i.e. an `inkq-sidebar--sticky` class (`Sidebar.module.scss` has a real `&--sticky` rule, so the token in the DOM is the CSS-module hash, which still contains `inkq-sidebar--sticky`). When `false` the class is absent. See the `Sticky` story. The sibling `nav` modifier (`inkq-sidebar--nav`, also hashed) is added only when there are items; see `Default` (present) and `DisplayBranch`/`EmptyItems` (absent).',
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Sidebar`\'s own `SidebarProps`. The semantic base class (`inkq-sidebar`) is ALWAYS emitted regardless of this prop. **Verified against the live `Sidebar.module.scss`**: `.inkq-sidebar`\'s own selector has no declarations of its own (only nested `&__*` rules), so the ROOT never carries a CSS-module hash either way — `unstyled` only suppresses the hash on the `inner`/`wrapper`/`rail`/`item`/`button` selectors, which DO have their own rules. Separately, each item\'s `Button` is ALWAYS rendered with a hardcoded `unstyled: true` (`Sidebar.tsx`\'s `itemProps`), independent of `Sidebar`\'s own `unstyled` prop — `Button`\'s own CSS-module classes never appear inside a `Sidebar`, styled or not. See the `Unstyled` story.',
+			description: 'Part of the factory\'s `FactoryContract` (`_PolymorphicContract.unstyled`), not `Sidebar`\'s own `SidebarProps`. The semantic base class (`inkq-sidebar`) is emitted regardless of this prop (it is `namespace ?? baseName`, so only an inherited semantic `className` would replace it). When `unstyled` is true, `useStyles` drops: (1) the CSS-module hash on every selector — **verified against the live `Sidebar.module.scss`**: `.inkq-sidebar`\'s own selector has no declarations of its own (only nested `&__*` rules), so the ROOT never carries a hash either way, while `inner`/`wrapper`/`rail`/`item`/`button` DO have their own rules; (2) config-derived classes, i.e. the `inkq-sidebar__item--active` modifier and the root `inkq-sidebar--nav`/`inkq-sidebar--sticky` modifiers (`getConfigClasses` returns early); (3) the component tokens, i.e. the inline `--sidebar-rail-height`/`--sidebar-rail-position` custom properties (`getStyle` returns only inherited styles). `unstyled` is not destructured by `Sidebar`, so it reaches the root `Box` via `others`, which drops non-state `data-*` attributes (`Sidebar` sets none). Separately, each item\'s `Button` is ALWAYS rendered with a hardcoded `unstyled: true` (`Sidebar.tsx`\'s `itemProps`), independent of `Sidebar`\'s own `unstyled` prop — `Button`\'s own CSS-module classes never appear inside a `Sidebar`, styled or not. See the `Unstyled` story.',
 		},
 		animated: {
 			control: false,
-			description: '**Probable source gap, verified against the live `Sidebar.tsx`**: part of `SidebarProps` via `MaybeAnimationProps` (same discriminated union `Group`/`Section` use), but `Sidebar.tsx` never destructures `animated` (or `duration`/`stagger`/`amount`/`once`/`lead`/`margin`/`withinView`/`index`) out of `rest`, and calls no animation hook (`useReveal`/`useReplayInView`) at all — unlike `Group`/`Section`. `extractOthers` doesn\'t reserve any of these names either, so passing `animated`/`duration`/etc. lands the raw prop straight onto the root `<Box>` as a lowercase DOM attribute (same silent-passthrough class of bug as `Group`\'s documented `justify`/`lead`). No story exercises this beyond this doc note.',
+			description: '**Accepted by the type, never consumed**: part of `SidebarProps` via `MaybeAnimationProps` (same union `Group`/`Section` use), but `Sidebar.tsx` never destructures `animated` (or `duration`/`stagger`/`amount`/`once`/`lead`/`margin`/`withinView`/`index`) out of `props` and calls no animation hook (`useReveal`/`useReplayInView`) — unlike `Group`/`Section`. All of those names are in `RESERVED_PROPS` (`src/hooks/useProps/helpers.ts`), so `extractOthers(rest)` strips them: they are silently ignored and do NOT land on the DOM. No story exercises this beyond this doc note.',
 		},
 		duration: { control: false, description: 'See `animated`\'s doc note — not consumed by `Sidebar.tsx` at all.' },
 		stagger: { control: false, description: 'See `animated`\'s doc note — not consumed by `Sidebar.tsx` at all.' },
@@ -170,8 +174,15 @@ export const Default: Story = {
 		await expect(activeItem.className).toMatch('inkq-sidebar__item--active')
 		await expect(overviewItem.className).not.toMatch('inkq-sidebar__item--active')
 
-		const root = canvas.getByRole('navigation').closest(ROOT_SELECTOR) as HTMLElement,
+		const nav = canvas.getByRole('navigation'),
+			root = nav.closest(ROOT_SELECTOR) as HTMLElement,
 			rail = root.querySelector(RAIL_SELECTOR) as HTMLElement
+
+		// The items version is `nav.wrapper > ul.inner`, and the root carries
+		// the `--nav` modifier.
+		await expect(nav).toHaveClass('inkq-sidebar__wrapper')
+		await expect(within(nav).getByRole('menu')).toHaveClass('inkq-sidebar__inner')
+		await expect(root.className).toMatch('inkq-sidebar--nav')
 
 		// `settings` is index 1 — `--sidebar-rail-position` = `rem(48 * 1)`.
 		expect(rail.style.getPropertyValue('--sidebar-rail-height')).toBe(rem(RAIL_HEIGHT_PX))
@@ -210,10 +221,12 @@ export const ActiveNoMatch: Story = {
 }
 
 /**
- * `items: []` — an empty list is a valid, non-crashing state.
- * `[].findIndex(...)` is also `-1`, same rail-offset behavior as
- * `ActiveNoMatch`, but exercised here via genuinely zero items rather than an
- * unmatched `active` against a populated list.
+ * `items: []` — an empty list is a valid, non-crashing state. `Sidebar.tsx`
+ * branches on `hasItems` (`!!items?.length`), not on `items` being truthy, so
+ * an empty list renders the plain `<aside>` version (the same
+ * `div` `wrapper` > `div` `inner` pair as the display branch), NOT an empty
+ * `<nav>`: no `nav`/`menu`/rail, no `--nav` modifier, and (since the `tokens`
+ * function returns early for an empty list) no rail tokens.
  */
 export const EmptyItems: Story = {
 	render: (args) => (
@@ -221,18 +234,22 @@ export const EmptyItems: Story = {
 	),
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement),
-			nav = canvas.getByRole('navigation')
+			root = canvasElement.querySelector(ROOT_SELECTOR) as HTMLElement
 
+		await expect(root).toBeInTheDocument()
+		await expect(root.tagName).toBe('ASIDE')
+
+		await expect(canvas.queryByRole('navigation')).not.toBeInTheDocument()
+		await expect(canvas.queryByRole('menu')).not.toBeInTheDocument()
 		await expect(canvas.queryByRole('link')).not.toBeInTheDocument()
 		await expect(canvas.queryByRole('button')).not.toBeInTheDocument()
+		await expect(root.querySelector(RAIL_SELECTOR)).toBeNull()
+		await expect(root.className).not.toMatch('inkq-sidebar--nav')
 
-		const menu = within(nav).getByRole('menu')
-		await expect(menu).toBeEmptyDOMElement()
-
-		const root = nav.closest(ROOT_SELECTOR) as HTMLElement,
-			rail = root.querySelector(RAIL_SELECTOR) as HTMLElement
-
-		expect(rail.style.getPropertyValue('--sidebar-rail-position')).toBe(rem(RAIL_HEIGHT_PX * -1))
+		const wrapper = root.querySelector('.inkq-sidebar__wrapper') as HTMLElement
+		await expect(wrapper.tagName).toBe('DIV')
+		await expect(wrapper.firstElementChild?.tagName).toBe('DIV')
+		await expect(wrapper.firstElementChild).toHaveClass('inkq-sidebar__inner')
 	},
 }
 
@@ -361,11 +378,16 @@ export const Scroll: Story = {
  * own (only a real navigation attempt would), rather than asserting on
  * `next/link`'s own click-driven navigation timing, which is
  * framework-internal and outside what this story can reliably observe.
+ * The spy is installed in the story's `beforeEach`, i.e. BEFORE mount, so a
+ * mount-time `pushState` call would actually be recorded.
  */
 export const Shallow: Story = {
 	parameters: {
 		layout: 'padded',
 		controls: { exclude: ['shallow'] },
+	},
+	beforeEach: () => {
+		spyOn(window.history, 'pushState')
 	},
 	render: (args) => (
 		<Row>
@@ -382,7 +404,6 @@ export const Shallow: Story = {
 		</Row>
 	),
 	play: async ({ canvasElement }) => {
-		const pushState = spyOn(window.history, 'pushState')
 		const canvas = within(canvasElement),
 			links = canvas.getAllByRole('link')
 
@@ -390,7 +411,7 @@ export const Shallow: Story = {
 		for (const link of links)
 			await expect(link).toHaveAttribute('href')
 
-		await expect(pushState).not.toHaveBeenCalled()
+		await expect(window.history.pushState).not.toHaveBeenCalled()
 	},
 }
 
@@ -435,10 +456,95 @@ export const AsElement: Story = {
 }
 
 /**
- * `children` renders AFTER the `<nav>` item list, inside the same root — not
- * merged into it.
+ * The display branch (`DisplaySidebarProps`: no `items`, and `active`/
+ * `onChange`/`scroll`/`shallow` are all `never`). `Sidebar.tsx` falls through
+ * to its second `return`: a plain `<div>` `wrapper` > `<div>` `inner` pair
+ * holding `children`, with NO `<nav>`, `menu`, rail or `--nav` modifier (the
+ * default `sticky: true` modifier is still present). `active` is typed `never`
+ * here (required, so it can't be written in JSX at all) — the cast below
+ * hands the registered defaults through untouched.
  */
-export const AdditionalChildren: Story = {
+export const DisplayBranch: Story = {
+	parameters: { layout: 'padded' },
+	render: (args) => (
+		<Sidebar { ...args as SidebarStoryProps }>
+			<div>Free-form content</div>
+		</Sidebar>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			content = canvas.getByText('Free-form content'),
+			root = content.closest(ROOT_SELECTOR) as HTMLElement
+
+		await expect(root).toBeInTheDocument()
+		await expect(root.tagName).toBe('ASIDE')
+
+		await expect(canvas.queryByRole('navigation')).not.toBeInTheDocument()
+		await expect(canvas.queryByRole('menu')).not.toBeInTheDocument()
+		await expect(canvas.queryByRole('link')).not.toBeInTheDocument()
+		await expect(canvas.queryByRole('button')).not.toBeInTheDocument()
+		await expect(root.querySelector(RAIL_SELECTOR)).toBeNull()
+
+		await expect(root.className).not.toMatch('inkq-sidebar--nav')
+		await expect(root.className).toMatch('inkq-sidebar--sticky')
+
+		// `children` sit inside `div.inner`, itself inside `div.wrapper`.
+		const inner = content.closest('.inkq-sidebar__inner') as HTMLElement
+		await expect(inner.tagName).toBe('DIV')
+		await expect(inner.parentElement).toHaveClass('inkq-sidebar__wrapper')
+		await expect(inner.parentElement?.tagName).toBe('DIV')
+	},
+}
+
+/**
+ * `sticky` (registered default `true`) toggles the root's `sticky` selector
+ * modifier. `true` carries `inkq-sidebar--sticky` (hashed, but the hash keeps
+ * the name as a substring); `false` does not. Both groups have items, so both
+ * carry the `--nav` modifier — the two modifiers are independent.
+ */
+export const Sticky: Story = {
+	parameters: {
+		layout: 'padded',
+		controls: { exclude: ['sticky'] },
+	},
+	render: (args) => (
+		<Row>
+			{ ([true, false] as const).map(sticky => (
+				<Group key={ String(sticky) } label={ String(sticky) }>
+					<Sidebar
+						{ ...args as SidebarBaseArgs }
+						active="overview"
+						items={ LINK_ITEMS }
+						sticky={ sticky }
+					/>
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			navs = canvas.getAllByRole('navigation')
+
+		await expect(navs).toHaveLength(2)
+
+		const [stickyRoot, staticRoot] = navs.map(
+			nav => nav.closest(ROOT_SELECTOR) as HTMLElement
+		)
+
+		await expect(stickyRoot.className).toMatch('inkq-sidebar--sticky')
+		await expect(staticRoot.className).not.toMatch('inkq-sidebar--sticky')
+
+		await expect(stickyRoot.className).toMatch('inkq-sidebar--nav')
+		await expect(staticRoot.className).toMatch('inkq-sidebar--nav')
+	},
+}
+
+/**
+ * When `items` is passed, `Sidebar.tsx`'s items branch never renders
+ * `{children}` — extra content is silently dropped, even though
+ * `BaseSidebarProps.children` allows it. Only the `<nav>` item list renders.
+ */
+export const DroppedChildren: Story = {
 	parameters: { layout: 'padded' },
 	render: (args) => (
 		<Sidebar { ...args as SidebarBaseArgs } active="overview" items={ LINK_ITEMS }>
@@ -446,22 +552,19 @@ export const AdditionalChildren: Story = {
 		</Sidebar>
 	),
 	play: async ({ canvasElement }) => {
-		const canvas = within(canvasElement),
-			nav = canvas.getByRole('navigation'),
-			footer = canvas.getByText('Extra footer content')
+		const canvas = within(canvasElement)
 
-		await expect(footer).toBeInTheDocument()
-
-		// `children` sits alongside `<nav>` inside the same root `<Box>`, not
-		// nested inside it.
-		await expect(within(nav).queryByText('Extra footer content')).not.toBeInTheDocument()
-		await expect(footer.closest(ROOT_SELECTOR)).toBe(nav.closest(ROOT_SELECTOR))
+		await expect(canvas.getByRole('navigation')).toBeInTheDocument()
+		await expect(canvas.getAllByRole('link')).toHaveLength(3)
+		await expect(canvas.queryByText('Extra footer content')).not.toBeInTheDocument()
 	},
 }
 
 /**
- * `unstyled` does NOT remove `Sidebar`'s semantic base classes — they're
- * always emitted. **Re-verified against the live `Sidebar.module.scss`**: the
+ * `unstyled` does NOT remove `Sidebar`'s semantic base classes (`namespace ??
+ * baseName` is not gated on it). It does drop the CSS-module hashes, the
+ * config-derived classes (e.g. `inkq-sidebar__item--active`) and the inline
+ * rail tokens; this story asserts only the class/hash part. **Re-verified against the live `Sidebar.module.scss`**: the
  * ROOT selector (`.inkq-sidebar`) has no declarations of its own (only nested
  * `&__*` rules), so it never carries a CSS-module hash either way; the
  * `wrapper` selector (`&__wrapper`) DOES have its own declarations, so its

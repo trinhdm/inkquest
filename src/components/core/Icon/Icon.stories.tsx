@@ -2,6 +2,7 @@ import { expect, within } from 'storybook/test'
 import { getDefaultProps } from '@/hooks/useProps'
 import { SOCIAL_BRANDS } from '@/utils/constants'
 import { Icon } from './Icon'
+import { ICON_MAP } from './IconMap'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import type { LucideType } from './IconMap'
@@ -30,8 +31,8 @@ const ACTION_TYPES: readonly LucideType[] = [
 ]
 
 const CONTROL_TYPES: readonly LucideType[] = [
-	'calendar', 'filter', 'grid', 'hidden', 'list',
-	'price', 'row', 'search', 'sort', 'visible',
+	'calendar', 'color', 'file', 'filter', 'grid', 'hidden', 'list',
+	'number', 'price', 'row', 'search', 'sort', 'visible',
 ]
 
 const USER_SETTING_TYPES: readonly LucideType[] = [
@@ -53,9 +54,11 @@ const ICON_GROUPS: Record<string, readonly LucideType[]> = {
 	'misc': MISC_TYPES,
 }
 
-// Full `LucideType` union (all 66 keys of `ICON_MAP`), used for
+// Full `LucideType` union (every key of `ICON_MAP`), used for
 // `argTypes.type`'s combined options and as the exhaustive list the
-// `AllIcons` story maps over.
+// `AllIcons` story maps over. The groups above are hand-sorted, so the
+// `AllIcons` play function checks this list against the live `ICON_MAP` keys
+// and fails when an icon is added or removed without updating a group.
 const ICON_TYPE_OPTIONS: readonly LucideType[] = [
 	...ARROW_NAV_TYPES,
 	...ACTION_TYPES,
@@ -144,16 +147,16 @@ const meta: Meta<IconStoryProps> = {
 		},
 		href: {
 			control: 'text',
-			description: 'When set, wraps the rendered icon glyph in a `next/link` `<Link>` instead of the default `<div>` wrapper (`Icon.tsx`\'s `\'href\' in props` branch). `isExternalLink(href)` (`@/utils/helpers`) additionally adds `target="_blank" rel="noopener noreferrer"` whenever the link is external. See the `AsLink` story for both branches.',
+			description: 'When set, wraps the rendered icon glyph in a `next/link` `<Link>` instead of the default `<div>` wrapper (`Icon.tsx`\'s `keyHasValue(props, \'href\')` branch, so a falsy `href`, such as an empty string, falls back to the `<div>`). `isExternalLink(href)` (`@/utils/helpers`) additionally adds `target="_blank" rel="noopener noreferrer"` whenever the link is external. See the `AsLink` story for both branches.',
 		},
 		strokeLinecap: {
 			control: 'select',
 			options: STROKE_LINECAP_OPTIONS,
-			description: 'Forwarded straight through `extractOthers`\' `others` onto the rendered `<svg>`\'s `stroke-linecap` attribute — `Icon.tsx` never destructures it explicitly. Typed as `never` on `LucideIconProps` (TS blocks passing it explicitly alongside a Lucide `type`), but the REGISTERED default (`DEFAULT_PROPS.strokeLinecap`, merged in by `useProps` regardless of which union branch is active) still applies to Lucide icons too. See the `StrokeLinecap` story.',
+			description: 'Forwarded straight through `extractOthers`\' `others` onto the rendered `<svg>`\'s `stroke-linecap` attribute — `Icon.tsx` never destructures it explicitly. Typed as `never` on `LucideIconProps` (TS blocks passing it explicitly alongside a Lucide `type`), but the REGISTERED default (`DEFAULT_PROPS.strokeLinecap`, `\'round\'`, merged in by `useProps` regardless of which union branch is active) is also passed along for Lucide icons. That is not observable there, because `lucide-react` already defaults `stroke-linecap` to `round` itself — so the `StrokeLinecap` story proves the registered default on a social icon (`instagram`) instead.',
 		},
 		size: {
 			control: 'number',
-			description: 'Pixel size applied to both the `width` and `height` of the underlying Lucide SVG icon.',
+			description: 'Sets the `width` and `height` ATTRIBUTES on the rendered `<svg>` (Lucide `size` for Lucide icons; `width`/`height` for social brands). It does not by itself change the rendered size while styled: `Icon.module.scss` sets `width` and `height` to `1em` on both `.inkq-icon` and `.inkq-icon__glyph`, which overrides those attributes, so the visible size follows `font-size` (`--icon-size`). With `unstyled`, the attributes apply. See the `Sizes` story, which asserts the attributes only.',
 		},
 		color: {
 			control: 'color',
@@ -165,7 +168,7 @@ const meta: Meta<IconStoryProps> = {
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Icon`\'s own `IconProps` (which was narrowed from `extends LucideProps, BoxProps` down to just `color`/`filled`/`size`/`strokeWidth`/`type`). The semantic base class (`inkq-icon`) on the rendered `<svg>` is ALWAYS emitted regardless of this prop — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it, via the single `styles(\'root\')` call `Icon` makes — see the `Unstyled` story.',
+			description: 'Part of the shared `FactoryContract` (`unstyled` on `_PolymorphicContract`), not `Icon`\'s own `IconProps`. `Icon` makes two `styles(...)` calls on two different elements: `styles(\'root\')` on the wrapper (a `<div>`, or the `<Link>` when `href` is set — `inkq-icon`) and `styles(\'glyph\')` on the rendered `<svg>` (`inkq-icon__glyph`). Both semantic base classes are emitted regardless of this prop (an inherited semantic `className` could replace one). `Icon` uses no config classes or tokens, so what `unstyled` drops is the CSS-module-hashed class normally appended alongside each — which is also what removes the `1em` sizing from `Icon.module.scss` — see the `Unstyled` story.',
 		},
 		filled: {
 			control: 'boolean',
@@ -190,7 +193,7 @@ export const AllIcons: Story = {
 	render: () => (
 		<div style={ { display: 'flex', flexDirection: 'column', gap: 32 } }>
 			{ Object.entries(ICON_GROUPS).map(([label, group]) => (
-				<Section label={ label }>
+				<Section key={ label } label={ label }>
 					{ group.map(type => (
 						<Group key={ type } label={ type }>
 							<Icon type={ type } />
@@ -208,6 +211,10 @@ export const AllIcons: Story = {
 		const svgs = canvasElement.querySelectorAll('svg')
 
 		await expect(svgs).toHaveLength(ICON_TYPE_OPTIONS.length)
+
+		// Guards the hand-sorted groups against drifting from the source map:
+		// every `ICON_MAP` key appears in exactly one group.
+		await expect([...ICON_TYPE_OPTIONS].sort()).toEqual(Object.keys(ICON_MAP).sort())
 	},
 }
 
@@ -257,6 +264,9 @@ export const SocialIcons: Story = {
 	},
 }
 
+// Asserts the `width`/`height` ATTRIBUTES only. While styled, `Icon.module.scss`
+// forces `width`/`height` to `1em` on `.inkq-icon` and `.inkq-icon__glyph`, so
+// the four groups look the same size on screen; the attributes still differ.
 export const Sizes: Story = {
 	render: (args) => (
 		<Row>
@@ -340,12 +350,14 @@ export const StrokeWidth: Story = {
 // (`type="instagram"`) for the enumerable-value coverage. The final group
 // demonstrates the registered-default quirk: `DEFAULT_PROPS.strokeLinecap`
 // (`Icon.tsx`) is merged in by `useProps` regardless of which union branch is
-// active, so a plain Lucide icon (`type="settings"`, no `strokeLinecap` of its
-// own) still renders with `stroke-linecap="round"` — even though TS won't let
-// you pass that prop explicitly alongside a Lucide `type`.
+// active. It is proven here on a social icon with no `strokeLinecap` of its
+// own (`type="instagram"`): `getBrandProps` supplies no `strokeLinecap` for it,
+// so `stroke-linecap="round"` can only come from the registered default. A
+// Lucide icon would not prove anything — `lucide-react` already defaults
+// `strokeLinecap` to `round` itself.
 export const StrokeLinecap: Story = {
 	parameters: { layout: 'padded' },
-	render: (args) => (
+	render: () => (
 		<div style={ { display: 'flex', flexDirection: 'column', gap: 24 } }>
 			<Row>
 				{ STROKE_LINECAP_OPTIONS.map(strokeLinecap => (
@@ -354,8 +366,8 @@ export const StrokeLinecap: Story = {
 					</Group>
 				)) }
 			</Row>
-			<Group label='type="settings" (Lucide) — registered default "round" still applies'>
-				<Icon { ...args as IconStoryProps } />
+			<Group label='type="instagram", no strokeLinecap — registered default "round"'>
+				<Icon type="instagram" />
 			</Group>
 		</div>
 	),
@@ -368,8 +380,8 @@ export const StrokeLinecap: Story = {
 			expect(svgs[index]).toHaveAttribute('stroke-linecap', value)
 		})
 
-		const lucideSvg = svgs[svgs.length - 1]
-		await expect(lucideSvg).toHaveAttribute('stroke-linecap', 'round')
+		const defaultedSvg = svgs[svgs.length - 1]
+		await expect(defaultedSvg).toHaveAttribute('stroke-linecap', 'round')
 	},
 }
 
@@ -415,16 +427,20 @@ export const UnrecognizedType: Story = {
 		</Group>
 	),
 	play: async ({ canvasElement }) => {
-		// `Icon.tsx`: `const component = ICON_MAP[type]; if (!component) return
-		// null` — an unrecognized `type` renders nothing at all.
+		// An unrecognized `type` is not a key of `ICON_MAP`, so `buildIcon`
+		// (`Icon.tsx`) routes it down the social-brand branch: `getBrandProps`
+		// returns `undefined` for it, `buildIcon` returns `null`, and `Icon`
+		// returns `null` — nothing is rendered, not even the wrapper.
 		await expect(canvasElement.querySelector('svg')).not.toBeInTheDocument()
 	},
 }
 
 // `unstyled` does NOT remove `Icon`'s own semantic base classes — per
-// `getClassName.tsx`, the base class is now ALWAYS emitted (`classList =
-// [baseClass]` unconditionally) — it only suppresses the CSS-module-hashed
-// class normally appended alongside it. `Icon.tsx` calls `styles('root')` on
+// `getClassName.tsx`, the first `classList` entry (`namespace ?? baseName`)
+// is not gated on `check.isUnstyled` (an inherited semantic `className` could
+// replace it; none is passed here). `Icon` uses no config classes or tokens, so
+// the effect is the CSS-module-hashed class (`styleName`) normally appended
+// alongside it being suppressed. `Icon.tsx` calls `styles('root')` on
 // the WRAPPING `<div>`/`<a>` (`inkq-icon`) and `styles('glyph')` on the
 // rendered `<svg>` glyph itself (`inkq-icon__glyph`) — two different
 // elements, not one — see `Icon.module.scss`'s `&`/`&__glyph` rules.
@@ -469,13 +485,16 @@ export const Unstyled: Story = {
 	},
 }
 
-// `href` routes the rendered icon glyph through `Icon.tsx`'s `'href' in
-// props` branch — a `next/link` `<Link>` instead of the default `<div>`
+// `href` routes the rendered icon glyph through `Icon.tsx`'s
+// `keyHasValue(props, 'href')` branch — a `next/link` `<Link>` instead of the default `<div>`
 // wrapper — with `isExternalLink(href)` (`@/utils/helpers`) additionally
-// gating `target="_blank" rel="noopener noreferrer"`. `SITE_URL` is unset in
-// this environment, so `isExternalLink`'s own `!SITE_URL` fallback treats any
-// absolute URL scheme as external — a relative path like `/discover` is not a
-// URL scheme/`//`-prefixed match at all, so it's internal regardless.
+// gating `target="_blank" rel="noopener noreferrer"`. `SITE_URL` comes from
+// `NEXT_PUBLIC_SITE_URL` (`.env.local` sets it to `http://localhost:3000`), so
+// `https://example.com` is external because its hostname differs; were
+// `SITE_URL` empty, `isExternalLink`'s `!SITE_URL` fallback would also return
+// `true`. A relative path like `/discover` matches neither a URL scheme nor
+// `//`, so `isExternalLink` returns `false` for it up front. Non-http schemes
+// (`mailto:`, `tel:`) also return `false` (`checks.ts`), but are not rendered here.
 export const AsLink: Story = {
 	parameters: { layout: 'padded' },
 	render: (args) => (

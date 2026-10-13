@@ -32,10 +32,11 @@ const ROOT_SELECTOR = '.inkq-header'
 // `Subnav.stories.tsx`'s own `LABEL_SELECTOR` convention) to disambiguate the two.
 const SUBNAV_LABEL_SELECTOR = '.inkq-subnav__label'
 
-// The app shell's real `Subnav` configuration for `/community` (matches
-// `Subnav.stories.tsx`'s own fixture) — used here to demonstrate `Header`'s explicit
-// `subnav` prop, as distinct from its `usePathname`-driven fallback (see
-// `PathnameFallback`).
+// An explicit 4-route `/community` list (matches `Subnav.stories.tsx`'s own fixture).
+// Note this is NOT what the app ships: `src/app/community/layout.tsx` passes
+// `routes: ['/community']` and keeps a 4-route list only as a comment. Used here to
+// demonstrate `Header`'s explicit `subnav` prop, as distinct from its
+// `usePathname`-driven fallback (see `PathnameFallback`).
 const COMMUNITY_ROUTES = [
 	NavRoutes.COMMUNITY,
 	NavRoutes.COMMUNITY_FEED,
@@ -73,15 +74,15 @@ const meta: Meta<HeaderStoryProps> = {
 	argTypes: {
 		navbar: {
 			control: 'object',
-			description: 'Forwarded straight through as `<Navbar routes={ navbar?.routes } />`. Defaults to `{ routes: HEADER_GLOBAL_NAV }`.',
+			description: 'Forwarded straight through as `<Navbar routes={ navbar?.routes } />`. Defaults to `{ routes: HEADER_GLOBAL_NAV }`. Pass `null` to not render the `Navbar` at all (`Header.tsx` guards it with `navbar !== null`); `undefined` is NOT the same — it falls back to the registered default. See the `NullParts` story.',
 		},
 		subnav: {
 			control: 'object',
-			description: 'When `subnav?.routes?.length` is falsy, `Header` computes its OWN routes via `listRoutesWithSlug(pathname)` (the current `usePathname()` value) instead — see the `PathnameFallback` story. `subnav?.category` is always forwarded as-is regardless of which routes were used.',
+			description: 'When `subnav?.routes?.length` is falsy, `Header` computes its OWN routes via `listRoutesWithSlug(pathname)` (the current `usePathname()` value) instead — see the `PathnameFallback` story. `subnav?.category` is always forwarded as-is regardless of which routes were used. Pass `null` to not render the `Subnav` at all (`Header.tsx` guards it with `subnav !== null`) — this skips the pathname fallback\'s output entirely, whereas `undefined` takes the fallback. See the `NullParts` story.',
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Header`\'s own `HeaderProps`. The semantic base class (`inkq-header`) is ALWAYS emitted — `Header.module.scss` declares only the root selector (`position: relative`, no nested rules), so `unstyled` only suppresses that one CSS-module hash. See the `Unstyled` story.',
+			description: 'Comes from `FactoryContract` (via `_PolymorphicContract`), not `Header`\'s own `HeaderProps`. On the root it drops the CSS-module hash, any config classes (`Header` has none; `Header.module.scss` declares only the root selector) and component tokens, and — since `unstyled` reaches the root `<Box>` through `others` — non-state `data-*` attributes (`Header` sets none). The semantic base class (`inkq-header`) is still emitted. `Header.tsx` does not forward `unstyled` to the nested `Navbar`/`Subnav`, so they are unaffected. See the `Unstyled` story.',
 		},
 	},
 	args: {
@@ -142,9 +143,9 @@ export const PathnameFallback: Story = {
  * Edge case: at the home route (`/`), `listRoutesWithSlug('/')` matches nothing (no
  * top-level `NavigationItem`'s own route — or any child's — starts with `'/undefined'`,
  * the derived subdir for a slug with no path segments), so the fallback resolves to an
- * empty route list. `Subnav` guards its entire inner block with `!!navItems.length`, so
- * it renders nothing (not even its root wrapper's inner content) when that happens —
- * only `Navbar` is visible.
+ * empty route list. `Subnav` returns `null` when `filterNavigation` yields no items
+ * (`if (!navitems.length) return null`), so nothing of it renders — not even its root
+ * element — and only `Navbar` is visible.
  */
 export const NoSubnav: Story = {
 	parameters: { nextjs: { appDirectory: true, navigation: { pathname: '/' } } },
@@ -155,6 +156,55 @@ export const NoSubnav: Story = {
 		await expect(canvas.getByRole('navigation')).toBeInTheDocument()
 		await expect(canvas.getAllByRole('menubar')).toHaveLength(1)
 		await expect(canvas.queryByText('Community', { selector: SUBNAV_LABEL_SELECTOR })).not.toBeInTheDocument()
+	},
+}
+
+/**
+ * `navbar={ null }` and `subnav={ null }` each hide their part entirely (`Header.tsx`
+ * renders `navbar !== null && <Navbar />` and `subnav !== null && <Subnav />`). Four
+ * groups: only `navbar` null, only `subnav` null, neither null (both parts shown), and
+ * both null (an empty root). The mocked pathname is `/community`, so a non-null
+ * `subnav` renders its `Community` label.
+ */
+export const NullParts: Story = {
+	parameters: { controls: { exclude: ['navbar', 'subnav'] } },
+	render: (args) => (
+		<Row>
+			<Group label="navbar: null, subnav: set">
+				<Header { ...args } navbar={ null } />
+			</Group>
+			<Group label="navbar: set, subnav: null">
+				<Header { ...args } subnav={ null } />
+			</Group>
+			<Group label="navbar: set, subnav: set">
+				<Header { ...args } />
+			</Group>
+			<Group label="navbar: null, subnav: null">
+				<Header { ...args } navbar={ null } subnav={ null } />
+			</Group>
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const roots = Array.from(canvasElement.querySelectorAll(ROOT_SELECTOR)) as HTMLElement[]
+		await expect(roots).toHaveLength(4)
+
+		const [navbarNull, subnavNull, neitherNull, bothNull] = roots
+
+		await expect(within(navbarNull).queryByRole('navigation')).not.toBeInTheDocument()
+		await expect(within(navbarNull).getByText('Community', { selector: SUBNAV_LABEL_SELECTOR })).toBeInTheDocument()
+		await expect(within(navbarNull).getAllByRole('menubar')).toHaveLength(1)
+
+		await expect(within(subnavNull).getByRole('navigation')).toBeInTheDocument()
+		await expect(within(subnavNull).queryByText('Community', { selector: SUBNAV_LABEL_SELECTOR })).not.toBeInTheDocument()
+		await expect(within(subnavNull).getAllByRole('menubar')).toHaveLength(1)
+
+		await expect(within(neitherNull).getByRole('navigation')).toBeInTheDocument()
+		await expect(within(neitherNull).getByText('Community', { selector: SUBNAV_LABEL_SELECTOR })).toBeInTheDocument()
+		await expect(within(neitherNull).getAllByRole('menubar')).toHaveLength(2)
+
+		await expect(within(bothNull).queryByRole('navigation')).not.toBeInTheDocument()
+		await expect(within(bothNull).queryAllByRole('menubar')).toHaveLength(0)
+		await expect(bothNull).toBeEmptyDOMElement()
 	},
 }
 
@@ -197,8 +247,8 @@ export const AsElement: Story = {
 
 /**
  * `unstyled` never removes the semantic base class (`inkq-header`) — `Header.module.scss`
- * declares only the root selector, with no config classes at all, so this only
- * suppresses that one CSS-module hash.
+ * declares only the root selector, with no config classes at all, so the only
+ * class-level difference is that one CSS-module hash.
  */
 export const Unstyled: Story = {
 	parameters: { controls: { exclude: ['unstyled'] } },

@@ -48,7 +48,7 @@ const meta: Meta<QuoteStoryProps> = {
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps`, not `Quote`\'s own `QuoteProps`. The semantic base class is ALWAYS emitted for `root`/`rail`/`content`/`caption` (`inkq-quote`, `inkq-quote__rail`, `inkq-quote__content`, `inkq-quote__caption`) regardless of this prop. **Verified against the current `getConfigClasses` in `getClassName.tsx`** (checked directly — this function has changed shape more than once, so don\'t trust older story comments over the live source): `check.isUnstyled` is now checked FIRST, before the boolean-shorthand branch, so when `unstyled` is true NO config class is emitted at all — not root\'s `global: { \'item--block\': true }` class (`inkq-item--block`), not content\'s `global: { h4: true }` class (`inkq-h4`), and not rail\'s/caption\'s `styles(sel, true)` boolean-shorthand classes (`inkq-rail`, `inkq-caption`) either. Separately, `unstyled` also suppresses the CSS-module-hashed class on `root`/`content` (the only two selectors with a real declaration in `Quote.module.scss`) via `getStyleClass`. See the `Unstyled` story.',
+			description: 'Part of `PolymorphicProps`, not `Quote`\'s own `QuoteProps`. The semantic base class is ALWAYS emitted for `root`/`rail`/`content`/`caption` (`inkq-quote`, `inkq-quote__rail`, `inkq-quote__content`, `inkq-quote__caption`) regardless of this prop. **Verified against the current `getConfigClasses` in `getClassName.tsx`** (checked directly — this function has changed shape more than once, so don\'t trust older story comments over the live source): `check.isUnstyled` is now checked FIRST, before the boolean-shorthand branch, so when `unstyled` is true NO config class is emitted at all — not root\'s `global: { \'item--block\': true }` class (`inkq-item--block`), not content\'s `global: { h4: true }` class (`inkq-h4`), and not caption\'s `styles(\'caption\', true)` boolean-shorthand class (`inkq-caption`) either. (`rail` is styled with `styles(\'rail\')`, no config, so it never has an `inkq-rail` class in either state.) Separately, `unstyled` also suppresses the CSS-module-hashed class on `root`/`rail`/`content` (the three selectors with a real declaration in `Quote.module.scss`; `caption` has none, so no hash either way) via `getStyleClass`. See the `Unstyled` story.',
 		},
 	},
 	args: {
@@ -146,9 +146,9 @@ export const AsElement: Story = {
 //   - content: same shape as root — its `global: { h4: true }` class
 //     (`inkq-h4`) and its own hashed module class are both present only
 //     when styled.
-//   - rail: has no own SCSS declaration (no hash either way). Its
-//     `styles('rail', true)` boolean-shorthand class (`inkq-rail`) is now
-//     present ONLY when styled — `check.isUnstyled` suppresses it too.
+//   - rail: has a real `&__rail` declaration in `Quote.module.scss`, so its
+//     hashed module class is present ONLY when styled. It is styled with
+//     `styles('rail')` (no config), so it never has an `inkq-rail` class.
 //   - caption: same shape as rail — no own hash either way, and its
 //     `styles('caption', true)` class (`inkq-caption`) is present ONLY
 //     when styled.
@@ -192,17 +192,17 @@ export const Unstyled: Story = {
 		expect(hasModuleClass(styledRoot, 'inkq-quote')).toBe(true)
 		expect(hasModuleClass(unstyledRoot, 'inkq-quote')).toBe(false)
 
-		// rail — no own SCSS declaration (no hash either way). Its
-		// `styles('rail', true)` BOOLEAN-shorthand config class (`inkq-rail`)
-		// is now gated on `check.isUnstyled`, which `getConfigClasses` checks FIRST, so
-		// it is present only when styled, entirely absent when unstyled.
+		// rail — base class always present; the hashed module class (it has a
+		// real `&__rail` declaration) only when styled. No config class is
+		// passed to `styles('rail')`, so `inkq-rail` is absent either way.
 		const styledRail = styledRoot.querySelector('.inkq-quote__rail') as HTMLElement,
 			unstyledRail = unstyledRoot.querySelector('.inkq-quote__rail') as HTMLElement
 
-		await expect(styledRail).toHaveClass('inkq-quote__rail', 'inkq-rail')
+		await expect(styledRail).toHaveClass('inkq-quote__rail')
 		await expect(unstyledRail).toHaveClass('inkq-quote__rail')
+		await expect(styledRail).not.toHaveClass('inkq-rail')
 		await expect(unstyledRail).not.toHaveClass('inkq-rail')
-		expect(hasModuleClass(styledRail, 'inkq-quote__rail')).toBe(false)
+		expect(hasModuleClass(styledRail, 'inkq-quote__rail')).toBe(true)
 		expect(hasModuleClass(unstyledRail, 'inkq-quote__rail')).toBe(false)
 
 		// content — base class always present; hashed module class AND the

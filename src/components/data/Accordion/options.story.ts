@@ -37,5 +37,11 @@ export const SIZE_OPTIONS: readonly NonNullable<Accordion.Group.Props['size']>[]
 // (`HeadingOrder`) — read off the namespace type itself rather than
 // re-declared by hand.
 export const ORDER_OPTIONS: readonly NonNullable<Accordion.Group.Props['order']>[] = [
-	1, 2, 3, 4, 5, 6,
+	1, 2, 3, 4, 5,
 ]
+
+// `--accordion-title-size` resolves to `var(--inkq-font-size-h<order + step>)`
+// (see `getSharedTokens` in `utils.ts`), but the typography properties only
+// define heading sizes h1-h5. A resolved level above this value points at a
+// token that does not exist, so stories must not assert on it.
+export const MAX_TITLE_SIZE_LEVEL = 5

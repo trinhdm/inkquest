@@ -33,7 +33,10 @@ const ROOT_SELECTOR = '.inkq-subnav',
 	// label, so an unscoped query would be ambiguous.
 	LABEL_SELECTOR = '.inkq-subnav__label'
 
-// The `routes` allow-list the app shell (`src/app/layout.tsx`) passes.
+// An explicit 4-route `/community` allow-list. The app shell does NOT pass this:
+// `src/app/community/layout.tsx` passes `routes: ['/community']` (the 4-route list is
+// only a comment there). Because `Subnav` uses the `'breadcrumbs'` layout, both lists
+// render the same result — see `Default`.
 const COMMUNITY_ROUTES = [
 	NavRoutes.COMMUNITY,
 	NavRoutes.COMMUNITY_FEED,
@@ -65,14 +68,18 @@ const meta: Meta<SubnavStoryProps> = {
 	// every story overrides the global `layout: 'centered'` default.
 	parameters: { layout: 'padded' },
 	argTypes: {
+		category: {
+			control: 'text',
+			description: 'Optional (`SubnavProps` extends `NavigationGroup`). Overrides the visible label: `Subnav.tsx` renders `category ?? navitems[0].label`. See the `Category` story.',
+		},
 		routes: {
 			control: 'multi-select',
 			options: Object.values(NavRoutes),
-			description: 'Required (unlike `Navbar`, where it is optional). Handed to `filterNavigation(routes, NAVIGATION_DATA)`. There is no separate `label` prop — the visible label (`inkq-subnav__label`) is derived straight from the FIRST filtered item\'s own `label` (`navItems[0].label`), so it is entirely data-driven. When `routes` matches nothing, `filterNavigation` returns `[]` and `Subnav` guards its whole inner block (label AND `<Menu>`) with `!!navItems.length` — neither renders.',
+			description: 'Required (unlike `Navbar`, where it is optional). Handed to `filterNavigation(routes, \'breadcrumbs\')`. The visible label (`inkq-subnav__label`) is `category ?? navitems[0].label` — the `category` prop when given, otherwise the FIRST filtered item\'s own `label`. When `routes` matches nothing, `filterNavigation` returns `[]` and `Subnav` returns `null` (`if (!navitems.length) return null`) — nothing renders, root element included (see `NoMatchingRoutes`).',
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Subnav`\'s own `SubnavProps`. The semantic base classes (`inkq-subnav`, `inkq-subnav__inner`, `inkq-subnav__label`, `inkq-subnav__menu`) are ALWAYS emitted regardless — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside each. The `wrapper` selector\'s `styles(\'wrapper\', true)` boolean-shorthand config is different: `getConfigClasses` now checks `check.isUnstyled` FIRST, before the boolean-shorthand branch, so its literal `inkq-wrapper` class is ALSO suppressed entirely when `unstyled`, not just the (non-existent, for `wrapper`) module hash. See the `Unstyled` story.',
+			description: 'Comes from `FactoryContract` (via `_PolymorphicContract`), not `Subnav`\'s own `SubnavProps`. The semantic classes (`inkq-subnav`, `inkq-subnav__inner`, `inkq-subnav__label`, `inkq-subnav__menu`) are still emitted regardless; for the plain `styles(selector)` calls (no config) `unstyled` drops the CSS-module-hashed class normally appended alongside each (`Subnav` defines no tokens, so there are none to drop). Via `others` it reaches the root `<Box>`, where it would drop non-state `data-*` attributes (`Subnav` sets none); it is not forwarded to the nested `Menu`. The `wrapper` selector\'s `styles(\'wrapper\', true)` boolean-shorthand config is different: `getConfigClasses` now checks `check.isUnstyled` FIRST, before the boolean-shorthand branch, so its literal `inkq-wrapper` class is ALSO suppressed entirely when `unstyled`, not just the (non-existent, for `wrapper`) module hash. See the `Unstyled` story.',
 		},
 	},
 	args: {
@@ -84,10 +91,12 @@ const meta: Meta<SubnavStoryProps> = {
 export default meta
 
 /**
- * The app shell's real configuration. `filterNavigation` keeps only the
- * `Community` item (its three in-list children survive as its `menu`), so
- * `navItems[0]` IS that `Community` item — its own `label` ("Community") is
- * what `Subnav` renders as the visible label. `Subnav` hardcodes
+ * An explicit 4-route `/community` configuration (the app's own
+ * `src/app/community/layout.tsx` passes just `['/community']`; the result here is the
+ * same). In `'breadcrumbs'` layout `filterNavigation` keeps the matched `Community`
+ * item with its ORIGINAL `menu` (only the `'dropdown'` layout replaces it with the
+ * filtered one), so `navitems[0]` IS that `Community` item — its own `label`
+ * ("Community") is what `Subnav` renders as the visible label. `Subnav` hardcodes
  * `hasDropdowns={ false }` on its `<Menu>`, so `MenuItem` takes its
  * flattening branch: the `Community` parent is never itself a menu item, its
  * children are hoisted into the menubar directly, and no dropdown trigger is
@@ -95,8 +104,9 @@ export default meta
  *
  * Note: `Subnav` passes `{ ...styles('menu') }` (a `className`/`style` pair)
  * to `<Menu>`. `Menu.tsx` destructures `className` out of its own props
- * BEFORE spreading `...rest` onto its root `<ul>` — so that className never
- * lands on the `<ul>` itself. It's forwarded instead as the `className` prop
+ * (so it isn't spread onto the root through `others`), but hands its full props to
+ * `useStyles`, so the root `<ul>`'s own `inkq-menu` class is replaced by
+ * `inkq-subnav__menu`. `className` is also forwarded as the `className` prop
  * of every top-level `MenuItem`, which `getClassName.tsx`'s `inheritClasses`
  * logic uses to rename each item's own root class from `inkq-menu-item` to
  * `inkq-subnav__menu-item` (since `'menu-item'.startsWith('menu')`).
@@ -113,14 +123,14 @@ export const Default: Story = {
 		])
 		await expect(within(menubar).queryAllByRole('button')).toHaveLength(0)
 
-		// The label is derived from `navItems[0].label`, rendered as text, not
+		// The label is derived from `navitems[0].label`, rendered as text, not
 		// as a menu item.
 		await expect(canvas.getByText('Community', { selector: LABEL_SELECTOR }))
 			.toBeInTheDocument()
 		await expect(canvas.queryByRole('menuitem', { name: 'Community' })).not.toBeInTheDocument()
 
-		// Third-level entries (e.g. `Events` → `Your Lineup`) are not recursed
-		// into by the flattening branch, and were filtered out by `routes` anyway.
+		// Third-level entries (e.g. `Events` → `Your Lineup`) are absent because
+		// `MenuItem`'s flattening branch doesn't recurse into the children it hoists.
 		await expect(canvas.queryByText('Your Lineup')).not.toBeInTheDocument()
 	},
 }
@@ -157,9 +167,41 @@ export const NoMatchingRoutes: Story = {
 }
 
 /**
- * Unlike `Navbar` (which destructures `as` and then hardcodes `as="nav"`),
- * `Subnav` forwards `as` to its root `<Box>`, so the rendered tag genuinely
- * changes.
+ * `Subnav.tsx` renders `category ?? navitems[0].label`: a provided `category`
+ * replaces the label, and without one the first filtered item's own label
+ * (`Community`) is used. The menu is the same in both groups.
+ */
+export const Category: Story = {
+	parameters: { controls: { exclude: ['category'] } },
+	render: (args) => (
+		<Row>
+			<Group label="category: set">
+				<Subnav { ...args } category="Explore" />
+			</Group>
+			<Group label="category: undefined">
+				<Subnav { ...args } category={ undefined } />
+			</Group>
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const roots = Array.from(canvasElement.querySelectorAll(ROOT_SELECTOR)) as HTMLElement[]
+		await expect(roots).toHaveLength(2)
+
+		const [withCategory, withoutCategory] = roots
+
+		await expect(within(withCategory).getByText('Explore', { selector: LABEL_SELECTOR })).toBeInTheDocument()
+		await expect(within(withCategory).queryByText('Community', { selector: LABEL_SELECTOR })).not.toBeInTheDocument()
+
+		await expect(within(withoutCategory).getByText('Community', { selector: LABEL_SELECTOR })).toBeInTheDocument()
+
+		for (const root of roots)
+			await expect(within(root).getAllByRole('menuitem')).toHaveLength(3)
+	},
+}
+
+/**
+ * Like `Navbar`, `Subnav` destructures `as` and passes it to its root `<Box>`
+ * (`as={ as }`), so the rendered tag genuinely changes.
  */
 export const AsElement: Story = {
 	render: (args) => (
@@ -193,8 +235,8 @@ export const AsElement: Story = {
 
 /**
  * `unstyled` never removes the semantic base classes (`inkq-subnav`,
- * `inkq-subnav__inner`, `inkq-subnav__label`) — only their CSS-module hash is
- * suppressed, since each has a plain (config-less) SCSS declaration. `Subnav`'s
+ * `inkq-subnav__inner`, `inkq-subnav__label`) — they lose their CSS-module
+ * hash, since each has a plain (config-less) SCSS declaration. `Subnav`'s
  * `styles('wrapper', true)` boolean-config call behaves differently again: `&__wrapper`
  * has no SCSS rule at all (no hash ever), and `getConfigClasses` in `getClassName.tsx`
  * now checks `check.isUnstyled` FIRST, before the boolean-shorthand branch, so the

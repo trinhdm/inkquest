@@ -15,6 +15,12 @@ const BOOLEAN_OPTIONS = [true, false] as const
 // literal pair, so it stays local rather than living in a shared `options.story.ts`.
 const ORIENTATION_OPTIONS = ['horizontal', 'vertical'] as const
 
+// Nesting levels exercised by the `Depth` story; `0` is the registered default.
+const DEPTH_OPTIONS = [0, 1] as const
+
+// Root tags exercised by the `AsElement` story. `ul` is the registered default.
+const AS_OPTIONS = ['ul', 'ol', 'div'] as const
+
 const Row = ({ children }: { children: ReactNode }) => (
 	<div style={ { display: 'flex', gap: 48, flexWrap: 'wrap', alignItems: 'flex-start' } }>
 		{ children }
@@ -73,8 +79,17 @@ const meta: Meta<MenuStoryProps> = {
 	title: 'Navigation/Menu',
 	argTypes: {
 		as: {
-			control: false,
-			description: 'Part of `PolymorphicProps`, but `Menu` ignores it: `Menu.tsx` hardcodes `as={ TAG }` (`TAG = \'ul\'`) on its root `<Box>` instead of forwarding the destructured `as` from props, so this control has NO effect on the rendered tag — unlike `Subnav`, which does honour it.',
+			control: 'select',
+			options: AS_OPTIONS,
+			description: 'Part of `PolymorphicProps`. `Menu.tsx` destructures `as` from props and forwards it to its root `<Box>` (`as={ as }`), so it sets the rendered root tag; the registered default is `ul`. The root always carries `role="menubar"` regardless of the tag. See the `AsElement` story.',
+		},
+		className: {
+			control: 'text',
+			description: 'Destructured out of `Menu`\'s props in `Menu.tsx` and forwarded to EVERY `MenuItem` (`className={ className }`), so it lands on each item rather than being spread onto the root through `others`. The full props, `className` included, are also what `Menu` hands to `useStyles` for its root selector; no story here asserts on that path.',
+		},
+		depth: {
+			control: 'number',
+			description: 'Nesting level, registered default `0`. `Menu.tsx` uses it only to gate the `orientation` module class (`depth === 0 && !!orientation`), and forwards it to every `MenuItem`, which hands `depth + 1` to the nested `Menu` it opens from a dropdown (when `depth` is a number). Normally set by `MenuItem`, not by callers. See the `Depth` story.',
 		},
 		hasDropdowns: {
 			control: 'boolean',
@@ -95,7 +110,7 @@ const meta: Meta<MenuStoryProps> = {
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Menu`\'s own `MenuProps`. The semantic base class (`inkq-menu`) is ALWAYS emitted regardless of this prop — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it. See the `Unstyled` story.',
+			description: 'Comes from `FactoryContract` (via `_PolymorphicContract`), not `Menu`\'s own `MenuProps`. On the root `<ul>` it drops the CSS-module hash and the config classes (the `orientation` modifier), and — via `others` on the root `<Box>` — non-state `data-*` attributes. The semantic base class (`inkq-menu`) is still emitted unless an inherited semantic `className` replaces it (e.g. `inkq-navbar__menu` when `Navbar` renders it). `Menu` does not forward `unstyled` to its `MenuItem`s. See the `Unstyled` story.',
 		},
 	},
 	args: {
@@ -107,8 +122,9 @@ const meta: Meta<MenuStoryProps> = {
 export default meta
 
 // The full app nav tree. `NAVIGATION_DATA` has `TOP_LEVEL_COUNT` top-level
-// entries, `DROPDOWN_TRIGGER_COUNT` of which (`Discover`, `Community`, `User`)
-// carry their own `menu` and therefore render a dropdown trigger.
+// entries, `DROPDOWN_TRIGGER_COUNT` of which (every entry with a non-empty
+// `menu`: `Discover`, `Community`, `User`, `Company` and `Legal`) carry their own
+// `menu` and therefore render a dropdown trigger.
 //
 // `MenuLabel` sets `role="menuitem"` unconditionally on both its `route`
 // branch (`<a>`) and its no-`route` branch (`<span>`) — so all top-level
@@ -130,9 +146,9 @@ export const Default: Story = {
 }
 
 // Both values rendered side by side. With `hasDropdowns: false`, `MenuItem`
-// replaces each parent item with its children (`Discover` → `Your Style`,
-// `Community` → `Events`/`Feed`/`Spotlights`, `User` → `Profile`/`Settings`),
-// so the `TOP_LEVEL_COUNT` top-level entries flatten into `FLATTENED_LEAF_COUNT`
+// replaces each parent item (every entry with a `menu`: `Discover`, `Community`,
+// `User`, `Company`, `Legal`) with its children (e.g. `Community` →
+// `Events`/`Feed`/`Spotlights`, `User` → `Profile`/`Settings`), so the `TOP_LEVEL_COUNT` top-level entries flatten into `FLATTENED_LEAF_COUNT`
 // leaf entries and no trigger buttons at all.
 export const HasDropdowns: Story = {
 	parameters: {
@@ -179,9 +195,9 @@ export const HasDropdowns: Story = {
  * `role="menuitem"`, and all 3 of these items (2 real fixture entries + 1
  * synthetic route-less one) are reachable via `getAllByRole('menuitem')`.
  *
- * Note `MenuLabel` is invoked as a plain function (`MenuLabel({ label, route })`)
- * with its `styles('label')` call commented out, so the `inkq-menu-item__label`
- * class is absent from the DOM — nothing here asserts on it.
+ * Note `MenuLabel` is invoked as a plain function (not as a JSX element) and
+ * spreads `styles('label')` into its own props — nothing here asserts on the
+ * resulting label class.
  */
 export const LeafItems: Story = {
 	parameters: { layout: 'padded' },
@@ -386,12 +402,13 @@ export const UndefinedMenu: Story = {
 }
 
 // `unstyled` does NOT remove `Menu`'s semantic base class (`inkq-menu`) — per
-// `getClassName.tsx` the base class is now ALWAYS emitted
-// (`classList = [baseClass]` unconditionally). It only suppresses the
-// CSS-module-hashed class normally appended alongside it. `Menu` makes exactly
-// one `styles(...)` call (`root`), so the root `<ul>` is the only element to
-// check here; `MenuItem` resolves its own `unstyled` independently and is
-// unaffected by this prop.
+// `getClassName.tsx` the class list always starts with `namespace ?? baseName`
+// (an inherited semantic `className` would replace it; none is passed here). It
+// drops the CSS-module-hashed class normally appended alongside it, plus any
+// config classes (the `orientation` modifier, not set in this story). `Menu`
+// makes exactly one `styles(...)` call (`root`), so the root `<ul>` is the only
+// element to check here; `Menu` does not forward `unstyled` to its `MenuItem`s, which
+// resolve their own `unstyled` independently and are unaffected by this prop.
 export const Unstyled: Story = {
 	parameters: {
 		layout: 'padded',
@@ -469,6 +486,50 @@ export const Orientation: Story = {
 
 		expect(hasClassLike(verticalRoot, 'inkq-menu--vertical')).toBe(true)
 		expect(hasModuleClass(verticalRoot, 'inkq-menu--vertical')).toBe(true)
+	},
+}
+
+/**
+ * `depth` gates the `orientation` module class (`depth === 0 && !!orientation` in
+ * `Menu.tsx`), so the same orientation takes effect at `depth: 0` and is ignored at
+ * `depth: 1`. Four groups: both orientations at each depth. `'horizontal'` has no SCSS
+ * rule, so it is a literal class; `'vertical'` is a hashed class matched by substring
+ * (see the `Orientation` story).
+ */
+export const Depth: Story = {
+	parameters: {
+		layout: 'padded',
+		controls: { exclude: ['depth', 'orientation'] },
+	},
+	args: { items: itemsFor('Home', 'Marketplace') },
+	render: (args) => (
+		<Row>
+			{ DEPTH_OPTIONS.flatMap(depth => ORIENTATION_OPTIONS.map(orientation => (
+				<Group key={ `${depth}-${orientation}` } label={ `depth: ${depth}, orientation: ${orientation}` }>
+					<Menu { ...args } depth={ depth } orientation={ orientation } />
+				</Group>
+			))) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			[topHorizontal, topVertical, nestedHorizontal, nestedVertical] = canvas.getAllByRole('menubar')
+
+		const hasClassLike = (el: Element, substring: string) =>
+			Array.from(el.classList).some(c => c.includes(substring))
+
+		// depth 0: only its own orientation's class is present.
+		await expect(topHorizontal).toHaveClass('inkq-menu--horizontal')
+		expect(hasClassLike(topHorizontal, 'inkq-menu--vertical')).toBe(false)
+		expect(hasClassLike(topVertical, 'inkq-menu--vertical')).toBe(true)
+		expect(hasClassLike(topVertical, 'inkq-menu--horizontal')).toBe(false)
+
+		// depth 1: neither orientation class is applied.
+		for (const nested of [nestedHorizontal, nestedVertical]) {
+			expect(hasClassLike(nested, 'inkq-menu--horizontal')).toBe(false)
+			expect(hasClassLike(nested, 'inkq-menu--vertical')).toBe(false)
+			await expect(nested).toHaveClass('inkq-menu')
+		}
 	},
 }
 
@@ -721,5 +782,37 @@ export const ActiveFromPathname: Story = {
 			.not.toHaveAttribute('aria-current')
 		await expect(within(explicitlyNone).getByRole('menuitem', { name: 'Home' }))
 			.not.toHaveAttribute('aria-current')
+	},
+}
+
+/**
+ * `Menu.tsx` forwards its destructured `as` to the root `<Box>`, so the root
+ * tag follows the prop. The `role="menubar"` is set unconditionally, so every
+ * group is still found by that role whatever its tag.
+ */
+export const AsElement: Story = {
+	parameters: {
+		layout: 'padded',
+		controls: { exclude: ['as'] },
+	},
+	args: { items: itemsFor('Home', 'Marketplace') },
+	render: (args) => (
+		<Row>
+			{ AS_OPTIONS.map(as => (
+				<Group key={ as } label={ as }>
+					<Menu { ...args } as={ as } />
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			menubars = canvas.getAllByRole('menubar')
+
+		await expect(menubars).toHaveLength(AS_OPTIONS.length)
+		await expect(menubars.map(menubar => menubar.tagName.toLowerCase())).toEqual([...AS_OPTIONS])
+
+		for (const menubar of menubars)
+			await expect(within(menubar).getAllByRole('menuitem')).toHaveLength(2)
 	},
 }

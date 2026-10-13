@@ -65,13 +65,18 @@ const meta: Meta<MenuItemStoryProps> = {
 	title: 'Navigation/Menu/MenuItem',
 	decorators: [(Story) => <MenubarWrapper><Story /></MenubarWrapper>],
 	argTypes: {
+		as: {
+			control: 'select',
+			options: ['li', 'div'],
+			description: 'Part of `PolymorphicProps`. `MenuItem.tsx` destructures `as` and applies it to the root of every branch (leaf, flattened, dropdown); the registered default is `li`. See the `AsElement` story.',
+		},
 		depth: {
 			control: 'number',
-			description: 'Required — `MenuItemProps` declares it non-optional, and it has NO registered default (`DEFAULT_PROPS` only sets `as`/`hasDropdowns`), so every story must supply it explicitly. Used to compute the nested submenu\'s own `depth` (`depth + 1`) when a dropdown opens; `Menu.tsx` (not `MenuItem` itself) also reads its OWN `depth` prop to gate the orientation-driven module class to depth 0 only.',
+			description: 'Optional (`depth?: number` in `MenuItemProps`) with NO registered default (`DEFAULT_PROPS` only sets `as`/`hasDropdowns`); these stories pass `0` explicitly. Used to compute the nested submenu\'s own `depth` (`depth + 1`) when a dropdown opens — and when `depth` is not a number, the nested `Menu` receives `undefined` and falls back to its own registered default of `0`. `Menu.tsx` (not `MenuItem` itself) also reads its OWN `depth` prop to gate the orientation-driven module class to depth 0 only.',
 		},
 		hasDropdowns: {
 			control: 'boolean',
-			description: 'Selects between `MenuItem`\'s three render branches when `menu` is present: `undefined`/`false` returns a flat ARRAY of the children\'s `<li>`s (the item\'s own label is dropped); `true` renders the label plus a trigger `<button>` and a nested `Menu`. Has no effect when `menu` is absent.',
+			description: 'Selects between `MenuItem`\'s two dropdown render branches when `menu` is present: `true` (the registered default, so `undefined` behaves as `true`) renders the label plus a trigger `<button>` and a nested `Menu`; `false` returns a flat ARRAY of the children\'s `<li>`s (the item\'s own label is dropped). Has no effect when `menu` is absent.',
 		},
 		active: {
 			control: 'text',
@@ -92,7 +97,7 @@ const meta: Meta<MenuItemStoryProps> = {
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `MenuItem`\'s own props. The semantic base class (`inkq-menu-item`) is ALWAYS emitted regardless of this prop — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it.',
+			description: 'Comes from `FactoryContract` (via `_PolymorphicContract`), not `MenuItem`\'s own props. On `MenuItem`\'s own `styles(...)` calls it drops the CSS-module hash and config classes; and because `unstyled` reaches the root `<Box>` through `others`, the root also loses non-state `data-*` attributes — including the `data-current` marker `MenuItem` sets (`current` is not one of the state keys `buildAttributes.ts` keeps). The semantic base class (`inkq-menu-item`) is still emitted, unless an inherited semantic `className` replaces it (e.g. `inkq-navbar__menu-item` under `Navbar`).',
 		},
 	},
 	args: {
@@ -282,12 +287,11 @@ export const HasDropdowns: Story = {
 }
 
 /**
- * `data-current` (`&:where([data-current])` in `Menu.module.scss`, bolding
- * the label) is never SET by `MenuItem` itself — the active-page detection is
- * commented out (`Menu.tsx`'s `// const isActive = pathname === route`, and
- * `MenuItem.tsx`'s dead `usePathname` import and its own "add behavior for
- * aria-current" TODO comments). It's only reachable by passing it through the
- * escape-hatch `attributes` prop.
+ * `MenuItem` computes `data-current` itself from `active` (see `ActiveItem`),
+ * but its `setAttributes` helper also preserves a caller-supplied
+ * `attributes.data.current` (`isCurrent || attributes?.data?.current || null`).
+ * So the escape-hatch `attributes` prop can force the hook on an item whose
+ * `active` doesn't match — `active` is left unset here.
  */
 export const DataCurrentHook: Story = {
 	args: {
@@ -503,9 +507,9 @@ export const OutsideClick: Story = {
  * The trigger is a real `<button>` (`Button` with `unstyled`), so both Enter
  * and Space activate it via the browser's own native button-activation
  * behavior. The `User` fixture has no `route`, so its label is a plain
- * `<span role="menuitem">` (see the `DropdownTrigger` story's note) — it
- * carries the role but no `tabindex`, so it's not itself focusable, and the
- * trigger is the first tab stop in the canvas.
+ * `<span role="menuitem" tabIndex={-1}>` (see the `DropdownTrigger` story's
+ * note) — it carries the role but is excluded from the natural Tab order, so
+ * the trigger is the first tab stop in the canvas.
  *
  * IMPORTANT, verified against the live `handleKeyDown` implementation: Enter
  * is ALSO one of the keys the wrapping `<li>`'s own `onKeyDown` treats as an
@@ -665,32 +669,70 @@ export const KeyboardFocusRouteless: Story = {
 	},
 }
 
-// `as` isn't destructured out by `MenuItem` — it lands in `others` and is
-// forwarded straight to `Box`. `MenuItemSpecs`'s `defaults.as` is `'li'`.
+// `MenuItem` destructures `as` and puts it in the `sharedProps` that all three
+// of its returns build on, so the root tag follows the prop in every branch:
+// the leaf branch (`!isDropdown`), the flattened branch (`!hasDropdowns`, one
+// root per child), and the dropdown branch. Each group below renders one
+// branch with `as="li"` (the registered default) and `as="div"`.
+const AS_OPTIONS = ['li', 'div'] as const
+
 export const AsElement: Story = {
+	parameters: { controls: { exclude: ['as'] } },
 	render: (args) => (
 		<Row>
-			<Group label='as="li" (default)'>
-				<MenuItem { ...args } />
-			</Group>
-			<Group label='as="div"'>
-				<MenuItem { ...args } as="div" />
-			</Group>
+			{ AS_OPTIONS.map(as => (
+				<Group key={ `leaf-${ as }` } label={ `leaf, as="${ as }"` }>
+					<MenuItem { ...args } as={ as } label={ `leaf-${ as }` } route={ NavRoutes.HOME } menu={ undefined } />
+				</Group>
+			)) }
+			{ AS_OPTIONS.map(as => (
+				<Group key={ `flattened-${ as }` } label={ `flattened (hasDropdowns: false), as="${ as }"` }>
+					<MenuItem
+						{ ...args }
+						as={ as }
+						hasDropdowns={ false }
+						label="Parent"
+						route={ undefined }
+						menu={ [{ label: `flattened-${ as }`, route: NavRoutes.SETTINGS }] }
+					/>
+				</Group>
+			)) }
+			{ AS_OPTIONS.map(as => (
+				<Group key={ `dropdown-${ as }` } label={ `dropdown, as="${ as }"` }>
+					<MenuItem
+						{ ...args }
+						as={ as }
+						hasDropdowns
+						label={ `dropdown-${ as }` }
+						route={ undefined }
+						menu={ USER_ITEM.menu }
+					/>
+				</Group>
+			)) }
 		</Row>
 	),
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement),
-			items = canvas.getAllByRole('menuitem', { name: 'Home' })
+			rootOf = (name: string) =>
+				canvas.getByRole('menuitem', { name }).closest('[role="none"]')
 
-		await expect(items[0].closest('[role="none"]')?.tagName).toBe('LI')
-		await expect(items[1].closest('[role="none"]')?.tagName).toBe('DIV')
+		await expect(rootOf('leaf-li')?.tagName).toBe('LI')
+		await expect(rootOf('leaf-div')?.tagName).toBe('DIV')
+
+		await expect(rootOf('flattened-li')?.tagName).toBe('LI')
+		await expect(rootOf('flattened-div')?.tagName).toBe('DIV')
+
+		await expect(rootOf('dropdown-li')?.tagName).toBe('LI')
+		await expect(rootOf('dropdown-div')?.tagName).toBe('DIV')
 	},
 }
 
 // `unstyled` does NOT remove `MenuItem`'s semantic base class
-// (`inkq-menu-item`) — per `getClassName.tsx` the base class is now ALWAYS
-// emitted. It only suppresses the CSS-module-hashed class normally appended
-// alongside it.
+// (`inkq-menu-item`) — per `getClassName.tsx` the class list always starts with
+// `namespace ?? baseName` (an inherited semantic `className` would replace it;
+// none is passed here). It drops the CSS-module-hashed class normally appended
+// alongside it, plus any config classes (none here) and the root's non-state
+// `data-*` attributes (e.g. `data-current`).
 export const Unstyled: Story = {
 	parameters: { controls: { exclude: ['unstyled'] } },
 	render: (args) => (

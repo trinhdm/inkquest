@@ -73,11 +73,11 @@ const meta: Meta<StatisticStoryProps> = {
 		size: {
 			control: 'select',
 			options: SIZE_OPTIONS,
-			description: 'Registered default `\'lg\'` (`Statistic.set({ defaultProps: DEFAULT_PROPS })`). Drives BOTH a `module`-scope config class (`inkq-statistic--sm`/`inkq-statistic--lg`, hashed — each has a real `&--sm`/`&--lg` declaration in `Statistic.module.scss`) AND `defineTokens`\'s `tokens.root` (`--statistic-font-caption`, `--statistic-font-value`, and — indirectly, via which title tag `Statistic.Group` renders for a section — the surrounding heading level). Also inherited from a wrapping `Statistic.Group` via `useStatisticGroupProps` when this `Statistic`\'s own prop is absent. See the `Size` story.',
+			description: 'Registered default `\'lg\'` (`Statistic.set({ defaultProps: DEFAULT_PROPS })`). Drives BOTH a `module`-scope config class (`inkq-statistic--sm`/`inkq-statistic--lg`, hashed — each has a real `&--sm`/`&--lg` declaration in `Statistic.module.scss`) AND `defineTokens`\'s `tokens.root` (`--statistic-font-caption`, `--statistic-font-size` — `h3` for `lg`, `h4` otherwise — `--statistic-icon-size`, and `--statistic-row-gap`). Also inherited from a wrapping `Statistic.Group` via `useStatisticGroupProps` when this `Statistic`\'s own prop is absent. See the `Size` story.',
 		},
 		index: {
 			control: 'number',
-			description: 'Combines with `stagger` as `delay: index * stagger` fed into `useCountUp`. Registered default `0` (`Statistic.set({ defaultProps: DEFAULT_PROPS })`, not a local destructuring default in `Statistic.tsx`\'s own render). Standalone, this is mostly meaningful when a parent `Statistic.Group` assigns it automatically per child — see `Statistic.Group`\'s `ContextPrecedence` story, which is where this is actually exercised end-to-end with real timing assertions (kept out of this file to avoid a second flaky multi-second `play` function for the same underlying mechanism).',
+			description: 'Combines with `stagger` as `delay: index * stagger` fed into `useCountUp`. Registered default `0` (`Statistic.set({ defaultProps: DEFAULT_PROPS })`, not a local destructuring default in `Statistic.tsx`\'s own render). Standalone, this is mostly meaningful when a parent `Statistic.Group` assigns it automatically per child (its position among the surviving `Statistic` children). No story in either file asserts the resulting delay: `Statistic.Group`\'s `ContextPrecedence` story pins `stagger={ 0 }`, so every child there has a delay of `0`, and a real delay assertion would be a timing-dependent `play` function.',
 		},
 		stagger: {
 			control: 'number',
@@ -89,7 +89,7 @@ const meta: Meta<StatisticStoryProps> = {
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps`, not `Statistic`\'s own `StatisticProps`. The semantic base class is ALWAYS emitted for `root`/`inner`/`value`/`caption` (`inkq-statistic`, `inkq-statistic__inner`, `inkq-statistic__value`, `inkq-statistic__caption`) regardless of this prop. **Verified directly against the current `getConfigClasses` in `getClassName.tsx`** (this function has changed shape more than once during development — re-check the live source rather than trusting this comment if these assertions ever start failing again): `check.isUnstyled` is now checked FIRST, before the boolean-shorthand branch, so when `unstyled` is true NO config class is emitted at all — not `caption`\'s `styles(\'caption\', true)` class (`inkq-caption`), and not root\'s `global: { accent: !!highlight, item: true }` classes (`inkq-accent`/`inkq-item`) or its `module`-scope size class (`inkq-statistic--sm`/`--lg`) either. Separately (via `getStyleClass`, a third code path), `root`/`inner`/`value` each have a real declaration in `Statistic.module.scss` and lose their own CSS-module hash when unstyled. See the `Unstyled` story.',
+			description: 'Part of `PolymorphicProps`, not `Statistic`\'s own `StatisticProps`. The semantic base class is ALWAYS emitted for `root`/`inner`/`value`/`caption` (`inkq-statistic`, `inkq-statistic__inner`, `inkq-statistic__value`, `inkq-statistic__caption`) regardless of this prop. **Verified directly against the current `getConfigClasses` in `getClassName.tsx`** (this function has changed shape more than once during development — re-check the live source rather than trusting this comment if these assertions ever start failing again): `check.isUnstyled` is now checked FIRST, before the boolean-shorthand branch, so when `unstyled` is true NO config class is emitted at all — not `caption`\'s `styles(\'caption\', true)` class (`inkq-caption`), and not root\'s `global: { accent: !!highlight, item: true }` classes (`inkq-accent`/`inkq-item`) or its `module`-scope size class (`inkq-statistic--sm`/`--lg`) either. Separately (via `getStyleClass`, a third code path), `root`/`inner`/`value` each have a real declaration in `Statistic.module.scss` and lose their own CSS-module hash when unstyled. Finally, `getStyle.tsx` returns no tokens when unstyled, so the root\'s `--statistic-*` custom properties are absent too. Also inherited from a wrapping `Statistic.Group` when this `Statistic` sets none. See the `Unstyled` story.',
 		},
 	},
 	args: {
@@ -332,11 +332,12 @@ export const Order: Story = {
 
 // `size` drives a hashed `module` config class (`inkq-statistic--sm`/
 // `inkq-statistic--lg`, each with a real declaration in
-// `Statistic.module.scss`) AND `defineTokens`'s root font tokens
-// (`--statistic-font-caption`/`--statistic-font-value`) — the exact
-// theme-derived font shorthand isn't asserted here (that's `ThemeProvider`'s
-// concern, not `Statistic`'s), only that the module class swaps and that
-// both custom properties are actually set.
+// `Statistic.module.scss`) AND `defineTokens`'s root size tokens
+// (`--statistic-font-caption`, `--statistic-font-size`,
+// `--statistic-icon-size`, `--statistic-row-gap`) — the exact theme-derived
+// values aren't asserted here (that's `ThemeProvider`'s concern, not
+// `Statistic`'s), only that the module class swaps and that each custom
+// property is actually set.
 export const Size: Story = {
 	parameters: { controls: { exclude: ['size'] } },
 	render: (args) => (
@@ -363,10 +364,25 @@ export const Size: Story = {
 		expect(hasModuleClass(lg, 'inkq-statistic--lg')).toBe(true)
 		expect(hasModuleClass(lg, 'inkq-statistic--sm')).toBe(false)
 
-		expect(sm.style.getPropertyValue('--statistic-font-caption')).not.toBe('')
-		expect(sm.style.getPropertyValue('--statistic-font-value')).not.toBe('')
-		expect(lg.style.getPropertyValue('--statistic-font-caption')).not.toBe('')
-		expect(lg.style.getPropertyValue('--statistic-font-value')).not.toBe('')
+		const read = (el: HTMLElement, token: string) => el.style.getPropertyValue(token)
+
+		// Every size token must be set AND must differ between the sizes —
+		// `isLarge` in `Statistic.tsx`'s `defineTokens` picks a different
+		// value for each of these.
+		for (const token of [
+			'--statistic-font-caption',
+			'--statistic-font-size',
+			'--statistic-icon-size',
+			'--statistic-row-gap',
+		]) {
+			expect(read(sm, token)).not.toBe('')
+			expect(read(lg, token)).not.toBe('')
+			expect(read(sm, token)).not.toBe(read(lg, token))
+		}
+
+		// The one token whose shape is fixed by source: `sm` is the base icon
+		// size, `lg` is `calc(2 * <base icon size>)`.
+		expect(read(lg, '--statistic-icon-size')).toBe(`calc(2 * ${read(sm, '--statistic-icon-size')})`)
 	},
 }
 
@@ -378,12 +394,15 @@ export const Size: Story = {
 // (`{ global }`/`{ module }`) or a boolean-shorthand (`true`) config.
 // Concretely:
 //   - root: loses its own hashed module class (`root` has a real
-//     declaration in `Statistic.module.scss`, carrying custom
-//     properties/`flex-direction`/`justify-content`/`row-gap` directly, not
-//     just nested `&__...`/`&--...` rules), its OBJECT `global: { item:
-//     true }` class (`inkq-item`; `highlight` is falsy by default here), AND
-//     its OBJECT `module`-scope size class (`inkq-statistic--lg`, the
-//     registered default size) — all three present only when styled.
+//     declaration in `Statistic.module.scss` — `flex-direction`/
+//     `justify-content`/`row-gap`, which read the `--statistic-*` tokens
+//     rather than declaring any custom property themselves), its OBJECT
+//     `global: { item: true }` class (`inkq-item`; `highlight` is falsy by
+//     default here), AND its OBJECT `module`-scope size class
+//     (`inkq-statistic--lg`, the registered default size) — all three present
+//     only when styled. It also loses its tokens: `getStyle.tsx` returns none
+//     when unstyled, so the inline `--statistic-align` is set only when
+//     styled.
 //   - inner/value: lose only their own hashed module class — neither has
 //     any `config` argument in `Statistic.tsx`'s `styles(...)` calls.
 //   - caption: its `styles('caption', true)` BOOLEAN-shorthand config class
@@ -415,9 +434,9 @@ export const Unstyled: Story = {
 		)
 
 		// root — `.inkq-statistic` DOES carry its own declared rules directly
-		// (custom properties, `flex-direction`, `justify-content`, `row-gap`),
-		// not just nested `&__...`/`&--...` rules, so it genuinely hashes and
-		// is genuinely suppressed when unstyled. Its `global: { item: true }`
+		// (`flex-direction`, `justify-content`, `row-gap`), not just nested
+		// `&__...`/`&--...` rules, so it genuinely hashes and is genuinely
+		// suppressed when unstyled. Its `global: { item: true }`
 		// class (`inkq-item`; `highlight` is falsy here, so `inkq-accent`
 		// never applies either way) and its `module`-scope size class
 		// (`inkq-statistic--lg`, the registered default size) are both present
@@ -429,6 +448,10 @@ export const Unstyled: Story = {
 		expect(hasModuleClass(unstyledRoot, 'inkq-statistic')).toBe(false)
 		expect(hasModuleClass(styledRoot, 'inkq-statistic--lg')).toBe(true)
 		expect(hasModuleClass(unstyledRoot, 'inkq-statistic--lg')).toBe(false)
+
+		// root tokens: set when styled, dropped when unstyled.
+		expect(styledRoot.style.getPropertyValue('--statistic-align')).not.toBe('')
+		expect(unstyledRoot.style.getPropertyValue('--statistic-align')).toBe('')
 
 		// inner
 		const styledInner = styledRoot.querySelector('.inkq-statistic__inner') as HTMLElement,

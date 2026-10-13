@@ -5,9 +5,10 @@ import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import moduleClasses from '../Grid.module.scss'
 
-// `GridItem` has no enum-valued or boolean props of its own — just `children`
-// (plus the polymorphic `as`/Box escape hatches) — so there is nothing to move
-// into a shared `options.story.ts`.
+// `GridItem`'s own props are `{ children, span }` (plus the polymorphic Box
+// escape hatches). `span` is a plain `number`, not an enum, and there are no
+// boolean props of its own — so there is nothing to move into a shared
+// `options.story.ts`; `SPAN_VALUES` below stays local.
 
 const Row = ({ children }: { children: ReactNode }) => (
 	<div style={ { display: 'flex', gap: 24, flexWrap: 'wrap' } }>
@@ -15,14 +16,12 @@ const Row = ({ children }: { children: ReactNode }) => (
 	</div>
 )
 
-// A plain label wrapper. `GridItem` (`GridItemSpecs`'s `isCompound: true`)
-// has no context dependency of its own — it doesn't call any `useRootCtx`/
+// A plain label wrapper. `GridItem` has no context dependency of its own — it doesn't call any `useRootCtx`/
 // `useSafeRootCtx` reader — so it renders identically whether or not it's
 // mounted inside a real `<Grid>`. It's still wrapped in one here purely as a
-// realistic usage example: `Grid.tsx`'s own `filterChildren(children,
-// 'GridItem')` call is commented out (dead code, see `Grid.stories.tsx`), so
-// `Grid` no longer requires — or even recognizes — `GridItem` as a special
-// child type; every child renders through as-is regardless.
+// realistic usage example: `Grid.tsx` renders `{ children }` as-is with no
+// child filtering at all (see `Grid.stories.tsx`), so `Grid` doesn't require —
+// or even recognize — `GridItem` as a special child type.
 const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 	<div style={ { display: 'flex', flexDirection: 'column', gap: 8 } }>
 		<span style={ { font: 'var(--inkq-text-control)', letterSpacing: '.15em', textTransform: 'uppercase', opacity: 0.6 } }>
@@ -42,10 +41,10 @@ const ROOT_SELECTOR = '.inkq-grid-item'
 // etc., which only exist on the actual accepted prop type,
 // `PolymorphicProps<GridItemProps, C>`. `Parameters<typeof Grid.Item>[0]` reads
 // that real, wrapped type straight off the component itself. `GridItemSpecs`
-// declares no `defaults.as`, so the generic call signature's default
-// `C` resolves to `'div'` (`polymorphic`'s own fallback), and
-// `GridItem.set({ displayName: NAME })` registers no defaults at all — `as` is left
-// entirely up to the caller.
+// declares `defaults: { as: 'div' }` (`DEFAULT_PROPS = { as: TAG }`), so it is
+// polymorphic: `GridItem` destructures `as` and forwards it to its `Box`.
+// `GridItem.set({ defaultProps: DEFAULT_PROPS, ... })` registers that same
+// `div` default, so `meta.args` (via `getDefaultProps`) carries `as: 'div'`.
 type GridItemStoryProps = Parameters<typeof Grid.Item>[0]
 type Story = StoryObj<GridItemStoryProps>
 
@@ -56,11 +55,15 @@ const meta: Meta<GridItemStoryProps> = {
 	argTypes: {
 		as: {
 			control: 'text',
-			description: 'NOT part of `Grid.Item`\'s accepted props. `GridItemSpecs` declares `isCompound: true` with no `defaults.as`, which is the codebase-wide signal for a compound part with a fixed tag — `polymorphic()`\'s non-polymorphic call-signature branch then types `as` as `never`, so only `undefined` is assignable and passing a tag is a type error. `GridItem` correspondingly hardcodes `as="div"` on its `Box` and takes only `{ others }` from `extractOthers`. This is the same deliberate contract used by `Group.Item`, `Timeline.Item`, `Table.Row`/`Table.Cell`, `Button.Section` and the `Accordion` parts (see `Grid.test.tsx` and `Table.test.tsx`, which assert it directly) — not an oversight. See the `FixedTag` story.',
+			description: 'Polymorphic escape hatch via the shared `Box` contract. `GridItemSpecs` declares `defaults: { as: \'div\' }` (registered via `GridItem.set({ defaultProps })`), and `GridItem` destructures `as` and renders `<Box ... as={ as }>`, so it sets the item\'s tag. See the `AsElement` story.',
+		},
+		span: {
+			control: 'number',
+			description: 'Number of grid columns this item spans. Feeds an inline `--grid-span-col` custom property formatted `span N` (the `tokens` function built with `defineTokens`), which `Grid.module.scss`\'s item rule reads via `grid-column: var(--grid-span-col)`. When `span` is `0` or unset, the property is not set at all. `GridItem` destructures `span` out of its props, so it is not forwarded to the DOM as a `span` attribute. See the `Span` story.',
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `GridItem`\'s own props. The semantic base class (`inkq-grid-item`) is ALWAYS emitted regardless of this prop — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it.',
+			description: 'Part of the factory\'s `FactoryContract` (`_PolymorphicContract.unstyled`), not `GridItem`\'s own props. The semantic base class (`inkq-grid-item`) is emitted regardless of this prop (`namespace ?? baseName`). When `unstyled` is true, `Grid.Item` loses the CSS-module-hashed class and the inline `--grid-span-col` token (`getStyle` returns only inherited styles); it has no config classes.',
 		},
 	},
 	args: {
@@ -83,36 +86,80 @@ export const Default: Story = {
 	},
 }
 
+const SPAN_VALUES: readonly (number | undefined)[] = [undefined, 0, 1, 2, 3]
+
 /**
- * `Grid.Item` is a COMPOUND part: `GridItemSpecs` sets `isCompound: true` and
- * declares no `defaults.as`, so `polymorphic()` types `as` as `never` and the
- * component hardcodes `as="div"` on its `Box`. The rendered tag is part of the
- * contract, not a caller decision — `<Grid.Item as="article">` doesn't "get
- * ignored", it doesn't typecheck. `Grid.test.tsx` asserts this directly.
- *
- * This story pins that fixed tag so a future refactor can't quietly change it.
- * The same contract governs `Group.Item`, `Timeline.Item`, `Table.Row`/
- * `Table.Cell`, `Button.Section` and the `Accordion` parts.
+ * `span` side by side: unset, `0`, and positive values. A positive `span`
+ * sets the inline `--grid-span-col` custom property to `span N`; `0` and unset
+ * leave it off the inline style entirely.
  */
-export const FixedTag: Story = {
+export const Span: Story = {
+	parameters: {
+		layout: 'padded',
+		controls: { exclude: ['span'] },
+	},
 	render: (args) => (
 		<Row>
-			<Group label="div (fixed)">
+			{ SPAN_VALUES.map(span => {
+				const label = String(span)
+				return (
+					<Group key={ label } label={ label }>
+						<Grid.Item { ...args } span={ span }>{ `span=${label}` }</Grid.Item>
+					</Group>
+				)
+			}) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			rootFor = (span: number | undefined) =>
+				canvas.getByText(`span=${span}`).closest(ROOT_SELECTOR) as HTMLElement
+
+		await expect(rootFor(undefined).style.getPropertyValue('--grid-span-col')).toBe('')
+		await expect(rootFor(0).style.getPropertyValue('--grid-span-col')).toBe('')
+		await expect(rootFor(1).style.getPropertyValue('--grid-span-col')).toBe('span 1')
+		await expect(rootFor(2).style.getPropertyValue('--grid-span-col')).toBe('span 2')
+		await expect(rootFor(3).style.getPropertyValue('--grid-span-col')).toBe('span 3')
+
+		// Regression: `span` is consumed by the component, never a DOM attribute.
+		for (const span of SPAN_VALUES)
+			await expect(rootFor(span)).not.toHaveAttribute('span')
+	},
+}
+
+/**
+ * `Grid.Item` is polymorphic: `GridItemSpecs` declares `defaults: { as:
+ * 'div' }` and the component forwards `as` to its `Box`. The registered
+ * default (`div`) vs. an explicit `li` override, side by side. (The `li` sits
+ * in a `div` `Grid` here, which is fine for asserting the tag.)
+ */
+export const AsElement: Story = {
+	parameters: { controls: { exclude: ['as'] } },
+	render: (args) => (
+		<Row>
+			<Group label='as="div" (default)'>
 				<Grid.Item { ...args }>div item</Grid.Item>
+			</Group>
+			<Group label='as="li"'>
+				<Grid.Item { ...args } as="li">li item</Grid.Item>
 			</Group>
 		</Row>
 	),
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement),
-			asDiv = canvas.getByText('div item').closest(ROOT_SELECTOR) as HTMLElement
+			asDiv = canvas.getByText('div item').closest(ROOT_SELECTOR) as HTMLElement,
+			asLi = canvas.getByText('li item').closest(ROOT_SELECTOR) as HTMLElement
 
 		await expect(asDiv.tagName).toBe('DIV')
+		await expect(asLi.tagName).toBe('LI')
 	},
 }
 
 // `unstyled` does NOT remove `GridItem`'s semantic base class (`inkq-grid-item`)
-// — per `getClassName.tsx` the base class is now ALWAYS emitted. It only
-// suppresses the CSS-module-hashed class normally appended alongside it.
+// — per `getClassName.tsx` the base class (`namespace ?? baseName`) is emitted
+// regardless. It also suppresses the CSS-module-hashed class normally appended
+// alongside it and the inline `--grid-span-col` token; this story asserts only
+// the hash.
 // `GridItem` makes exactly one `styles(...)` call (`root`), so the root
 // element is the only one to check here.
 export const Unstyled: Story = {

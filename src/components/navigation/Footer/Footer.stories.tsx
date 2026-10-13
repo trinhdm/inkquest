@@ -77,7 +77,7 @@ const meta: Meta<FooterStoryProps> = {
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Footer`\'s own `FooterProps`. Only affects `Footer`\'s OWN `styles(...)` calls (root/info/legal/tagline) — `Footer.tsx` never forwards `unstyled` down to the nested `<FooterArea>`, so everything `FooterArea` itself renders (its wrapper, content, navigation, per-group `Menu`) is unaffected by this prop. See the `Unstyled` story.',
+			description: 'Comes from `FactoryContract` (via `_PolymorphicContract`), not `Footer`\'s own `FooterProps`. Only affects `Footer`\'s OWN `styles(...)` calls (root/info/tagline/socials/legal), none of which pass a config — so for those the visible effect is dropping the CSS-module hash (the semantic base classes stay; `unstyled` also reaches the root `<Box>` through `others`, where it would drop non-state `data-*` attributes, of which `Footer` sets none). `Footer.tsx` never forwards `unstyled` down to the nested `<FooterArea>`, so everything `FooterArea` itself renders (its wrapper, content, navigation, per-group `Menu`) is unaffected by this prop. See the `Unstyled` story.',
 		},
 	},
 	args: {
@@ -233,9 +233,9 @@ export const AsElement: Story = {
 
 /**
  * `unstyled` never removes the semantic base classes (`inkq-footer`,
- * `inkq-footer__info`, `inkq-footer__legal`, `inkq-footer__wrapper`) — only the
- * CSS-module hash normally appended alongside a plain (config-less) `styles(selector)`
- * call is suppressed (`inkq-footer`, `inkq-footer__info`, `inkq-footer__legal` all have
+ * `inkq-footer__info`, `inkq-footer__legal`, `inkq-footer__wrapper`) — for `Footer`'s
+ * plain (config-less) `styles(selector)` calls, the difference is the CSS-module hash
+ * normally appended alongside (`inkq-footer`, `inkq-footer__info`, `inkq-footer__legal` all have
  * direct SCSS declarations).
  *
  * The wrapper's `inkq-wrapper` class survives regardless of the OUTER `Footer`'s
@@ -252,7 +252,7 @@ export const AsElement: Story = {
  * survive here, in BOTH rows below.
  *
  * `Footer`'s own `unstyled` only ever affects `Footer`'s OWN `styles(...)` calls
- * (root/info/legal/tagline), never anything rendered by the nested `FooterArea`.
+ * (root/info/tagline/socials/legal), never anything rendered by the nested `FooterArea`.
  *
  * `Footer`'s own `styles('tagline')` call has no matching SCSS selector at all
  * (`Footer.module.scss` declares no `&__tagline` rule) — so `inkq-footer__tagline` is

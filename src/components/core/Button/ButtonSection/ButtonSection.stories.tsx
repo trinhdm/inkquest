@@ -84,7 +84,7 @@ const meta: Meta<ButtonSectionStoryArgs> = {
 		loading: { control: 'boolean' },
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `ButtonSection`\'s own `ButtonSectionProps`. The semantic base class (`inkq-button__section`) on this section\'s `<span data-side="...">` wrapper is ALWAYS emitted regardless of this prop — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it, via `ButtonSection`\'s `styles(baseName)` call. Both `baseName` (`\'section\'`) and `rootName` (`\'Button\'`) come from the REQUIRED `Button.context` reader `useButtonCtx(NAME)` (`= useRootCtx`, fixed to `\'Button\'` — `ButtonSection` now throws entirely when rendered outside a `Button`, see the `RequiresButtonParent` story); `rootName` also feeds the `useStyles(rootName, ...)` call, while `baseName` is derived from `NAME` (`\'Button.Section\'`) with the `rootName` prefix stripped and lowercased. Set directly on `Button.Section` itself here, independent of the wrapping `Button`\'s own `unstyled` state — see the `Unstyled` story.',
+			description: 'Part of the shared `FactoryContract` (`unstyled` on `_PolymorphicContract`), not `ButtonSection`\'s own `ButtonSectionProps`. The semantic base class (`inkq-button__section`) on this section\'s `<span data-side="...">` wrapper is emitted regardless of this prop (an inherited semantic `className` could replace it). `unstyled` drops the CSS-module-hashed class from `ButtonSection`\'s `styles(baseName)` call (it uses no config classes or tokens), and because `unstyled` reaches the section\'s `Box` through `others`, `Box` also strips the non-state `data-side` attribute. `ButtonSection` reads `Button.context` through the REQUIRED reader `useButtonCtx(NAME)` (`= useRootCtx`, so it throws when rendered outside a `Button`, see the `RequiresButtonParent` story). That context supplies `baseName` — `NAME` (`\'Button.Section\'`) with the `\'Button\'` prefix stripped and lowercased, i.e. `\'section\'` — which is the selector passed to `styles(...)`. The style root name comes from the context too: `ButtonSection` calls `useStyles({ context, props, withRootName: true })`, which takes the root name from the context\'s `rootName`, and the compound provider (`createCompoundCtx`) always sets `rootName` to the name it was created with, `\'Button\'`. `unstyled` is also inherited: `ButtonSection` runs its props through `useButtonProps`, so a section fills `unstyled` from the enclosing `Button`\'s context ONLY when the key is absent from its own props — an own prop, including an explicit `unstyled={false}`, always wins. See the `Unstyled` story (set on the section itself) and the `UnstyledInheritance` story (inherited from the `Button`).',
 		},
 	},
 	args: {
@@ -93,12 +93,12 @@ const meta: Meta<ButtonSectionStoryArgs> = {
 	},
 	// `ButtonSection.Props`'s `left`/`right` discriminated union breaks
 	// contextual inference on the destructured params, so annotate explicitly.
-	render: ({ variant, size, disabled, loading }: ButtonSectionStoryArgs) => {
+	render: ({ variant, size, disabled, loading, unstyled }: ButtonSectionStoryArgs) => {
 		const buttonProps = { variant, size, disabled, loading }
 
 		return (
 			<Button { ...buttonProps }>
-				<Button.Section left><Icon type="download" /></Button.Section>
+				<Button.Section left unstyled={ unstyled }><Icon type="download" /></Button.Section>
 				Download
 			</Button>
 		)
@@ -111,14 +111,14 @@ type Story = StoryObj<ButtonSectionStoryArgs>
 export const Default: Story = {}
 
 export const Sides: Story = {
-	render: ({ variant, size, disabled, loading }: ButtonSectionStoryArgs) => {
+	render: ({ variant, size, disabled, loading, unstyled }: ButtonSectionStoryArgs) => {
 		const buttonProps = { variant, size, disabled, loading }
 
 		return (
 			<Row>
 				<Group label="left">
 					<Button { ...buttonProps }>
-						<Button.Section left>
+						<Button.Section left unstyled={ unstyled }>
 							<Icon type="download" />
 						</Button.Section>
 						Download
@@ -127,24 +127,56 @@ export const Sides: Story = {
 				<Group label="right">
 					<Button { ...buttonProps }>
 						Continue
-						<Button.Section right>
+						<Button.Section right unstyled={ unstyled }>
 							<Icon type="arrow-right" />
 						</Button.Section>
 					</Button>
 				</Group>
 				<Group label="both">
 					<Button { ...buttonProps }>
-						<Button.Section left>
+						<Button.Section left unstyled={ unstyled }>
 							<Icon type="download" />
 						</Button.Section>
 						Download
-						<Button.Section right>
+						<Button.Section right unstyled={ unstyled }>
 							<Icon type="arrow-right" />
 						</Button.Section>
 					</Button>
 				</Group>
 			</Row>
 		)
+	},
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			buttons = canvas.getAllByRole('button')
+
+		await expect(buttons).toHaveLength(3)
+
+		// `buildSections` (`Button.tsx`) lays the inner element out as
+		// `[left section][label span][right section]`, whichever of the two
+		// sections exist. Read each button's inner children in DOM order,
+		// ignoring the loader (only present while `loading`).
+		const layoutOf = (button: HTMLElement) =>
+			Array.from(button.querySelector('.inkq-button__inner')!.children)
+				.filter(el => !el.matches('.inkq-button__loader'))
+				.map(el => el.matches('.inkq-button__label')
+					? 'label'
+					: el.getAttribute('data-side'))
+
+		const [left, right, both] = buttons
+
+		await expect(layoutOf(left)).toEqual(['left', 'label'])
+		await expect(layoutOf(right)).toEqual(['label', 'right'])
+		await expect(layoutOf(both)).toEqual(['left', 'label', 'right'])
+
+		// Each side is reflected on its own `data-side`, and the sibling side
+		// is absent from buttons that don't declare it.
+		await expect(left.querySelectorAll('[data-side="left"]')).toHaveLength(1)
+		await expect(left.querySelectorAll('[data-side="right"]')).toHaveLength(0)
+		await expect(right.querySelectorAll('[data-side="right"]')).toHaveLength(1)
+		await expect(right.querySelectorAll('[data-side="left"]')).toHaveLength(0)
+		await expect(both.querySelectorAll('[data-side="left"]')).toHaveLength(1)
+		await expect(both.querySelectorAll('[data-side="right"]')).toHaveLength(1)
 	},
 }
 
@@ -153,13 +185,13 @@ export const Sides: Story = {
 // every subsequent same-side section is dropped (and dev-warns) rather than
 // rendered.
 export const MultipleSections: Story = {
-	render: ({ variant, size, disabled, loading }: ButtonSectionStoryArgs) => {
+	render: ({ variant, size, disabled, loading, unstyled }: ButtonSectionStoryArgs) => {
 		const buttonProps = { variant, size, disabled, loading }
 
 		return (
 			<Button { ...buttonProps }>
-				<Button.Section left><Icon type="download" /></Button.Section>
-				<Button.Section left><Icon type="attach" /></Button.Section>
+				<Button.Section left unstyled={ unstyled }><Icon type="download" /></Button.Section>
+				<Button.Section left unstyled={ unstyled }><Icon type="attach" /></Button.Section>
 				Save
 			</Button>
 		)
@@ -176,16 +208,18 @@ export const MultipleSections: Story = {
 // `unstyled` does NOT remove the base `inkq-button__section` class
 // `useStyles`/`getClassName.tsx` applies to this section's
 // `<span data-side="...">` wrapper — per `getClassName.tsx`, the base class
-// is now ALWAYS emitted (`classList = [baseClass]` unconditionally). It only
-// suppresses the CSS-module-hashed class normally appended alongside it, via
-// the `styles('section')` call `ButtonSection` makes. Set only on the
-// `Button.Section` here (not on the wrapping `Button`), to isolate its own,
-// independent effect — `ButtonSection.tsx` reads `unstyled` off its OWN props
-// (via `useProps(_props)`/`useStyles`), not off the `Button.context`
-// value the wrapping `Button` publishes through `ButtonProvider` (that value
-// only carries `unstyled` — and `ButtonSection.tsx` only ever destructures
-// `rootName` off the required context, via `useButtonCtx`, never `unstyled` —
-// see the `RequiresButtonParent` story for that required-context contract).
+// is not gated on `check.isUnstyled`: the first `classList` entry is
+// `namespace ?? baseName` (an inherited semantic `className` could replace it;
+// none is passed here). `unstyled` suppresses the CSS-module-hashed class
+// (`styleName`) normally appended alongside it, via
+// the `styles(context.baseName)` call `ButtonSection` makes (`baseName` is
+// `'section'`), and makes `Box` strip the non-state `data-side` attribute
+// (both asserted below). `ButtonSection` has no config classes or tokens. Set only on the `Button.Section` here (not on the wrapping
+// `Button`), to isolate its own prop's effect. `ButtonSection.tsx` also
+// inherits `unstyled` from the enclosing `Button`'s context when it has none
+// of its own (own prop wins) — see `UnstyledInheritance` below — and uses
+// that context for `baseName`/`rootName`. See the `RequiresButtonParent`
+// story for the required-context contract.
 export const Unstyled: Story = {
 	parameters: { controls: { exclude: ['unstyled'] } },
 	render: ({ variant, size, disabled, loading }: ButtonSectionStoryArgs) => {
@@ -217,8 +251,8 @@ export const Unstyled: Story = {
 		// `Box/utils/buildAttributes.ts`'s `keepStateAttrs` strips non-state `data-*`
 		// keys (like `side`) exactly when `unstyled` is set, so `data-side` is
 		// present on the styled section but absent on the unstyled one. The
-		// base class, by contrast, is always emitted regardless of `unstyled`
-		// (see the file-level comment above), so it's a safe anchor here.
+		// base class, by contrast, is emitted regardless of `unstyled`
+		// (see the comment above this story), so it's a safe anchor here.
 		const [unstyledButton, styledButton] = buttons,
 			unstyledSection = unstyledButton.querySelector('.inkq-button__section') as HTMLElement,
 			styledSection = styledButton.querySelector('.inkq-button__section') as HTMLElement
@@ -236,18 +270,79 @@ export const Unstyled: Story = {
 	},
 }
 
-// `ButtonSection` now reads `Button.context` via the REQUIRED reader
+// A section with no `unstyled` of its own fills it from the enclosing
+// `Button`'s context (`useButtonProps`); an own `unstyled` — including an
+// explicit `false` — always wins. Each group is told apart by the same two
+// signals as `Unstyled`: the CSS-module hash on the section's class, and
+// `data-side`, which `buildAttributes` strips from an unstyled element.
+export const UnstyledInheritance: Story = {
+	parameters: { layout: 'padded' },
+	render: ({ variant, size, disabled, loading }: ButtonSectionStoryArgs) => {
+		const buttonProps = { variant, size, disabled, loading }
+
+		return (
+			<Row>
+				<Group label="Button unstyled, section sets nothing (inherits)">
+					<Button { ...buttonProps } unstyled>
+						<Button.Section left><Icon type="download" /></Button.Section>
+						Download
+					</Button>
+				</Group>
+				<Group label="Button unstyled, section unstyled={false} (own prop wins)">
+					<Button { ...buttonProps } unstyled>
+						<Button.Section left unstyled={ false }><Icon type="download" /></Button.Section>
+						Download
+					</Button>
+				</Group>
+				<Group label="Button styled, section unstyled (contrast)">
+					<Button { ...buttonProps }>
+						<Button.Section left unstyled><Icon type="download" /></Button.Section>
+						Download
+					</Button>
+				</Group>
+			</Row>
+		)
+	},
+	play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+		const canvas = within(canvasElement),
+			buttons = canvas.getAllByRole('button')
+
+		expect(buttons).toHaveLength(3)
+
+		const [inherits, ownFalse, styledButton] = buttons.map(
+			button => button.querySelector('.inkq-button__section') as HTMLElement
+		)
+
+		const hasModuleClass = (el: Element, base: string) =>
+			Array.from(el.classList).some(c => c !== base)
+
+		for (const section of [inherits, ownFalse, styledButton])
+			await expect(section).toHaveClass('inkq-button__section')
+
+		// (1) inherited from the unstyled Button
+		expect(hasModuleClass(inherits, 'inkq-button__section')).toBe(false)
+		await expect(inherits).not.toHaveAttribute('data-side')
+
+		// (2) own `unstyled={ false }` beats the Button's `unstyled`
+		expect(hasModuleClass(ownFalse, 'inkq-button__section')).toBe(true)
+		await expect(ownFalse).toHaveAttribute('data-side', 'left')
+
+		// (3) own `unstyled` on a styled Button
+		expect(hasModuleClass(styledButton, 'inkq-button__section')).toBe(false)
+		await expect(styledButton).not.toHaveAttribute('data-side')
+	},
+}
+
+// `ButtonSection` reads `Button.context` via the REQUIRED reader
 // (`useButtonCtx` = `useRootCtx`, not the optional `useSafeRootCtx`) —
-// `const { rootName } = useButtonCtx(NAME)` in `ButtonSection.tsx` throws
-// (`createCompoundCtx.tsx`'s `useRootCtx`: `<Button.Section /> must be rendered
-// inside <Button>`) the instant it's rendered with no wrapping `Button` at
+// `const context = useButtonCtx(NAME)` in `ButtonSection.tsx` throws
+// (`createCompoundCtx.tsx`'s `useRootCtx`: `Button: <Button.Section /> must be
+// a direct child of <Button>; it can't be returned from another component`) the instant it's rendered with no wrapping `Button` at
 // all, rather than silently falling back to styling under its own name.
-// There's also no more dynamic per-parent naming to demonstrate even if it
-// didn't throw: `Button.tsx`'s `ButtonProvider` never passes an explicit
-// `rootName`, so `createCompoundCtx`'s own default (`rootName ?? name`, `name`
-// being the fixed `'Button'` passed to `createCompoundCtx<ButtonContext>('Button')`)
-// always resolves to `'Button'` — `rootName` is no longer derived from a
-// `ctx.displayName` that could vary.
+// There's also no per-parent naming to demonstrate: `createCompoundCtx`'s
+// `RootProvider` always sets `rootName` to the fixed name it was created with
+// (`'Button'`), and `useStyles({ ..., withRootName: true })` takes the style
+// root name from that context value.
 //
 // A raw, uncaught render throw would crash every other group in this story,
 // so the misuse case is wrapped in a local (stories-file-only, not a source
@@ -278,7 +373,7 @@ export const RequiresButtonParent: Story = {
 		await expect(validSection).toHaveClass('inkq-button__section')
 
 		const errorFallback = await canvas.findByTestId('button-section-error')
-		await expect(errorFallback).toHaveTextContent('<Button.Section /> must be rendered inside <Button>')
+		await expect(errorFallback).toHaveTextContent('<Button.Section /> must be a direct child of <Button>')
 	},
 }
 
@@ -288,21 +383,26 @@ export const RequiresButtonParent: Story = {
 // per `Icon.set({ defaultProps: DEFAULT_PROPS, displayName: NAME })`) when unset, or its own explicit `size` prop when
 // set. Lucide's underlying `Icon` component (`lucide-react`) renders `size`
 // straight onto the `<svg>`'s `width`/`height` attributes.
+//
+// Those are ATTRIBUTES only. While styled, `Icon.module.scss` sets `width`/
+// `height` to `1em` with `font-size: var(--icon-size)`, and `Button.module.scss`
+// sets `--icon-size` on the inner element from `--button-icon-size`, so both
+// groups LOOK the same size — it follows the Button's `size`, not the Icon's.
 export const IconChildren: Story = {
-	render: ({ variant, size, disabled, loading }: ButtonSectionStoryArgs) => {
+	render: ({ variant, size, disabled, loading, unstyled }: ButtonSectionStoryArgs) => {
 		const buttonProps = { variant, size, disabled, loading }
 
 		return (
 			<Row>
-				<Group label="default icon size (registered default: 16)">
+				<Group label="no size prop (registered default attribute: 16)">
 					<Button { ...buttonProps }>
-						<Button.Section left><Icon type="download" /></Button.Section>
+						<Button.Section left unstyled={ unstyled }><Icon type="download" /></Button.Section>
 						Download
 					</Button>
 				</Group>
-				<Group label="explicit icon size (own prop, not cloned/forced)">
+				<Group label="size={ 32 } (own prop kept as attribute; not cloned/forced)">
 					<Button { ...buttonProps }>
-						<Button.Section left><Icon type="download" size={ 32 } /></Button.Section>
+						<Button.Section left unstyled={ unstyled }><Icon type="download" size={ 32 } /></Button.Section>
 						Download
 					</Button>
 				</Group>

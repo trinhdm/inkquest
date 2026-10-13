@@ -44,8 +44,8 @@ const VIEWBOX = {
 // on the actual accepted prop type, `PolymorphicProps<LogoProps, C>`.
 // `Parameters<typeof Logo>[0]` reads that real, wrapped type straight off the
 // component itself. `LogoSpecs` declares no `defaults.as` (no `TAG` constant either),
-// so `Logo` isn't genuinely polymorphic — `Logo.tsx` hardcodes `as={ Link }` on its
-// root `<Box>` regardless of any `as` a caller passes; see the `as` `argTypes` entry.
+// so `Logo` isn't genuinely polymorphic — its `as` prop is typed `never`, and `Logo.tsx`
+// hardcodes `as={ Link }` on its root `<Box>`; see the `as` `argTypes` entry.
 type LogoStoryProps = Parameters<typeof Logo>[0]
 type Story = StoryObj<LogoStoryProps>
 
@@ -59,7 +59,7 @@ const meta: Meta<LogoStoryProps> = {
 		},
 		as: {
 			control: false,
-			description: '`Logo.tsx` destructures `{ alt, href, type, width, ...rest }` from props and only forwards `{ others }` (NOT the destructured `as`) to its root `<Box>`, which itself hardcodes `as={ Link }` — so this control has no effect on the rendered tag, unlike `Subnav`\'s own genuinely-forwarded `as`.',
+			description: '`LogoSpecs` declares no `defaults.as`, so the factory types close the prop off as `as?: never` — a caller cannot pass a tag. The root `<Box>` always renders `as={ Link }` (an anchor), whatever else is passed.',
 		},
 		href: {
 			control: 'text',
@@ -72,7 +72,7 @@ const meta: Meta<LogoStoryProps> = {
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Logo`\'s own `LogoProps`. The semantic base classes (`inkq-logo`, `inkq-logo__image`) are ALWAYS emitted regardless — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside each (both have plain, config-less SCSS declarations). See the `Unstyled` story.',
+			description: 'Comes from `FactoryContract` (via `_PolymorphicContract`), not `Logo`\'s own `LogoProps`. `Logo` uses no config classes (both `styles(\'root\')` and `styles(\'image\')` are plain calls), so for the root and the image the visible effect is dropping the CSS-module-hashed class normally appended alongside each semantic base class (`inkq-logo`, `inkq-logo__image`, still emitted; both have plain SCSS declarations). `unstyled` also reaches the root `<Box>` through `others`, where it would drop non-state `data-*` attributes (`Logo` sets none). See the `Unstyled` story.',
 		},
 		width: {
 			control: 'number',
@@ -88,7 +88,8 @@ export default meta
 
 /**
  * Default `type` (`'wordmark'`) and `width` (`124`) — renders
- * `` `/logo/wordmark-${colorScheme}.svg` `` at `124 x round(124 * 42/240)`.
+ * `` `/logo/wordmark-${colorScheme}.svg` `` at `124 x round(124 * 42/240)`, with
+ * `loading="eager"` on the image.
  */
 export const Default: Story = {
 	play: async ({ canvasElement }) => {
@@ -99,6 +100,8 @@ export const Default: Story = {
 		await expect(link).toHaveAttribute('href', '/')
 		await expect(image).toHaveAttribute('alt', 'Inkquest Logo')
 		await expect(image).toHaveAttribute('width', '124')
+		// `Logo.tsx` passes `loading="eager"` to `next/image`.
+		await expect(image).toHaveAttribute('loading', 'eager')
 
 		const expectedHeight = Math.round(124 * VIEWBOX.wordmark.height / VIEWBOX.wordmark.width)
 		await expect(image).toHaveAttribute('height', String(expectedHeight))
@@ -131,6 +134,19 @@ export const Type: Story = {
 
 		await expect(wordmark).toHaveAttribute('width', String(width))
 		await expect(wordmark).toHaveAttribute('height', String(Math.round(width * VIEWBOX.wordmark.height / VIEWBOX.wordmark.width)))
+
+		// `filename` (`Logo.tsx`): `'mark'` is scheme-independent, `'wordmark'` gets a
+		// `-<colorScheme>` suffix. The active scheme isn't pinned here, so match either
+		// (`ColorScheme` is `'dark' | 'light'`) rather than one literal; `next/image`
+		// may URL-encode the path, so match the filename only.
+		const markSrc = mark.getAttribute('src') ?? '',
+			wordmarkSrc = wordmark.getAttribute('src') ?? ''
+
+		expect(markSrc).toMatch(/mark\.svg/)
+		expect(markSrc).not.toMatch(/wordmark/)
+		expect(markSrc).not.toMatch(/-(dark|light)/)
+
+		expect(wordmarkSrc).toMatch(/wordmark-(dark|light)\.svg/)
 	},
 }
 
@@ -179,8 +195,8 @@ export const Href: Story = {
 
 /**
  * `unstyled` never removes the semantic base classes (`inkq-logo`,
- * `inkq-logo__image`) — both have plain, config-less SCSS declarations, so only
- * their CSS-module hash is suppressed.
+ * `inkq-logo__image`) — both have plain, config-less SCSS declarations, so the
+ * class-level difference is their CSS-module hash.
  */
 export const Unstyled: Story = {
 	parameters: { controls: { exclude: ['unstyled'] } },
