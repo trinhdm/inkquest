@@ -10,22 +10,31 @@ import { countChildren } from './countChildren'
 import type { WithChildren } from './types'
 
 interface VerifyChildrenArgs {
-	children: ReactNode
+	children?: ReactNode
 	max?: number
-	name: string
+	name: string | VerifySubcomponentsConfig
 	repeated?: ReactNode[]
 	total?: number
 	unrelated?: ReactNode[]
+}
+
+interface VerifySubcomponentsConfig {
+	childName: string | string[]
+	parentName: string
 }
 
 type VerifyArgs =
 	Pick<VerifyChildrenArgs, 'max' | 'name' | 'total'>
 
 const labelChild = (child: ReactNode) => {
-	if (!isValidElement(child)) return `text "${String(child).trim().slice(0, 24)}"`
-	if (typeof child.type === 'string') return `<${child.type}>`
+	if (typeof child === 'string') return child.trim()
+	else if (!isValidElement(child)) return `text '${String(child).trim().slice(0, 24)}'`
+	else if (typeof child.type === 'string') return `<${child.type}>`
 	return (child.type as ComponentType).displayName ?? 'unnamed component'
 }
+
+const labelChildren = (children: ReactNode) =>
+	(Array.isArray(children) ? children.map(labelChild).join(', ') : `${children}`).trim()
 
 export const verifyChildren = ({
 	children,
@@ -38,19 +47,38 @@ export const verifyChildren = ({
 	if (process.env.NODE_ENV === 'production') return
 
 	const count = countChildren(children),
-		foundText = `${name}: ${count} children found`
+		displayName = typeof name === 'string' ? name : name.parentName
 
-	if (max && count > max)
-		console.warn(`${foundText}; a ${name} needs less than ${max + 1} children.`)
+	let childNames,
+		foundText = `${displayName}: ${count}`
 
-	if (total && count !== total)
-		console.warn(`${foundText}; a ${name} needs exactly ${total} children.`)
+	if (typeof name === 'object') {
+		const { childName } = name,
+			list = Array.isArray(childName) ? [...childName] : [childName]
+
+		childNames = ` ${list.map(labelChild).join(', ')}`
+		foundText += childNames
+	}
+
+	const hasMax = typeof max === 'number' && max > -1,
+		isMaxed = hasMax && count > max
+
+	const hasTotal = typeof total === 'number' && total > -1,
+		isTotal = hasTotal && count !== total
+
+	foundText += ` children found; a ${displayName} needs`
+
+	if (isMaxed)
+		console.warn(`${foundText} less than ${max + 1}${childNames ?? ''} children.`)
+
+	if (isTotal)
+		console.warn(`${foundText} exactly ${total}${childNames ?? ''} children.`)
 
 	if (repeated.length)
-		console.warn(`${name}: ignored repeated ${repeated.map(labelChild).join(', ')}; only the first is used.`)
+		console.warn(`${displayName}: ignoring repeated ${labelChildren(childNames ?? repeated)}; only the first is rendered.`)
 
 	if (unrelated.length)
-		console.warn(`${name}: ignored unrelated ${unrelated.map(labelChild).join(', ')}.`)
+		console.warn(`${displayName}: ignoring unrelated ${labelChildren(childNames ?? unrelated)}.`)
 }
 
 interface SortedChildren {

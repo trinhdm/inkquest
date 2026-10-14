@@ -1,9 +1,4 @@
-import {
-	isValidElement,
-	Children,
-	type ReactNode,
-} from 'react'
-
+import { isValidElement, Children, type ReactNode } from 'react'
 import type { WithChildren } from './types'
 
 export const extractText = (children: ReactNode): string => {

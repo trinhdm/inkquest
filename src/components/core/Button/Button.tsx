@@ -1,25 +1,31 @@
+import {
+	isValidElement, useMemo, Children,
+	type ComponentPropsWithoutRef, type MouseEventHandler,
+	type ReactNode, type Ref,
+} from 'react'
+
+import Link, { type LinkProps } from 'next/link'
 import { LoaderCircle } from 'lucide-react'
-import { isValidElement, useMemo, Children } from 'react'
 import { defineTokens } from '@/lib/component/tokens'
 import { extractOthers } from '@/hooks/useProps'
-import { extractText } from '@/lib/component/children'
+import { extractText, verifyChildren } from '@/lib/component/children'
 import { isExternalLink, keyHasValue } from '@/utils/helpers'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import { ButtonGroup, useButtonGroupProps } from './ButtonGroup'
 import { ButtonProvider, type ButtonContext } from './Button.context'
 import { ButtonSection } from './ButtonSection'
-import type { ComponentPropsWithoutRef, MouseEventHandler, ReactNode, Ref } from 'react'
-import type { Route } from 'next'
+
 import type {
 	Priority as ThemePriority,
 	Tone as ThemeTone,
 	Variant as ThemeVariant,
 } from '@/lib/theme/types'
+
+import type { Route } from 'next'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import type { Size } from '@/types/shared'
 import type { StyleFn } from '@/hooks/useStyles'
-import Link, { type LinkProps } from 'next/link'
 import classes from './Button.module.scss'
 
 const NAME = 'Button' as const,
@@ -112,10 +118,11 @@ const buildSections = (
 			if (!taken) {
 				if (isLeft) left = child
 				else right = child
-			} else if (process.env.NODE_ENV !== 'production') {
-				const section = `${NAME}.Section`
-				console.warn(`${NAME}: multiple ${section}[${isLeft ? 'left' : 'right'}] found; only the first ${section} is rendered.`)
-			} return
+			} else {
+				const childName = `${ButtonSection.displayName}[${isLeft ? 'left' : 'right'}]`
+				verifyChildren({ name: { childName, parentName: Button.displayName }, repeated: [child] })
+			}
+			return
 		}
 
 		label.push(child)
@@ -175,20 +182,11 @@ export const Button = polymorphic<ButtonSpecs>((_props, { useProps, useStyles, u
 	const styles = useStyles({ props, tokens })
 
 	const {
-		as,
-		children,
-		disabled,
-		fullWidth,
-		loading,
-		prefetch,
-		priority,
-		replace,
-		scroll,
-		size,
-		showLabel,
-		tone,
-		unstyled,
-		variant,
+		as, children, disabled,
+		fullWidth, loading, prefetch,
+		priority, replace, scroll,
+		showLabel, size, tone,
+		unstyled, variant,
 		...rest
 	} = props
 
