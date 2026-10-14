@@ -1,5 +1,5 @@
 import {
-	isValidElement, useMemo, Children,
+	useMemo,
 	type ComponentPropsWithoutRef, type MouseEventHandler,
 	type ReactNode, type Ref,
 } from 'react'
@@ -8,13 +8,13 @@ import Link, { type LinkProps } from 'next/link'
 import { LoaderCircle } from 'lucide-react'
 import { defineTokens } from '@/lib/component/tokens'
 import { extractOthers } from '@/hooks/useProps'
-import { extractText, verifyChildren } from '@/lib/component/children'
+import { extractText } from '@/lib/component/children'
 import { isExternalLink, keyHasValue } from '@/utils/helpers'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import { ButtonGroup, useButtonGroupProps } from './ButtonGroup'
 import { ButtonProvider, type ButtonContext } from './Button.context'
-import { ButtonSection } from './ButtonSection'
+import { buildSections, ButtonSection } from './ButtonSection'
 
 import type {
 	Priority as ThemePriority,
@@ -25,7 +25,6 @@ import type {
 import type { Route } from 'next'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import type { Size } from '@/types/shared'
-import type { StyleFn } from '@/hooks/useStyles'
 import classes from './Button.module.scss'
 
 const NAME = 'Button' as const,
@@ -102,41 +101,10 @@ type ButtonTokens = {
 		| '--button-padding'
 }
 
-const buildSections = (
-	children: ButtonProps['children'],
-	styles: StyleFn<ButtonSpecs>,
-) => {
-	const label: ReactNode[] = []
-	let left: ReactNode = null,
-		right: ReactNode = null
-
-	Children.toArray(children).forEach(child => {
-		if (isValidElement<ButtonSection.Props>(child) && child.type === ButtonSection) {
-			const isLeft = 'left' in child.props && !!child.props.left,
-				taken = isLeft ? left : right
-
-			if (!taken) {
-				if (isLeft) left = child
-				else right = child
-			} else {
-				const childName = `${ButtonSection.displayName}[${isLeft ? 'left' : 'right'}]`
-				verifyChildren({ name: { childName, parentName: Button.displayName }, repeated: [child] })
-			}
-			return
-		}
-
-		label.push(child)
-	})
-
-	const content = <span { ...styles('label') }>{ label }</span>
-
-	if (!left && !right) return content
-	return <>{ left }{ content }{ right }</>
-}
-
 const tokens = defineTokens<ButtonSpecs>()(({ props, theme }) => {
-	const { size } = props
-	let buttonFontSize, buttonPadding, buttonTracking
+	const { loading, size } = props
+	let buttonFontSize, buttonIconSize,
+		buttonPadding, buttonTracking
 
 	if (size) {
 		const buttonFontSizes: Record<Button.Size, string> = {
@@ -160,13 +128,15 @@ const tokens = defineTokens<ButtonSpecs>()(({ props, theme }) => {
 		buttonFontSize = buttonFontSizes[size]
 		buttonPadding = buttonPaddings[size]
 		buttonTracking = buttonTrackings[size]
-	}
 
+		buttonIconSize = theme.el.icon.size(size)
+		if (loading) buttonIconSize = `calc(.125rem + ${buttonIconSize})`
+	}
 
 	return {
 		root: {
 			'--button-font-size': buttonFontSize,
-			'--button-icon-size': !!size ? theme.el.icon.size(size) : undefined,
+			'--button-icon-size': buttonIconSize,
 			'--button-tracking': buttonTracking,
 		},
 		inner: {
@@ -192,10 +162,6 @@ export const Button = polymorphic<ButtonSpecs>((_props, { useProps, useStyles, u
 
 	const others = extractOthers(rest)
 
-	const clsx = {
-		global: { block: fullWidth },
-	}
-
 	const ariaLabel = extractText(children),
 		aria = { label: !!(showLabel && ariaLabel.length) ? ariaLabel : undefined }
 
@@ -207,18 +173,18 @@ export const Button = polymorphic<ButtonSpecs>((_props, { useProps, useStyles, u
 	}
 
 	const sharedProps = {
-		...styles('root', clsx),
+		...styles('root', { global: { block: fullWidth } }),
 		attributes: { aria, data },
 		unstyled,
 	}
 
 	const ctxValues = useMemo(() => ({ unstyled }), [unstyled])
 
-	const inner = (
+	const innerEl = (
 		<ButtonProvider value={ ctxValues }>
 			<Box as="span" { ...styles('inner') }>
 				{ loading && <LoaderCircle { ...styles('loader', true) } /> }
-				{ buildSections(children, styles) }
+				{ buildSections({ children, parentName: Button.displayName, styles }) }
 			</Box>
 		</ButtonProvider>
 	)
@@ -246,7 +212,7 @@ export const Button = polymorphic<ButtonSpecs>((_props, { useProps, useStyles, u
 				scroll={ scroll }
 				replace={ replace }
 			>
-				{ inner }
+				{ innerEl }
 			</Box>
 		)
 	}
@@ -257,7 +223,7 @@ export const Button = polymorphic<ButtonSpecs>((_props, { useProps, useStyles, u
 			{ ...others }
 			as={ as }
 		>
-			{ inner }
+			{ innerEl }
 		</Box>
 	)
 }, { name: NAME, classes })
@@ -274,10 +240,9 @@ export declare namespace Button {
 	export type Specs = ButtonSpecs
 
 	export type Priority = ThemePriority
+	export type Size = NonNullable<Button.Props['size']>
 	export type Tone = ThemeTone
 	export type Variant = ThemeVariant
-
-	export type Size = NonNullable<Button.Props['size']>
 
 	export namespace Group {
 		export type Context = ButtonGroup.Context
