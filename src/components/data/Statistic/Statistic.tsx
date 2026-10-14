@@ -1,7 +1,7 @@
 import { useCountUp, type MaybeAnimationProps } from '@/hooks/animation'
-import { useStatisticGroupProps } from './StatisticGroup'
-import { defineTokens } from '@/lib/component/tokens'
+import { useStatisticGroup } from './StatisticGroup'
 import { extractOthers } from '@/hooks/useProps'
+import { getSharedTokens, type StatisticTokens } from './utils'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import { StatisticGroup } from './StatisticGroup'
@@ -56,47 +56,14 @@ type StatisticSelectors =
 	| 'root' | 'inner'
 	| 'value' | 'caption'
 
-type StatisticTokens = {
-	root:
-		| '--statistic-align'
-		| '--statistic-direction'
-		| '--statistic-font-caption'
-		| '--statistic-font-size'
-		| '--statistic-icon-size'
-		| '--statistic-row-gap'
-}
-
-const tokens = defineTokens<StatisticSpecs>()(({ props, theme }) => {
-	const { order, size } = props
-	const isDescend = order === 'descend',
-		isLarge = size === 'lg'
-
-	const align = isDescend ? 'start' : 'end',
-		direction = isDescend ? '' : '-reverse',
-		titleTag = isLarge ? 'h3' : 'h4'
-
-	const captionFont = isLarge
-		? theme.presets.text.caption('item')
-		: theme.presets.text.section('eyebrow')
-
-	const baseIcon = theme.el.icon.size('sm'),
-		iconSize = isLarge ? `calc(2 * ${baseIcon})` : baseIcon
-
-	return {
-		root: {
-			'--statistic-align': `flex-${align}`,
-			'--statistic-direction': `column${direction}`,
-			'--statistic-font-caption': !!size ? captionFont : undefined,
-			'--statistic-font-size': !!size ? theme.fontSize(titleTag) : undefined,
-			'--statistic-icon-size': !!size ? iconSize : undefined,
-			'--statistic-row-gap': isLarge ? theme.space('icon') : theme.padding('menu'),
-		},
-	}
-})
+const tokens = getSharedTokens('root')
 
 export const Statistic = polymorphic<StatisticSpecs>((_props, { useProps, useStyles }) => {
+	const { useStatisticGroupCtx, useStatisticGroupProps } = useStatisticGroup()
+
+	const context = useStatisticGroupCtx()
 	const props = useProps(useStatisticGroupProps(_props))
-	const styles = useStyles({ props, tokens })
+	const styles = useStyles({ context, props, tokens })
 
 	const {
 		animated, as, caption,

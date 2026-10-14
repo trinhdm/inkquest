@@ -13,3 +13,5 @@ export const {
 	useSafeRootCtx: useStatisticGroupCtx,
 	useRootProps: useStatisticGroupProps,
 } = createCompoundCtx<StatisticGroupContext>('Statistic.Group')
+
+export const useStatisticGroup = () => ({ useStatisticGroupCtx, useStatisticGroupProps })

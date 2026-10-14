@@ -1,5 +1,5 @@
+import { Eye } from 'lucide-react'
 import { useChosenFieldProps, useFieldCtx, type Field } from '../Field'
-import { defineTokens } from '@/lib/component/tokens'
 import { extractOthers } from '@/hooks/useProps'
 import { getSharedTokens, type FieldTokens as TextInputTokens } from '../utils'
 import { polymorphic } from '@/lib/component/factory'
@@ -7,7 +7,6 @@ import { Box } from '@/components/polymorphic/Box'
 import type { ChangeEventHandler, HTMLInputTypeAttribute, MouseEventHandler } from 'react'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './TextInput.module.scss'
-import { Eye } from 'lucide-react'
 
 const NAME = 'TextInput' as const
 const DEFAULT_PROPS = {
@@ -55,7 +54,7 @@ interface TextInputSpecs {
 type TextInputSelectors =
 	| 'root' | 'icon'
 
-const tokens = defineTokens<TextInputSpecs>()(args => getSharedTokens(args))
+const tokens = getSharedTokens('input')
 
 export const TextInput = polymorphic<TextInputSpecs>((_props, { useProps, useStyles }) => {
 	const context = useFieldCtx(NAME)

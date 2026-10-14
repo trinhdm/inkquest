@@ -1,14 +1,15 @@
 import {
-	Calendar, Calendar1, CalendarDays, Clock,
-	Eye,
-	Globe, Hash, Mail, Paperclip,
+	Calendar, Calendar1, CalendarDays,
+	Clock, Eye, Globe,
+	Hash, Mail, Paperclip,
 	Phone, Pipette, Search,
 } from 'lucide-react'
 
+import { defineSharedTokens, type TokensParams } from '@/lib/component/tokens'
+import { keyHasValue } from '@/utils/helpers'
 import type { HTMLInputTypeAttribute } from 'react'
 import type { Field } from './Field'
-import type { TokensConfig } from '@/lib/component/tokens/defineTokens'
-import { keyHasValue } from '@/utils/helpers'
+import type { SpecsTokenGroups } from '@/lib/component/factory/types'
 
 export const getIcon = (type?: HTMLInputTypeAttribute) => {
 	switch (type) {
@@ -35,23 +36,31 @@ export type FieldTokens = {
 		| '--form-control-icon-inset'
 }
 
-export type FieldPropsList =
-	| Field.Choice.Props
-	| Field.Input.Props
-	| Field.Textarea.Props
+type FieldSpecsList = {
+	choice: Field.Choice.Specs
+	input: Field.Input.Specs
+	textarea: Field.Textarea.Specs
+}
 
-type FieldSpecsList =
-	| Field.Choice.Specs
-	| Field.Input.Specs
-	| Field.Textarea.Specs
+type FieldName =
+	keyof FieldSpecsList
 
-export const getSharedTokens: TokensConfig<FieldSpecsList> = ({
-	context,
-	props,
-	theme,
-}) => {
+export type FieldPropsList<N extends FieldName = FieldName> =
+	FieldSpecsList[N]['props']
+
+/* eslint-disable @typescript-eslint/no-unused-vars */
+const listSharedTokens = <
+	N extends FieldName = 'input',
+	S extends FieldSpecsList[N] = FieldSpecsList[N]
+>(
+	args: TokensParams<S>,
+	name: N = 'input' as N,
+): SpecsTokenGroups<S> => {
+	const { context, props, theme } = args
+	if (!context) return {} as SpecsTokenGroups<S>
+
 	const { icon } = context
-	const { size } = props
+	const size = props.size ?? context.size
 
 	const iconSpace = theme.space('icon'),
 		iconSize = 'var(--field-icon-size)'
@@ -71,7 +80,7 @@ export const getSharedTokens: TokensConfig<FieldSpecsList> = ({
 		? `${padding} ${blockPadding} ${iconPadding}`
 		: `${blockPadding} ${iconPadding} ${padding}`
 
-	return {
+	const tokens: SpecsTokenGroups<FieldSpecsList['input']> = {
 		root: {
 			'--form-control-padding': !!icon ? controlPadding : padding,
 		},
@@ -79,4 +88,9 @@ export const getSharedTokens: TokensConfig<FieldSpecsList> = ({
 			'--form-control-icon-inset': iconPosition,
 		},
 	}
+
+	return tokens as SpecsTokenGroups<S>
 }
+
+export const getSharedTokens = <N extends FieldName = 'input'>(name: N = 'input' as N) =>
+	defineSharedTokens<FieldSpecsList, N>(listSharedTokens, name)

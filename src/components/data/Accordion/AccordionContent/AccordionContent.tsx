@@ -4,8 +4,8 @@ import { extractOthers } from '@/hooks/useProps'
 import { polymorphic } from '@/lib/component/factory'
 import { withInlineWrap } from '@/lib/component/children'
 import { Box } from '@/components/polymorphic/Box'
-import type { Accordion } from '../Accordion'
 import type { ReactNode } from 'react'
+import type { Accordion } from '../Accordion'
 import classes from '../Accordion.module.scss'
 
 const NAME = 'Accordion.Content' as const
@@ -32,17 +32,23 @@ type AccordionContentTokens = {
 }
 
 const tokens = defineTokens<AccordionContentSpecs>()(({ context, theme }) => {
-	const { size, step } = context
+	if (!context) return {}
 
-	const fontSize = ['body']
-	if (size !== 'sm') fontSize.push('lg')
+	const { size, step } = context
+	let contentFontSize
+
+	if (!!size) {
+		const fontSize = ['body']
+		if (size === 'lg') fontSize.push(size)
+		contentFontSize = theme.fontSize(...fontSize as Parameters<typeof theme.fontSize>)
+	}
 
 	return {
 		root: {
 			'--accordion-content-indent': !!step
 				? 'calc(var(--accordion-column-width) + var(--accordion-gap))'
 				: undefined,
-			'--accordion-content-size': theme.fontSize(...fontSize as Parameters<typeof theme.fontSize>),
+			'--accordion-content-size': contentFontSize,
 		},
 	}
 })

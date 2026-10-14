@@ -1,5 +1,6 @@
 import userEvent from '@testing-library/user-event'
 import { render, reset, screen } from '@/tests/test-utils'
+import { getDefaultProps } from '@/hooks/useProps'
 import { Accordion } from './Accordion'
 
 const buildAccordion = (props: Partial<Accordion.Props> = {}) => (
@@ -244,5 +245,107 @@ describe('Accordion', () => {
 	it('renders an unpadded step number (no leading zero) once the index reaches double digits', () => {
 		render(buildAccordion({ layout: 'steps', index: 9 }))
 		expect(screen.getByText('10')).toBeInTheDocument()
+	})
+
+	// The root carries the shared `--accordion-*` tokens inline. Values below come from
+	// `tokensBySize` in `./utils.ts`: step = { sm: 2, md: 1, lg: 0 }, so md => column 8, gap 6, padding 5,
+	// indicator 20, title h(order + 1).
+	describe('shared inline tokens', () => {
+		const TOKENS = [
+			'--accordion-column-width',
+			'--accordion-gap',
+			'--accordion-indicator-size',
+			'--accordion-padding',
+			'--accordion-title-size',
+		] as const
+
+		// The root has no role or label, so find it by the id it builds from the
+		// `id` prop (`acc-<id>`). A missing root fails here, not as a null deref.
+		const getRoot = (id: string) => {
+			const root = document.getElementById(`acc-${ id }`)
+			expect(root).toBeInTheDocument()
+			return root as HTMLElement
+		}
+
+		it('puts the registered-default tokens inline on a standalone root', () => {
+			const defaults = getDefaultProps<Accordion.Props>('Accordion')
+			expect(defaults).toMatchObject({ order: 3, size: 'md' })
+
+			render(buildAccordion({ id: 'one' }))
+			const root = getRoot('one')
+
+			expect(root.style.getPropertyValue('--accordion-column-width')).toBe('var(--space-8)')
+			expect(root.style.getPropertyValue('--accordion-gap')).toBe('var(--space-6)')
+			expect(root.style.getPropertyValue('--accordion-indicator-size')).toBe('var(--font-size-20)')
+			expect(root.style.getPropertyValue('--accordion-padding')).toBe('var(--space-5)')
+			expect(root.style.getPropertyValue('--accordion-title-size')).toBe('var(--inkq-font-size-h4)')
+		})
+
+		it('omits the step token unless layout="steps"', () => {
+			render(buildAccordion({ id: 'one' }))
+			const root = getRoot('one')
+
+			expect(root.style.getPropertyValue('--accordion-gap')).not.toBe('')
+			expect(root.style.getPropertyValue('--accordion-step-size')).toBe('')
+		})
+
+		it('emits the step token when layout="steps"', () => {
+			document.documentElement.style.fontSize = '16px'
+			try {
+				render(buildAccordion({ id: 'one', layout: 'steps' }))
+				const step = getRoot('one').style.getPropertyValue('--accordion-step-size')
+
+				expect(step).toContain('var(--accordion-title-size)')
+				expect(step).not.toContain('NaN')
+			} finally {
+				document.documentElement.style.fontSize = ''
+			}
+		})
+
+		it('changes the inline values when size changes', () => {
+			render(buildAccordion({ id: 'small', size: 'sm' }))
+			render(buildAccordion({ id: 'large', size: 'lg' }))
+			const small = getRoot('small'), large = getRoot('large')
+
+			expect(small.style.getPropertyValue('--accordion-gap')).toBe('var(--space-3)')
+			expect(small.style.getPropertyValue('--accordion-padding')).toBe('var(--space-4)')
+			expect(small.style.getPropertyValue('--accordion-indicator-size')).toBe('var(--font-size-16)')
+			expect(small.style.getPropertyValue('--accordion-title-size')).toBe('var(--inkq-font-size-h5)')
+
+			expect(large.style.getPropertyValue('--accordion-gap')).toBe('var(--space-9)')
+			expect(large.style.getPropertyValue('--accordion-padding')).toBe('var(--space-6)')
+			expect(large.style.getPropertyValue('--accordion-indicator-size')).toBe('var(--font-size-24)')
+			expect(large.style.getPropertyValue('--accordion-title-size')).toBe('var(--inkq-font-size-h3)')
+		})
+
+		it('changes only the title size when order changes', () => {
+			render(buildAccordion({ id: 'base' }))
+			render(buildAccordion({ id: 'other', order: 1 }))
+			const a = getRoot('base'), b = getRoot('other')
+
+			expect(a.style.getPropertyValue('--accordion-title-size')).toBe('var(--inkq-font-size-h4)')
+			expect(b.style.getPropertyValue('--accordion-title-size')).toBe('var(--inkq-font-size-h2)')
+			TOKENS.filter(t => t !== '--accordion-title-size').forEach(token => {
+				expect(b.style.getPropertyValue(token)).toBe(a.style.getPropertyValue(token))
+			})
+		})
+
+		it('drops every inline token when unstyled, while a styled sibling keeps them', () => {
+			render(
+				<>
+					{ buildAccordion({ id: 'styled' }) }
+					<Accordion id="bare" unstyled>
+						<Accordion.Title>Bare title</Accordion.Title>
+						<Accordion.Content>Bare body</Accordion.Content>
+					</Accordion>
+				</>
+			)
+			const styled = getRoot('styled'), bare = getRoot('bare')
+
+			expect(styled.style.getPropertyValue('--accordion-gap')).not.toBe('')
+			TOKENS.forEach(token => {
+				expect(bare.style.getPropertyValue(token)).toBe('')
+			})
+		})
 	})
 })

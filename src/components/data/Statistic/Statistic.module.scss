@@ -1,33 +1,27 @@
 .inkq-statistic {
 	$name: &;
 
-	flex-direction: var(--statistic-direction, inherit);
-	justify-content: var(--statistic-align, normal);
-	row-gap: var(--statistic-row-gap, var(--space-1));
+	flex-direction: var(--stat-direction, inherit);
+	justify-content: var(--stat-align, normal);
+	row-gap: var(--stat-row-gap, var(--space-1));
 
 	&__inner {
-		--stat-icon-margin: 0 var(--space-2) calc(.75 * var(--space-2)) 0;
-		--icon-size: var(--statistic-icon-size, var(--inkq-icon-sm));
+		--stat-margin-bottom: calc(.75 * var(--stat-icon-margin, 0));
+		--stat-margin-right: calc(1.5 * var(--stat-icon-margin, 0));
+		--icon-margin: 0 var(--stat-margin-right) var(--stat-margin-bottom) 0;
+		--icon-size: var(--stat-icon-size, var(--inkq-icon-sm));
 
-		font-size: var(--statistic-font-size);
+		font-size: var(--stat-font-size);
 		font-weight: var(--inkq-font-weight-bold);
 		line-height: var(--inkq-font-leading-label);
-
-		svg {
-			margin: var(--stat-icon-margin, 0);
-		}
 	}
 
 	&__caption {
-		font: var(--statistic-font-caption);
+		font: var(--stat-font-caption);
 	}
 
 	&__value {
 		font-variant-numeric: tabular-nums;
-	}
-
-	&--sm #{$name}__inner {
-		--stat-icon-margin: 0 calc(1.5 * var(--space-1)) calc(.75 * var(--space-1)) 0;
 	}
 
 	&--lg #{$name}__inner {

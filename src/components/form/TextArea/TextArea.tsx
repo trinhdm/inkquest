@@ -1,5 +1,4 @@
 import { useChosenFieldProps, useFieldCtx, type Field } from '../Field'
-import { defineTokens } from '@/lib/component/tokens'
 import { extractOthers } from '@/hooks/useProps'
 import { getSharedTokens, type FieldTokens as TextAreaTokens } from '../utils'
 import { polymorphic } from '@/lib/component/factory'
@@ -34,7 +33,7 @@ interface TextAreaSpecs {
 type TextAreaSelectors =
 	| 'root' | 'icon'
 
-const tokens = defineTokens<TextAreaSpecs>()(args => getSharedTokens(args))
+const tokens = getSharedTokens('textarea')
 
 export const TextArea = polymorphic<TextAreaSpecs>((_props, { useProps, useStyles }) => {
 	const context = useFieldCtx(NAME)

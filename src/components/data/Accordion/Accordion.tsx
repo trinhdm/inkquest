@@ -1,6 +1,5 @@
 import { useCallback, useId, useMemo, useState, type ReactNode } from 'react'
-import { useAccordionGroupProps, AccordionGroup } from './AccordionGroup'
-import { defineTokens } from '@/lib/component/tokens'
+import { useAccordionGroup, AccordionGroup } from './AccordionGroup'
 import { extractOthers } from '@/hooks/useProps'
 import { filterChildren } from '@/lib/component/children'
 import { getSharedTokens, type AccordionTokens } from './utils'
@@ -74,14 +73,14 @@ const buildAccordion = (children: AccordionProps['children']) => {
 	return <>{ title }{ content }</>
 }
 
-const tokens = defineTokens<AccordionSpecs>()(({ props }) => {
-	if (typeof props.onItemToggle === 'function') return {}
-	return getSharedTokens(props)
-})
+const tokens = getSharedTokens('root')
 
 export const Accordion = polymorphic<AccordionSpecs>((_props, { useProps, useStyles }) => {
+	const { useAccordionGroupCtx, useAccordionGroupProps } = useAccordionGroup()
+
+	const context = useAccordionGroupCtx()
 	const props = useProps(useAccordionGroupProps(_props))
-	const styles = useStyles({ props, tokens })
+	const styles = useStyles({ context, props, tokens })
 
 	const {
 		as, children, collapsible,

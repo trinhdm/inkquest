@@ -1,5 +1,4 @@
 import { useChosenFieldProps, useFieldCtx, type Field } from '../Field'
-import { defineTokens } from '@/lib/component/tokens'
 import { extractOthers } from '@/hooks/useProps'
 import { getSharedTokens, type FieldTokens as RadioTokens } from '../utils'
 import { polymorphic } from '@/lib/component/factory'
@@ -48,7 +47,7 @@ interface RadioSpecs {
 type RadioSelectors =
 	| 'root' | 'icon'
 
-const tokens = defineTokens<RadioSpecs>()(args => getSharedTokens(args))
+const tokens = getSharedTokens('choice')
 
 export const Radio = polymorphic<RadioSpecs>((_props, { useProps, useStyles }) => {
 	const context = useFieldCtx(NAME)

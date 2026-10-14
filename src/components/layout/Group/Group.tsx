@@ -1,19 +1,19 @@
 import {
 	useMemo, useRef,
-	type CSSProperties, type ElementType,
-	type ReactElement, type ReactNode,
+	type ElementType, type ReactElement, type ReactNode,
 } from 'react'
 
 import { useReplayInView, type MaybeAnimationProps } from '@/hooks/animation'
+import { countChildren, filterChildren } from '@/lib/component/children'
 import { defineTokens } from '@/lib/component/tokens'
 import { extractOthers, type ReservedProp } from '@/hooks/useProps'
-import { countChildren, filterChildren } from '@/lib/component/children'
+import { keyHasValue } from '@/utils/helpers'
 import { polymorphic } from '@/lib/component/factory'
 import { withProvider } from '@/lib/component/context'
 import { Box } from '@/components/polymorphic/Box'
 import { GroupItem } from './GroupItem'
 import { GroupProvider, type GroupContext } from './Group.context'
-import type { Orientation } from '@/types/shared'
+import type { JustifyContent, Orientation } from '@/types/shared'
 import type { PolymorphicProps, PropsDefaultList } from '@/lib/component/factory/types'
 import type { RootProviderFn } from '@/lib/component/context'
 import classes from './Group.module.scss'
@@ -47,7 +47,7 @@ interface BaseGroupProps {
 	divider?: boolean
 	header?: ReactNode
 	fullWidth?: boolean
-	justify?: CSSProperties['justifyContent']
+	justify?: JustifyContent
 	orientation?: Orientation
 }
 
@@ -93,12 +93,18 @@ type GroupTokens = {
 }
 
 const tokens = defineTokens<GroupSpecs>()(({ props }) => {
-	const { columns, children, justify, orientation } = props
-	const hasColumns = !!(columns && columns > 0)
-	let numCols: number | undefined = hasColumns ? columns : undefined
+	const {
+		childName, children,
+		columns, justify, orientation,
+	} = props
 
-	if (!!orientation && !hasColumns) {
-		const count = countChildren(children)
+	const hasColumns = !!(columns && columns > 0)
+	let numCols
+
+	if (hasColumns) {
+		numCols = columns
+	} else if (!!orientation) {
+		const count = countChildren(children, childName)
 		numCols = count > 1 ? count - 1 : count
 	}
 
@@ -118,39 +124,38 @@ export const GroupBase = polymorphic<GroupSpecs>((_props, { useProps, useStyles 
 		as, amount, animated,
 		childName, children, columns,
 		divider, duration, fullWidth,
-		header, once, orientation,
-		provider: Provider,
-		stagger, unstyled, values,
+		header, justify, once,
+		orientation, provider: Provider,
+		stagger, values,
 		...rest
 	} = props
 
 	const others = extractOthers(rest)
-
-	const aria = { orientation }
-	const data = {
-		block: !!fullWidth || null,
-		divide: !!divider || null,
-	}
-
-	const items = filterChildren(children, childName, { name: NAME }),
-		total = items.length
 
 	// one observer for the whole group, so children stagger off a single t=0
 	// rather than each racing its own IntersectionObserver
 	const ref = useRef<HTMLDivElement>(null)
 	const withinView = useReplayInView(ref, { amount, once })
 
+	const items = filterChildren(children, childName, { name: NAME }),
+		total = items.length
+
+	const isUnstyled = useMemo(
+		() => (keyHasValue(values, { unstyled: true }) ? values.unstyled : props.unstyled),
+		[props.unstyled, values]
+	)
+
 	// one context value per child — memoised on `total` so identities stay
 	// stable across renders even though each child gets its own object
 	const ctxValues = useMemo(
 		() => Array.from({ length: total }, (_, index) => ({
-			animated, duration, index, stagger,
-			unstyled, withinView,
+			animated, duration, index, stagger, withinView,
 			...values,
+			unstyled: isUnstyled,
 		})),
 		[
 			animated, duration, stagger, total,
-			unstyled, values, withinView,
+			isUnstyled, values, withinView,
 		]
 	)
 
@@ -159,7 +164,13 @@ export const GroupBase = polymorphic<GroupSpecs>((_props, { useProps, useStyles 
 			{ ...styles('root') }
 			{ ...others }
 			as={ as }
-			attributes={ { aria, data } }
+			attributes={ {
+				aria: { orientation },
+				data: {
+					block: !!fullWidth || null,
+					divide: !!divider || null,
+				}
+			} }
 			ref={ ref }
 			role={ !!as && GROUP_TAGS.includes(as) ? undefined : 'group' }
 		>

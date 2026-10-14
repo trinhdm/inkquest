@@ -206,4 +206,95 @@ describe('Accordion.Group', () => {
 			warn.mockRestore()
 		}
 	})
+
+	// `getSharedTokens('root')` returns {} whenever an Accordion has a group context, so the
+	// GROUP root alone carries the tokens (from the group's props) and items inherit them via
+	// CSS. The group's values always win, even over an item's own size/order (confirmed design).
+	describe('shared inline tokens', () => {
+		const TOKENS = [
+			'--accordion-column-width',
+			'--accordion-gap',
+			'--accordion-indicator-size',
+			'--accordion-padding',
+			'--accordion-title-size',
+		] as const
+
+		// An Accordion root has no role or label, so find it by the id it builds
+		// from the `id` prop (`acc-<id>`). A missing root fails here, not as a null deref.
+		const getRoot = (id: string) => {
+			const root = document.getElementById(`acc-${ id }`)
+			expect(root).toBeInTheDocument()
+			return root as HTMLElement
+		}
+
+		it('puts the tokens inline on the group root, computed from the group props', () => {
+			const { container } = render(
+				<Accordion.Group size="sm" order={ 1 }>
+					{ item('One', 'First body') }
+				</Accordion.Group>
+			)
+			const group = container.querySelector('[data-group]') as HTMLElement
+
+			expect(group.style.getPropertyValue('--accordion-column-width')).toBe('var(--space-5)')
+			expect(group.style.getPropertyValue('--accordion-gap')).toBe('var(--space-3)')
+			expect(group.style.getPropertyValue('--accordion-indicator-size')).toBe('var(--font-size-16)')
+			expect(group.style.getPropertyValue('--accordion-padding')).toBe('var(--space-4)')
+			expect(group.style.getPropertyValue('--accordion-title-size')).toBe('var(--inkq-font-size-h3)')
+		})
+
+		it('uses the registered defaults (md, order 3) when the group passes neither', () => {
+			const { container } = render(
+				<Accordion.Group>
+					{ item('One', 'First body') }
+				</Accordion.Group>
+			)
+			const group = container.querySelector('[data-group]') as HTMLElement
+
+			expect(group.style.getPropertyValue('--accordion-gap')).toBe('var(--space-6)')
+			expect(group.style.getPropertyValue('--accordion-title-size')).toBe('var(--inkq-font-size-h4)')
+		})
+
+		it('leaves every grouped Accordion root without tokens, even with its own size/order', () => {
+			const { container } = render(
+				<Accordion.Group size="md" order={ 3 }>
+					<Accordion id="one" size="sm" order={ 1 }>
+						<Accordion.Title>One</Accordion.Title>
+						<Accordion.Content>First body</Accordion.Content>
+					</Accordion>
+					<Accordion id="two">
+						<Accordion.Title>Two</Accordion.Title>
+						<Accordion.Content>Second body</Accordion.Content>
+					</Accordion>
+				</Accordion.Group>
+			)
+			const group = container.querySelector('[data-group]') as HTMLElement
+			const roots = [getRoot('one'), getRoot('two')]
+
+			// positive control: the group root has the group's (not the item's) values
+			expect(group.style.getPropertyValue('--accordion-gap')).toBe('var(--space-6)')
+			expect(group.style.getPropertyValue('--accordion-title-size')).toBe('var(--inkq-font-size-h4)')
+
+			roots.forEach(root => {
+				TOKENS.forEach(token => {
+					expect(root.style.getPropertyValue(token)).toBe('')
+				})
+				expect(root.style.getPropertyValue('--accordion-step-size')).toBe('')
+			})
+		})
+
+		it('drops the group tokens when the group is unstyled, with a styled group as control', () => {
+			const { container } = render(
+				<>
+					<Accordion.Group>{ item('One', 'First body') }</Accordion.Group>
+					<Accordion.Group unstyled>{ item('Two', 'Second body') }</Accordion.Group>
+				</>
+			)
+			const [styled, bare] = Array.from(container.querySelectorAll<HTMLElement>('[data-group]'))
+
+			expect(styled.style.getPropertyValue('--accordion-gap')).not.toBe('')
+			TOKENS.forEach(token => {
+				expect(bare.style.getPropertyValue(token)).toBe('')
+			})
+		})
+	})
 })

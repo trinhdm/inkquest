@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { useReplayInView } from '@/hooks/animation'
-import { defineTokens } from '@/lib/component/tokens'
 import { extractOthers } from '@/hooks/useProps'
 import { filterChildren } from '@/lib/component/children'
 import { getSharedTokens, type AccordionTokens as AccordionGroupTokens } from '../utils'
@@ -47,7 +46,7 @@ const handleOpenItems = (value?: AccordionGroupProps['defaultOpen']): number[] =
 		: Array.isArray(value)
 			? value : []
 
-const tokens = defineTokens<AccordionGroupSpecs>()(({ props }) => getSharedTokens(props))
+const tokens = getSharedTokens('group')
 
 export const AccordionGroup = polymorphic<AccordionGroupSpecs>((_props, { useProps, useStyles }) => {
 	const props = useProps(_props)

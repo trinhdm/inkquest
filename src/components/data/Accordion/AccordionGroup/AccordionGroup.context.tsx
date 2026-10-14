@@ -25,3 +25,5 @@ export const {
 	useSafeRootCtx: useAccordionGroupCtx,
 	useRootProps: useAccordionGroupProps,
 } = createCompoundCtx<AccordionGroupContext>('Accordion.Group')
+
+export const useAccordionGroup = () => ({ useAccordionGroupCtx, useAccordionGroupProps })

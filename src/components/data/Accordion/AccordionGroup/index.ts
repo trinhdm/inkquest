@@ -1,2 +1,2 @@
 export { AccordionGroup } from './AccordionGroup'
-export { useAccordionGroupProps } from './AccordionGroup.context'
+export { useAccordionGroup } from './AccordionGroup.context'

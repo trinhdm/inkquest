@@ -38,11 +38,11 @@ const DEFAULT_PROPS = {
 } as const
 
 export const SUBCOMPONENTS = {
-	// FileUpload,
 	Choice: Radio,
 	Group: FieldGroup,
 	Input: TextInput,
 	Textarea: TextArea,
+	// Upload: FileUpload,
 } as const
 
 interface BaseFieldProps {
@@ -191,8 +191,6 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 		},
 	}), [hasError, layout])
 
-	const clsxText = { global: { caption: true } }
-
 	const ctxValues = useMemo(() => ({
 		aria, clsx, disabled, hasError,
 		icon,  idx, loader, loading,
@@ -213,6 +211,7 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 		} },
 	}
 
+	const clsxText = { global: { caption: true } }
 	const captionEl = caption && <span { ...styles('caption', clsxText) }>{ caption }</span>
 
 	if (layout === 'button') {
@@ -271,6 +270,7 @@ export declare namespace Field {
 	export type SharedProps = SharedFieldProps
 
 	export namespace Group {
+		export type Context = FieldGroup.Context
 		export type Props = FieldGroup.Props
 		export type Specs = FieldGroup.Specs
 	}
@@ -283,7 +283,6 @@ export declare namespace Field {
 	export namespace Input {
 		export type Props = TextInput.Props
 		export type Specs = TextInput.Specs
-
 		export type Types = TextInput.Types
 	}
 

@@ -31,9 +31,10 @@ type AccordionTitleTokens = {
 		| '--accordion-title-indent'
 }
 
-const tokens = defineTokens<AccordionTitleSpecs>()(({ context }) => ({
-	root: { '--accordion-title-indent': keyHasValue(context, 'step') ? 0 : undefined },
-}))
+const tokens = defineTokens<AccordionTitleSpecs>()(({ context }) => (!!context
+	? { root: { '--accordion-title-indent': keyHasValue(context, 'step') ? 0 : undefined } }
+	: {}
+))
 
 export const AccordionTitle = polymorphic<AccordionTitleSpecs>((_props, { useProps, useStyles }) => {
 	const context = useAccordionCtx(NAME)

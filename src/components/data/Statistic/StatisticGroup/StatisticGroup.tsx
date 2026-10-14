@@ -1,4 +1,5 @@
 import { extractOthers } from '@/hooks/useProps'
+import { getSharedTokens, type StatisticTokens } from '../utils'
 import { polymorphic } from '@/lib/component/factory'
 import { Group, GROUP_CASCADE_PROPS } from '@/components/layout/Group'
 import { StatisticGroupProvider, type StatisticGroupContext } from './StatisticGroup.context'
@@ -7,12 +8,15 @@ import type { Statistic } from '../Statistic'
 import classes from '../Statistic.module.scss'
 
 const NAME = 'Statistic.Group' as const
+
 const DEFAULT_PROPS = {
 	animated: true,
 	columns: 4,
 	divider: true,
 	duration: 3000,
 	once: false,
+	order: 'descend',
+	size: 'lg',
 	stagger: 200,
 } as const
 
@@ -27,14 +31,21 @@ type StatisticGroupSpecs = {
 	isCompound: true
 	props: StatisticGroupProps
 	selectors: StatisticGroupSelectors
+	tokens: StatisticGroupTokens
 }
 
 type StatisticGroupSelectors =
 	| 'root'
 
+type StatisticGroupTokens = {
+	root: StatisticTokens[keyof StatisticTokens]
+}
+
+const tokens = getSharedTokens('group')
+
 export const StatisticGroup = polymorphic<StatisticGroupSpecs>((_props, { useProps, useStyles }) => {
 	const props = useProps(_props)
-	const styles = useStyles({ props })
+	const styles = useStyles({ props, tokens })
 
 	const {
 		children, order,
