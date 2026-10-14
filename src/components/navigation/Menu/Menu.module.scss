@@ -18,26 +18,24 @@
 	$name: &;
 
 	align-items: center;
-	color: var(--inkq-color-link);
 	column-gap: var(--inkq-space-icon);
 	display: flex;
-	font: var(--inkq-text-navigation);
 	position: relative;
 
 	&:hover {
 		color: var(--inkq-color-link-hover);
 	}
 
-	&:where([data-current]) {
-		color: var(--inkq-color-link-hover);
-		font-weight: var(--inkq-font-weight-bold);
-	}
-
 	&__label {
-		color: inherit;
-		font: inherit;
+		color: var(--inkq-color-link);
+		font: var(--inkq-text-navigation);
 		text-decoration: none;
 		white-space: nowrap;
+
+		#{$name}:where([data-current]) & {
+			color: var(--inkq-color-link-hover);
+			font-weight: var(--inkq-font-weight-bold);
+		}
 	}
 
 	& > .inkq-menu {
