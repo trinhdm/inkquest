@@ -108,4 +108,5 @@ export const ICON_MAP = {
 	wrench: Wrench,
 }
 
+export type { LucideProps } from 'lucide-react'
 export type LucideType = keyof typeof ICON_MAP

@@ -10,7 +10,7 @@ import type { DEFAULT_TAG } from '../constants'
 //	polymorphic
 
 export interface PolymorphicContract {
-	as?: ElementType
+	as?: keyof TagDictionary
 	attributes?: _PolymorphicAttributes
 	children?: ReactNode
 	classNames?: string
