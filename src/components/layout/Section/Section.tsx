@@ -1,5 +1,5 @@
 import { useReveal, type MaybeAnimationProps } from '@/hooks/animation'
-import { buildSection } from './builder'
+import { buildSection } from './buildSection'
 import { defineTokens } from '@/lib/component/tokens'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'

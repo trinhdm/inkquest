@@ -1,4 +1,4 @@
-import { buildSection } from '../builder'
+import { buildSection } from '../buildSection'
 import { render, reset, screen } from '@/tests/test-utils'
 import { Button } from '@/components/core/Button'
 import { SectionFooter } from '../SectionFooter'
