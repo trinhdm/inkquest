@@ -52,11 +52,9 @@ const CUSTOM_ITEMS: NonNullable<Footer.Props['items']> = [
 // interface — it doesn't include `as`/`unstyled`/`attributes`/etc., which only exist
 // on the actual accepted prop type, `PolymorphicProps<FooterProps, C>`.
 // `Parameters<typeof Footer>[0]` reads that real, wrapped type straight off the
-// component itself — the generic call signature's default `C` resolves to `'footer'`
-// here, since `FooterSpecs`'s `defaults.as` is `'footer'` (`Footer.tsx`'s local `TAG`
-// constant), matching `const DEFAULT_PROPS = { as: TAG, items: FOOTER_GLOBAL_NAV,
-// socials: ['instagram', 'tiktok', 'x'] }` and `Footer.set({ defaultProps:
-// DEFAULT_PROPS })`.
+// component itself. It fills `C` with its constraint (`ElementType`), not the
+// default `'footer'` (`Footer.tsx`'s local `TAG` constant), so `as` is any
+// `ElementType` here.
 type FooterStoryProps = Parameters<typeof Footer>[0]
 type Story = StoryObj<FooterStoryProps>
 

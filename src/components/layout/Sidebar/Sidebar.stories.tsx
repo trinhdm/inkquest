@@ -64,9 +64,9 @@ const ACTION_ITEMS: Sidebar.ActionItem[] = [
 // union `SidebarProps` — it doesn't include `as`/`unstyled`/`attributes`/etc.,
 // which only exist on the actual accepted prop type, `PolymorphicProps<
 // SidebarProps, C>`. `Parameters<typeof Sidebar>[0]` reads that real, wrapped
-// type straight off the component itself — the generic call signature's
-// default `C` resolves to `'aside'` here, since `SidebarSpecs`'s `defaults.as`
-// is `'aside'` (`Sidebar.tsx`'s local `TAG` constant).
+// type straight off the component itself. It fills `C` with its constraint
+// (`ElementType`), not the default `'aside'` (`Sidebar.tsx`'s local `TAG`
+// constant), so `as` is any `ElementType` here.
 type SidebarStoryProps = Parameters<typeof Sidebar>[0]
 
 // `SidebarProps` is an INTERSECTION that CONTAINS a union

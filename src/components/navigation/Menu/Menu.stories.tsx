@@ -69,8 +69,8 @@ const FLATTENED_LEAF_COUNT = NAVIGATION_DATA.reduce(
 // interface — it doesn't include `as`/`unstyled`/`attributes`/etc., which only
 // exist on the actual accepted prop type, `PolymorphicProps<MenuProps, C>`.
 // `Parameters<typeof Menu>[0]` reads that real, wrapped type straight off the
-// component itself — the generic call signature's default `C` resolves to
-// `'ul'` here, since `MenuSpecs`'s `defaults.as` is `'ul'`.
+// component itself. It fills `C` with its constraint (`ElementType`), not the
+// default `'ul'`, so `as` is any `ElementType` here.
 type MenuStoryProps = Parameters<typeof Menu>[0]
 type Story = StoryObj<MenuStoryProps>
 

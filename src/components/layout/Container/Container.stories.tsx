@@ -45,14 +45,13 @@ const ROOT_SELECTOR = '.inkq-container'
 // `ContainerProps` interface — it doesn't include `as`/`unstyled`/
 // `attributes`/etc., which only exist on the actual accepted prop type,
 // `PolymorphicProps<ContainerProps, C>`. `Parameters<typeof Container>[0]`
-// reads that real, wrapped type straight off the component itself — the
-// generic call signature's default `C` resolves to `'section'` here, since
-// `ContainerSpecs`'s `defaults.as` is `'section'` (`Container.tsx`'s local
-// `TAG` constant), and `Container.set({ defaultProps: DEFAULT_PROPS })`
-// (where `DEFAULT_PROPS = { as: TAG }`) registers that same `'section'` as
-// the actual runtime default — so `meta.args` (via `getDefaultProps`)
-// already carries `as: 'section'` before any story overrides it. See the
-// `AsElement` story.
+// reads that real, wrapped type straight off the component itself. It fills
+// `C` with its constraint (`ElementType`), not the default `'section'`, so
+// `as` is any `ElementType` here. At runtime, `Container.set({ defaultProps:
+// DEFAULT_PROPS })` (where `DEFAULT_PROPS = { as: TAG }`) registers
+// `'section'` as the default, so `meta.args` (via `getDefaultProps`) already
+// carries `as: 'section'` before any story overrides it. See the `AsElement`
+// story.
 type ContainerStoryProps = Parameters<typeof Container>[0]
 type Story = StoryObj<ContainerStoryProps>
 

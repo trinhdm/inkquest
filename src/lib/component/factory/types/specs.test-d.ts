@@ -23,7 +23,8 @@ import type {
 	SpecsDefaultProps,
 	SpecsTokenGroups,
 	SpecsTokens,
-	TokensList,
+	TokensNever,
+	TokenValue,
 } from './specs.types'
 
 /** Exact equality — defeats the usual bidirectional-assignability fudge. */
@@ -107,7 +108,7 @@ type _DefaultPropsNone = Expect<Equal<SpecsDefaultProps<PlainSpec>, never>>
 // Positive control: a compound spec WITHOUT the styling keys is valid.
 // If `Specs` ever stopped being exported, this line errors and the
 // negative assertions below can no longer pass silently.
-const _validCompound: Specs<unknown, { onClick?: () => void }> = {
+const _validCompound: Specs<{ onClick?: () => void }> = {
 	isCompound: true,
 	props: {},
 }
@@ -118,13 +119,13 @@ const _validCompound: Specs<unknown, { onClick?: () => void }> = {
 // assertion quietly stops asserting.
 
 // @ts-expect-error compound specs disallow `classNames`
-const _compoundClassNames: Specs<unknown, object> = { isCompound: true, props: {}, classNames: 'not-allowed' }
+const _compoundClassNames: Specs<object> = { isCompound: true, props: {}, classNames: 'not-allowed' }
 
 // @ts-expect-error compound specs disallow `styles`
-const _compoundStyles: Specs<unknown, object> = { isCompound: true, props: {}, styles: { color: 'red' } }
+const _compoundStyles: Specs<object> = { isCompound: true, props: {}, styles: { color: 'red' } }
 
 // @ts-expect-error compound specs cannot declare a default tag
-const _compoundDefaultAs: Specs<unknown, object> = { isCompound: true, props: {}, defaults: { as: 'div' } }
+const _compoundDefaultAs: Specs<object> = { isCompound: true, props: {}, defaults: { as: 'div' } }
 
 
 // ---- Token specs ------------------------------------------------------
@@ -148,8 +149,6 @@ type BadSelectorSpec = {
 	tokens: { bogus: '--gap' }
 }
 
-type TokenValue = number | string | undefined
-
 
 // ---- SpecsTokens / SpecsTokenGroups ----------------------------------
 
@@ -157,7 +156,7 @@ type TokenValue = number | string | undefined
 // `Record<PropertyKey, never>` arm is what makes `return {}` legal
 type _TokensResolve = Expect<Equal<
 	SpecsTokens<TokenSpec>,
-	{ root: Record<'--gap' | '--pad', TokenValue> } | Record<PropertyKey, never>
+	{ root: Record<'--gap' | '--pad', TokenValue> } | TokensNever
 >>
 
 // `SpecsTokenGroups` is the same thing WITHOUT that empty arm
@@ -184,7 +183,7 @@ const _emptyIsNotAGroup: SpecsTokenGroups<TokenSpec> = {}
 // a spec with no `tokens` key accepts nothing but the empty object
 type _TokensAbsent = Expect<Equal<
 	SpecsTokens<{ props: object; selectors: 'root' }>,
-	Record<PropertyKey, never>
+	TokensNever
 >>
 
 // `tokens` but no `selectors` → `_AnySelector` widens to `PropertyKey`, so the
@@ -199,16 +198,6 @@ type _TokensNoSelectors = Expect<Equal<
 type _TokensBadSelector = Expect<Equal<
 	SpecsTokenGroups<BadSelectorSpec>,
 	{ bogus: { "selector 'bogus' is not declared in Specs['selectors']": never } }
->>
-
-
-// ---- TokensList -------------------------------------------------------
-
-// used directly with one argument (as Accordion's shared helper does), the
-// `T = never` default leaves group keys unchecked
-type _TokensListDefault = Expect<Equal<
-	TokensList<{ root: '--gap' }>,
-	{ root: Record<'--gap', TokenValue> } | Record<PropertyKey, never>
 >>
 
 export type {
@@ -228,7 +217,6 @@ export type {
 	_TokensAbsent,
 	_TokensNoSelectors,
 	_TokensBadSelector,
-	_TokensListDefault,
 }
 export { _validCompound, _compoundClassNames, _compoundStyles, _compoundDefaultAs }
 export { _emptyIsATokenList, _emptyIsNotAGroup }

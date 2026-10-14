@@ -28,9 +28,9 @@ const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 // `QuoteProps` interface — it doesn't include `as`/`unstyled`/`attributes`/
 // etc., which only exist on the actual accepted prop type,
 // `PolymorphicProps<QuoteProps, C>`. `Parameters<typeof Quote>[0]` reads
-// that real, wrapped type straight off the component itself — the generic
-// call signature's default `C` resolves to `'div'` here, since `QuoteSpecs`'s
-// `defaults.as` is `'div'`.
+// that real, wrapped type straight off the component itself. It fills `C`
+// with its constraint (`ElementType`), not the default `'div'`, so `as` is
+// any `ElementType` here.
 type QuoteStoryProps = Parameters<typeof Quote>[0]
 type Story = StoryObj<QuoteStoryProps>
 

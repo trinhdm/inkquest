@@ -28,7 +28,7 @@
  * negative assertions here self-verifying.
  */
 import { defineTokens } from '../defineTokens'
-import type { TokensList } from '../../factory/types'
+import type { SpecsTokens } from '../../factory/types'
 
 type TokenSpec = {
 	props: { size?: 'sm' | 'lg' }
@@ -44,7 +44,7 @@ type MalformedSpec = {
 }
 
 /** Mirrors Accordion's shared helper: annotated, so it checks its own literal. */
-const getSharedTokens = (size?: string): TokensList<TokenSpec['tokens']> =>
+const getSharedTokens = (size?: string): SpecsTokens<TokenSpec> =>
 	!size ? {} : { root: { '--gap': '1rem', '--pad': '2rem' } }
 
 

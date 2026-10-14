@@ -28,7 +28,7 @@ interface _BaseFactoryStyles<S extends Specs>
 	extends Omit<StyleOptions<S>, 'classes'> {}
 
 interface _RootFactoryStyles<S extends Specs> {
-	context?: never
+	context?: never | null
 	name?: FactoryConfig<S>['name']
 	withRootName?: never
 }
@@ -77,7 +77,7 @@ export const createFactory = <
 		useStyles: function useStyles(options) {
 			let scope = options.name ?? name
 
-			if (Object.hasOwn(options, 'withRootName') && options.withRootName)
+			if (keyHasValue(options, { withRootName: true }))
 				({ context: { rootName: scope } } = options)
 
 			const args = { ...options, classes: classes as StyleOptions<S>['classes'] }

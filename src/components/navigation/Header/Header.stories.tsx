@@ -48,9 +48,9 @@ const COMMUNITY_ROUTES = [
 // interface — it doesn't include `as`/`unstyled`/`attributes`/etc., which only exist
 // on the actual accepted prop type, `PolymorphicProps<HeaderProps, C>`.
 // `Parameters<typeof Header>[0]` reads that real, wrapped type straight off the
-// component itself — the generic call signature's default `C` resolves to `'header'`
-// here, since `HeaderSpecs`'s `defaults.as` is `'header'` (`Header.tsx`'s local `TAG`
-// constant).
+// component itself. It fills `C` with its constraint (`ElementType`), not the
+// default `'header'` (`Header.tsx`'s local `TAG` constant), so `as` is any
+// `ElementType` here.
 type HeaderStoryProps = Parameters<typeof Header>[0]
 type Story = StoryObj<HeaderStoryProps>
 

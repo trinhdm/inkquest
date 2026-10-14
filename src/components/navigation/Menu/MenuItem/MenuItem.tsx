@@ -9,7 +9,6 @@ import { Icon } from '@/components/core/Icon'
 import { Menu } from '../Menu'
 import type { NavigationItem } from '@/utils/navigation'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
-import type { SpecAttributes } from '@/types/shared'
 import type { StyleFn } from '@/hooks/useStyles'
 import Link from 'next/link'
 import classes from '../Menu.module.scss'
@@ -87,25 +86,18 @@ export const MenuItem = polymorphic<MenuItemSpecs>((_props, { useProps, useStyle
 	const props = useProps(_props)
 	const styles = useStyles({ props })
 
-	const timeoutRef = useRef<NodeJS.Timeout>(null)
-	const itemRef = useRef<HTMLLIElement>(null)
 	const [isOpen, setIsOpen] = useState(false)
+	const itemRef = useRef<HTMLLIElement>(null)
+	const timeoutRef = useRef<NodeJS.Timeout>(null)
 
 	useEffect(() => {
-		return () => {
-			if (timeoutRef.current) clearTimeout(timeoutRef.current)
-		}
+		return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current) }
 	}, [])
 
 	const {
-		active,
-		as,
-		attributes,
-		depth,
-		hasDropdowns,
-		label,
-		menu,
-		route,
+		active, as, attributes,
+		depth, hasDropdowns, label,
+		menu, route,
 		...rest
 	} = props
 
@@ -172,7 +164,7 @@ export const MenuItem = polymorphic<MenuItemSpecs>((_props, { useProps, useStyle
 		}
 	}
 
-	const setAttributes = (isCurrent: boolean): SpecAttributes => ({
+	const setAttributes = (isCurrent: boolean) => ({
 		...attributes,
 		data: {
 			...attributes?.data,

@@ -9,9 +9,9 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 // ReactNode`), but the export still doesn't include `as`/`unstyled`/
 // `attributes`/etc., which only exist on the actual accepted prop type,
 // `PolymorphicProps<BadgeProps, C>`. `Parameters<typeof Badge>[0]` reads that
-// real, wrapped type straight off the component itself — the generic call
-// signature's default `C` resolves to `'div'` here, since `BadgeSpecs`'s
-// `defaults.as` is `'div'`.
+// real, wrapped type straight off the component itself. It fills `C` with its
+// constraint (`ElementType`), not the default `'div'`, so `as` is any
+// `ElementType` here.
 type BadgeStoryProps = Parameters<typeof Badge>[0]
 
 // Single source of truth for this file's option lists. `Badge` has no

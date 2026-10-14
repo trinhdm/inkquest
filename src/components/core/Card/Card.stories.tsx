@@ -35,10 +35,9 @@ const IMAGE_CAPTION_SELECTOR = '.inkq-card__image-caption'
 // interface — it doesn't include `as`/`unstyled`/`attributes`/etc., which
 // only exist on the actual accepted prop type, `PolymorphicProps<CardProps,
 // C>`. `Parameters<typeof Card>[0]` reads that real, wrapped type straight
-// off the component itself — the generic call signature's default `C`
-// resolves to `'div'` here, since `CardSpecs`'s `defaults.as` is `'div'`
-// (`Card.tsx`'s local `TAG` constant), matching `const DEFAULT_PROPS = { as:
-// TAG, isAltTitle: false }` and `Card.set({ defaultProps: DEFAULT_PROPS, displayName: NAME })`.
+// off the component itself. It fills `C` with its constraint (`ElementType`),
+// not the default `'div'` (`Card.tsx`'s local `TAG` constant), so `as` is any
+// `ElementType` here.
 type CardStoryProps = Parameters<typeof Card>[0]
 type Story = StoryObj<CardStoryProps>
 

@@ -32,9 +32,8 @@ const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 // `attributes`/etc., which only exist on the actual accepted prop type,
 // `PolymorphicProps<ButtonProps, C>`. `Parameters<typeof Button>[0]` reads
 // that real, wrapped type straight off the component itself (no
-// hand-typing/drift risk) — the generic call signature's default `C`
-// resolves to `'button'` here, since `ButtonSpecs`'s `defaults.as` is
-// `'button'`.
+// hand-typing/drift risk). It fills `C` with its constraint (`ElementType`),
+// not the default `'button'`, so `as` is any `ElementType` here.
 type ButtonStoryProps = Parameters<typeof Button>[0]
 
 // Still `BoxProps & (LinkButtonProps | NativeButtonProps) & {...}` under the

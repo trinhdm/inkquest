@@ -1,7 +1,6 @@
 import type {
-	CSSProperties, ElementType,
+	ElementType, ReactNode,
 	FunctionComponent, NamedExoticComponent,
-	ReactNode,
 } from 'react'
 
 import type {
@@ -10,17 +9,17 @@ import type {
 } from './specs.types'
 
 import type { DistributiveOmit } from '@/types/utils'
-import type { SpecAttributes } from '@/types/shared'
+import type { PolymorphicContract } from './props.types'
 
 //	component + props
 
-export type FactoryContract = {
-	attributes?: SpecAttributes
+interface FactoryContract {
+	attributes?: PolymorphicContract['attributes']
 	children?: ReactNode
-	className?: string
+	className?: PolymorphicContract['classNames']
 	id?: string
-	style?: CSSProperties
-	unstyled?: boolean
+	style?: PolymorphicContract['styles']
+	unstyled?: PolymorphicContract['unstyled']
 }
 
 export type FactoryPropsList<S extends Specs> =

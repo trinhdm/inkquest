@@ -29,8 +29,8 @@ const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 // `as`/`unstyled`/`attributes`/etc., which only exist on the actual accepted
 // prop type, `PolymorphicProps<TimelineProps, C>`. `Parameters<typeof
 // Timeline>[0]` reads that real, wrapped type straight off the component
-// itself — the generic call signature's default `C` resolves to `'div'`
-// here, since `TimelineSpecs`'s `defaults.as` is `'div'`.
+// itself. It fills `C` with its constraint (`ElementType`), not the default
+// `'div'`, so `as` is any `ElementType` here.
 type TimelineStoryProps = Parameters<typeof Timeline>[0]
 type Story = StoryObj<TimelineStoryProps>
 

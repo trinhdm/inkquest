@@ -56,8 +56,8 @@ const UNMATCHED_ROUTE = '/does-not-exist' as NavRoute
 // interface — it doesn't include `as`/`unstyled`/`attributes`/etc., which only
 // exist on the actual accepted prop type, `PolymorphicProps<SubnavProps, C>`.
 // `Parameters<typeof Subnav>[0]` reads that real, wrapped type straight off the
-// component itself — the generic call signature's default `C` resolves to
-// `'div'` here, since `SubnavSpecs`'s `defaults.as` is `'div'`.
+// component itself. It fills `C` with its constraint (`ElementType`), not the
+// default `'div'`, so `as` is any `ElementType` here.
 type SubnavStoryProps = Parameters<typeof Subnav>[0]
 type Story = StoryObj<SubnavStoryProps>
 

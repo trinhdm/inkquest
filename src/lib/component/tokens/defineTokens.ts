@@ -1,12 +1,10 @@
-import type { CSSVariable } from '@/types/shared'
-import type { SiteThemeConfig } from '@/lib/theme/types'
-import type { SpecsContext, SpecsTokens, SpecsTokenGroups } from '../factory/types'
+import type {
+	SpecsContext, SpecsContract,
+	SpecsTokens, SpecsTokenGroups,
+} from '../factory/types'
 
-interface TokensArgs {
-	context?: unknown
-	props: object
-	tokens?: Record<string, CSSVariable>
-}
+import type { SiteThemeConfig } from '@/lib/theme/types'
+
 interface _DefineTokensProps<P = unknown, C = unknown> {
 	context: C
 	props: P
@@ -33,14 +31,14 @@ type TokensFn<
 	C = unknown,
 > = ({ context, props, theme }: _DefineTokensProps<P, C>) => V
 
-type TokensParams<S extends TokensArgs> =
+type TokensParams<S extends SpecsContract> =
 	_DefineTokensProps<S['props'], SpecsContext<S>>
 
-export type TokensConfig<S extends TokensArgs> =
+export type TokensConfig<S extends SpecsContract> =
 	TokensFn<S['props'], SpecsTokens<S>, SpecsContext<S>>
 
 export const defineTokens =
-	<S extends TokensArgs>() =>
+	<S extends SpecsContract>() =>
 		<R extends object>(
 			settings: (args: TokensParams<S>) => ExactTokens<R, SpecsTokenGroups<S>>
 		): TokensConfig<S> => settings as TokensConfig<S>

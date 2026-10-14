@@ -54,9 +54,9 @@ const USER_TRIGGER_ID = 'user-dropdown-trigger',
 // `MenuItemProps` interface — it doesn't include `as`/`unstyled`/`attributes`/
 // etc., which only exist on the actual accepted prop type,
 // `PolymorphicProps<MenuItemProps, C>`. `Parameters<typeof MenuItem>[0]` reads
-// that real, wrapped type straight off the component itself — the generic
-// call signature's default `C` resolves to `'li'` here, since
-// `MenuItemSpecs`'s `defaults.as` is `'li'`.
+// that real, wrapped type straight off the component itself. It fills `C` with
+// its constraint (`ElementType`), not the default `'li'`, so `as` is any
+// `ElementType` here.
 type MenuItemStoryProps = Parameters<typeof MenuItem>[0]
 type Story = StoryObj<MenuItemStoryProps>
 

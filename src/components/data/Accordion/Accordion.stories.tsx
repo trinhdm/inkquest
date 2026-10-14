@@ -28,9 +28,9 @@ const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 // `AccordionProps` interface — it doesn't include `as`/`unstyled`/
 // `attributes`/etc., which only exist on the actual accepted prop type,
 // `PolymorphicProps<AccordionProps, C>`. `Parameters<typeof Accordion>[0]`
-// reads that real, wrapped type straight off the component itself — the
-// generic call signature's default `C` resolves to `'div'` here, since
-// `AccordionSpecs`'s `defaults.as` is `'div'`.
+// reads that real, wrapped type straight off the component itself. It fills
+// `C` with its constraint (`ElementType`), not the default `'div'`, so `as`
+// is any `ElementType` here.
 type AccordionStoryProps = Parameters<typeof Accordion>[0]
 type Story = StoryObj<AccordionStoryProps>
 

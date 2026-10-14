@@ -1,67 +1,61 @@
-import type { CSSProperties, ElementType, Ref } from 'react'
-import type { CSSVariable, SpecAttributes } from '@/types/shared'
-import type { RootCtxValue } from '../../context'
+import type { ElementType } from 'react'
+import type { CSSVariable } from '@/types/shared'
+import type { RootCtxValue, SafeRootCtxValue } from '../../context'
 
 // specs
+
 export interface SpecsContract {
-	attributes?: SpecAttributes
-	classNames?: string
 	context?: any
-	id?: string
-	props: Record<string, any>
-	ref?: any
-	selectors?: string
-	styles?: CSSProperties
-	tokens?: Record<string, CSSVariable>
-	unstyled?: boolean
-}
-
-interface _BaseSpecs<T = unknown, P extends object = object> {
-	attributes?: SpecAttributes
-	context?: any
-	id?: string
-	props: P
-	ref?: Ref<TagElement<T>>
-	selectors?: string
-	tokens?: Record<string, CSSVariable>
-}
-
-interface _CompoundSpecs<P extends object = object>
-	extends _BaseSpecs<unknown, P> {
-	classNames?: never
-	defaults?: {
-		as?: never
-		props?: PropertyKey
-		// unstyled?: boolean
-	}
-	isCompound: true
-	styles?: never
-	subcomponents?: never
-}
-
-interface _RootSpecs<T = unknown, P extends object = object>
-	extends _BaseSpecs<T, P> {
-	classNames?: SpecsContract['classNames']
 	defaults?: {
 		as?: any
 		props?: PropertyKey
-		// unstyled?: boolean
 	}
-	isCompound?: false
-	styles?: SpecsContract['styles']
+	isCompound?: boolean
+	props: Record<string, any>
+	selectors?: string
 	subcomponents?: Record<string, any>
+	tokens?: Record<string, CSSVariable>
 }
 
-export type Specs<T = unknown, P extends object = object> =
-	| _RootSpecs<T, P>
-	| _CompoundSpecs<P>
+interface _BaseSpecs<P extends object = object> {
+	context?: SpecsContract['context']
+	props: P
+	selectors?: SpecsContract['selectors']
+	tokens?: SpecsContract['tokens']
+}
+
+interface _CompoundSpecs {
+	defaults?: {
+		as?: never
+		props?: PropertyKey
+	}
+	isCompound: true
+	subcomponents?: never
+}
+
+interface _RootSpecs {
+	defaults?: {
+		as?: any
+		props?: PropertyKey
+	}
+	isCompound?: false
+	subcomponents?: SpecsContract['subcomponents']
+}
+
+type _ComponentSpecs =
+	| _RootSpecs
+	| _CompoundSpecs
+
+export type Specs<P extends object = object> =
+	& _BaseSpecs<P>
+	& _ComponentSpecs
 
 
 //	individual specs
 
-export type SpecsContext<S> =
+export type SpecsContext<S, N extends string = string> =
 	'context' extends keyof S
-		? RootCtxValue<S['context']>
+		? RootCtxValue<S['context']> | SafeRootCtxValue<S['context'], N>
 		: undefined
 
 export type SpecsDefaultAs<S, Fallback = never> =
@@ -82,30 +76,36 @@ export type SpecsSelectors<S> =
 		? NonNullable<S['selectors']>
 		: never
 
-type _AnySelector<T> =
+type _TokenSelector<T> =
 	[T] extends [never] ? PropertyKey : T
 
+export type TokenValue =
+	number | string | undefined
+
 type _TokensGroup<V, T> = {
-	[K in keyof V]: K extends _AnySelector<T>
+	[K in keyof V]: K extends _TokenSelector<T>
 		? V[K] extends CSSVariable
-			? Record<V[K], number | string | undefined>
+			? Record<V[K], TokenValue>
 			: never
 		: { [E in K & string as `selector '${E}' is not declared in Specs['selectors']`]: never }
 }
 
-export type TokensList<V, T = never> =
+export type TokensNever =
+	Record<PropertyKey, never>
+
+type TokensList<V, T = never> =
 	| _TokensGroup<V, T>
-	| Record<PropertyKey, never>
+	| TokensNever
 
 export type SpecsTokens<S> =
 	'tokens' extends keyof S
 		? TokensList<NonNullable<S['tokens']>, SpecsSelectors<S>>
-		: Record<PropertyKey, never>
+		: TokensNever
 
 export type SpecsTokenGroups<S> =
 	'tokens' extends keyof S
 		? _TokensGroup<NonNullable<S['tokens']>, SpecsSelectors<S>>
-		: Record<PropertyKey, never>
+		: TokensNever
 
 
 // polymorphism
@@ -119,34 +119,3 @@ export type AsPolymorphic<S> =
 	IsPolymorphic<S> extends true
 		? { as?: SpecsDefaultAs<S> }
 		: { as?: never }
-
-
-type _CommonTag =
-	| 'a' | 'button' | 'div' | 'nav' | 'span' | 'svg'
-
-// type _CommonTag =
-// 	| 'a' | 'button'
-// 	| 'article' | 'aside' | 'nav'
-// 	| 'details' | 'progress' | 'summary'
-// 	| 'dialog' | 'div' | 'section'
-// 	| 'blockquote' | 'p' | 'span'
-// 	| 'form' | 'input' | 'option' | 'select' | 'textarea'
-// 	| 'img' | 'svg'
-// 	| 'ol' | 'ul' | 'li'
-// // 	// | 'h1' | 'h2' | 'h3'
-
-type _ElementTagMap =
-	SVGElementTagNameMap & HTMLElementTagNameMap
-
-type TagElement<T> =
-	T extends _CommonTag
-		? _ElementTagMap[T]
-		: T extends keyof _ElementTagMap
-			? _ElementTagMap[T]
-			: unknown
-
-
-// type NonSemanticAttrs =
-// 	| 'about' | 'content' | 'datatype' | 'inlist' | 'prefix' | 'property'
-// 	| 'resource' | 'rev' | 'typeof' | 'vocab'
-// 	| 'color' | 'results' | 'security' | 'unselectable'
