@@ -1,3 +1,5 @@
+@use './mixins' as global;
+
 body {
 	background-color: var(--inkq-background-page);
 	color: var(--inkq-color-text);
@@ -56,8 +58,27 @@ h6,
 	text-wrap: pretty;
 }
 
+b,
+strong {
+	color: var(--inkq-color-text);
+	font-weight: var(--inkq-font-weight-bold);
+}
+
+i,
+em {
+	font-style: italic;
+}
+
+u {
+	@include global.underline;
+}
+
 p {
 	text-wrap: pretty;
+
+	&:has(+ p) {
+		margin-block-end: var(--inkq-gutter-content);
+	}
 }
 
 a,
@@ -87,30 +108,7 @@ a {
 	}
 
 	&:where([data-cta]) {
-		display: inline-flex;
-		overflow: hidden clip;
-		position: relative;
-		text-wrap: pretty;
-
-		&::after {
-			background-color: var(--inkq-color-action-hover);
-			content: '';
-			display: block;
-			height: 1px;
-			inset: 0;
-			inset-block-start: auto;
-			position: absolute;
-			transform: translatex(-101%);
-			transition: opacity var(--reveal-motion), transform var(--reveal-motion);
-			width: 100%;
-			will-change: opacity, transform;
-		}
-
-		&:hover {
-			&::after {
-				transform: translatex(0);
-			}
-		}
+		@include global.underline(true);
 	}
 }
 
@@ -132,12 +130,10 @@ svg {
 
 ol,
 ul {
-	&:where([role="menu"], [role="menubar"]) {
-		list-style: none;
+	list-style: none;
 
-		li {
-			display: inline-block;
-		}
+	li {
+		display: inline-block;
 	}
 }
 
@@ -214,8 +210,7 @@ mark {
 	text-transform: uppercase;
 }
 
-.inkq-caption,
-.inkq-label {
+.inkq-caption {
 	font: var(--inkq-text-caption-item);
 	text-wrap: balance;
 }
@@ -227,12 +222,7 @@ mark {
 }
 
 .inkq-label {
-	color: var(--inkq-color-action);
-	display: inline-block;
-	font-weight: var(--inkq-font-weight-bold);
-	letter-spacing: var(--inkq-font-tracking-wide);
-	text-transform: uppercase;
-	text-wrap: pretty;
+	@include global.label('control')
 }
 
 .inkq-prose {

@@ -1,4 +1,98 @@
-@mixin rail ($anchor: 'bottom', $rail-height: 1px, $rail-size: 1) {
+@use 'sass:map';
+
+//	content
+
+$fontSizes: (
+	body: var(--inkq-font-size-body),
+	caption: var(--inkq-font-size-caption),
+	control: var(--inkq-font-size-control),
+	label: var(--inkq-font-size-label),
+);
+
+@mixin blurb {
+	align-items: baseline;
+	display: flex;
+    background-color: var(--inkq-background-surface);
+    border: 1px solid var(--inkq-border);
+    border-radius: var(--inkq-border-radius-md);
+	font-size: var( --inkq-font-size-body);
+    gap: var(--inkq-space-group);
+    margin-block-end: var(--inkq-stack-gap-kicker);
+    padding: var(--inkq-space-group-lg);
+}
+
+@mixin label($size: null) {
+	@if $size {
+		$fontSize: map.get($fontSizes, $size);
+
+		@if $fontSize {
+			font-size: $fontSize;
+		}
+	}
+
+	color: var(--inkq-color-action);
+	display: inline-block;
+	font-family: var(--inkq-font-family-mono);
+	font-weight: var(--inkq-font-weight-bold);
+	letter-spacing: var(--inkq-font-tracking-wide);
+	line-height: var(--inkq-font-leading-label);
+	text-transform: uppercase;
+	text-wrap: pretty;
+}
+
+@mixin list {
+	display: flex;
+	flex-direction: column;
+	list-style-type: disc;
+	margin-block: var(--inkq-gutter-content);
+	padding-inline-start: var(--inkq-indent-list);
+	row-gap: var(--inkq-gutter-list);
+
+	&:first-child {
+		margin-block-start: 0;
+	}
+
+	&:last-child {
+		margin-block-end: 0;
+	}
+}
+
+//	lines
+
+@mixin underline($animated: false) {
+	display: inline-flex;
+	overflow: hidden clip;
+	position: relative;
+	text-wrap: pretty;
+
+	&::after {
+		background-color: var(--inkq-color-action-hover);
+		content: '';
+		display: block;
+		height: 1px;
+		inset: 0;
+		inset-block-start: auto;
+		position: absolute;
+		width: 100%;
+	}
+
+	@if $animated == true {
+		transition-duration: var(--duration-gradual);
+
+		&::after {
+			transform: translateX(-101%);
+			transition: opacity var(--duration-gradual) var(--easing-out) var(--duration-fast),
+				transform var(--duration-gradual) var(--easing-out) var(--duration-fast);
+			will-change: opacity, transform;
+		}
+
+		&:hover::after {
+			transform: translateX(0);
+		}
+	}
+}
+
+@mixin rail($anchor: 'bottom', $rail-height: 1px, $rail-size: 1) {
 	$rail-inset: calc(-1 * #{$rail-height});
 
 	background-color: var(--inkq-color-action);
