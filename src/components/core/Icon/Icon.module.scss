@@ -1,6 +1,7 @@
 .inkq-icon {
 	display: inline-block;
 	font-size: var(--icon-size);
+	margin: var(--icon-margin, 0);
 
 	&,
 	&__glyph {
@@ -11,5 +12,12 @@
 
 	&__glyph {
 		font-size: inherit;
+
+		g,
+		path,
+		title {
+			pointer-events: none;
+			user-select: none;
+		}
 	}
 }

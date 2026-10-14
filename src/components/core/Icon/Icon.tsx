@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { extractOthers } from '@/hooks/useProps'
 import { isExternalLink, keyHasValue } from '@/utils/helpers'
 import { polymorphic } from '@/lib/component/factory'
@@ -9,7 +10,6 @@ import type { Route } from 'next'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import type { SocialBrand } from '@/types/shared'
 import type { StyleFn } from '@/hooks/useStyles'
-import Link from 'next/link'
 import classes from './Icon.module.scss'
 
 const NAME = 'Icon' as const,
@@ -25,20 +25,23 @@ const DEFAULT_PROPS = {
 type SvgProps =
 	ComponentPropsWithoutRef<'svg'>
 
-interface BaseIconProps<T extends SvgProps | LucideProps> {
+interface BaseIconProps<T extends LucideProps | SvgProps> {
 	color?: T['color']
 	href?: Route<string>
+	hidden?: boolean
 	strokeWidth?: T['strokeWidth']
 }
 
-interface LucideIconProps extends BaseIconProps<LucideProps> {
+interface LucideIconProps
+	extends BaseIconProps<LucideProps> {
 	filled?: boolean
 	size?: LucideProps['size']
 	strokeLinecap?: never
 	type: LucideType
 }
 
-interface SocialIconProps extends BaseIconProps<SvgProps> {
+interface SocialIconProps
+	extends BaseIconProps<SvgProps> {
 	filled?: never
 	size?: SvgProps['width']
 	strokeLinecap?: SvgProps['strokeLinecap']
@@ -60,10 +63,6 @@ interface IconSpecs {
 
 type IconSelectors =
 	| 'root' | 'glyph'
-
-const isSocialIcon = (type: IconProps['type']): type is SocialBrand =>
-	!keyHasValue(ICON_MAP, type)
-
 
 const getBrandProps = (type: IconProps['type']): SvgProps | undefined => {
 	switch (type) {
@@ -97,64 +96,62 @@ const getBrandProps = (type: IconProps['type']): SvgProps | undefined => {
 	}
 }
 
-const configSocialIcon = ({ color, strokeWidth, type }: IconProps): SvgProps | undefined => {
-	const brandProps = getBrandProps(type)
-
-	if (!brandProps) return
-	if (strokeWidth) brandProps.strokeWidth = strokeWidth
-
-	const baseProps = {
-		fill: 'none',
-		stroke: color,
-	}
-
-	return { ...baseProps, ...brandProps }
-}
+const isLucideIcon = (type: IconProps['type']): type is LucideType =>
+	keyHasValue(ICON_MAP, type)
 
 const buildIcon = (
 	props: IconProps,
 	styles: StyleFn<IconSpecs>,
 ) => {
-	const { color, filled, href, size, type, ...rest } = props
+	const {
+		color, filled, href,
+		hidden, size, type,
+		...rest
+	} = props
+
 	const others = extractOthers(rest)
 
 	const sharedProps = {
-		...others,
 		...styles('glyph'),
+		...others,
+		attributes: { aria: {
+			hidden,
+			label: `${type} icon`,
+		} },
 	}
 
-	if (isSocialIcon(type)) {
-		const brandProps = configSocialIcon(props)
-		if (!brandProps) return null
-
-		return (
-			<Box
-				{ ...sharedProps }
-				{ ...brandProps }
-				as={ TAG }
-				attributes={ { aria: { label: type } } }
-				height={ size }
-				role="img"
-				width={ size }
-			>
-				<title>{ type }</title>
-				{ brandProps.children }
-			</Box>
-		)
-	} else {
+	if (isLucideIcon(type)) {
 		const target = ICON_MAP[type]
-		if (!target) return null
 
 		return (
 			<Box
 				{ ...sharedProps }
 				as={ target }
 				color={ color }
-				fill={ filled ? 'currentColor' : undefined }
+				fill={ !!filled ? 'currentColor' : 'none' }
 				size={ size }
 			/>
 		)
 	}
+
+	const brandProps = getBrandProps(type)
+	if (!brandProps) return null
+
+	return (
+		<Box
+			{ ...sharedProps }
+			{ ...brandProps }
+			as={ TAG }
+			fill={ keyHasValue(brandProps, 'fill') ? brandProps.fill : 'none' }
+			height={ size }
+			role="img"
+			stroke={ color }
+			width={ size }
+		>
+			<title>{ type }</title>
+			{ brandProps.children }
+		</Box>
+	)
 }
 
 export const Icon = polymorphic<IconSpecs>((_props, { useProps, useStyles }) => {
