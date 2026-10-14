@@ -42,7 +42,7 @@ export const Quote = polymorphic<QuoteSpecs>((_props, { useProps, useStyles }) =
 			{ ...others }
 			as={ as }
 		>
-			<span { ...styles('rail', true) } />
+			<span { ...styles('rail') } />
 			<p { ...styles('content', { global: { h4: true } }) }>
 				&quot;{ content }&quot;
 			</p>

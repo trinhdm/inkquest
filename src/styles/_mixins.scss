@@ -1,0 +1,88 @@
+@mixin rail ($anchor: 'bottom', $rail-height: 1px, $rail-size: 1) {
+	$rail-inset: calc(-1 * #{$rail-height});
+
+	background-color: var(--inkq-color-action);
+	display: block;
+	height: $rail-height;
+	position: absolute;
+	transition: opacity var(--duration-gradual) var(--easing-out) var(--duration-fast),
+		transform var(--duration-gradual) var(--easing-out) var(--duration-fast);
+	z-index: 5;
+
+	@if $anchor == 'bottom' or $anchor == 'top' {
+		inset-inline: 0;
+		transform-origin: left center;
+		transform: scaleX(#{$rail-size});
+
+		@if $anchor == 'bottom' {
+			inset-block: auto $rail-inset;
+		} @else {
+			inset-block: $rail-inset auto;
+		}
+	} @else if $anchor == 'left' or $anchor == 'right' {
+		inset-block: 0;
+		transform-origin: top center;
+		transform: scaleY(#{$rail-size});
+
+		@if $anchor == 'left' {
+			inset-inline: auto $rail-inset;
+		} @else {
+			inset-inline: $rail-inset auto;
+		}
+	}
+}
+
+@mixin navmenu {
+	$name: &;
+
+	border-bottom: 1px solid var(--inkq-border);
+	min-height: var(--inkq-subnav-size);
+	z-index: 15;
+
+	&,
+	&__inner {
+		align-items: center;
+		display: flex;
+		position: relative;
+	}
+
+	&__inner {
+		column-gap: var(--inkq-space-menu);
+		max-width: fit-content;
+	}
+}
+
+@mixin navitem ($navitem-font-size: null) {
+	$name: &;
+
+	align-items: center;
+	border-bottom: 2px solid transparent;
+	column-gap: var(--inkq-space-icon);
+	cursor: pointer;
+	display: inline-flex;
+    flex-shrink: 0;
+	height: 100%;
+	padding-inline: var(--inkq-space-icon);
+	position: relative;
+
+	&__label {
+		color: var(--inkq-color-link);
+		display: block;
+		font: var(--inkq-text-navigation);
+		text-decoration: none;
+		white-space: nowrap;
+
+		@if $navitem-font-size {
+			font-size: $navitem-font-size;
+		}
+
+		#{$name}:where([data-active]) & {
+			color: var(--inkq-color-link-hover);
+			font-weight: var(--inkq-font-weight-bold);
+		}
+	}
+
+	&:hover {
+		color: var(--inkq-color-link-hover);
+	}
+}

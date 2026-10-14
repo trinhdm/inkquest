@@ -1,3 +1,4 @@
+@use '@/styles/mixins' as global;
 
 .inkq-quote {
 	$name: &;
@@ -7,5 +8,11 @@
 
 	&__content {
 		margin: 0;
+	}
+
+	&__rail {
+		@include global.rail('top', 2px);
+
+		inset-block-start: 0;
 	}
 }

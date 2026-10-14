@@ -246,17 +246,6 @@ mark {
 }
 
 
-.inkq-rail {
-	background-color: var(--inkq-color-action);
-	height: .125rem;
-	inset: 0 0 auto 0;
-	position: absolute;
-	transform: scale_x(1);
-	transform-origin: left center;
-	transition: transform 620ms var(--easing-out) 274ms;
-	z-index: 5;
-}
-
 .inkq-loader {
 	display: inline-block;
 	max-height: fit-content;
