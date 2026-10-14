@@ -17,13 +17,15 @@ describe('getSharedTokens', () => {
 		document.documentElement.style.fontSize = '16px'
 		const result = getSharedTokens({ size: 'sm' })
 
+		// sm shifts the heading order by its step (2): h3 -> h5. No step-size
+		// token without layout="steps".
 		expect(result.root).toEqual({
 			'--accordion-column-width': 'var(--space-5)',
 			'--accordion-gap': 'var(--space-3)',
 			'--accordion-padding': 'var(--space-4)',
 			'--accordion-indicator-size': 'var(--font-size-16)',
-			'--accordion-step-size': `calc((var(--accordion-text-size) - var(--accordion-indicator-size)) + (${ rem(3) } * 3) )`,
-			'--accordion-text-size': 'var(--inkq-font-size-heading-h5)',
+			'--accordion-step-size': undefined,
+			'--accordion-title-size': 'var(--inkq-font-size-h5)',
 		})
 	})
 
@@ -34,13 +36,30 @@ describe('getSharedTokens', () => {
 		expect(Object.keys(result)).toEqual(['root'])
 	})
 
-	it('uses a smaller step unit (rem(3)) for size="sm" than for "md"/"lg" (rem(6))', () => {
+	it('only emits a step-size token for layout="steps", and none for the default layout', () => {
 		document.documentElement.style.fontSize = '16px'
-		const sm = getSharedTokens({ size: 'sm' })
-		const md = getSharedTokens({ size: 'md' })
 
-		expect(sm.root!['--accordion-step-size']).toContain(rem(3))
-		expect(md.root!['--accordion-step-size']).toContain(rem(6))
+		expect(getSharedTokens({ size: 'md' }).root!['--accordion-step-size']).toBeUndefined()
+		expect(getSharedTokens({ size: 'md', layout: 'default' }).root!['--accordion-step-size']).toBeUndefined()
+		expect(getSharedTokens({ size: 'md', layout: 'steps' }).root!['--accordion-step-size']).toEqual(expect.any(String))
+	})
+
+	it('uses a smaller step unit (rem(3)) for size="sm" than for "md"/"lg" (rem(6)) under layout="steps"', () => {
+		document.documentElement.style.fontSize = '16px'
+		const sm = getSharedTokens({ layout: 'steps', size: 'sm' })
+		const md = getSharedTokens({ layout: 'steps', size: 'md' })
+		const lg = getSharedTokens({ layout: 'steps', size: 'lg' })
+
+		// the unit is multiplied by (step + 1): sm 3, md 2, lg 1
+		expect(sm.root!['--accordion-step-size']).toBe(
+			`calc((var(--accordion-title-size) - var(--accordion-indicator-size)) + (${ rem(3) } * 3) )`
+		)
+		expect(md.root!['--accordion-step-size']).toBe(
+			`calc((var(--accordion-title-size) - var(--accordion-indicator-size)) + (${ rem(6) } * 2) )`
+		)
+		expect(lg.root!['--accordion-step-size']).toBe(
+			`calc((var(--accordion-title-size) - var(--accordion-indicator-size)) + (${ rem(6) } * 1) )`
+		)
 	})
 
 	it('applies a smaller step multiplier for larger sizes (lg has step 0, sm has step 2)', () => {
@@ -55,15 +74,16 @@ describe('getSharedTokens', () => {
 	it('honors a custom `order`, reflected in the derived heading title-size token', () => {
 		// lg has step 0, so order passes through unshifted
 		const result = getSharedTokens({ order: 1, size: 'lg' })
-		expect(result.root!['--accordion-title-size']).toBe('var(--inkq-font-size-heading-h1)')
+		expect(result.root!['--accordion-title-size']).toBe('var(--inkq-font-size-h1)')
 	})
 
-	it('ignores `layout` entirely -- the title/content indent tokens moved to AccordionTitle/AccordionContent, so passing `layout` produces the same root tokens as omitting it', () => {
+	it('only layout="steps" changes the root tokens -- it adds the step-size and nothing else', () => {
 		document.documentElement.style.fontSize = '16px'
-		const withLayout = getSharedTokens({ layout: 'steps', order: 1, size: 'lg' })
-		const withoutLayout = getSharedTokens({ order: 1, size: 'lg' })
+		const withLayout = getSharedTokens({ layout: 'steps', order: 1, size: 'lg' }),
+			withoutLayout = getSharedTokens({ order: 1, size: 'lg' })
 
-		expect(withLayout).toEqual(withoutLayout)
+		expect({ ...withLayout.root, '--accordion-step-size': undefined }).toEqual(withoutLayout.root)
+		expect(withLayout.root!['--accordion-step-size']).toEqual(expect.any(String))
 		expect(withLayout.root).not.toHaveProperty('--accordion-content-indent')
 		expect(withLayout.root).not.toHaveProperty('--accordion-title-indent')
 	})

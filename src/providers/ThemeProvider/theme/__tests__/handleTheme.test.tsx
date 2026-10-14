@@ -49,6 +49,11 @@ describe('handleTheme', () => {
 	it('spreads the shared design tokens onto the returned config object', () => {
 		const result = handleTheme(DEFAULT_THEME)
 
+		// guard against a vacuous loop: the public token set is `el`, `presets`
+		// and `space` (the raw semantic tokens are no longer exposed here)
+		expect(Object.keys(tokens)).toEqual(expect.arrayContaining(['el', 'presets', 'space']))
+		expect(result).not.toHaveProperty('semanticTokens')
+
 		for (const key of Object.keys(tokens)) {
 			expect(result).toHaveProperty(key, (tokens as Record<string, unknown>)[key])
 		}

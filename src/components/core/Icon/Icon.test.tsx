@@ -13,7 +13,7 @@ describe('Icon', () => {
 	it('applies the registered default tag and size', () => {
 		// `as` is registered in the defaults registry at runtime, but it's
 		// declared on the component's Specs rather than its Props — widen the
-		// generic to match what `setDefaults` actually stored.
+		// generic to match what `.set()` actually stored.
 		const defaults = getDefaultProps<
 			Icon.Props & Pick<Icon.Specs['defaults'], 'as'>
 		>('Icon')

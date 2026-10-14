@@ -69,4 +69,46 @@ describe('Header', () => {
 		// only the Navbar's own menubar remains
 		expect(screen.getAllByRole('menubar')).toHaveLength(1)
 	})
+
+	describe('hiding parts with null', () => {
+		it('hides the Navbar for navbar={ null } but still renders the derived Subnav', () => {
+			render(<Header navbar={ null } />)
+
+			// the one remaining menubar is the Subnav's: it holds "Your Style", not the global nav
+			const menubars = screen.getAllByRole('menubar')
+			expect(menubars).toHaveLength(1)
+			expect(within(menubars[0]).getByRole('menuitem', { name: 'Your Style' })).toBeInTheDocument()
+			expect(within(menubars[0]).queryByRole('menuitem', { name: 'Marketplace' })).not.toBeInTheDocument()
+		})
+
+		it('hides the Subnav for subnav={ null } even when the pathname would derive one', () => {
+			// positive control: without `subnav={ null }` this pathname yields a second menubar
+			const { unmount } = render(<Header />)
+			expect(screen.getAllByRole('menubar')).toHaveLength(2)
+			unmount()
+
+			render(<Header subnav={ null } />)
+
+			const menubars = screen.getAllByRole('menubar')
+			expect(menubars).toHaveLength(1)
+			expect(within(menubars[0]).getByRole('menuitem', { name: 'Marketplace' })).toBeInTheDocument()
+			expect(screen.queryByRole('menuitem', { name: 'Your Style' })).not.toBeInTheDocument()
+		})
+
+		it('hides the Subnav for subnav={ null } even when explicit routes elsewhere would apply', () => {
+			render(<Header subnav={ null } />)
+			expect(screen.queryByText('Custom Label')).not.toBeInTheDocument()
+		})
+
+		it('renders an empty header element when both navbar and subnav are null', () => {
+			render(<Header navbar={ null } subnav={ null } />)
+
+			expect(screen.getByRole('banner')).toBeEmptyDOMElement()
+		})
+
+		it('treats an omitted navbar as "show the default Navbar", not as hidden', () => {
+			render(<Header subnav={ null } navbar={ undefined } />)
+			expect(screen.getByRole('navigation')).toBeInTheDocument()
+		})
+	})
 })

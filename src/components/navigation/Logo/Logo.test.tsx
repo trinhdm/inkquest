@@ -1,15 +1,15 @@
-import { DEFAULT_COLOR_SCHEME } from '@/components/document/constants'
-import { COMPANY_NAME } from '@/utils/constants'
 import { getDefaultProps } from '@/hooks/useProps'
 import { render, reset, screen } from '@/tests/test-utils'
 import { Logo } from './Logo'
+import { COMPANY_NAME } from '@/utils/constants'
+import { DEFAULT_COLOR_SCHEME } from '@/components/document/constants'
 
 describe('Logo', () => {
 	reset('Logo')
 
 	it('renders as a link to the given href', () => {
-		render(<Logo href="/dashboard" />)
-		expect(screen.getByRole('link')).toHaveAttribute('href', '/dashboard')
+		render(<Logo href="/about" />)
+		expect(screen.getByRole('link')).toHaveAttribute('href', '/about')
 	})
 
 	it('defaults alt, href, type, and width per the registered defaults', () => {

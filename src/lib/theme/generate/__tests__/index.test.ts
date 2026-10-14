@@ -19,18 +19,12 @@ describe('tokenGenerator', () => {
 		expect(result).toEqual({ '--inkq-theme': 'ink' })
 	})
 
-	// Source bug, not a desired contract: hexCodeStrategy.run() destructures
-	// only `{ path, value }` from its args and never forwards `prefix` into
-	// formatToken(), so a hex-color leaf's variable name silently drops the
-	// prefix that every other strategy (primitive/numeric/text/shorthand)
-	// honors. This test pins the current, prefix-dropping behavior; see the
-	// Maintenance Note.
-	it('BUG: drops the prefix for hex-color leaves, unlike every other value type', () => {
-		const hex = tokenGenerator({ accent: '#111111' }, 'inkq')
-		expect(hex).toEqual({ '--accent-100': '#111111' })
-
-		const nonHex = tokenGenerator({ theme: 'ink' }, 'inkq')
-		expect(nonHex).toEqual({ '--inkq-theme': 'ink' })
+	// whether a token is prefixed is decided by the caller, not the value type:
+	// primitive colours stay unprefixed because buildSchemes generates them
+	// without a prefix, not because they are hex
+	it('applies the prefix to hex-color leaves like every other value type, and omits it when none is given', () => {
+		expect(tokenGenerator({ accent: '#111111' }, 'inkq')).toEqual({ '--inkq-accent-100': '#111111' })
+		expect(tokenGenerator({ accent: '#111111' })).toEqual({ '--accent-100': '#111111' })
 	})
 
 	it('drops skippable (null/undefined/empty-string/function) leaves entirely', () => {

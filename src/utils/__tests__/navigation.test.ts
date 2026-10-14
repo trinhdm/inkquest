@@ -1,4 +1,4 @@
-import { filterNavigation, listRoutesWithSlug, NAVIGATION_DATA, NavRoutes, SOCIALS_NAV } from '../navigation'
+import { filterNavigation, listRoutesWithSlug, NAV_ROUTES, NAVIGATION_DATA, NavRoutes, SOCIALS_NAV } from '../navigation'
 import type { NavigationItem, NavRoute } from '../navigation'
 
 describe('filterNavigation - short-circuit behavior', () => {
@@ -308,5 +308,23 @@ describe('SOCIALS_NAV - getSocials URL construction', () => {
 
 	it('produces one entry per configured social brand', () => {
 		expect(SOCIALS_NAV).toHaveLength(5)
+	})
+})
+
+// NAV_ROUTES is the string-literal twin of the NavRoutes enum; the compiler
+// only checks its shape against `Route`, so this guards the two staying equal.
+describe('NAV_ROUTES', () => {
+	it('has exactly the same keys as the NavRoutes enum', () => {
+		expect(Object.keys(NAV_ROUTES).sort()).toEqual(Object.keys(NavRoutes).sort())
+	})
+
+	it('maps each key to the same path the enum holds for it', () => {
+		for (const key of Object.keys(NavRoutes) as (keyof typeof NavRoutes)[])
+			expect(NAV_ROUTES[key]).toBe(NavRoutes[key])
+	})
+
+	it('uses a unique path for every key', () => {
+		const paths = Object.values(NAV_ROUTES)
+		expect(new Set(paths).size).toBe(paths.length)
 	})
 })

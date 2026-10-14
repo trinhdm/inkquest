@@ -1,31 +1,28 @@
+import { Fragment } from 'react'
 import { countChildren } from '../countChildren'
 import { filterChildren, verifyChildren } from '../filterChildren'
 import { Anonymous, Named, OtherNamed } from './utils'
 
 // `verifyChildren` is a dev-only guard: it counts children and `console.warn`s
-// when the count is not what a component expects. It has three modes, checked
-// in this order: `max`, then `total`, then `extra`. With none of them it is a
-// no-op (there is no default `total`).
+// when the count is not what a component expects. Each check - `max`, `total`,
+// `repeated`, `unrelated` - runs on its own, so a correct count never hides a
+// repeated or unrelated child. With none of them it is a no-op (there is no
+// default `total`).
 //
-// It counts via `countChildren(children)` with NO displayName, which is just
-// `Children.count`. That neither descends into Fragments nor skips
-// nullish/boolean children, so called directly the guard can warn when nothing
-// is wrong. The `BUG:` tests pin each miscount; the `it.failing` twin states the
-// intended contract. (`filterChildren` itself avoids this by verifying an
-// already-filtered list.)
+// It counts via `countChildren`, which skips null/undefined/boolean children and
+// descends into Fragments, so it can also be called directly on raw children.
 describe('verifyChildren', () => {
 	let warn: jest.SpyInstance
 
 	beforeEach(() => { warn = jest.spyOn(console, 'warn').mockImplementation(() => {}) })
 	afterEach(() => { warn.mockRestore() })
 
-	describe('with neither total, max nor extra', () => {
+	describe('with no total, max, repeated or unrelated', () => {
 		it('warns nothing, whatever the child count', () => {
-			verifyChildren({ children: undefined, name: 'Field', extra: [] })
+			verifyChildren({ children: undefined, name: 'Field', repeated: [], unrelated: [] })
 			verifyChildren({
 				children: [<Named key="a">a</Named>, <Named key="b">b</Named>],
 				name: 'Field',
-				extra: [],
 			})
 			expect(warn).not.toHaveBeenCalled()
 		})
@@ -98,8 +95,8 @@ describe('verifyChildren', () => {
 		})
 	})
 
-	// `max` wins over `total`. The source warns when count >= max + 1 and words
-	// it as "needs less than <max + 1> children".
+	// warns when count > max, and words the limit as "needs less than <max + 1>
+	// children", so a count of exactly max is allowed
 	describe('max', () => {
 		it('stays silent at exactly max children', () => {
 			verifyChildren({
@@ -127,91 +124,103 @@ describe('verifyChildren', () => {
 			)
 		})
 
-		it('takes precedence over total, so a count that breaks only total stays silent', () => {
+		it('is checked independently of total, so a count that breaks only total still warns', () => {
 			verifyChildren({
 				children: [<Named key="a">a</Named>],
 				name: 'Footer',
 				max: 2,
 				total: 2,
 			})
+			expect(warn).toHaveBeenCalledTimes(1)
+			expect(warn).toHaveBeenCalledWith('Footer: 1 children found; a Footer needs exactly 2 children.')
+		})
+	})
+
+	describe('repeated', () => {
+		it('names each repeated child and says only the first is rendered', () => {
+			verifyChildren({ children: null, name: 'Card', repeated: [<Named key="a">a</Named>, <OtherNamed key="b">b</OtherNamed>] })
+			expect(warn).toHaveBeenCalledWith('Card: ignoring repeated Named, OtherNamed; only the first is rendered.')
+		})
+
+		it('stays silent for an empty list', () => {
+			verifyChildren({ children: null, name: 'Card', repeated: [] })
 			expect(warn).not.toHaveBeenCalled()
 		})
 	})
 
-	describe('extra', () => {
-		it('warns with the number of extra subcomponents', () => {
-			verifyChildren({ children: null, name: 'Card', extra: [<Named key="a">a</Named>, <Named key="b">b</Named>] })
-			expect(warn).toHaveBeenCalledWith('Card: 2 extra subcomponent(s) found.')
+	describe('unrelated', () => {
+		it('labels text, numbers, host elements and components without a displayName', () => {
+			verifyChildren({
+				children: null,
+				name: 'Card',
+				unrelated: ['loose text', 42, <div key="d" />, <Anonymous key="a">a</Anonymous>, <Named key="n">n</Named>],
+			})
+			expect(warn).toHaveBeenCalledWith('Card: ignoring unrelated loose text, text \'42\', <div>, unnamed component, Named.')
 		})
 
-		it('stays silent for an empty extra list', () => {
-			verifyChildren({ children: null, name: 'Card', extra: [] })
+		it('cuts a non-string, non-element child to its first 24 characters', () => {
+			verifyChildren({ children: null, name: 'Card', unrelated: [BigInt('1234567890123456789012345678')] })
+			expect(warn).toHaveBeenCalledWith('Card: ignoring unrelated text \'123456789012345678901234\'.')
+		})
+
+		it('prints long text in full, trimmed', () => {
+			verifyChildren({ children: null, name: 'Card', unrelated: ['  The quick brown fox jumps over the lazy dog  '] })
+			expect(warn).toHaveBeenCalledWith('Card: ignoring unrelated The quick brown fox jumps over the lazy dog.')
+		})
+
+		it('stays silent for an empty list', () => {
+			verifyChildren({ children: null, name: 'Card', unrelated: [] })
 			expect(warn).not.toHaveBeenCalled()
+		})
+
+		it('still warns when the count itself is correct', () => {
+			verifyChildren({
+				children: [<Named key="a">a</Named>],
+				name: 'Card',
+				total: 1,
+				unrelated: [<div key="d" />],
+			})
+			expect(warn).toHaveBeenCalledTimes(1)
+			expect(warn).toHaveBeenCalledWith('Card: ignoring unrelated <div>.')
 		})
 	})
 
-	// Each pair below pins the current miscount and states the intended contract.
-	// The `it.failing` case passes *because* the behaviour is wrong; it will start
-	// failing the moment `countChildren`'s unfiltered path regains Fragment-descent
-	// and nullish-filtering, which is the signal to promote it to a plain `it` and
-	// delete its `BUG:` twin.
-	describe('miscounts caused by countChildren delegating to Children.count', () => {
-		it('BUG: a falsy conditional sibling is counted as a real child, so a correct tree warns anyway', () => {
-			// the ordinary `{ cond && <X/> }` pattern with cond false
-			verifyChildren({ children: [<Named key="a">a</Named>, false], name: 'Field', total: 1 })
-			expect(warn).toHaveBeenCalledWith(
-				'Field: 2 children found; a Field needs exactly 1 children.'
-			)
-		})
+	// counting goes through countChildren, so the ordinary `{ cond && <X/> }`
+	// pattern and Fragment-wrapped children are counted as a reader would
+	describe('counts only real children', () => {
+		it('does not warn when the only real child sits beside a falsy conditional', () => {
+			// positive control: the same tree with a real second child does warn
+			verifyChildren({ children: [<Named key="a">a</Named>, <Named key="b">b</Named>], name: 'Field', total: 1 })
+			expect(warn).toHaveBeenCalledTimes(1)
+			warn.mockClear()
 
-		it.failing('does not warn when the only real child sits beside a falsy conditional', () => {
 			verifyChildren({ children: [<Named key="a">a</Named>, false], name: 'Field', total: 1 })
 			expect(warn).not.toHaveBeenCalled()
 		})
 
-		it('BUG: a falsy-only child satisfies the count, so a genuinely empty tree passes unnoticed', () => {
-			// `{ cond && <X/> }` as the sole child, cond false - zero real children
-			verifyChildren({ children: [false], name: 'Field', total: 1 })
-			expect(warn).not.toHaveBeenCalled()
-		})
-
-		it.failing('warns when the sole child is a falsy conditional, since no real child was rendered', () => {
+		it('warns when the sole child is a falsy conditional, since no real child was rendered', () => {
 			verifyChildren({ children: [false], name: 'Field', total: 1 })
 			expect(warn).toHaveBeenCalledWith(
 				'Field: 0 children found; a Field needs exactly 1 children.'
 			)
 		})
 
-		it('BUG: null and undefined children are counted too', () => {
-			verifyChildren({ children: [null, undefined, <Named key="a">a</Named>], name: 'Field', total: 1 })
-			expect(warn).toHaveBeenCalledWith(
-				'Field: 3 children found; a Field needs exactly 1 children.'
-			)
-		})
-
-		it.failing('ignores null and undefined children when counting', () => {
-			verifyChildren({ children: [null, undefined, <Named key="a">a</Named>], name: 'Field', total: 1 })
-			expect(warn).not.toHaveBeenCalled()
-		})
-
-		it('BUG: a Fragment counts as one child instead of being descended into', () => {
-			verifyChildren({
-				children: <><Named>a</Named><Named>b</Named></>,
-				name: 'Field',
-				total: 2,
-			})
+		it('ignores null and undefined children', () => {
+			verifyChildren({ children: [null, undefined, <Named key="a">a</Named>], name: 'Field', total: 2 })
 			expect(warn).toHaveBeenCalledWith(
 				'Field: 1 children found; a Field needs exactly 2 children.'
 			)
 		})
 
-		it.failing('descends into a Fragment so its children count individually', () => {
+		it('descends into a Fragment so its children count individually', () => {
 			verifyChildren({
 				children: <><Named>a</Named><Named>b</Named></>,
 				name: 'Field',
-				total: 2,
+				total: 1,
 			})
-			expect(warn).not.toHaveBeenCalled()
+			expect(warn).toHaveBeenCalledWith(
+				'Field: 2 children found; a Field needs exactly 1 children.'
+			)
 		})
 	})
 })
@@ -305,41 +314,40 @@ describe('filterChildren', () => {
 			expect(warn).not.toHaveBeenCalled()
 		})
 
-		it('silently drops an unrelated child beside the named ones', () => {
-			// positive control: the same call does warn when a name is missing
-			filterChildren([<Anonymous key="x">x</Anonymous>], ['Named', 'OtherNamed'], { name: 'Pair', total: 2 })
+		it('drops an unrelated child beside the named ones and warns about it, without counting it', () => {
+			const result = filterChildren(
+				[<Named key="a">a</Named>, <OtherNamed key="b">b</OtherNamed>, <div key="x">x</div>],
+				['Named', 'OtherNamed'],
+				{ name: 'Pair', total: 2 }
+			)
+
+			expect(result).toHaveLength(2)
 			expect(warn).toHaveBeenCalledTimes(1)
-			warn.mockClear()
-
-			filterChildren(
-				[<Named key="a">a</Named>, <OtherNamed key="b">b</OtherNamed>, <Anonymous key="x">x</Anonymous>],
-				['Named', 'OtherNamed'],
-				{ name: 'Pair', total: 2 }
-			)
-			expect(warn).not.toHaveBeenCalled()
+			expect(warn).toHaveBeenCalledWith('Pair: ignoring unrelated <div>.')
 		})
 
-		// F3 remainder: duplicates are dropped by `filtered[i] != null`, so the
-		// verified count never exceeds the number of names and a repeated
-		// subcomponent can never trip `total`.
-		it('BUG: a duplicated named child is silently dropped, so total never notices it', () => {
-			filterChildren(
-				[<Named key="a">a</Named>, <Named key="b">b</Named>, <OtherNamed key="c">c</OtherNamed>],
+		// a repeat is still dropped (the first match keeps its slot), but now warns
+		it('drops a repeated named child, keeping the first, and warns about it', () => {
+			const result = filterChildren(
+				[<Named key="a">first</Named>, <Named key="b">second</Named>, <OtherNamed key="c">c</OtherNamed>],
 				['Named', 'OtherNamed'],
 				{ name: 'Pair', total: 2 }
 			)
 
-			expect(warn).not.toHaveBeenCalled()
+			expect(result[0]).toMatchObject({ props: { children: 'first' } })
+			expect(warn).toHaveBeenCalledTimes(1)
+			expect(warn).toHaveBeenCalledWith('Pair: ignoring repeated Named; only the first is rendered.')
 		})
 
-		it.failing('warns when a named child appears more than once', () => {
+		it('catches a repeat hidden inside a Fragment', () => {
 			filterChildren(
-				[<Named key="a">a</Named>, <Named key="b">b</Named>, <OtherNamed key="c">c</OtherNamed>],
+				[<Named key="a">a</Named>, <Fragment key="f"><Named>b</Named><OtherNamed>c</OtherNamed></Fragment>],
 				['Named', 'OtherNamed'],
 				{ name: 'Pair', total: 2 }
 			)
 
-			expect(warn).toHaveBeenCalled()
+			expect(warn).toHaveBeenCalledTimes(1)
+			expect(warn).toHaveBeenCalledWith('Pair: ignoring repeated Named; only the first is rendered.')
 		})
 	})
 
@@ -348,16 +356,12 @@ describe('filterChildren', () => {
 		expect(result).toHaveLength(0)
 	})
 
-	// F2: the old `flatMap` returned `[child]` for non-elements; the `forEach`
-	// rewrite only handles elements, so text never reaches the result.
-	it('BUG: non-element children (strings, numbers) are dropped', () => {
-		const result = filterChildren(['plain text', 42], 'Named')
-		expect(result).toEqual([])
-	})
+	// non-element children are dropped on purpose: only matching elements survive
+	it('drops non-element children (strings, numbers), keeping the matching element beside them', () => {
+		const result = filterChildren(['plain text', 42, <Named key="a">a</Named>], 'Named')
 
-	it.failing('passes non-element children (strings, numbers) through unfiltered', () => {
-		const result = filterChildren(['plain text', 42], 'Named')
-		expect(result).toEqual(['plain text', 42])
+		expect(result).toHaveLength(1)
+		expect(result[0]).toMatchObject({ type: Named })
 	})
 
 	it('recurses into a Fragment and filters its children by the same displayName rule', () => {
@@ -404,13 +408,41 @@ describe('filterChildren', () => {
 	})
 
 	describe('verifyArgs', () => {
-		it('verifies the filtered matches, not the raw children', () => {
+		it('counts only the matches, and reports the rest as unrelated', () => {
 			filterChildren(
-				[<Named key="a">a</Named>, <OtherNamed key="b">b</OtherNamed>, <OtherNamed key="c">c</OtherNamed>],
+				[<Named key="a">a</Named>, <OtherNamed key="b">b</OtherNamed>, 'loose text'],
 				'Named',
 				{ name: 'Host', total: 1 }
 			)
 
+			expect(warn).toHaveBeenCalledTimes(1)
+			expect(warn).toHaveBeenCalledWith('Host: ignoring unrelated OtherNamed, loose text.')
+		})
+
+		it('does not report whitespace-only text, such as a stray space between tags', () => {
+			// positive control: real text in the same spot is reported
+			filterChildren([<Named key="a">a</Named>, 'x'], 'Named', { name: 'Host' })
+			expect(warn).toHaveBeenCalledTimes(1)
+			warn.mockClear()
+
+			filterChildren([' ', <Named key="a">a</Named>, '\n\t '], 'Named', { name: 'Host' })
+			expect(warn).not.toHaveBeenCalled()
+		})
+
+		it('keeps every match in single-name mode, so repeats are not reported', () => {
+			const result = filterChildren([<Named key="a">a</Named>, <Named key="b">b</Named>], 'Named', { name: 'Host' })
+
+			expect(result).toHaveLength(2)
+			expect(warn).not.toHaveBeenCalled()
+		})
+
+		it('does not report a falsy conditional as unrelated', () => {
+			// positive control: a real non-matching child in the same spot is reported
+			filterChildren([<Named key="a">a</Named>, <OtherNamed key="b">b</OtherNamed>], 'Named', { name: 'Host' })
+			expect(warn).toHaveBeenCalledTimes(1)
+			warn.mockClear()
+
+			filterChildren([<Named key="a">a</Named>, false, null], 'Named', { name: 'Host' })
 			expect(warn).not.toHaveBeenCalled()
 		})
 
@@ -434,8 +466,8 @@ describe('filterChildren', () => {
 			expect(warn).toHaveBeenCalledWith('Host: 2 children found; a Host needs less than 2 children.')
 		})
 
-		it('warns nothing when no verifyArgs are given', () => {
-			filterChildren([<Named key="a">a</Named>, <Named key="b">b</Named>], 'Named')
+		it('warns nothing when no verifyArgs are given, even with unrelated children', () => {
+			filterChildren([<Named key="a">a</Named>, <OtherNamed key="b">b</OtherNamed>, 'loose text'], 'Named')
 			expect(warn).not.toHaveBeenCalled()
 		})
 	})

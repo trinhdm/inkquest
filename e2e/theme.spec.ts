@@ -101,7 +101,7 @@ test.describe('color scheme persistence', () => {
 		// <script> tags, so this is the one persistence path Jest structurally cannot
 		// cover, and the one that actually matters for a real user refreshing or
 		// deep-linking into the app with a scheme already chosen.
-		await page.goto('/discover')
+		await page.goto('/discover/artists')
 		await expect(page.locator('html')).toHaveAttribute(SCHEME_ATTR, 'light')
 	})
 
@@ -114,9 +114,9 @@ test.describe('color scheme persistence', () => {
 
 		// '/' has no in-app links to soft-navigate from, so this reaches a page that
 		// renders a real next/link menuitem via a full load first. That full load is
-		// coupled to a Header-equipped layout - today that's src/app/(company)/layout.tsx
-		// (every (company) route) and src/app/discover/layout.tsx (/discover and
-		// /discover/style); /about is used here as the representative case.
+		// coupled to a Header-equipped layout - today four segment layouts
+		// mount one ((company), discover, marketplace, community - see navigation.spec.ts);
+		// /about is used here as the representative case.
 		await page.goto('/about')
 		await expect(page.locator('html')).toHaveAttribute(SCHEME_ATTR, 'light')
 

@@ -188,15 +188,22 @@ describe('Accordion.Group', () => {
 		expect(second).toHaveAttribute('aria-expanded', 'true')
 	})
 
-	it('drops children that are not Accordion instances', () => {
-		render(
-			<Accordion.Group>
-				{ item('One', 'First body') }
-				<div>not an accordion</div>
-			</Accordion.Group>
-		)
+	it('drops children that are not Accordion instances, and warns about them', () => {
+		const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
 
-		expect(screen.queryByText('not an accordion')).not.toBeInTheDocument()
-		expect(screen.getAllByRole('button')).toHaveLength(1)
+		try {
+			render(
+				<Accordion.Group>
+					{ item('One', 'First body') }
+					<div>not an accordion</div>
+				</Accordion.Group>
+			)
+
+			expect(screen.queryByText('not an accordion')).not.toBeInTheDocument()
+			expect(screen.getAllByRole('button')).toHaveLength(1)
+			expect(warn).toHaveBeenCalledWith('Accordion.Group: ignoring unrelated <div>.')
+		} finally {
+			warn.mockRestore()
+		}
 	})
 })

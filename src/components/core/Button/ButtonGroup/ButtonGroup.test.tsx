@@ -70,14 +70,21 @@ describe('Button.Group', () => {
 		expect(screen.getByRole('group')).not.toHaveAttribute('data-block')
 	})
 
-	it('drops non-Button children, keeping only Button instances in the group', () => {
-		render(
-			<Button.Group>
-				<Button>Kept</Button>
-				<div>Dropped</div>
-			</Button.Group>
-		)
-		expect(screen.getByText('Kept')).toBeInTheDocument()
-		expect(screen.queryByText('Dropped')).not.toBeInTheDocument()
+	it('drops non-Button children, keeping only Button instances in the group, and warns about them', () => {
+		const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+
+		try {
+			render(
+				<Button.Group>
+					<Button>Kept</Button>
+					<div>Dropped</div>
+				</Button.Group>
+			)
+			expect(screen.getByText('Kept')).toBeInTheDocument()
+			expect(screen.queryByText('Dropped')).not.toBeInTheDocument()
+			expect(warn).toHaveBeenCalledWith('Button.Group: ignoring unrelated <div>.')
+		} finally {
+			warn.mockRestore()
+		}
 	})
 })

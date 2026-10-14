@@ -1,4 +1,5 @@
 import { primitiveTokens } from '../primitive'
+import { ICON_SCALE } from '../../scales'
 
 // primitiveTokens is a catalog of accessor functions assembled from
 // reference/utils.ts's token.path/optPath/endPath factories (already unit
@@ -31,5 +32,14 @@ describe('primitiveTokens', () => {
 		expect(primitiveTokens.fontFamily('sans')).toBe('var(--font-family-sans)')
 		expect(primitiveTokens.lineHeight('normal')).toBe('var(--line-height-normal)')
 		expect(primitiveTokens.letterSpacing('01')).toBe('var(--letter-spacing-01)')
+	})
+
+	// ICON_SCALE is a numeric tuple (it used to be a { sm, md, lg } object keyed
+	// by name), so `icon` is keyed by the pixel size and emits `--icon-size-<px>`
+	it('wires icon to the iconSize category, keyed by each pixel size in ICON_SCALE', () => {
+		expect(ICON_SCALE.length).toBeGreaterThan(0)
+
+		for (const px of ICON_SCALE)
+			expect(primitiveTokens.icon(`${px}`)).toBe(`var(--icon-size-${px})`)
 	})
 })

@@ -44,18 +44,28 @@ describe('Statistic.Group', () => {
 		expect(screen.getByText('Orders')).toBeInTheDocument()
 	})
 
-	it('drops children that are not Statistic instances', () => {
-		render(
-			<Statistic.Group>
-				<Statistic caption="Users" value="10" />
-				<div>not a statistic</div>
-			</Statistic.Group>
-		)
+	// Statistic.Group filters through the shared Group, so the warning names
+	// `Group`, not `Statistic.Group`
+	it('drops children that are not Statistic instances, and warns about them', () => {
+		const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
 
-		expect(screen.queryByText('not a statistic')).not.toBeInTheDocument()
+		try {
+			render(
+				<Statistic.Group>
+					<Statistic caption="Users" value="10" />
+					<div>not a statistic</div>
+				</Statistic.Group>
+			)
+
+			expect(screen.getByText('Users')).toBeInTheDocument()
+			expect(screen.queryByText('not a statistic')).not.toBeInTheDocument()
+			expect(warn).toHaveBeenCalledWith('Group: ignoring unrelated <div>.')
+		} finally {
+			warn.mockRestore()
+		}
 	})
 
-	// group defaults (from `StatisticGroup.setDefaults`) leave `withinView`
+	// group defaults (from `StatisticGroup.set({ defaultProps })`) leave `withinView`
 	// as `false` (the stubbed IntersectionObserver never fires), so children
 	// stay pinned at their un-animated start value and `animate` is never called
 	it('does not animate its children while the group itself is not in view', () => {

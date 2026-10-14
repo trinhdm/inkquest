@@ -11,9 +11,9 @@ describe('createCompoundCtx', () => {
 	const { RootProvider, useRootCtx, useSafeRootCtx, useRootProps } =
 		createCompoundCtx<TestCtxValue>('TestRoot')
 
-	const withWrapper = (value: TestCtxValue, rootName?: string) => {
+	const withWrapper = (value: TestCtxValue) => {
 		const Wrapper = ({ children }: { children: ReactNode }) => (
-			<RootProvider value={ value } rootName={ rootName }>{ children }</RootProvider>
+			<RootProvider value={ value }>{ children }</RootProvider>
 		)
 		return Wrapper
 	}
@@ -23,13 +23,13 @@ describe('createCompoundCtx', () => {
 			const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
 
 			expect(() => renderHook(() => useRootCtx('Consumer'))).toThrow(
-				'<Consumer /> must be rendered inside <TestRoot>'
+				'TestRoot: <Consumer /> must be a direct child of <TestRoot>; it can\'t be returned from another component'
 			)
 
 			consoleErrorSpy.mockRestore()
 		})
 
-		it('returns the provided context value plus a `rootName` defaulted from the creator name, plus a derived `baseName`', () => {
+		it('returns the provided context value plus the creator name as `rootName`, plus a derived `baseName`', () => {
 			// `baseName` strips `rootName` off `componentName`, then drops one
 			// leading `.` separator ONLY if the remainder actually starts with
 			// one (`compoundName.startsWith('.') ? 1 : 0`) — so a dotted compound
@@ -66,14 +66,6 @@ describe('createCompoundCtx', () => {
 			})
 
 			expect(result.current.baseName).toBe('consumer')
-		})
-
-		it('lets the provider override `rootName`', () => {
-			const { result } = renderHook(() => useRootCtx('Consumer'), {
-				wrapper: withWrapper({ color: 'blue' }, 'CustomRoot'),
-			})
-
-			expect(result.current.rootName).toBe('CustomRoot')
 		})
 
 		it('propagates a changed context value down to consumers when the provider re-renders with a new value', () => {
@@ -147,21 +139,25 @@ describe('createCompoundCtx', () => {
 			expect(Object.hasOwn(result.current, 'color')).toBe(true)
 		})
 
-		it('never inherits `rootName` from context even though it is present on the context value', () => {
-			const { result } = renderHook(() => useRootProps({}), {
-				wrapper: withWrapper({ color: 'red' }, 'CustomRoot'),
-			})
-
-			expect(result.current).toEqual({ color: 'red' })
-			expect(Object.hasOwn(result.current, 'rootName')).toBe(false)
-		})
-
 		it('does not inherit a context key whose value is undefined', () => {
 			const { result } = renderHook(() => useRootProps({} as { size?: number }), {
 				wrapper: withWrapper({ size: undefined }),
 			})
 
 			expect(result.current).toEqual({})
+		})
+
+		// `rootName` is always on the context value (the creator name), but it
+		// describes the compound root, not a prop - it must never leak into a
+		// consumer's props
+		it('never inherits `rootName` from context even though it is present on the context value', () => {
+			const { result } = renderHook(() => useRootProps({}), {
+				wrapper: withWrapper({ color: 'red' }),
+			})
+
+			// positive control: a regular context key IS inherited
+			expect(result.current).toEqual({ color: 'red' })
+			expect(Object.hasOwn(result.current, 'rootName')).toBe(false)
 		})
 	})
 })

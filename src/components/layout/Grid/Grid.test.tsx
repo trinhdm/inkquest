@@ -42,9 +42,9 @@ describe('Grid', () => {
 	})
 
 	// `columns` is published as the `--grid-cols` custom property on the root's
-	// inline `style`, via `setThemeCSS`'s `tokens` (see `Grid.tsx`) — NOT as a
+	// inline `style`, via `defineTokens`' `tokens` (see `Grid.tsx`) — NOT as a
 	// className modifier or a `data-*` attribute. `Grid.module.scss` reads it
-	// back through `repeat(var(--group-cols), ...)`.
+	// back through `repeat(var(--grid-cols, auto-fit), ...)`.
 	it('publishes columns as the --grid-cols custom property on the root', () => {
 		const { container } = render(<Grid columns={ 3 }>content</Grid>)
 		const root = container.firstElementChild as HTMLElement
@@ -70,14 +70,12 @@ describe('Grid', () => {
 			expect(screen.getByText('Item content')).toBeInTheDocument()
 		})
 
-		// **Probable source bug, verified against the live `GridItem.tsx`**:
-		// `GridItem` (`isCompound: true`, no `defaults.as`) destructures only
-		// `others` off `extractOthers(rest)` — it never reads the sibling
-		// `as` value that call also returns, so `as` is silently discarded and
-		// the root always renders through `<Box>`'s own default, `div`.
-		it('ignores its "as" prop and always renders a div (as is never read)', () => {
-			const { container } = render(<Grid.Item as={ 'li' as never }>Item content</Grid.Item>)
-			expect(container.firstElementChild?.tagName).toBe('DIV')
+		it('renders a div by default, and the element passed as `as` otherwise', () => {
+			const { container: plain } = render(<Grid.Item>Plain</Grid.Item>)
+			expect(plain.firstElementChild?.tagName).toBe('DIV')
+
+			const { container: listed } = render(<Grid.Item as="li">Listed</Grid.Item>)
+			expect(listed.firstElementChild?.tagName).toBe('LI')
 		})
 
 		it('composes inside a Grid, preserving each item\'s own content', () => {

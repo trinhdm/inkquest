@@ -207,4 +207,50 @@ describe('createFactory', () => {
 			expect(seen.at(0)).not.toBe(seen.at(-1))
 		})
 	})
+
+	// A compound part (`Parent.Child`) lives in the parent's stylesheet. With
+	// `withRootName: true`, `useStyles` takes its scope from `context.rootName`
+	// instead of the part's own factory name.
+	describe('injected tools.useStyles with withRootName', () => {
+		interface PartSpecs {
+			context: { baseName: string, rootName: string }
+			isCompound: true
+			props: WidgetProps
+			selectors: 'item'
+		}
+
+		const parentClasses = { parent__item: 'parent-item-class', part__item: 'part-item-class' },
+			context = { baseName: 'item', rootName: 'Parent' } as const
+
+		const makePart = (withRootName?: true) =>
+			createFactory<PartSpecs>((props, { useStyles }) => {
+				const styles = useStyles(
+					withRootName
+						? { context, props, withRootName }
+						: { context, props }
+				)
+				return <div data-testid="part" { ...styles('item') } />
+			}, { classes: parentClasses, name: 'Part' })
+
+		it('resolves classes against context.rootName rather than the part\'s own name', () => {
+			const Part = makePart(true)
+
+			render(<Part />, { wrapper })
+			const part = screen.getByTestId('part')
+
+			expect(part).toHaveClass('parent-item-class')
+			expect(part).not.toHaveClass('part-item-class')
+		})
+
+		it('keeps the part\'s own name as the scope when withRootName is not set', () => {
+			const Part = makePart()
+
+			render(<Part />, { wrapper })
+			const part = screen.getByTestId('part')
+
+			// positive control for the test above: same context, same classes map
+			expect(part).toHaveClass('part-item-class')
+			expect(part).not.toHaveClass('parent-item-class')
+		})
+	})
 })

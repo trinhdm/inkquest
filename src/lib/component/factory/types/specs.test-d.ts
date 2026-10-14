@@ -2,8 +2,9 @@
  * Type-level tests for the Polymorphic specs contract.
  *
  * These assert at compile time only — there is no runtime body, and Jest
- * never picks the file up (its default `testMatch` looks for `*.test.ts`,
- * not `*.test-d.ts`). `npm run test:types` is what executes them: a failed
+ * never picks the file up (`jest.config.ts` sets an explicit `testMatch`
+ * that requires `.test.` in the filename, so `*.test-d.ts` matches neither
+ * pattern). `npm run test:types` is what executes them: a failed
  * assertion is a type error, so the script exits non-zero.
  *
  * Two ways to assert:

@@ -6,8 +6,9 @@ import type { RootProviderFn } from '@/lib/component/context'
 
 // A plain, library-external component with its own `displayName` — the
 // contract `Group`'s `childName` filters against (`filterChildren(children,
-// childName)`, keyed off `child.type.displayName`). `Group` doesn't ship its
-// own item subcomponent; any consumer-supplied component works.
+// childName)`, keyed off `child.type.displayName`). `Group` ships its own
+// `Group.Item` (the default `childName`), but `childName` accepts any
+// consumer-supplied component, which is what these stand-ins exercise.
 const GroupItem = ({ label }: { label: string }) => <div>{ label }</div>
 GroupItem.displayName = 'GroupItem'
 
@@ -41,13 +42,13 @@ const DebugItem = ({ label }: { label: string }) => {
 DebugItem.displayName = 'DebugItem'
 
 describe('Group', () => {
-	reset('Group')
+	reset('Group', 'Group.Item')
 
 	it('registers childName, divider, and provider as its own defaults', () => {
-		// Read from `Group.tsx`'s own `Group.setDefaults({...})` call, rather
+		// Read from `Group.tsx`'s own `Group.set({ defaultProps })` call, rather
 		// than hand-typing a guess at what it registers.
 		const defaults = getDefaultProps<
-			Group.Props & { provider?: RootProviderFn<Group.Context, 'Group'> }
+			Group.Props & { provider?: RootProviderFn<Group.Context> }
 		>('Group')
 
 		expect(defaults).toEqual({
@@ -68,22 +69,57 @@ describe('Group', () => {
 		expect(screen.getByRole('group')).toBeInTheDocument()
 	})
 
-	it('keeps only children whose displayName matches childName, and keeps bare strings unconditionally', () => {
-		render(
-			<Group childName="GroupItem">
-				<GroupItem label="Kept 1" />
-				<OtherItem label="Dropped (wrong displayName)" />
-				<div>Dropped (host element, no displayName)</div>
-				{ 'Kept (plain string, not an element)' }
-				<GroupItem label="Kept 2" />
-			</Group>
-		)
+	// Group renders only children that match `childName`. Everything else - other
+	// components, host elements, text - is dropped, and named in a dev warning.
+	describe('child filtering', () => {
+		let warn: jest.SpyInstance
 
-		expect(screen.getByText('Kept 1')).toBeInTheDocument()
-		expect(screen.getByText('Kept 2')).toBeInTheDocument()
-		expect(screen.getByText('Kept (plain string, not an element)')).toBeInTheDocument()
-		expect(screen.queryByText('Dropped (wrong displayName)')).not.toBeInTheDocument()
-		expect(screen.queryByText('Dropped (host element, no displayName)')).not.toBeInTheDocument()
+		beforeEach(() => { warn = jest.spyOn(console, 'warn').mockImplementation(() => {}) })
+		afterEach(() => { warn.mockRestore() })
+
+		it('stays silent when every child matches childName', () => {
+			render(
+				<Group childName="GroupItem">
+					<GroupItem label="Item 1" />
+					<GroupItem label="Item 2" />
+				</Group>
+			)
+
+			expect(screen.getByText('Item 2')).toBeInTheDocument()
+			expect(warn).not.toHaveBeenCalled()
+		})
+
+		it('keeps only children whose displayName matches childName, and warns about the rest', () => {
+			render(
+				<Group childName="GroupItem">
+					<GroupItem label="Kept 1" />
+					<OtherItem label="Dropped (wrong displayName)" />
+					<div>Dropped (host element, no displayName)</div>
+					<GroupItem label="Kept 2" />
+				</Group>
+			)
+
+			expect(screen.getByText('Kept 1')).toBeInTheDocument()
+			expect(screen.getByText('Kept 2')).toBeInTheDocument()
+			expect(screen.queryByText('Dropped (wrong displayName)')).not.toBeInTheDocument()
+			expect(screen.queryByText('Dropped (host element, no displayName)')).not.toBeInTheDocument()
+			expect(warn).toHaveBeenCalledWith('Group: ignoring unrelated OtherItem, <div>.')
+		})
+
+		it('drops bare string and number children, keeping the matching element beside them, and warns about them', () => {
+			render(
+				<Group childName="GroupItem">
+					<GroupItem label="Kept" />
+					{ 'Plain string, not an element' }
+					{ 42 }
+				</Group>
+			)
+
+			expect(screen.getByText('Kept')).toBeInTheDocument()
+			expect(screen.queryByText('Plain string, not an element')).not.toBeInTheDocument()
+			expect(screen.queryByText('42')).not.toBeInTheDocument()
+			expect(warn).toHaveBeenCalledWith('Group: ignoring unrelated Plain string, not an element, text \'42\'.')
+		})
 	})
 
 	it('reflects orientation as aria-orientation, and omits it entirely when unset', () => {
@@ -111,7 +147,7 @@ describe('Group', () => {
 	})
 
 	// `columns` feeds `--group-item-count` as an inline CSS custom property
-	// via `setThemeCSS`'s `tokens` (see `Group.tsx`), not a class — `style`
+	// via `defineTokens`' `tokens` (see `Group.tsx`), not a class — `style`
 	// IS assertable in Jest, unlike CSS-module classes.
 	it('sets the --group-item-count custom property only when columns is provided', () => {
 		const { rerender } = render(
@@ -148,16 +184,16 @@ describe('Group', () => {
 		expect(screen.getByRole('group').style.getPropertyValue('--group-item-count')).toBe('1')
 	})
 
-	it('publishes no context at all when no provider is given (children render unwrapped)', () => {
-		// Without `provider`, `renderWithProvider` wraps each filtered child in
-		// a bare `Fragment` — there is no context to read, so a plain child
-		// renders exactly as authored.
+	// `GroupProvider` is the registered default `provider`, so the built-in
+	// `Group.Item` can read its context without any `provider` prop.
+	it('wraps each Group.Item in the default GroupProvider, so the item renders inside the group', () => {
 		render(
-			<Group childName="GroupItem">
-				<GroupItem label="Unwrapped item" />
+			<Group>
+				<Group.Item>Default item</Group.Item>
 			</Group>
 		)
-		expect(screen.getByText('Unwrapped item')).toBeInTheDocument()
+
+		expect(screen.getByRole('group')).toContainElement(screen.getByText('Default item'))
 	})
 
 	it('publishes a per-child context value (index, animated, duration, stagger) via the provider prop', () => {

@@ -84,12 +84,29 @@ describe('Sidebar', () => {
 		expect(onChange).toHaveBeenCalledWith('discard')
 	})
 
-	it('renders passed children alongside the nav', () => {
+	// `items` and `children` are two separate modes: with items, Sidebar renders
+	// only its item menu; without items, it renders only its children
+	it('renders its children, and no menu, when given no items', () => {
 		render(
-			<Sidebar active="overview" items={ linkItems }>
-				<span>Footer content</span>
+			<Sidebar>
+				<span>Filter content</span>
 			</Sidebar>
 		)
-		expect(screen.getByText('Footer content')).toBeInTheDocument()
+		expect(screen.getByText('Filter content')).toBeInTheDocument()
+		expect(screen.queryByRole('menu')).not.toBeInTheDocument()
 	})
+
+	it('renders only the item menu, not its children, when given items', () => {
+		render(
+			<Sidebar active="overview" items={ linkItems }>
+				<span>Ignored content</span>
+			</Sidebar>
+		)
+		expect(screen.getByRole('menu')).toBeInTheDocument()
+		expect(screen.queryByText('Ignored content')).not.toBeInTheDocument()
+	})
+
+	// TODO: see the TODO in Sidebar.tsx's `tokens` - with no matching `active`,
+	// the rail is positioned at -3rem, one row above the list
+	it.todo('does not position the rail above the list when no item is active')
 })

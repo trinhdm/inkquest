@@ -28,7 +28,7 @@ describe('Group.Item', () => {
 		const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
 
 		expect(() => render(<Group.Item>Standalone</Group.Item>))
-			.toThrow('<Group.Item /> must be rendered inside <Group>')
+			.toThrow('<Group.Item /> must be a direct child of <Group>')
 
 		consoleError.mockRestore()
 	})

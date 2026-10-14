@@ -185,7 +185,10 @@ describe('buildSection', () => {
 
 			expect(screen.getByRole('button', { name: 'Kept' })).toBeInTheDocument()
 			expect(screen.queryByRole('button', { name: 'Dropped' })).not.toBeInTheDocument()
-			expect(warn).toHaveBeenCalledWith(expect.stringContaining('multiple Section.Footer'))
+			// each extra footer is checked against the first via verifyChildren({ total: 1 })
+			expect(warn).toHaveBeenCalledWith(
+				'Section.Footer: 2 children found; a Section.Footer needs exactly 1 children.'
+			)
 			warn.mockRestore()
 		})
 
@@ -264,6 +267,45 @@ describe('buildSection', () => {
 
 			expect(screen.getByRole('heading', { name: 'Split title' })).toBeInTheDocument()
 			expect(screen.getByText('Split body')).toBeInTheDocument()
+		})
+
+		it('splits layout="hero-split" into a content column (header + body) and a cta column (footer)', () => {
+			const { container } = render(
+				<>{ buildSection({
+					props: buildProps({
+						children: [
+							'Split body',
+							<SectionFooter key="footer"><Button>Join</Button></SectionFooter>,
+						],
+						layout: 'hero-split',
+						title: 'Split title',
+					}),
+					reveal: makeReveal(),
+					styles: makeStyles(),
+				}) }</>
+			)
+
+			const content = container.querySelector('.style-content'),
+				cta = container.querySelector('.style-cta')
+
+			expect(content).toContainElement(screen.getByRole('heading', { level: 1, name: 'Split title' }))
+			expect(content).toContainElement(screen.getByText('Split body'))
+			expect(content).not.toContainElement(screen.getByRole('button', { name: 'Join' }))
+			expect(cta).toContainElement(screen.getByRole('button', { name: 'Join' }))
+			expect(container.querySelector('.style-inner')).toContainElement(content as HTMLElement)
+		})
+
+		it('still renders both hero-split columns when there is no footer', () => {
+			const { container } = render(
+				<>{ buildSection({
+					props: buildProps({ children: 'Split body', layout: 'hero-split', title: 'Split title' }),
+					reveal: makeReveal(),
+					styles: makeStyles(),
+				}) }</>
+			)
+
+			expect(container.querySelector('.style-cta')).toBeEmptyDOMElement()
+			expect(container.querySelector('.style-content')).not.toBeEmptyDOMElement()
 		})
 
 		it('renders no "inner" wrapper for the default layout', () => {

@@ -78,4 +78,54 @@ describe('Menu', () => {
 		expect(screen.getByRole('menuitem', { name: 'Feed' })).toBeInTheDocument()
 		expect(screen.getByRole('menuitem', { name: 'Spotlights' })).toBeInTheDocument()
 	})
+
+	describe('active', () => {
+		const link = (name: string) => screen.getByRole('menuitem', { name })
+
+		it('marks the item whose route equals `active` as the current page', () => {
+			render(<Menu active="/login" items={ leafItems } />)
+
+			expect(link('Login')).toHaveAttribute('aria-current', 'page')
+			expect(link('Marketplace')).not.toHaveAttribute('aria-current')
+		})
+
+		it('lets `active` win over the router pathname', () => {
+			(usePathname as jest.Mock).mockReturnValue('/marketplace')
+			render(<Menu active="/login" items={ leafItems } />)
+
+			expect(link('Login')).toHaveAttribute('aria-current', 'page')
+			expect(link('Marketplace')).not.toHaveAttribute('aria-current')
+		})
+
+		it('falls back to the router pathname when `active` is not given', () => {
+			(usePathname as jest.Mock).mockReturnValue('/marketplace')
+			render(<Menu items={ leafItems } />)
+
+			expect(link('Marketplace')).toHaveAttribute('aria-current', 'page')
+			expect(link('Login')).not.toHaveAttribute('aria-current')
+		})
+
+		it('marks nothing current for active={ null }, even when the pathname matches an item', () => {
+			(usePathname as jest.Mock).mockReturnValue('/marketplace')
+			render(<Menu active={ null } items={ leafItems } />)
+
+			expect(link('Marketplace')).not.toHaveAttribute('aria-current')
+			expect(link('Login')).not.toHaveAttribute('aria-current')
+		})
+	})
+
+	describe('as', () => {
+		it('renders a <ul> menubar by default', () => {
+			render(<Menu items={ leafItems } />)
+			expect(screen.getByRole('menubar').tagName).toBe('UL')
+		})
+
+		it('forwards `as` to the root element and keeps the menubar role', () => {
+			render(<Menu as="div" items={ leafItems } />)
+
+			const menubar = screen.getByRole('menubar')
+			expect(menubar.tagName).toBe('DIV')
+			expect(screen.getAllByRole('menuitem')).toHaveLength(2)
+		})
+	})
 })

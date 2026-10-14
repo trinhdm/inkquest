@@ -1,4 +1,3 @@
-import { getDefaultProps } from '@/hooks/useProps'
 import { render, reset, screen } from '@/tests/test-utils'
 import { Table } from './Table'
 
@@ -19,13 +18,13 @@ describe('Table', () => {
 		expect(screen.getByText('Cell B')).toBeInTheDocument()
 	})
 
-	it('renders as a table by default per its registered defaults', () => {
+	// Table registers no default props: it hardcodes `as={ TAG }` on its Box
+	it('always renders a <table> element, since the tag is hardcoded rather than a default prop', () => {
 		const { container } = render(
 			<Table>
 				<Table.Row><Table.Cell>Cell</Table.Cell></Table.Row>
 			</Table>
 		)
-		expect(getDefaultProps<Table.Props & { as: string }>('Table').as).toBe('table')
 		expect(container.firstChild?.nodeName).toBe('TABLE')
 	})
 
@@ -37,21 +36,6 @@ describe('Table', () => {
 		)
 		expect(container.querySelector('table > tbody')).toBeInTheDocument()
 	})
-
-	// it('ignores an `as` override and always renders as <table> -- FLAGGED SOURCE BUG, do not "fix" this test: Table.tsx puts `as` in its public props (defaults.as) but then hardcodes `as={ TAG }` on the Box render instead of forwarding the caller-provided value (contrast Sidebar.tsx, which correctly does `as={ as }`). The prop is accepted and silently discarded; Table\'s own Storybook docs call this a "KNOWN REGRESSION".', () => {
-	// 	// Because the override is discarded, `children` (a bare string here)
-	// 	// still lands inside the hardcoded <tbody> -- React warns that a text
-	// 	// node can't be a direct child of <tbody>. That warning is a symptom
-	// 	// of the same source bug, not a failure signal for this assertion, so
-	// 	// it's suppressed here rather than asserted on.
-	// 	const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
-
-	// 	const { container } = render(<Table as="section">Content</Table>)
-	// 	expect(container.querySelector('table')).toBeInTheDocument()
-	// 	expect(container.querySelector('section')).not.toBeInTheDocument()
-
-	// 	consoleError.mockRestore()
-	// })
 
 	describe('Table.Row', () => {
 		it('renders its children', () => {

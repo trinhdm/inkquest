@@ -51,22 +51,17 @@ describe('buildVariantSchemes', () => {
 		)
 	})
 
-	// BUG, not a desired contract: when a component name IS supplied, the
-	// base selector gets scoped to `.${prefix}-${name}`, but the
-	// VARIANT_ORDER fallback selector (the `[data-priority="..."]:is(...)`
-	// clause pushed for solid/outline/ghost) is built from the raw
-	// `[data-variant="x"]` attribute selectors with no `.${rootClass}`
-	// prefix at all (buildVariantSchemes.ts line ~40). For a scoped
-	// component this fallback rule ends up matching ANY element in the
-	// document with that attribute combination, not just instances of the
-	// named component. This test pins the current (unscoped fallback)
-	// behavior; see the Maintenance Note.
-	it('BUG: the structural-variant priority fallback selector is not scoped to the component class', () => {
+	// when a component name is supplied, BOTH halves of the selector are scoped
+	// to `.${prefix}-${name}`: the base `[data-variant]` clause and the
+	// VARIANT_ORDER fallback `[data-priority="..."]:is(...)` clause. Without the
+	// scope on the fallback, it would match any element in the document with
+	// that attribute combination, not just instances of the named component.
+	it('scopes the structural-variant priority selector to the component class', () => {
 		const rules = buildVariantSchemes('Button', 'inkq')
 		const solid = rules.find(r => r.selector.startsWith('.inkq-button[data-variant="solid"]'))
 
 		expect(solid?.selector).toBe(
-			'.inkq-button[data-variant="solid"],\n[data-priority="primary"]:is([data-variant="outline"], [data-variant="ghost"])'
+			'.inkq-button[data-variant="solid"],\n.inkq-button[data-priority="primary"]:is([data-variant="outline"], [data-variant="ghost"])'
 		)
 	})
 

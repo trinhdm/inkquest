@@ -124,7 +124,7 @@ describe('Accordion', () => {
 	it('throws when Accordion.Title is rendered outside an Accordion', () => {
 		const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
 		expect(() => render(<Accordion.Title>Orphan</Accordion.Title>)).toThrow(
-			'<Accordion.Title /> must be rendered inside <Accordion>'
+			'<Accordion.Title /> must be a direct child of <Accordion>'
 		)
 		spy.mockRestore()
 	})
@@ -132,54 +132,113 @@ describe('Accordion', () => {
 	it('throws when Accordion.Content is rendered outside an Accordion', () => {
 		const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
 		expect(() => render(<Accordion.Content>Orphan</Accordion.Content>)).toThrow(
-			'<Accordion.Content /> must be rendered inside <Accordion>'
+			'<Accordion.Content /> must be a direct child of <Accordion>'
 		)
 		spy.mockRestore()
 	})
 
-	it('warns and renders nothing but the wrapper chrome when Title or Content is missing', () => {
-		const spy = jest.spyOn(console, 'warn').mockImplementation(() => {})
-		render(<Accordion>Just some text</Accordion>)
+	// Accordion filters its children by name with `filterChildren(..., { total: 2 })`
+	// and renders nothing unless it finds BOTH a Title and a Content.
+	describe('child validation', () => {
+		let warn: jest.SpyInstance
 
-		expect(spy).toHaveBeenCalled()
-		expect(screen.queryByRole('button')).not.toBeInTheDocument()
-		spy.mockRestore()
-	})
+		beforeEach(() => { warn = jest.spyOn(console, 'warn').mockImplementation(() => {}) })
+		afterEach(() => { warn.mockRestore() })
 
-	it('warns about a missing Accordion.Title when there are no matching children at all', () => {
-		const spy = jest.spyOn(console, 'warn').mockImplementation(() => {})
-		render(<Accordion>{ null }</Accordion>)
+		it('renders nothing but the wrapper chrome, and warns, when given only text', () => {
+			render(<Accordion>Just some text</Accordion>)
 
-		expect(spy).toHaveBeenCalledWith(expect.stringContaining('no Accordion.Title found'))
-		spy.mockRestore()
-	})
+			expect(screen.queryByRole('button')).not.toBeInTheDocument()
+			expect(screen.queryByText('Just some text')).not.toBeInTheDocument()
+			expect(warn).toHaveBeenCalledWith('Accordion: 0 children found; a Accordion needs exactly 2 children.')
+		})
 
-	it('warns about multiple Accordion.Title/Accordion.Content found when more than one of each is given', () => {
-		const spy = jest.spyOn(console, 'warn').mockImplementation(() => {})
-		render(
-			<Accordion>
-				<Accordion.Title>One</Accordion.Title>
-				<Accordion.Title>Two</Accordion.Title>
-				<Accordion.Content>Body</Accordion.Content>
-			</Accordion>
-		)
+		it('renders nothing and warns when there are no children at all', () => {
+			render(<Accordion>{ null }</Accordion>)
 
-		expect(spy).toHaveBeenCalledWith(expect.stringContaining('multiple Accordion.Title, Accordion.Content found'))
-		spy.mockRestore()
-	})
+			expect(screen.queryByRole('button')).not.toBeInTheDocument()
+			expect(warn).toHaveBeenCalledWith('Accordion: 0 children found; a Accordion needs exactly 2 children.')
+		})
 
-	it('warns about children outside of Title/Content when an unrelated element is also passed', () => {
-		const spy = jest.spyOn(console, 'warn').mockImplementation(() => {})
-		render(
-			<Accordion>
-				<Accordion.Title>Section title</Accordion.Title>
-				<Accordion.Content>Section body</Accordion.Content>
-				<div>Extra child</div>
-			</Accordion>
-		)
+		it('renders nothing, not even the title, and warns when Accordion.Content is missing', () => {
+			render(<Accordion><Accordion.Title>Lonely title</Accordion.Title></Accordion>)
 
-		expect(spy).toHaveBeenCalledWith(expect.stringContaining('children outside of Accordion.Title, Accordion.Content detected'))
-		spy.mockRestore()
+			expect(screen.queryByText('Lonely title')).not.toBeInTheDocument()
+			expect(warn).toHaveBeenCalledWith('Accordion: 1 children found; a Accordion needs exactly 2 children.')
+		})
+
+		it('renders nothing, not even the content, and warns when Accordion.Title is missing', () => {
+			render(<Accordion><Accordion.Content>Lonely body</Accordion.Content></Accordion>)
+
+			expect(screen.queryByText('Lonely body')).not.toBeInTheDocument()
+			expect(warn).toHaveBeenCalledWith('Accordion: 1 children found; a Accordion needs exactly 2 children.')
+		})
+
+		it('stays silent for a well-formed Title + Content pair', () => {
+			render(buildAccordion())
+
+			expect(screen.getByRole('button', { name: 'Section title' })).toBeInTheDocument()
+			expect(warn).not.toHaveBeenCalled()
+		})
+
+		it('finds Title and Content when they are wrapped in a Fragment', () => {
+			render(
+				<Accordion>
+					<>
+						<Accordion.Title>Section title</Accordion.Title>
+						<Accordion.Content>Section body</Accordion.Content>
+					</>
+				</Accordion>
+			)
+
+			expect(screen.getByRole('button', { name: 'Section title' })).toBeInTheDocument()
+			expect(warn).not.toHaveBeenCalled()
+		})
+
+		it('always renders the Title before the Content, whatever order they were passed in', () => {
+			render(
+				<Accordion>
+					<Accordion.Content>Section body</Accordion.Content>
+					<Accordion.Title>Section title</Accordion.Title>
+				</Accordion>
+			)
+
+			const title = screen.getByRole('button', { name: 'Section title' }),
+				content = screen.getByRole('region', { name: 'Section title' })
+			expect(title.compareDocumentPosition(content) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+		})
+
+		it('drops an unrelated sibling element without rendering it, and warns about it', () => {
+			render(
+				<Accordion>
+					<Accordion.Title>Section title</Accordion.Title>
+					<Accordion.Content>Section body</Accordion.Content>
+					<div>Extra child</div>
+				</Accordion>
+			)
+
+			expect(screen.queryByText('Extra child')).not.toBeInTheDocument()
+			expect(screen.getByRole('button', { name: 'Section title' })).toBeInTheDocument()
+			expect(warn).toHaveBeenCalledTimes(1)
+			expect(warn).toHaveBeenCalledWith('Accordion: ignoring unrelated <div>.')
+		})
+
+		// filterChildren's array mode keeps the first match per name and drops the
+		// rest, warning about each repeat
+		it('renders only the first Title, and warns about the second, when two are given', () => {
+			render(
+				<Accordion>
+					<Accordion.Title>One</Accordion.Title>
+					<Accordion.Title>Two</Accordion.Title>
+					<Accordion.Content>Body</Accordion.Content>
+				</Accordion>
+			)
+
+			expect(screen.getByRole('button', { name: 'One' })).toBeInTheDocument()
+			expect(screen.queryByText('Two')).not.toBeInTheDocument()
+			expect(warn).toHaveBeenCalledTimes(1)
+			expect(warn).toHaveBeenCalledWith('Accordion: ignoring repeated Accordion.Title; only the first is rendered.')
+		})
 	})
 
 	it('renders an unpadded step number (no leading zero) once the index reaches double digits', () => {

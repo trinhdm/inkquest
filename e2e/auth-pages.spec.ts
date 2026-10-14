@@ -19,7 +19,7 @@ test.describe('/login', () => {
 	test('renders the Login placeholder heading', async ({ page }) => {
 		await page.goto('/login')
 
-		await expect(page.getByRole('heading', { level: 1, name: 'Login' })).toBeVisible()
+		await expect(page.getByRole('heading', { level: 1, name: 'Login', exact: true })).toBeVisible()
 	})
 
 	test('has no form to submit or validate yet', async ({ page }) => {
@@ -34,7 +34,7 @@ test.describe('/signup', () => {
 	test('renders the Signup placeholder heading', async ({ page }) => {
 		await page.goto('/signup')
 
-		await expect(page.getByRole('heading', { level: 1, name: 'Signup' })).toBeVisible()
+		await expect(page.getByRole('heading', { level: 1, name: 'Signup', exact: true })).toBeVisible()
 	})
 
 	test('has no form to submit or validate yet', async ({ page }) => {
@@ -49,7 +49,7 @@ test.describe('/profile', () => {
 	test('renders the Profile placeholder heading', async ({ page }) => {
 		await page.goto('/profile')
 
-		await expect(page.getByRole('heading', { level: 1, name: 'Profile' })).toBeVisible()
+		await expect(page.getByRole('heading', { level: 1, name: 'Profile', exact: true })).toBeVisible()
 	})
 
 	test('has no form to submit or validate yet', async ({ page }) => {
@@ -64,7 +64,7 @@ test.describe('/settings', () => {
 	test('renders the Settings placeholder heading', async ({ page }) => {
 		await page.goto('/settings')
 
-		await expect(page.getByRole('heading', { level: 1, name: 'Settings' })).toBeVisible()
+		await expect(page.getByRole('heading', { level: 1, name: 'Settings', exact: true })).toBeVisible()
 	})
 
 	test('has no form to submit or validate yet', async ({ page }) => {
@@ -79,7 +79,7 @@ test.describe('/messages', () => {
 	test('renders the Messages placeholder heading', async ({ page }) => {
 		await page.goto('/messages')
 
-		await expect(page.getByRole('heading', { level: 1, name: 'Messages' })).toBeVisible()
+		await expect(page.getByRole('heading', { level: 1, name: 'Messages', exact: true })).toBeVisible()
 	})
 
 	test('has no form to submit or validate yet', async ({ page }) => {

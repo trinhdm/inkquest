@@ -1,5 +1,5 @@
 import {
-	deepMerge, deepSetMap, flattenMap, isObject, keyHasValue, pluralizeKeys,
+	deepKeys, deepMerge, deepSetMap, flattenMap, isObject, keyHasValue, pluralizeKeys,
 } from '../objects'
 
 describe('isObject', () => {
@@ -192,5 +192,32 @@ describe('deepSetMap / flattenMap', () => {
 
 	it('flattens an empty map to an empty object', () => {
 		expect(flattenMap(new Map())).toEqual({})
+	})
+})
+
+describe('deepKeys', () => {
+	it('returns an empty list for an empty object', () => {
+		expect(deepKeys({})).toEqual([])
+	})
+
+	it('returns the top-level keys of a flat object', () => {
+		expect(deepKeys({ a: 1, b: 'x' })).toEqual(['a', 'b'])
+	})
+
+	it('joins nested keys with a hyphen', () => {
+		expect(deepKeys({ a: { b: 1, c: { d: 2 } }, e: 3 })).toEqual(['a-b', 'a-c-d', 'e'])
+	})
+
+	it('starts every key from the given prefix', () => {
+		expect(deepKeys({ a: 1, b: { c: 2 } }, 'root')).toEqual(['root-a', 'root-b-c'])
+	})
+
+	it('treats arrays and null as leaves rather than descending into them', () => {
+		expect(deepKeys({ list: [1, 2], none: null })).toEqual(['list', 'none'])
+	})
+
+	it('drops an empty nested object, since it has no leaf to name', () => {
+		// positive control: the sibling leaf is still listed
+		expect(deepKeys({ empty: {}, leaf: 1 })).toEqual(['leaf'])
 	})
 })

@@ -1,5 +1,13 @@
+import { usePathname } from 'next/navigation'
 import { render, reset, screen, within } from '@/tests/test-utils'
 import { Footer } from '../Footer'
+
+// Driven only to prove the footer menus ignore the current route; the real
+// hook returns null outside an app-router provider.
+jest.mock('next/navigation', () => ({
+	...jest.requireActual('next/navigation'),
+	usePathname: jest.fn(() => null),
+}))
 
 // `FooterArea` is only reachable through `Footer.Area` (its `index.ts`
 // exports the parent alone), so this colocated suite imports the parent —
@@ -60,5 +68,24 @@ describe('Footer.Area', () => {
 			/>
 		)
 		expect(screen.getAllByRole('menubar')).toHaveLength(2)
+	})
+
+	it('never marks a footer link as the current page, even when the pathname matches it (active={ null })', () => {
+		(usePathname as jest.Mock).mockReturnValue('/marketplace')
+		render(<Footer.Area items={ [{ category: 'Discover', routes: ['/marketplace'] }] } />)
+
+		const link = screen.getByRole('menuitem', { name: 'Marketplace' })
+		expect(link).toBeInTheDocument()
+		expect(link).not.toHaveAttribute('aria-current')
+		expect(link.closest('li')).not.toHaveAttribute('data-current')
+	})
+
+	it('renders no content wrapper when there are no children, but does when there are', () => {
+		const { container, unmount } = render(<Footer.Area items={ [] }><span>Brand</span></Footer.Area>)
+		expect(container.firstElementChild).not.toBeEmptyDOMElement()
+		unmount()
+
+		const empty = render(<Footer.Area items={ [] } />)
+		expect(empty.container.firstElementChild).toBeEmptyDOMElement()
 	})
 })

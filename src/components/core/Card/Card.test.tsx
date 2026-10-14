@@ -26,7 +26,7 @@ describe('Card', () => {
 	it('applies the registered default tag and isAltTitle', () => {
 		// `as` is registered in the defaults registry at runtime, but it's
 		// declared on the component's Specs rather than its Props — widen the
-		// generic to match what `setDefaults` actually stored.
+		// generic to match what `.set()` actually stored.
 		const defaults = getDefaultProps<
 			Card.Props & Pick<Card.Specs['defaults'], 'as'>
 		>('Card')

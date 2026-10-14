@@ -13,7 +13,7 @@ describe('Badge', () => {
 	it('applies the registered default tag and variant', () => {
 		// `as` is registered in the defaults registry at runtime, but it's
 		// declared on the component's Specs rather than its Props — widen the
-		// generic to match what `setDefaults` actually stored.
+		// generic to match what `.set()` actually stored.
 		const defaults = getDefaultProps<
 			Badge.Props & Pick<Badge.Specs['defaults'], 'as'>
 		>('Badge')

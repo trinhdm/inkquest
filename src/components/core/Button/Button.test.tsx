@@ -254,13 +254,13 @@ describe('Button', () => {
 			const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
 
 			expect(() => render(<Button.Section left>Icon</Button.Section>)).toThrow(
-				/must be rendered inside <Button>/
+				/must be a direct child of <Button>/
 			)
 
 			consoleError.mockRestore()
 		})
 
-		// `ButtonSection.setDefaults({})` registers no defaults on purpose. An
+		// `ButtonSection.set({ displayName })` registers no `defaultProps` on purpose. An
 		// earlier `{ left: true }` default could never be overridden: `useProps`
 		// fills defaults in before merging the caller's props and only overwrites
 		// keys the caller actually passed, and `<Button.Section right>` passes no
@@ -301,7 +301,7 @@ describe('Button', () => {
 			expect(screen.getByText('First')).toBeInTheDocument()
 			expect(screen.queryByText('Second')).not.toBeInTheDocument()
 			expect(consoleWarn).toHaveBeenCalledWith(
-				expect.stringContaining('multiple Button.Section[left] found')
+				'Button: ignoring repeated Button.Section[left]; only the first is rendered.'
 			)
 
 			consoleWarn.mockRestore()
