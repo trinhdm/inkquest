@@ -1,19 +1,23 @@
+import Image, { type ImageProps } from 'next/image'
+import Link from 'next/link'
 import { useColorScheme } from '@/hooks/useColorScheme'
 import { extractOthers } from '@/hooks/useProps'
+import { isExternalLink, keyHasValue } from '@/utils/helpers'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import { COMPANY_NAME } from '@/utils/constants'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import type { Route } from 'next'
-import Image from 'next/image'
-import Link from 'next/link'
 import classes from './Logo.module.scss'
 
-const NAME = 'Logo' as const
+const NAME = 'Logo' as const,
+	TAG = 'div' as const
 
 const DEFAULT_PROPS = {
 	alt: `${COMPANY_NAME} Logo`,
+	as: TAG,
 	href: '/',
+	loading: 'eager',
 	type: 'wordmark',
 	width: 124,
 } as const
@@ -30,25 +34,28 @@ const LOGOS_CONFIG = [
 			width: 240,
 		},
 	},
-] as const
+] as const satisfies LogoConfig[]
 
-interface LogoProps {
+interface LogoProps
+	extends Omit<ImageProps, 'alt' | 'height' | 'fill' | 'src'> {
 	alt?: string
-	href?: string
+	href?: Route<string> | null
 	type?: 'mark' | 'wordmark'
-	width?: number
 }
 
-// interface LogoConfig {
-// 	type: 'mark' | 'wordmark'
-// 	viewBox: number | {
-// 		height: number
-// 		width: number
-// 	}
-// }
+interface LogoConfig {
+	type: LogoProps['type']
+	viewBox: number | {
+		height: number
+		width: number
+	}
+}
 
 interface LogoSpecs {
-	defaults: { props: PropsDefaultList<typeof DEFAULT_PROPS> }
+	defaults: {
+		as: typeof TAG
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
+	}
 	props: LogoProps
 	selectors: LogoSelectors
 }
@@ -62,40 +69,53 @@ export const Logo = polymorphic<LogoSpecs>((_props, { useProps, useStyles }) => 
 	const styles = useStyles({ props })
 
 	const {
-		alt,
-		href,
-		type,
-		width,
+		alt, as, loading,
+		type, unstyled,
+		width: pxWidth,
 		...rest
 	} = props
 
 	const others = extractOthers(rest)
 
+	const sharedProps = {
+		...styles('root'),
+		attributes: { data: { scheme: colorScheme } },
+		unstyled,
+	}
+
 	const { viewBox } = LOGOS_CONFIG.find(logo => type === logo.type)!
-	const vb = typeof viewBox === 'number'
-		? { height: viewBox, width: viewBox }
-		: viewBox
 
-	const height = Math.round(width * vb.height / vb.width),
-		filename = type === 'wordmark' ? `${type}-${colorScheme}` : type
+	const vb = typeof viewBox === 'object' ? viewBox : { height: viewBox, width: viewBox },
+		width = typeof pxWidth === 'number' ? pxWidth : Number(pxWidth),
+		height = Math.round(width * vb.height / vb.width)
 
-	return (
-		<Box
-			{ ...styles('root') }
+	const filename = type === 'wordmark' ? `${type}-${colorScheme}` : type
+
+	const logoEl = (
+		<Image
+			{ ...styles('image') }
 			{ ...others }
-			as={ Link }
-			href={ href as Route<typeof href> }
-		>
-			<Image
-				{ ...styles('image') }
-				src={ `/logo/${filename}.svg` }
-				alt={ alt }
-				height={ height }
-				loading="eager"
-				width={ width }
-			/>
-		</Box>
+			src={ `/logo/${filename}.svg` }
+			alt={ alt }
+			height={ height }
+			loading={ loading }
+			width={ width }
+		/>
 	)
+
+	if (keyHasValue(props, 'href') && !!props.href) {
+		const { href } = props
+		let linkProps = { ...sharedProps, href }
+
+		if (isExternalLink(href)) {
+			const external = { target: '_blank', rel: 'noopener noreferrer' }
+			linkProps = { ...linkProps, ...external }
+		}
+
+		return <Box { ...linkProps } as={ Link }>{ logoEl }</Box>
+	}
+
+	return <Box { ...sharedProps } as={ as }>{ logoEl }</Box>
 }, { name: NAME, classes })
 
 Logo.set({
