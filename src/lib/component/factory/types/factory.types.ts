@@ -3,13 +3,10 @@ import type {
 	FunctionComponent, NamedExoticComponent,
 } from 'react'
 
-import type {
-	AsPolymorphic, IsPolymorphic,
-	Specs, SpecsDefaultProps,
-} from './specs.types'
-
+import type { AsPolymorphic, IsPolymorphic } from './props.types'
 import type { DistributiveOmit } from '@/types/utils'
-import type { PolymorphicContract } from './props.types'
+import type { PolymorphicContract } from './polymorphic.types'
+import type { Specs, SpecsDefaultProps } from './specs.types'
 
 //	component + props
 

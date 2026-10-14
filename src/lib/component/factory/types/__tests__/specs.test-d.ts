@@ -16,8 +16,6 @@
  *     symbol under test disappeared.
  */
 import type {
-	AsPolymorphic,
-	IsPolymorphic,
 	Specs,
 	SpecsDefaultAs,
 	SpecsDefaultProps,
@@ -25,7 +23,9 @@ import type {
 	SpecsTokens,
 	TokensNever,
 	TokenValue,
-} from './specs.types'
+} from '../specs.types'
+
+import type { AsPolymorphic, IsPolymorphic } from '../props.types'
 
 /** Exact equality — defeats the usual bidirectional-assignability fudge. */
 type Equal<A, B> =

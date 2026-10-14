@@ -106,16 +106,3 @@ export type SpecsTokenGroups<S> =
 	'tokens' extends keyof S
 		? _TokensGroup<NonNullable<S['tokens']>, SpecsSelectors<S>>
 		: TokensNever
-
-
-// polymorphism
-
-export type IsPolymorphic<S> =
-	S extends { defaults: { as: ElementType } }
-		? true
-		: false
-
-export type AsPolymorphic<S> =
-	IsPolymorphic<S> extends true
-		? { as?: SpecsDefaultAs<S> }
-		: { as?: never }
