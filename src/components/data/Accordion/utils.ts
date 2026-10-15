@@ -7,10 +7,10 @@ import type { SpecsTokenGroups } from '@/lib/component/factory/types'
 export type AccordionTokens = {
 	root:
 		| '--accordion-column-width'
-		| '--accordion-gap'
 		| '--accordion-indicator-size'
 		| '--accordion-padding'
 		| '--accordion-step-size'
+		| '--accordion-title-gap'
 		| '--accordion-title-size'
 }
 
@@ -46,22 +46,22 @@ const getTokenGroup = (
 	step: `calc((var(--accordion-title-size) - var(--accordion-indicator-size)) + (${base.step} * ${step + 1}) )`,
 })
 
-const tokensBySize = <
-	N extends AccordionName = 'root',
-	P extends AccordionPropsList<N> = AccordionPropsList<N>
->(
-	size: P['size'],
-	order: P['order'],
-): AccordionTokenConfig | undefined => {
+const tokensBySize = <N extends AccordionName = 'root'>({
+	layout,
+	order,
+	size,
+}: AccordionPropsList<N>): AccordionTokenConfig | undefined => {
 	if (!size) return
 
-	const step = { sm: 2, md: 1, lg: 0 }[size]
+	const isBlockquote = layout === 'blockquote',
+		step = { sm: 2, md: 1, lg: 0 }[size]
+
 	const base: AccordionTokenConfig = {
 		colWidth: 11,
 		gap: 9,
-		indicator: 24,
+		indicator: isBlockquote ? 20 : 24,
 		order: order ?? 3,
-		padding: 6,
+		padding: isBlockquote ? 4 : 6,
 		step: size === 'sm' ? rem(3) : rem(6),
 	}
 
@@ -76,19 +76,34 @@ const listSharedTokens = <
 	args: TokensParams<S>,
 	name: N = 'root' as N,
 ): SpecsTokenGroups<S> => {
-	const { props: { layout, order, size } } = args
+	const { props, theme } = args
 
-	const config = tokensBySize(size, order)
+	const config = tokensBySize<N>(props)
 	if (!config) return {} as SpecsTokenGroups<S>
+
+	let stepSize,
+		titleGap = `var(--space-${config.gap})`,
+		titleSize = `var(--inkq-font-size-h${config.order})`
+
+	switch (props.layout) {
+		case 'blockquote':
+			titleGap = `${0}`
+			titleSize = theme.fontSize('caption')
+			break
+		case 'steps':
+			stepSize = config.step
+			break
+		default: break
+	}
 
 	const tokens: SpecsTokenGroups<AccordionSpecsList['root']> = {
 		root: {
 			'--accordion-column-width': `var(--space-${config.colWidth})`,
-			'--accordion-gap': `var(--space-${config.gap})`,
 			'--accordion-indicator-size': `var(--font-size-${config.indicator})`,
 			'--accordion-padding': `var(--space-${config.padding})`,
-			'--accordion-step-size': layout === 'steps' ? config.step : undefined,
-			'--accordion-title-size': `var(--inkq-font-size-h${config.order})`,
+			'--accordion-step-size': stepSize,
+			'--accordion-title-gap': titleGap,
+			'--accordion-title-size': titleSize,
 		},
 	}
 

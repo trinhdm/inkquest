@@ -28,27 +28,37 @@ type AccordionContentSelectors =
 type AccordionContentTokens = {
 	root:
 		| '--accordion-content-indent'
+		| '--accordion-content-padding'
 		| '--accordion-content-size'
 }
 
 const tokens = defineTokens<AccordionContentSpecs>()(({ context, theme }) => {
 	if (!context) return {}
 
-	const { size, step } = context
-	let contentFontSize
+	const { layout, size } = context
+	let contentIndent, contentSize
+
+	if (layout === 'steps')
+		contentIndent = 'calc(var(--accordion-column-width) + var(--accordion-gap))'
 
 	if (!!size) {
-		const fontSize = ['body']
-		if (size === 'lg') fontSize.push(size)
-		contentFontSize = theme.fontSize(...fontSize as Parameters<typeof theme.fontSize>)
+		const fontSize = []
+
+		if (layout === 'blockquote') {
+			fontSize.push('caption')
+		} else {
+			fontSize.push('body')
+			if (size === 'lg') fontSize.push(size)
+		}
+
+		contentSize = theme.fontSize(...fontSize as Parameters<typeof theme.fontSize>)
 	}
 
 	return {
 		root: {
-			'--accordion-content-indent': !!step
-				? 'calc(var(--accordion-column-width) + var(--accordion-gap))'
-				: undefined,
-			'--accordion-content-size': contentFontSize,
+			'--accordion-content-indent': contentIndent,
+			'--accordion-content-padding': theme.space('icon'),
+			'--accordion-content-size': contentSize,
 		},
 	}
 })

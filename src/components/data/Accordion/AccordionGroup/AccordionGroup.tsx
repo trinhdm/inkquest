@@ -13,6 +13,7 @@ import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from '../Accordion.module.scss'
 
 const NAME = 'Accordion.Group' as const
+
 const DEFAULT_PROPS = {
 	collapsible: 'single',
 	defaultOpen: 0,
@@ -120,7 +121,5 @@ export declare namespace AccordionGroup {
 	export type Context = AccordionGroupContext
 	export type Props = AccordionGroupProps
 	export type Specs = AccordionGroupSpecs
-
-	export type Size = NonNullable<AccordionGroupContext['size']>
 	export type Type = AccordionGroupType
 }

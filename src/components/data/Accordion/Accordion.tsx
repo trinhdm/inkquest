@@ -23,6 +23,7 @@ const DEFAULT_PROPS = {
 	defaultOpen: false,
 	index: 0,
 	indicator: 'plus',
+	indicatorPosition: 'right',
 	order: 3,
 	size: 'md',
 } as const
@@ -33,21 +34,38 @@ const SUBCOMPONENTS = {
 	Title: AccordionTitle,
 } as const
 
-interface AccordionProps {
+interface BaseAccordionProps {
 	children: ReactNode
 	collapsible?: boolean
 	defaultOpen?: boolean
 	disabled?: boolean
 	id?: string
 	index?: number
-	indicator?: 'chevron' | 'plus' | 'none'
-	layout?: 'default' | 'steps'
+	layout?: 'default' | 'blockquote' | 'steps'
 	onItemToggle?: (index: number, open: boolean) => void
 	onToggle?: (open: boolean) => void
 	open?: boolean
 	order?: HeadingOrder
 	size?: Size
 }
+
+interface WithIndicatorProps {
+	indicator?: 'chevron' | 'plus'
+	indicatorPosition?: 'left' | 'right'
+}
+
+interface WithoutIndicatorProps {
+	indicator: 'none'
+	indicatorPosition?: never
+}
+
+type AccordionIndicatorProps =
+	| WithIndicatorProps
+	| WithoutIndicatorProps
+
+type AccordionProps =
+	& BaseAccordionProps
+	& AccordionIndicatorProps
 
 interface AccordionSpecs {
 	context: AccordionGroup.Context
@@ -85,7 +103,7 @@ export const Accordion = polymorphic<AccordionSpecs>((_props, { useProps, useSty
 	const {
 		as, children, collapsible,
 		defaultOpen, disabled,
-		id, index, indicator,
+		id, index, indicator, indicatorPosition,
 		layout, onItemToggle, onToggle,
 		open, order, size, unstyled,
 		...rest
@@ -107,12 +125,6 @@ export const Accordion = polymorphic<AccordionSpecs>((_props, { useProps, useSty
 		return { content, root, title }
 	}, [id, uid])
 
-	const step = useMemo(() => {
-		if (layout !== 'steps') return
-		const i = index + 1
-		return (i > 9 ? `${i}` : `0${i}`) as `${number}`
-	}, [index, layout])
-
 	const handleToggle = useCallback(() => {
 		if (disabled || !collapsible) return
 		const next = !isOpen
@@ -127,24 +139,26 @@ export const Accordion = polymorphic<AccordionSpecs>((_props, { useProps, useSty
 
 	const ctxValues = useMemo(() => ({
 		handleToggle,
-		collapsible, disabled,
-		idx, indicator, isOpen,
-		order, size, step, unstyled,
+		collapsible, disabled, idx, index,
+		indicator, indicatorPosition, isOpen,
+		layout, order, size, unstyled,
 	}), [
 		handleToggle,
-		collapsible, disabled,
-		idx, indicator, isOpen,
-		order, size, step, unstyled,
+		collapsible, disabled, idx, index,
+		indicator, indicatorPosition, isOpen,
+		layout, order, size, unstyled,
 	])
+
+	const layoutClass = { [`${layout}`]: layout !== 'default' }
 
 	return (
 		<Box
-			{ ...styles('root') }
+			{ ...styles('root', { selector: layoutClass }) }
 			{ ...others }
 			as={ as }
 			attributes={ { data: {
+				index,
 				open: isOpen || null,
-				step,
 			} } }
 			id={ idx.root }
 		>
@@ -169,13 +183,13 @@ export declare namespace Accordion {
 	export type Props = AccordionProps
 	export type Specs = AccordionSpecs
 
-	export type Size = AccordionGroup.Size
-	export type Type = AccordionGroup.Type
+	export type Size = Accordion.Props['size']
 
 	export namespace Group {
 		export type Context = AccordionGroup.Context
 		export type Props = AccordionGroup.Props
 		export type Specs = AccordionGroup.Specs
+		export type Type = AccordionGroup.Type
 	}
 
 	export namespace Title {

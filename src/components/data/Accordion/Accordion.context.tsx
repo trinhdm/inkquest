@@ -12,6 +12,8 @@ type SharedAccordionProp =
 	| 'collapsible'
 	| 'disabled'
 	| 'indicator'
+	| 'indicatorPosition'
+	| 'layout'
 	| 'order'
 	| 'size'
 
@@ -21,8 +23,8 @@ export interface AccordionContext
 		Pick<AnimationOptions, 'unstyled'> {
 	handleToggle: () => void
 	idx: AccordionIds
+	index: NonNullable<Accordion.Props['index']>
 	isOpen: boolean
-	step?: `${number}`
 }
 
 export const {

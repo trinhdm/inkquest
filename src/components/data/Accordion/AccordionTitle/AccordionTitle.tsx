@@ -1,12 +1,11 @@
+import { useMemo, type KeyboardEvent, type ReactNode } from 'react'
 import { ChevronDown, Plus } from 'lucide-react'
 import { useAccordionCtx } from '../Accordion.context'
 import { defineTokens } from '@/lib/component/tokens'
 import { extractOthers } from '@/hooks/useProps'
-import { keyHasValue } from '@/utils/helpers'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import type { Accordion } from '../Accordion'
-import type { KeyboardEvent, ReactNode } from 'react'
 import classes from '../Accordion.module.scss'
 
 const NAME = 'Accordion.Title' as const
@@ -28,13 +27,29 @@ type AccordionTitleSelectors =
 
 type AccordionTitleTokens = {
 	root:
+		| '--accordion-title-direction'
+	text:
 		| '--accordion-title-indent'
 }
 
-const tokens = defineTokens<AccordionTitleSpecs>()(({ context }) => (!!context
-	? { root: { '--accordion-title-indent': keyHasValue(context, 'step') ? 0 : undefined } }
-	: {}
-))
+const tokens = defineTokens<AccordionTitleSpecs>()(({ context }) => {
+	if (!context) return {}
+
+	const { indicatorPosition, layout } = context
+	let titleIndent
+
+	if (!!layout && layout !== 'default')
+		titleIndent = 0
+
+	return {
+		root: {
+			'--accordion-title-direction': indicatorPosition === 'left' ? 'row-reverse' : undefined,
+		},
+		text: {
+			'--accordion-title-indent': titleIndent,
+		},
+	}
+})
 
 export const AccordionTitle = polymorphic<AccordionTitleSpecs>((_props, { useProps, useStyles }) => {
 	const context = useAccordionCtx(NAME)
@@ -42,14 +57,9 @@ export const AccordionTitle = polymorphic<AccordionTitleSpecs>((_props, { usePro
 	const styles = useStyles({ context, props, tokens })
 
 	const {
-		collapsible,
-		disabled,
-		handleToggle,
-		idx,
-		indicator,
-		isOpen,
-		order,
-		step,
+		collapsible, disabled, handleToggle,
+		idx, index, indicator,
+		isOpen, layout, order,
 	} = context
 
 	const { children, ...rest } = props
@@ -86,6 +96,12 @@ export const AccordionTitle = polymorphic<AccordionTitleSpecs>((_props, { usePro
 		event.preventDefault()
 		titles[next]?.focus()
 	}
+
+	const step = useMemo(() => {
+		if (layout !== 'steps') return
+		const i = index + 1
+		return (i > 9 ? `${i}` : `0${i}`) as `${number}`
+	}, [index, layout])
 
 	const stepEl = !!step && <span { ...styles('step') }>{ step }</span>,
 		textEl = <span { ...styles('text', { global: `inkq-h${order}` }) }>{ children }</span>,
