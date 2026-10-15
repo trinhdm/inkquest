@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { Copy } from 'lucide-react'
+import { formatDate } from '@/utils/helpers'
 import { Button } from '@/components/core/Button'
 import { Grid } from '@/components/layout/Grid'
 import { Group } from '@/components/layout/Group'
@@ -119,19 +120,8 @@ export default function Press() {
 						title,
 						url,
 					}) => {
-						const headline = `"${title.replace(/^['"]|['"]$/g, '')}"`,
-							calendarDate: string[] = []
-
-						if (publishDate) {
-							const parts = Object.keys(publishDate) as (keyof typeof publishDate)[]
-							for (const key of parts) {
-								const value = String(publishDate[key])
-								if (!!value.length) {
-									const target = { month: value.slice(0, 3), year: value }[key]
-									calendarDate.push(target)
-								}
-							}
-						}
+						const date = formatDate(publishDate, true),
+							headline = `"${title.replace(/^['"]|['"]$/g, '')}"`
 
 						return (
 							<Table.Row key={ `press-${id}` }>
@@ -145,10 +135,10 @@ export default function Press() {
 										: <span>{ headline }</span> }
 								</Table.Cell>
 
-								{ !!calendarDate.length && (
+								{ !!date.length && (
 									<Table.Cell>
 										<span className="inkq-eyebrow">
-											{ calendarDate.join(' ') }
+											{ date }
 										</span>
 									</Table.Cell>
 								) }
