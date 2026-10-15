@@ -1,4 +1,4 @@
-import type { LegalSection, VersionGroup } from '../legal.types'
+import type { LegalSection, VersionGroup } from '../_utils/legal.types'
 
 export const VERSION_HISTORY: VersionGroup[] = [
 	{

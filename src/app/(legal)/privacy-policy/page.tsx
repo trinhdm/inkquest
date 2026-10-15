@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useActiveID } from '@/hooks/useActiveID'
 import { formatDate } from '@/utils/helpers'
-import { getLegalTitles } from '../utils'
+import { getLegalTitles } from '../_utils'
 import { Accordion } from '@/components/data/Accordion'
 import { Button } from '@/components/core/Button'
 import { Grid } from '@/components/layout/Grid'
@@ -25,6 +25,7 @@ export default function PrivacyPolicy() {
 	return (
 		<>
 			<Progress />
+
 			<Section
 				className="legal-history"
 				eyebrow="Last updated June 12, 2026 · Effective July 1, 2026"
@@ -60,6 +61,7 @@ export default function PrivacyPolicy() {
 						) }
 					</Accordion.Content>
 				</Accordion>
+
 				<Section.Footer>
 					<Button action="print" size="sm" variant="outline">Print</Button>
 				</Section.Footer>
@@ -75,6 +77,7 @@ export default function PrivacyPolicy() {
 						scroll={ true }
 						shallow={ false }
 					/>
+
 					<Grid.Item className="legal-content">
 						{ PRIVACY_SECTIONS.map(({ body, id, summary }) => {
 							const index = SECTIONS.findIndex(section => section.id === id),
