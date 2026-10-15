@@ -66,7 +66,7 @@ export const Card = polymorphic<CardSpecs>((_props, { useProps, useStyles }) => 
 				</div>
 
 				<div { ...styles('info') }>
-					<h3 { ...styles('title', { global: { h4: true } }) }>
+					<h3 { ...styles('title', { global: { h5: true } }) }>
 						{ title }
 					</h3>
 					{ caption && (

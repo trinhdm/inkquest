@@ -84,7 +84,7 @@ export default function Press() {
 								<span className="inkq-rail" />
 								<Group orientation="horizontal">
 									<Group.Item>
-										<h3 className="inkq-h4">{ title }</h3>
+										<h3 className="inkq-h5">{ title }</h3>
 										<p>{ content }</p>
 										{ !!details.length && (
 											<span className="inkq-eyebrow">

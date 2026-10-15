@@ -3,7 +3,7 @@ import type { AriaAttributes } from 'react'
 //	html tags
 
 export type HeadingOrder =
-	1 | 2 | 3 | 4 | 5
+	1 | 2 | 3 | 4 | 5 | 6
 
 export type Heading =
 	`h${HeadingOrder}`

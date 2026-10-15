@@ -1,19 +1,26 @@
 import { aliasVar, token } from './utils'
 import { aliasTokens } from './semantic'
+import type { HeadingOrder } from '@/types/shared'
 import type { LayoutTokens, TypographyTokens } from '../tokens'
+import type { TokenVar } from '../types/token.types'
 import type { TransitionPresetTokens } from '../tokens/motion/presets'
 
 type UITokens<T extends keyof LayoutTokens> = ReturnType<LayoutTokens[T]>
 type TextTokens = TypographyTokens['text']
 
-// limit component usage to only shorthand tokens
+const HEADINGS = Array.from({ length: 6 }, (_, i) => (i + 1)) as HeadingOrder[]
+const headingTokens = HEADINGS.reduce((acc, num) => {
+	const tag = `h${num}` as const,
+		value = token.optPath<TextTokens[typeof tag]>(aliasVar, 'text', tag)
+
+	return { ...acc, [tag]: value }
+}, {} as Record<`h${HeadingOrder}`, () => TokenVar>)
+
+//	limit component usage to only shorthand tokens
 const shorthandTokens = {
 	motion: token.optPath<TransitionPresetTokens>(aliasVar, 'motion'),
 	text: {
-		h1: token.optPath<TextTokens['h1']>(aliasVar, 'text', 'h1'),
-		h2: token.optPath<TextTokens['h2']>(aliasVar, 'text', 'h2'),
-		h3: token.optPath<TextTokens['h3']>(aliasVar, 'text', 'h3'),
-		h4: token.optPath<TextTokens['h4']>(aliasVar, 'text', 'h4'),
+		...headingTokens,
 		body: token.endPath(aliasVar, 'text', 'body'),
 		label: token.endPath(aliasVar, 'text', 'label'),
 		control: token.endPath(aliasVar, 'text', 'control'),

@@ -51,7 +51,7 @@ const listSharedTokens = <
 			isLarge = size === 'lg'
 
 		captionFont = isLarge ? text.caption('item') : text.section('eyebrow')
-		statFontSize = theme.fontSize(isLarge ? 'h3' : 'h4')
+		statFontSize = theme.fontSize(isLarge ? 'h3' : 'h5')
 
 		iconMargin = isLarge ? `calc(2 * ${iconSpacer})` : iconSpacer
 		iconSize = isLarge ? `calc(2 * ${baseIcon})` : baseIcon

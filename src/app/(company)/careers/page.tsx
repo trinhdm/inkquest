@@ -32,7 +32,7 @@ export default function Careers() {
 							className="inkq-item--block"
 						>
 							<div className="inkq-rail" />
-							<h3 className="inkq-h4">{ title }</h3>
+							<h3 className="inkq-h5">{ title }</h3>
 							<p>{ content }</p>
 						</Grid.Item>
 					)) }
@@ -55,7 +55,7 @@ export default function Careers() {
 						return (
 							<Table.Row key={ `press-${id}` }>
 								<Table.Cell>
-									<span className="inkq-h4">{ title }</span>
+									<span className="inkq-h5">{ title }</span>
 								</Table.Cell>
 								<Table.Cell>
 									<Badge variant="dark">{ department }</Badge>
@@ -94,7 +94,7 @@ export default function Careers() {
 							>
 								<div className="inkq-rail" />
 								<span className="inkq-eyebrow">{ step }</span>
-								<h3 className="inkq-h4">{ title }</h3>
+								<h3 className="inkq-h5">{ title }</h3>
 								<p>{ content }</p>
 							</Grid.Item>
 						)

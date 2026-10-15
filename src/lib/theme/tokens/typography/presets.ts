@@ -18,6 +18,8 @@ export interface FontPresetTokens {
 	h3: FontProperties
 	h4: FontProperties
 	h5: FontProperties
+	h6: FontProperties
+
 	body: FontProperties
 	section: LayoutFontGroup
 	control: FontProperties
@@ -98,6 +100,11 @@ export const getFontPresetTokens = (): FontPresetTokens => {
 			...headingSharedProps,
 			fontSize: 	alias.fontSize('h5'),
 			lineHeight: alias.lineHeight('label'),
+		},
+		h6: {
+			...headingSharedProps,
+			fontSize: 	alias.fontSize('h6'),
+			lineHeight: alias.lineHeight('body'),
 		},
 		body: {
 			...contentSharedProps,

@@ -18,6 +18,7 @@ interface FontSizeTokens {
 	h3: HeadingFontGroup
 	h4: HeadingFontGroup
 	h5: HeadingFontGroup
+	h6: HeadingFontGroup
 
 	display: TokenSizeShape
 
@@ -84,12 +85,16 @@ export const getFontPropertyTokens = (): FontPropertyTokens => ({
 			fluid: 	`clamp(${alias.fontSize('h3')}, 3vw, ${alias.fontSize('h2')})`,
 		},
 		h4:	{
-			base:	base.fontSize('20'),
+			base:	base.fontSize('24'),
 			fluid: 	`clamp(${alias.fontSize('h4')}, 3vw, ${alias.fontSize('h3')})`,
 		},
 		h5:	{
-			base:	base.fontSize('16'),
+			base:	base.fontSize('20'),
 			fluid: 	`clamp(${alias.fontSize('h5')}, 3vw, ${alias.fontSize('h4')})`,
+		},
+		h6:	{
+			base:	base.fontSize('16'),
+			fluid: 	`clamp(${alias.fontSize('h6')}, 3vw, ${alias.fontSize('h5')})`,
 		},
 		display:	{
 			sm:		base.fontSize('60'),

@@ -220,7 +220,7 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 				<FieldProvider value={ ctxValues }>
 					{ control }
 					<label { ...styles('button') } htmlFor={ idx.control }>
-						<span { ...styles('label', { global: { h4: true } }) }>{ label }</span>
+						<span { ...styles('label', { global: { h5: true } }) }>{ label }</span>
 						{ captionEl }
 					</label>
 				</FieldProvider>
