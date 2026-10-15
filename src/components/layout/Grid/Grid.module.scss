@@ -5,7 +5,7 @@
 	align-items: start;
 	display: grid;
 	gap: var(--grid-gap, var(--inkq-space-grid));
-	grid-template-columns: repeat(var(--grid-cols, auto-fit), var(--grid-width, minmax(0, 1fr)));
+	grid-template-columns: var(--grid-cols, repeat(auto-fit, minmax(0, 1fr)));
 }
 
 .inkq-grid-item {
@@ -14,6 +14,6 @@
 	grid-column: var(--grid-span-col);
 
 	& > :first-child {
-		margin-top: 0;
+		margin-block-start: 0;
 	}
 }

@@ -1,8 +1,4 @@
 #faqs-content {
-	.inkq-grid {
-		grid-template-columns: minmax(15rem, auto) minmax(0, 1fr);
-	}
-
 	.faq-heading {
 		align-items: baseline;
 		column-gap: var(--space-5);

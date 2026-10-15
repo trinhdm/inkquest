@@ -91,7 +91,11 @@ export const FaqBrowser = () => {
 	}
 
 	return (
-		<Grid attributes={ { aria: { busy: isPending || undefined } } } gap="lg">
+		<Grid
+			attributes={ { aria: { busy: isPending || undefined } } }
+			gap="lg"
+			layout="sidebar"
+		>
 			<Sidebar
 				active={ activeGroup.id }
 				items={ categories }

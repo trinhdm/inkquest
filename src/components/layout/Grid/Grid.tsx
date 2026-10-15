@@ -20,11 +20,30 @@ const SUBCOMPONENTS = {
 	Item: GridItem,
 } as const
 
-interface GridProps {
+interface BaseGridProps {
 	children: ReactNode
-	columns?: number
 	gap?: Exclude<UnpackArray<GridGapOptions>, Lowercase<typeof NAME>>
 }
+
+interface ColumnsGridProps {
+	columns?: number
+	equalWidth?: boolean
+	layout?: 'default'
+}
+
+interface SidebarGridProps {
+	columns?: never
+	equalWidth?: never
+	layout: 'sidebar'
+}
+
+type GridLayoutOptions =
+	| ColumnsGridProps
+	| SidebarGridProps
+
+type GridProps =
+	& BaseGridProps
+	& GridLayoutOptions
 
 type GridGapOptions =
 	ConfigOptions<'space', Lowercase<typeof NAME>>
@@ -50,14 +69,29 @@ type GridTokens = {
 }
 
 const tokens = defineTokens<GridSpecs>()(({ props, theme }) => {
-	const { columns, gap } = props
+	const { columns, equalWidth, gap, layout } = props
 
-	const gridGap = ['grid']
+	const gridCols = [], gridWidth = 'minmax(0, 1fr)',
+		gridGap = ['grid']
+
 	if (gap) gridGap.push(gap)
+
+	if (!!(columns && columns > 0))
+		gridCols.push(columns)
+	else if (layout === 'sidebar')
+		gridCols.push('minmax(15rem, auto)')
+	else
+		gridCols.push('auto-fit')
+
+	gridCols.push(gridWidth)
+
+	const gridTemplate = typeof equalWidth === 'boolean' && !!equalWidth
+		? `repeat(${gridCols.join(', ')})`
+		: gridCols.join(' ')
 
 	return {
 		root: {
-			'--grid-cols': !!(columns && columns > 0) ? columns : undefined,
+			'--grid-cols': gridTemplate,
 			'--grid-gap': theme.space(...gridGap as GridGapOptions),
 		},
 	}
