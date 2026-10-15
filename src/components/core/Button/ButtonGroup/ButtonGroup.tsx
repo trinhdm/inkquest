@@ -1,4 +1,4 @@
-import { useMemo, type CSSProperties, type ReactNode } from 'react'
+import { useMemo, type ReactNode } from 'react'
 import { defineTokens } from '@/lib/component/tokens'
 import { extractOthers } from '@/hooks/useProps'
 import { filterChildren } from '@/lib/component/children'
@@ -8,11 +8,12 @@ import { withProvider } from '@/lib/component/context'
 import { Box } from '@/components/polymorphic/Box'
 import { ButtonGroupProvider, type ButtonGroupContext } from './ButtonGroup.context'
 import type { Button } from '../Button'
-import type { Orientation } from '@/types/shared'
+import type { JustifyContent, Orientation } from '@/types/shared'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from '../Button.module.scss'
 
 const NAME = 'Button.Group' as const
+
 const DEFAULT_PROPS = {
 	hasPriority: true,
 	orientation: 'horizontal',
@@ -29,7 +30,7 @@ interface ButtonGroupProps
 	children?: ReactNode
 	fullWidth?: boolean
 	hasPriority?: boolean
-	justify?: CSSProperties['justifyContent']
+	justify?: JustifyContent
 	orientation?: Orientation
 	revealFrom?: number
 }
@@ -59,17 +60,21 @@ const derivePriority = (index: number): Button.Priority => {
 
 const tokens = defineTokens<ButtonGroupSpecs>()(({ props, theme }) => {
 	const { justify, size } = props
-	if (!size) return {}
+	let buttonGroupGap
 
-	const groupGap: Record<Button.Size, string> = {
-		sm: theme.space('group'),
-		md: theme.space('group'),
-		lg: theme.space('group', 'lg'),
+	if (size) {
+		const groupGap: Record<Button.Size, string> = {
+			sm: theme.space('group'),
+			md: theme.space('group'),
+			lg: theme.space('group', 'lg'),
+		}
+
+		buttonGroupGap = groupGap[size]
 	}
 
 	return {
 		root: {
-			'--button-group-gap': groupGap[size],
+			'--button-group-gap': buttonGroupGap,
 			'--button-group-justify': justify ?? undefined,
 		},
 	}
@@ -102,7 +107,10 @@ export const ButtonGroup = polymorphic<ButtonGroupSpecs>((_props, { useProps, us
 			priority: hasPriority ? derivePriority(index) : undefined,
 			...revealItemFrom(index, revealFrom),
 		})),
-		[disabled, hasPriority, loading, revealFrom, size, total, unstyled]
+		[
+			disabled, hasPriority, loading,
+			revealFrom, size, total, unstyled,
+		]
 	)
 
 	return (

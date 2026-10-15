@@ -1,20 +1,22 @@
 import {
+	useCallback,
 	useMemo,
-	type ComponentPropsWithoutRef, type MouseEventHandler,
+	type ComponentPropsWithoutRef,
+	type MouseEvent, type MouseEventHandler,
 	type ReactNode, type Ref,
 } from 'react'
 
 import Link, { type LinkProps } from 'next/link'
-import { LoaderCircle } from 'lucide-react'
+import { Copy, LoaderCircle, Printer } from 'lucide-react'
+import { useButtonGroupProps, ButtonGroup } from './ButtonGroup'
+import { buildSections, ButtonSection } from './ButtonSection'
 import { defineTokens } from '@/lib/component/tokens'
 import { extractOthers } from '@/hooks/useProps'
 import { extractText } from '@/lib/component/children'
 import { isExternalLink, keyHasValue } from '@/utils/helpers'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
-import { ButtonGroup, useButtonGroupProps } from './ButtonGroup'
 import { ButtonProvider, type ButtonContext } from './Button.context'
-import { buildSections, ButtonSection } from './ButtonSection'
 
 import type {
 	Priority as ThemePriority,
@@ -32,6 +34,7 @@ const NAME = 'Button' as const,
 
 const DEFAULT_PROPS = {
 	as: TAG,
+	hasIcon: true,
 	size: 'md',
 	variant: 'solid',
 } as const
@@ -57,22 +60,37 @@ type LinkOptions<T extends string = string> =
 	Pick<LinkProps<T>, 'onNavigate' | 'prefetch' | 'replace' | 'scroll'>
 
 interface LinkButtonProps<T extends string = string>
-	extends ComponentPropsWithoutRef<'a'>, LinkOptions<T> {
+	extends
+		ComponentPropsWithoutRef<'a'>,
+		LinkOptions<T> {
+	action?: never
+	hasIcon?: never
 	href: Route<T>
 	onClick?: never
 	ref?: Ref<HTMLAnchorElement>
 }
 
 interface NativeButtonProps
-	extends ComponentPropsWithoutRef<'button'>, Record<keyof LinkOptions, never> {
+	extends
+		ComponentPropsWithoutRef<'button'>,
+		Record<keyof LinkOptions, never> {
+	action?: never
+	hasIcon?: never
 	href?: never
 	onClick?: MouseEventHandler<HTMLButtonElement>
 	ref?: Ref<HTMLButtonElement>
 }
 
+interface ActionButtonProps
+	extends Omit<NativeButtonProps, 'action' | 'hasIcon'> {
+	action: 'copy' | 'print'
+	hasIcon?: boolean
+}
+
 type ButtonProps = BaseButtonProps & (
 	| LinkButtonProps
 	| NativeButtonProps
+	| ActionButtonProps
 )
 
 interface ButtonSpecs {
@@ -89,7 +107,7 @@ interface ButtonSpecs {
 
 type ButtonSelectors =
 	| 'root' | 'inner'
-	| 'label' | 'loader'
+	| 'label' | 'icon' | 'loader'
 
 type ButtonTokens = {
 	root:
@@ -152,11 +170,11 @@ export const Button = polymorphic<ButtonSpecs>((_props, { useProps, useStyles, u
 	const styles = useStyles({ props, tokens })
 
 	const {
-		as, children, disabled,
-		fullWidth, loading, prefetch,
-		priority, replace, scroll,
-		showLabel, size, tone,
-		unstyled, variant,
+		action, children, disabled,
+		fullWidth, hasIcon, loading,
+		prefetch, priority, replace,
+		scroll, showLabel, size,
+		tone, unstyled, variant,
 		...rest
 	} = props
 
@@ -178,13 +196,23 @@ export const Button = polymorphic<ButtonSpecs>((_props, { useProps, useStyles, u
 		unstyled,
 	}
 
-	const ctxValues = useMemo(() => ({ unstyled }), [unstyled])
+	const ctxValues = useMemo(() => ({ unstyled }), [unstyled]),
+		childList = Array.isArray(children) ? children : [children]
+
+	if (!!(action && hasIcon)) {
+		const IconTag = { copy: Copy, print: Printer }[action]
+		childList.unshift(<ButtonSection><IconTag { ...styles('icon') } /></ButtonSection>)
+	}
 
 	const innerEl = (
 		<ButtonProvider value={ ctxValues }>
 			<Box as="span" { ...styles('inner') }>
 				{ loading && <LoaderCircle { ...styles('loader', true) } /> }
-				{ buildSections({ children, parentName: Button.displayName, styles }) }
+				{ buildSections({
+					children: [...new Set(childList)],
+					parentName: Button.displayName,
+					styles,
+				}) }
 			</Box>
 		</ButtonProvider>
 	)
@@ -217,11 +245,19 @@ export const Button = polymorphic<ButtonSpecs>((_props, { useProps, useStyles, u
 		)
 	}
 
+	const { as, onClick } = props
+
+	const handleClick = useCallback((evt: MouseEvent<HTMLButtonElement>) => {
+		if (typeof onClick === 'function') onClick(evt)
+		if (action === 'print') window.print()
+	}, [action, onClick])
+
 	return (
 		<Box
 			{ ...sharedProps }
 			{ ...others }
 			as={ as }
+			onClick={ handleClick }
 		>
 			{ innerEl }
 		</Box>

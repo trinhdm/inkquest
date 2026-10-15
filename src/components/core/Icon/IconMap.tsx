@@ -12,6 +12,7 @@ import {
 	Ellipse, GripVertical, LayoutGrid, List, StretchHorizontal,
 	Flag, Mail, MailPlus, Paperclip, Pen, Phone, Send,
 	Heart, Moon, Star, Sun,
+	Printer,
 	// Rows3, Settings,
 } from 'lucide-react'
 
@@ -69,6 +70,7 @@ const ACTION_MAP = {
 	like: Heart,
 	notify: Bell,
 	paste: ClipboardList,
+	print: Printer,
 	refresh: RotateCw,
 	report: Flag,
 	save: Bookmark,

@@ -1,9 +1,8 @@
 .inkq-button {
 	$name: &;
 
-	--button-background: var(--variant-background);
-	--button-border: var(--variant-border);
-	--button-color: var(--variant-color);
+	--button-background: var(--variant-background, transparent);
+	--icon-size: var(--button-icon-size, var(--inkq-icon-md));
 
 	background-color: var(--button-background);
 	border-radius: var(--inkq-border-radius-chip);
@@ -21,29 +20,23 @@
 	vertical-align: middle;
 
 	&__inner {
-		--icon-size: var(--button-icon-size, var(--inkq-icon-md));
-
 		align-items: center;
 		display: flex;
 		gap: var(--button-gap, var(--inkq-space-chip));
 		justify-content: center;
 		padding: var(--button-padding, var(--inkq-pad-chip));
 		position: relative;
+		user-select: none;
+	}
+
+	&__loader {
+		inset: auto;
+		position: absolute;
 	}
 
 	&__section {
 		align-items: center;
 		display: inline-flex;
-	}
-
-	&__label {
-		user-select: none;
-	}
-
-	&__loader {
-		font-size: calc(.125rem + var(--icon-size));
-		inset: auto;
-		position: absolute;
 	}
 
 	&::after {
@@ -60,13 +53,9 @@
 		z-index: 1;
 	}
 
-	&:not(
-		:disabled,
-		[data-disabled],
-		[data-loading]
-	):hover {
-		background-color: var(--button-background-hover);
-		border-color: var(--button-border-hover);
+	&:not(:disabled, [data-disabled], [data-loading]):hover {
+		background-color: var(--button-background-hover, var(--button-background));
+		border-color: var(--button-border-hover, var(--button-border));
 		cursor: pointer;
 	}
 
@@ -80,17 +69,20 @@
 
 	&:where([data-loading]) {
 		cursor: progress;
-		user-select: none;
-
-		&::after {
-			opacity: 1;
-		}
 
 		#{$name} {
 			&__label,
 			&__section {
 				opacity: 0;
 			}
+
+			&__inner {
+				pointer-events: none;
+			}
+		}
+
+		&::after {
+			opacity: 1;
 		}
 	}
 
@@ -104,12 +96,15 @@
 .inkq-button-group {
 	display: flex;
 	gap: var(--button-group-gap, var(--inkq-space-group));
-	justify-content: var(--button-group-justify);
-	max-width: fit-content;
+
+	&:not([data-block]) {
+		justify-content: var(--button-group-justify, start);
+		max-width: fit-content;
+	}
 
 	&:where([data-block]) {
 		flex: 1 1 100%;
-		justify-content: space-between;
+		justify-content: var(--button-group-justify, space-between);
 		max-width: none;
 		width: 100%;
 	}
