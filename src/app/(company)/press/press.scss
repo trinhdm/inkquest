@@ -1,0 +1,29 @@
+@use '@/styles/mixins' as global;
+
+#press-assets {
+	.inkq-group__item {
+		padding: 0;
+	}
+
+	.asset {
+		@include global.item-block;
+
+		&__info {
+			@include global.eyebrow;
+		}
+
+		&__rail {
+			@include global.rail('top');
+		}
+	}
+}
+
+#press-history .mention {
+	&__date {
+		@include global.eyebrow;
+	}
+
+	&__title {
+		@include global.prose;
+	}
+}
