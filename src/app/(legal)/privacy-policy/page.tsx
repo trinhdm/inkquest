@@ -5,8 +5,8 @@ import {
 	type LegalSection,
 } from './privacy-policy.data'
 
-import { useOptimistic, useState, useTransition } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { useActiveID } from '@/hooks/useActiveID'
 import { formatDate } from '@/utils/helpers'
 import { Accordion } from '@/components/data/Accordion'
 import { Button } from '@/components/core/Button'
@@ -31,32 +31,15 @@ const findLegalTitles = (sections: LegalSection[]): Sidebar.LinkItem[] =>
 		url: getSectionUrl(id),
 	}))
 
-const resolveLegalSection = (
-	id?: string,
-	sections: LegalSection[] = PRIVACY_SECTIONS,
-): LegalSection =>
-	sections.find(section => section.id === id) ?? sections[0]
+const SECTIONS = PRIVACY_SECTIONS.filter(({ title }) => !!title),
+	TITLES = findLegalTitles('privacy-policy', SECTIONS),
+	IDS = TITLES.map(({ id }) => id)
 
 export default function PrivacyPolicy() {
-	const pageID = 'privacy-policy'
-
-	const sections = PRIVACY_SECTIONS.filter(({ title }) => !!title),
-		titles = findLegalTitles(sections),
-		urlID = titles[0].id
-
-	const router = useRouter()
-	const [optimisticID, setOptimisticID] = useOptimistic(urlID)
-	const [isPending, startTransition] = useTransition()
 	const [open, setOpen] = useState(false)
 
-	const currentSection = resolveLegalSection(optimisticID, sections)
-
-	const selectSection = (id: string) => {
-		startTransition(() => {
-			setOptimisticID(id)
-			router.push(getSectionUrl(id), { scroll: true })
-		})
-	}
+	const pageID = 'privacy-policy',
+		activeID = useActiveID(IDS)
 
 	return (
 		<>
@@ -100,21 +83,17 @@ export default function PrivacyPolicy() {
 				</Section.Footer>
 			</Section>
 
-			<Section id={ `${pageID}-content` }>
-				<Grid
-					attributes={ { aria: { busy: isPending || undefined } } }
-					gap="lg"
-					layout="sidebar"
-				>
+			<Section animated={ false } id={ `${pageID}-content` }>
+				<Grid gap="lg" layout="sidebar">
 					<Sidebar
-						active={ currentSection.id }
-						items={ titles }
-						onChange={ selectSection }
+						active={ activeID }
+						items={ TITLES }
 						scroll={ true }
+						shallow={ false }
 					/>
 					<Grid.Item className="legal-content">
-						{ PRIVACY_SECTIONS.map(({ body, id, summary, title }) => {
-							const index = sections.findIndex(section => section.id === id),
+						{ PRIVACY_SECTIONS.map(({ body, id, summary }) => {
+							const index = SECTIONS.findIndex(section => section.id === id),
 								isIntro = index === -1
 
 							return (
@@ -123,7 +102,7 @@ export default function PrivacyPolicy() {
 									id={ id }
 									key={ id }
 									layout="content"
-									title={ isIntro ? undefined : formatLegalTitle(title, index) }
+									title={ isIntro ? undefined : TITLES[index].label }
 								>
 									{ (summary && !isIntro) && (
 										<aside className="legal-content__summary">
@@ -141,7 +120,7 @@ export default function PrivacyPolicy() {
 													return <p key={ contentKey }>{ value }</p>
 
 												return (
-													<ul key={ contentKey }>
+													<ul className="legal-content__list" key={ contentKey }>
 														{ (value as string[]).map(v => <li key={ v }>{ v }</li>) }
 													</ul>
 												)

@@ -37,6 +37,7 @@ export default function RootLayout({
 			suppressHydrationWarning
 			lang="en"
 			className={ fontsList }
+			data-scroll-behavior="smooth"
 		>
 			<head>
 				<ScriptInjector />

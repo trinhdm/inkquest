@@ -26,6 +26,10 @@
 .legal-content {
 	$name: &;
 
+	&__section {
+		scroll-margin-top: var(--inkq-stack-gap-head);
+	}
+
 	&__label {
 		@include global.label('control');
 	}
@@ -37,14 +41,13 @@
 	&__body {
 		@include global.prose;
 
-		ol,
-		ul {
-			@include global.list;
-		}
-
 		#{$name}__intro & {
 			color: var(--inkq-color-text);
 		}
+	}
+
+	&__list {
+		@include global.list;
 	}
 }
 

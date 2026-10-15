@@ -1,5 +1,11 @@
 @use './mixins' as global;
 
+@media (prefers-reduced-motion: no-preference) {
+	html {
+		scroll-behavior: smooth;
+	}
+}
+
 body {
 	background-color: var(--inkq-background-page);
 	color: var(--inkq-color-text);
@@ -138,7 +144,7 @@ svg {
 
 ol,
 ul {
-	list-style: none;
+	list-style-type: none;
 
 	li {
 		display: inline-block;
