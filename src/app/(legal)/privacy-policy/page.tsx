@@ -19,7 +19,7 @@ export default function PrivacyPolicy() {
 	const [open, setOpen] = useState(false)
 
 	const pageID = 'privacy-policy',
-		activeID = useActiveID(IDS)
+		[activeID, selectID] = useActiveID(IDS)
 
 	return (
 		<>
@@ -68,6 +68,8 @@ export default function PrivacyPolicy() {
 					<Sidebar
 						active={ activeID }
 						items={ TITLES }
+						label="On this page"
+						onChange={ selectID }
 						scroll={ true }
 						shallow={ false }
 					/>

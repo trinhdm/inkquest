@@ -1,3 +1,5 @@
+@use '@/styles/mixins' as global;
+
 .inkq-sidebar {
 	$name: &;
 
@@ -5,7 +7,7 @@
 		position: relative;
 
 		&:not(:last-child) {
-			padding-block-end: var(--space-3);
+			padding-block-end: var(--inkq-gutter-item);
 		}
 	}
 
@@ -16,49 +18,67 @@
 		position: relative;
 	}
 
+	&__label {
+		@include global.eyebrow;
+
+		font-weight: var(--inkq-font-weight-semibold);
+		margin-block-end: var(--inkq-gutter-content);
+	}
+
+	&__item {
+		align-items: center;
+		cursor: pointer;
+		display: flex;
+		justify-content: space-between;
+		position: relative;
+		z-index: 1;
+	}
+
+	&__button {
+		display: block;
+		text-align: left;
+		width: 100%;
+
+		#{$name}__item--active & {
+			color: var(--inkq-color-text);
+			font-weight: var(--inkq-font-weight-bold);
+		}
+	}
+
 	&--nav #{$name} {
 		&__inner {
 			border-left: 1px solid var(--inkq-border);
 		}
 
-		&__rail {
+		&__highlight {
 			background-color: var(--inkq-background-card-hover);
 			border-left: 2px solid var(--inkq-color-action);
 			border-radius: 0 var(--inkq-border-radius-sm) var(--inkq-border-radius-sm) 0;
-			height: var(--sidebar-rail-height);
+			height: var(--sidebar-highlight-height);
 			inset: 0;
 			inset-block-end: auto;
 			opacity: 1;
 			pointer-events: none;
 			position: absolute;
-			transform: translateY(var(--sidebar-rail-position));
+			transform: translateY(var(--sidebar-highlight-position));
 			transition: transform var(--duration-slow) var(--easing);
 			user-select: none;
 		}
 
 		&__item {
-			align-items: center;
 			border-left: 2px solid transparent;
 			border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-			cursor: pointer;
-			display: flex;
-			gap: var(--space-3);
-			justify-content: space-between;
+			gap: var(--inkq-gutter-item);
 			min-height: 0;
-			position: relative;
-			z-index: 1;
 		}
 
 		&__button {
-			display: block;
-			padding: var(--space-3) var(--space-3);
-			text-align: left;
-			width: 100%;
+			padding: var(--inkq-gutter-item) var(--inkq-gutter-item);
 		}
 	}
 
 	&--sticky {
 		position: sticky;
-		top: var(--space-11);
+		top: var(--inkq-stack-gap-head);
 	}
 }

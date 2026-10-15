@@ -41,6 +41,7 @@ export interface GridTokens {
 	gutter: {
 		base: TokenVariableShape
 		content: TokenVariableShape
+		item: TokenVariableShape
 		list: TokenVariableShape
 	}
 
@@ -87,6 +88,7 @@ export const getGridTokens = (): GridTokens => {
 		gutter: {
 			base: base.space('10'),
 			content: base.space('4'),
+			item: base.space('3'),
 			list: base.space('2'),
 		},
 
