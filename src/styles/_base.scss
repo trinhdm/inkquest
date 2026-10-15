@@ -215,32 +215,20 @@ mark {
 	}
 }
 
-.inkq-caption,
-.inkq-eyebrow {
-	color: var(--inkq-color-text-tertiary);
-	letter-spacing: var(--inkq-font-tracking-wide);
-	text-transform: uppercase;
-}
-
 .inkq-caption {
-	font: var(--inkq-text-caption-item);
-	text-wrap: balance;
+	@include global.caption;
 }
 
 .inkq-eyebrow {
-	display: inline-block;
-	font: var(--inkq-text-section-eyebrow);
-	text-wrap: pretty;
+	@include global.eyebrow;
 }
 
 .inkq-label {
-	@include global.label('control')
+	@include global.label('control');
 }
 
 .inkq-prose {
-	color: var(--inkq-color-text-secondary);
-	font: var(--inkq-text-prose);
-	text-wrap: pretty;
+	@include global.prose;
 }
 
 .inkq-accent {

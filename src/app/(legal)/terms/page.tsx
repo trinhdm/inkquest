@@ -2,15 +2,15 @@
 
 import { Section } from '@/components/layout/Section'
 
-export default function PrivacyPolicy() {
-	const pageID = 'privacy-policy'
+export default function TermsConditions() {
+	const pageID = 'terms-conditions'
 
 	return (
 		<>
 			<Section
 				id={ `${pageID}-hero` }
 				layout="hero"
-				title="Privacy Policy"
+				title="Terms & Conditions"
 			>
 				content
 			</Section>

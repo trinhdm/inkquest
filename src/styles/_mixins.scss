@@ -9,7 +9,7 @@ $fontSizes: (
 	label: var(--inkq-font-size-label),
 );
 
-@mixin blurb {
+@mixin blurb($layout: null) {
 	align-items: baseline;
 	display: flex;
     background-color: var(--inkq-background-surface);
@@ -17,8 +17,42 @@ $fontSizes: (
     border-radius: var(--inkq-border-radius-md);
 	font-size: var( --inkq-font-size-body);
     gap: var(--inkq-space-group);
-    margin-block-end: var(--inkq-stack-gap-kicker);
-    padding: var(--inkq-space-group-lg);
+    margin-block-end: var(--inkq-space-grid);
+
+	&:last-child {
+		margin-block-end: 0;
+	}
+
+	@if $layout == 'note' {
+		border-left: 3px solid var(--inkq-color-action);
+		color: var(--inkq-color-text-secondary);
+		flex-direction: column;
+		line-height: var(--inkq-font-leading-label);
+		padding: var(--inkq-space-grid);
+
+		a {
+			color: var(--inkq-color-text);
+		}
+	} @else {
+		padding: var(--inkq-space-group-lg);
+	}
+}
+
+@mixin caption {
+	color: var(--inkq-color-text-tertiary);
+	font: var(--inkq-text-caption-item);
+	letter-spacing: var(--inkq-font-tracking-wide);
+	text-transform: uppercase;
+	text-wrap: balance;
+}
+
+@mixin eyebrow {
+	color: var(--inkq-color-text-tertiary);
+	display: inline-block;
+	font: var(--inkq-text-section-eyebrow);
+	letter-spacing: var(--inkq-font-tracking-wide);
+	text-transform: uppercase;
+	text-wrap: pretty;
 }
 
 @mixin label($size: null) {
@@ -48,6 +82,10 @@ $fontSizes: (
 	padding-inline-start: var(--inkq-indent-list);
 	row-gap: var(--inkq-gutter-list);
 
+	li {
+		display: list-item;
+	}
+
 	&:first-child {
 		margin-block-start: 0;
 	}
@@ -55,6 +93,12 @@ $fontSizes: (
 	&:last-child {
 		margin-block-end: 0;
 	}
+}
+
+@mixin prose {
+	color: var(--inkq-color-text-secondary);
+	font: var(--inkq-text-prose);
+	text-wrap: pretty;
 }
 
 //	lines

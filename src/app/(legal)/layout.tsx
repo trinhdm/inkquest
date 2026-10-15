@@ -1,10 +1,21 @@
-// Pass-through segment layout. Its only job is to give the (legal) route
-// group its own boundary in the route tree, so Turbopack can scope
-// invalidation to routes under this group instead of treating the root
-// layout as the sole segment boundary for the whole app.
+import { Footer } from '@/components/navigation/Footer'
+import { Header } from '@/components/navigation/Header'
+import type { ReactNode } from 'react'
+import './legal-layout.scss'
 
 export default function LegalLayout({
 	children,
-}: Readonly<{ children: React.ReactNode }>) {
-	return <>{ children }</>
+}: Readonly<{ children: ReactNode }>) {
+	const subnav: Header.Props['subnav'] = {
+		category: 'Legal',
+		routes: ['/privacy-policy', '/terms'],
+	}
+
+	return (
+		<>
+			<Header subnav={ subnav } />
+			<main>{ children }</main>
+			<Footer />
+		</>
+	)
 }

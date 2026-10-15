@@ -13,14 +13,25 @@ export const formatDate = (
 		const value = String(date[key]) as Extract<CalendarDate[typeof key], string>
 
 		if (!!value.length) {
-			let output: string = value
+			let index,
+				output: string = value
 
-			if (key === 'month') {
-				if (isAbbrev) output = value.slice(0, 3)
-				if (parts.includes('day')) output += `,`
+			switch (key) {
+				case 'month':
+					if (isAbbrev) output = value.slice(0, 3)
+					index = 0
+					break
+				case 'day':
+					if (parts.includes('year')) output += `,`
+					index = 1
+					break
+				case 'year':
+					if (isAbbrev) output = value.slice(-2)
+					index = 2
+					break
 			}
 
-			calendar.push(output)
+			calendar.splice(index, 0, output)
 		}
 	}
 

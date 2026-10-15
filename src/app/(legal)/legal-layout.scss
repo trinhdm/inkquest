@@ -1,0 +1,65 @@
+@use '@/styles/mixins' as global;
+
+.legal-history {
+	$name: &;
+
+	&__list {
+		display: flex;
+		flex-direction: column;
+		line-height: var(--inkq-font-leading-prose);
+		row-gap: var(--inkq-gutter-list);
+	}
+
+	&__overview {
+		@include global.caption;
+
+		column-gap: var(--inkq-gutter-list);
+		display: flex;
+		line-height: inherit;
+	}
+
+	&__details {
+		color: var(--inkq-color-text-secondary);
+	}
+}
+
+.legal-content {
+	$name: &;
+
+	&__label {
+		@include global.label('control');
+	}
+
+	&__summary {
+		@include global.blurb;
+	}
+
+	&__body {
+		@include global.prose;
+
+		ol,
+		ul {
+			@include global.list;
+		}
+
+		#{$name}__intro & {
+			color: var(--inkq-color-text);
+		}
+	}
+}
+
+.legal-footnote {
+	$name: &;
+
+	@include global.blurb('note');
+
+	&__label {
+		@include global.label('caption');
+	}
+
+	&__content {
+		display: flex;
+		flex-direction: column;
+		gap: var(--inkq-space-chip);
+	}
+}
