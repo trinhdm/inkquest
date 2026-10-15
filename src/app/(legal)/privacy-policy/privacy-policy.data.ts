@@ -1,36 +1,40 @@
-import type { LegalSection, VersionGroup } from '../_utils/legal.types'
+import { COMPANY_INFO } from '@/utils/constants'
+import type { LegalPageData } from '../_utils/legal.types'
 
-export const VERSION_HISTORY: VersionGroup[] = [
+const VERSION_HISTORY: LegalPageData['changelog'] = [
 	{
+		id: 'rel_321',
 		version: '3.2',
-		date: {
+		release_date: {
 			month: 'June',
 			day: 12,
 			year: 2026,
 		},
-		note: 'Clarified data retention periods for closed accounts; added CCPA appeal process.',
+		summary: 'Clarified data retention periods for closed accounts; added CCPA appeal process.',
 	},
 	{
+		id: 'rel_320',
 		version: '3.1',
-		date: {
+		release_date: {
 			month: 'September',
 			day: 3,
 			year: 2025,
 		},
-		note: 'Added section on AI-assisted style matching and how quiz responses are processed.',
+		summary: 'Added section on AI-assisted style matching and how quiz responses are processed.',
 	},
 	{
+		id: 'rel_319',
 		version: '3.0',
-		date: {
+		release_date: {
 			month: 'February',
 			day: 28,
 			year: 2024,
 		},
-		note: 'Full rewrite for marketplace launch; new payment-processor disclosures.',
+		summary: 'Full rewrite for marketplace launch; new payment-processor disclosures.',
 	},
 ]
 
-export const PRIVACY_SECTIONS: LegalSection[] = [
+const PRIVACY_SECTIONS: LegalPageData['sections'] = [
 	{
 		id: 'intro',
 		body: [
@@ -44,7 +48,11 @@ export const PRIVACY_SECTIONS: LegalSection[] = [
 		body: [
 			{ p: 'We collect information you provide directly: account registration details (name, email address, date of birth), profile and portfolio content, style-quiz responses, messages you exchange with artists or collectors, bids and purchase history, and any information you submit when contacting support.' },
 			{ p: 'We also collect information automatically when you use the Services, including device identifiers, IP address, browser type, pages viewed, referring URLs, and interactions with listings. Some of this is collected through cookies and similar technologies described in our Cookie Policy.' },
-			{ list: ['Payment information is collected and processed by our payment partners; Inkquest never stores full card numbers.', 'If you sign in with a third-party service (Apple, Google), we receive your name, email, and profile image as permitted by that service.', 'Artists undergoing verification provide government ID and studio licensing documents, which are processed by our identity-verification partner.'] },
+			{ list: [
+				'Payment information is collected and processed by our payment partners; Inkquest never stores full card numbers.',
+				'If you sign in with a third-party service (Apple, Google), we receive your name, email, and profile image as permitted by that service.',
+				'Artists undergoing verification provide government ID and studio licensing documents, which are processed by our identity-verification partner.',
+			] },
 		],
 	},
 	{
@@ -83,4 +91,53 @@ export const PRIVACY_SECTIONS: LegalSection[] = [
 			{ p: 'We retain personal data for as long as your account is active or as needed to provide the Services. When you close your account, we delete or anonymize your personal data within 90 days, except where retention is required for legal, tax, or dispute-resolution purposes — transaction records, for example, are retained for seven years to satisfy financial regulations.' },
 		],
 	},
+	{
+		id: 'security',
+		title: 'Security',
+		summary: `Data is encrypted in transit and at rest; access is limited and audited. No system is perfect — report concerns to security@inkquest.com.`,
+		body: [
+			{ p: 'We protect your information with administrative, technical, and physical safeguards: encryption in transit (TLS 1.3) and at rest, role-based access controls, routine penetration testing, and mandatory security training for staff. No method of transmission or storage is completely secure; if you believe your account has been compromised, contact security@inkquest.com immediately.' },
+		],
+	},
+	{
+		id: 'international-transfers',
+		title: 'International transfers',
+		summary: 'Data is processed in the US. Transfers from the EEA/UK rely on Standard Contractual Clauses.',
+		body: [
+			{ p: 'Inkquest is headquartered in the United States and processes data on servers located there. Where we transfer personal data from the European Economic Area, the United Kingdom, or Switzerland, we rely on Standard Contractual Clauses approved by the European Commission, supplemented where necessary by additional safeguards.' },
+		],
+	},
+	{
+		id: 'changes-privacy',
+		title: 'Changes to this policy',
+		summary: 'Material changes get 30 days\u2019 notice by email and in-app. The version history above tracks every revision.',
+		body: [
+			{ p: 'We may update this policy from time to time. For material changes we will notify you at least 30 days before the changes take effect, by email and by a prominent notice in the app. The version history at the top of this page records every revision.' },
+		],
+	},
 ]
+
+export const PRIVACY_PAGE_DATA: LegalPageData = {
+	id: 'privacy-policy',
+	title: 'Privacy Policy',
+	updated_date: {
+		month: 'March',
+		day: 30,
+		year: 2026,
+	},
+	effective_date: {
+		month: 'July',
+		day: 1,
+		year: 2026,
+	},
+	changelog: VERSION_HISTORY,
+	company_info: COMPANY_INFO,
+	hero: { heading: 'Privacy Policy' },
+	sections: PRIVACY_SECTIONS,
+	footer: {
+		heading: 'Data Protection Officer',
+		body: 'Questions, access requests, or complaints about how we handle your personal data can be directed to our Data Protection Officer.',
+		recipient: 'Attn: DPO',
+		contact_email: 'privacy@inkquest.com',
+	},
+}

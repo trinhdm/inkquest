@@ -15,7 +15,52 @@ export interface FileItem {
 }
 
 
+//	user
+
+type UserRole =
+	| 'Client'
+	| 'Guest'
+	| 'Staff Writer'
+	| 'Studio'
+	| 'Tattoo Artist'
+
+export interface UserData {
+	id: string
+	name: string
+	email: string
+	role: UserRole
+	avatar_url: string
+	// joined_date: string
+}
+
+export interface AddressData {
+	street_line1: string
+	street_line2?: string
+	city: string
+	state: string
+	zip: `${number}`
+	country: string
+}
+
+
 //	nextjs page data
+
+interface ContentData  {
+	eyebrow?: string
+	heading: string
+	body?: string
+	buttons?: {
+		label: string
+		url: string
+	}[]
+}
+
+export interface BasePageData {
+	id: string
+	title: string
+	hero?: ContentData
+	footer?: ContentData
+}
 
 export interface PageDataItem {
 	id: string

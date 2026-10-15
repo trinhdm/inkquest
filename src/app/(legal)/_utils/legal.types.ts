@@ -1,14 +1,7 @@
-import type { CalendarDate, PageDataItem } from '@/types/shared'
-
-export interface VersionGroup {
-	date?: CalendarDate
-	note?: string
-	version: number | `${number}`
-}
-
-export type LegalSection =
-	& BaseLegalSection
-	& LegalSectionTypes
+import type {
+	AddressData, BasePageData, CalendarDate,
+	PageDataItem, UserData,
+} from '@/types/shared'
 
 interface BaseLegalSection
 	extends Pick<PageDataItem, 'id'> {
@@ -32,3 +25,44 @@ type LegalSectionTypes =
 type LegalBodyOptions =
 	| { list: string[] }
 	| { p: string }
+
+export type LegalSection =
+	& BaseLegalSection
+	& LegalSectionTypes
+
+interface ChangelogItem {
+	id: string
+	author?: UserData
+	description: string
+}
+
+export interface VersionGroup {
+	id: string
+	changes?: ChangelogItem[]
+	release_date: CalendarDate
+	summary?: string
+	version: `${number}`
+}
+
+export interface LegalPageData
+	extends BasePageData {
+	updated_date: CalendarDate
+	effective_date: CalendarDate
+	changelog: VersionGroup[]
+	company_info: {
+		legal_name: string
+		address: AddressData
+	}
+	// introduction: string
+	sections: LegalSection[]
+	footer?: {
+		heading: string
+		body: string
+		recipient: string
+		contact_email: string
+	}
+}
+
+export interface SharedLegalProps<K extends keyof LegalPageData> {
+	data: LegalPageData[K]
+}
