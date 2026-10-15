@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 //	general
 
@@ -47,6 +48,25 @@ export type UnpackArray<T> =
 
 
 //	objects
+
+//	deep
+
+export type DeepMerge<T, U> = {
+	[K in keyof T | keyof U]: K extends keyof U
+		? K extends keyof T
+			? T[K] extends Record<string, any>
+				? U[K] extends Record<string, any>
+					? DeepMerge<T[K], U[K]>
+					: U[K]
+				: U[K]
+			: U[K]
+		: K extends keyof T
+			? T[K]
+			: never
+}
+
+export type DeepMap<V> =
+	Map<string, V | DeepMap<V>>
 
 //	narrowing shape
 

@@ -1,38 +1,7 @@
-import type { OneKeyOf, PluralizeKeys } from '@/types/utils'
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-export const isObject = <T extends Record<string, any>>(target: unknown): target is T =>
-	!!target && target?.constructor === Object && !Array.isArray(target)
-
-type WithKeyValue<T, K extends PropertyKey> =
-	T extends unknown
-		? T & { [P in K]: P extends keyof T ? NonNullable<T[P]> : unknown }
-		: never
-
-function hasKeyWithValue<
-	T extends object,
-	K extends PropertyKey,
->(obj: T | undefined, key: K): obj is WithKeyValue<T, K>
-function hasKeyWithValue<
-	T extends object,
-	const E extends Record<string, unknown>,
->(obj: T | undefined, entry: OneKeyOf<E>): obj is T & E
-function hasKeyWithValue(
-	obj: object | undefined,
-	entry: PropertyKey | Record<string, unknown>
-): boolean {
-	let k, v = null
-
-	if (isObject(entry)) ([k, v] = Object.entries(entry)[0])
-	else k = String(entry)
-
-	if (!isObject(obj) || !Object.hasOwn(obj, k))
-		return false
-
-	return k in obj && (v === null ? !!obj[k] : obj[k] === v)
-}
-
-export const keyHasValue = hasKeyWithValue
-
+import { isObject } from '../checks/objects'
+import type { DeepMap, DeepMerge, PluralizeKeys } from '@/types/utils'
 
 export const pluralizeKeys = <T extends Record<string, any>>(obj: T): PluralizeKeys<T> => {
 	const result = {} as any
@@ -44,7 +13,6 @@ export const pluralizeKeys = <T extends Record<string, any>>(obj: T): PluralizeK
 
 	return result
 }
-
 
 export const deepKeys = <T extends Record<string, unknown>>(obj: T, prefix = '') => {
 	let keys = [] as string[]
@@ -64,7 +32,9 @@ export const deepMerge = <
 	T extends Record<string, any>,
 	U extends Record<string, any>
 >(obj1: T, obj2: U): DeepMerge<T, U> => {
-	const uniqueKeys = [...new Set([...Object.keys(obj1), ...Object.keys(obj2)])]
+	const keys = [...Object.keys(obj1), ...Object.keys(obj2)],
+		uniqueKeys = [...new Set(keys)]
+
 	const entries = uniqueKeys.map(key => {
 		const v1 = obj1[key],
 			v2 = obj2[key]
@@ -78,23 +48,7 @@ export const deepMerge = <
 	return Object.fromEntries(entries) as DeepMerge<T, U>
 }
 
-type DeepMerge<T, U> = {
-	[K in keyof T | keyof U]: K extends keyof U
-		? K extends keyof T
-			? T[K] extends Record<string, any>
-				? U[K] extends Record<string, any>
-					? DeepMerge<T[K], U[K]>
-					: U[K]
-				: U[K]
-			: U[K]
-		: K extends keyof T
-			? T[K]
-			: never
-}
-
-type DeepMap<V> = Map<string, V | DeepMap<V>>
-
-export const deepSetMap = <V,>(
+export const deepSet = <V,>(
 	map: DeepMap<V>,
 	...args: [...keys: string[], value: V]
 ): DeepMap<V> => {

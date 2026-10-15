@@ -1,85 +1,8 @@
 import {
-	deepKeys, deepMerge, deepSetMap, flattenMap, isObject, keyHasValue, pluralizeKeys,
+	deepKeys, deepMerge,
+	deepSet, flattenMap,
+	pluralizeKeys,
 } from '../objects'
-
-describe('isObject', () => {
-	it('returns true for a plain object literal', () => {
-		expect(isObject({ a: 1 })).toBe(true)
-	})
-
-	it('returns true for an empty plain object', () => {
-		expect(isObject({})).toBe(true)
-	})
-
-	it('returns false for an array', () => {
-		expect(isObject([1, 2])).toBe(false)
-	})
-
-	it('returns false for null', () => {
-		expect(isObject(null)).toBe(false)
-	})
-
-	it('returns false for undefined', () => {
-		expect(isObject(undefined)).toBe(false)
-	})
-
-	it('returns false for a string', () => {
-		expect(isObject('object')).toBe(false)
-	})
-
-	it('returns false for a Map instance', () => {
-		expect(isObject(new Map())).toBe(false)
-	})
-
-	it('returns false for a class instance whose constructor is not Object', () => {
-		class Custom {}
-		expect(isObject(new Custom())).toBe(false)
-	})
-})
-
-describe('keyHasValue', () => {
-	it('returns true when the key exists with a truthy value (single-key form)', () => {
-		expect(keyHasValue({ active: true }, 'active')).toBe(true)
-	})
-
-	it('returns false when the key exists but its value is falsy (single-key form)', () => {
-		expect(keyHasValue({ active: false }, 'active')).toBe(false)
-	})
-
-	it('returns false when the key is absent entirely', () => {
-		expect(keyHasValue({ other: 1 }, 'active')).toBe(false)
-	})
-
-	it('returns false when the target is undefined', () => {
-		expect(keyHasValue(undefined, 'active')).toBe(false)
-	})
-
-	it('returns false when the target is an array, since isObject rejects arrays', () => {
-		expect(keyHasValue([1, 2] as any, 'length' as any)).toBe(false)
-	})
-
-	it('returns true when the entry-object form matches the exact value', () => {
-		expect(keyHasValue({ size: 'sm' }, { size: 'sm' })).toBe(true)
-	})
-
-	it('returns false when the entry-object form value does not strictly match', () => {
-		expect(keyHasValue({ size: 'sm' }, { size: 'lg' })).toBe(false)
-	})
-
-	it('falls back to a truthiness check, not strict-null-equality, when the entry value is explicitly null', () => {
-		// v === null routes to the `!!obj[k]` branch instead of comparing obj[k] === null
-		expect(keyHasValue({ size: 'sm' }, { size: null as any })).toBe(true)
-		expect(keyHasValue({ size: '' }, { size: null as any })).toBe(false)
-	})
-
-	it('returns false for the entry-object form when the key does not exist on the object', () => {
-		expect(keyHasValue({ other: 1 }, { size: 'sm' })).toBe(false)
-	})
-
-	it('treats an own key with value undefined as present but falsy', () => {
-		expect(keyHasValue({ active: undefined }, 'active')).toBe(false)
-	})
-})
 
 describe('pluralizeKeys', () => {
 	it('appends "s" to every top-level key while keeping values untouched', () => {
@@ -129,11 +52,11 @@ describe('deepMerge', () => {
 	})
 
 	it('overwrites a nested object in obj1 with a non-object value from obj2', () => {
-		expect(deepMerge({ a: { nested: true } }, { a: 'flat' as any })).toEqual({ a: 'flat' })
+		expect(deepMerge({ a: { nested: true } }, { a: 'flat' as unknown })).toEqual({ a: 'flat' })
 	})
 
 	it('takes the obj2 object wholesale when obj1 held a non-object at that key', () => {
-		expect(deepMerge({ a: 'flat' as any }, { a: { nested: true } })).toEqual({ a: { nested: true } })
+		expect(deepMerge({ a: 'flat' as unknown }, { a: { nested: true } })).toEqual({ a: { nested: true } })
 	})
 
 	it('returns an empty object when both inputs are empty', () => {
@@ -141,24 +64,24 @@ describe('deepMerge', () => {
 	})
 })
 
-describe('deepSetMap / flattenMap', () => {
+describe('deepSet / flattenMap', () => {
 	it('sets a single-level key/value pair that flattenMap surfaces by that key', () => {
 		const map = new Map()
-		deepSetMap(map, 'a', 'value')
+		deepSet(map, 'a', 'value')
 
 		expect(flattenMap(map)).toEqual({ a: 'value' })
 	})
 
 	it('builds a nested Map structure for a multi-key path', () => {
 		const map = new Map()
-		deepSetMap(map, 'a', 'b', 'value')
+		deepSet(map, 'a', 'b', 'value')
 
 		expect(map.get('a')).toBeInstanceOf(Map)
 	})
 
 	it('flattens a multi-key path down to a record keyed by the final path segment', () => {
 		const map = new Map()
-		deepSetMap(map, 'a', 'b', 'value')
+		deepSet(map, 'a', 'b', 'value')
 
 		// flattenMap does not prefix keys by their parent path - only the
 		// deepest key survives into the flattened record.
@@ -167,16 +90,16 @@ describe('deepSetMap / flattenMap', () => {
 
 	it('reuses an existing nested Map when setting a second value under the same parent key', () => {
 		const map = new Map()
-		deepSetMap(map, 'a', 'b', 'first')
-		deepSetMap(map, 'a', 'c', 'second')
+		deepSet(map, 'a', 'b', 'first')
+		deepSet(map, 'a', 'c', 'second')
 
 		expect(flattenMap(map)).toEqual({ b: 'first', c: 'second' })
 	})
 
 	it('overwrites a previously flattened key when two different branches share the same leaf key name', () => {
 		const map = new Map()
-		deepSetMap(map, 'a', 'x', 'from-a')
-		deepSetMap(map, 'b', 'x', 'from-b')
+		deepSet(map, 'a', 'x', 'from-a')
+		deepSet(map, 'b', 'x', 'from-b')
 
 		// Both paths terminate in a leaf keyed 'x'; flattenMap has no path
 		// prefixing, so the second write silently clobbers the first.
@@ -185,7 +108,7 @@ describe('deepSetMap / flattenMap', () => {
 
 	it('mutates and returns the same map instance it was given', () => {
 		const map = new Map()
-		const result = deepSetMap(map, 'a', 'value')
+		const result = deepSet(map, 'a', 'value')
 
 		expect(result).toBe(map)
 	})

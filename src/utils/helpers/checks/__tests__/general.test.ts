@@ -1,4 +1,4 @@
-import { hasValue } from '../checks'
+import { hasValue } from '../general'
 
 describe('hasValue', () => {
 	it('returns false for null', () => {

@@ -1,5 +1,4 @@
-import { deepMerge } from '@/utils/helpers/objects'
-import { toKebabCase } from '@/utils/helpers'
+import { deepMerge, toKebabCase } from '@/utils/helpers/format'
 import { tokens } from '@/lib/theme/reference'
 import type { SiteThemeConfig } from '@/lib/theme/types'
 
