@@ -102,8 +102,8 @@ export const Grid = polymorphic<GridSpecs>((_props, { useProps, useStyles }) => 
 	const styles = useStyles({ props, tokens })
 
 	const {
-		as, children,
-		columns, gap,
+		as, children, columns,
+		equalWidth, gap, layout,
 		...rest
 	} = props
 

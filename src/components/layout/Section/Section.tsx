@@ -102,10 +102,8 @@ export const Section = polymorphic<SectionSpecs>((_props, { useProps, useStyles 
 	const styles = useStyles({ props, tokens })
 
 	const {
-		children,
-		eyebrow,
-		layout,
-		title,
+		children, eyebrow,
+		layout, title,
 		...rest
 	} = props
 
@@ -137,6 +135,8 @@ export declare namespace Section {
 	export type Context = SectionContext
 	export type Props = SectionProps
 	export type Specs = SectionSpecs
+
+	export type Layout = SectionLayout
 
 	export namespace Footer {
 		export type Props = SectionFooter.Props

@@ -122,7 +122,8 @@ const buildContent = (
 
 	const { eyebrow, layout, title } = props,
 		hasSiblings = !!(title || eyebrow || footer),
-		isHeroTight = layout === 'hero-tight'
+		isHeroTight = layout === 'hero-tight',
+		isHeroVariation = layout === 'hero-split' || isHeroTight
 
 	if (!!items?.length) {
 		const [first] = items
@@ -141,7 +142,7 @@ const buildContent = (
 			: items
 
 		const key = `${id}-body`,
-			body = hasSiblings && !isHeroTight
+			body = hasSiblings && !isHeroVariation
 				? <div key={ key } { ...styles('body') }>{ description }</div>
 				: <Fragment key={ key }>{ description }</Fragment>
 
@@ -151,17 +152,15 @@ const buildContent = (
 	if (footer) {
 		const { total } = partitionFooter(footer.props.children)
 
-		const value: Section.Context = {
+		const ctxValues: Section.Context = {
 			revealFrom: reveal.reserve(total),
 			size: layout === 'hero' ? 'lg' : 'md',
 		}
 
-		const footnote = (
-			<SectionProvider key={ `${id}-footer` } value={ value }>
-				{ footer }
-			</SectionProvider>
-		)
+		if (isHeroVariation)
+			Object.assign(ctxValues, { as: Grid.Item, span: 1 })
 
+		const footnote = <SectionProvider value={ ctxValues }>{ footer }</SectionProvider>
 		content.footer = footnote
 	}
 
@@ -173,26 +172,30 @@ export const buildSection = (config: Omit<BuildSectionConfig, 'id'>) => {
 		args = { ...config, id: id ?? `section` }
 
 	const { eyebrow, title } = buildHeader(args),
-		header = <>{ eyebrow }{ title }</>
+		header = [eyebrow, title]
 
 	const { body, footer } = buildContent(args),
-		content = <>{ body }{ footer }</>
+		content = [body, footer]
 
-	const inner = <>{ header }{ content }</>
+	const inner = [header, content]
 
 	switch (layout) {
 		case 'hero':
 		case 'banner':
 			return <div { ...styles('inner') }>{ inner }</div>
 		case 'hero-split':
+		case 'hero-tight':
+			if (layout === 'hero-tight') header.reverse()
+
+			const columns = !!footer ? 4 : undefined,
+				span = !!columns ? columns - 1 : undefined
+
 			return (
-				<Grid columns={ 4 } { ...styles('inner') }>
-					<Grid.Item span={ 3 } { ...styles('content') }>
+				<Grid equalWidth columns={ columns } { ...styles('inner') }>
+					<Grid.Item span={ span } { ...styles('content') }>
 						{ header }{ body }
 					</Grid.Item>
-					<Grid.Item span={ 1 } { ...styles('cta') }>
-						{ footer }
-					</Grid.Item>
+					{ footer }
 				</Grid>
 			)
 		case 'split':

@@ -1,5 +1,5 @@
 import { isValidElement, Children, type ReactNode } from 'react'
-import { useSectionCtx, useSectionProps } from '../Section.context'
+import { useSection } from '../Section.context'
 import { extractOthers } from '@/hooks/useProps'
 import { polymorphic } from '@/lib/component/factory'
 import { revealItemFrom } from '@/hooks/animation'
@@ -50,10 +50,13 @@ export const partitionFooter = (children: ReactNode): FooterParts => {
 }
 
 export const SectionFooter = polymorphic<SectionFooterSpecs>((_props, { useProps, useStyles }) => {
+	const { useChosenSectionProps, useSectionCtx } = useSection()
+
 	const context = useSectionCtx(NAME)
-	const props = useProps(useSectionProps(_props))
+	const props = useProps(useChosenSectionProps(_props))
 	const styles = useStyles({ context, props, withRootName: true })
 
+	const { as, span } = context
 	const { children, revealFrom, size, ...rest } = props
 	const others = extractOthers(rest)
 
@@ -65,8 +68,16 @@ export const SectionFooter = polymorphic<SectionFooterSpecs>((_props, { useProps
 		? revealFrom + (hasContent ? 1 : 0)
 		: undefined
 
+	const itemProps = as && isValidElement(as)
+		? { as, span }
+		: { as: 'div' }
+
 	return (
-		<Box { ...styles(context.baseName) } { ...others } as="div">
+		<Box
+			{ ...styles(context.baseName) }
+			{ ...others }
+			{ ...itemProps as Pick<Section.Context, 'as' | 'span'> }
+		>
 			{ hasContent && (
 				<div { ...styles('actions') } { ...revealItemFrom(0, revealFrom) }>
 					{ content }
