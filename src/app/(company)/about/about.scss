@@ -1,0 +1,15 @@
+@use '@/styles/mixins' as global;
+
+#about-quotes .quote {
+	$name: &;
+
+	@include global.item-block;
+
+	&__author {
+		@include global.caption;
+	}
+
+	&__rail {
+		@include global.rail('top');
+	}
+}
