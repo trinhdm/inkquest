@@ -1,0 +1,32 @@
+@use '@/styles/mixins' as global;
+
+.career {
+	$name: &;
+
+	&__info {
+		color: var(--inkq-color-text-secondary);
+	}
+
+	&__rail {
+		@include global.rail('top');
+	}
+
+	&__label {
+		@include global.eyebrow;
+
+		color: var(--inkq-color-action);
+		line-height: var(--inkq-font-leading-body);
+	}
+}
+
+#careers-culture .pillar {
+	$name: &;
+
+	@include global.item-block;
+}
+
+#careers-steps .step {
+	$name: &;
+
+	@include global.step;
+}
