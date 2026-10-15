@@ -1,0 +1,27 @@
+.inkq-progress {
+	$name: &;
+
+	appearance: none;
+    height: var(--progress-bar-height, 1px);
+    left: 0;
+	position: fixed;
+    right: 0;
+    top: 0;
+	width: var(--progress-bar-width);
+    z-index: 200;
+
+	//	background track
+	&::-webkit-progress-bar {
+		background-color: transparent;
+	}
+
+	//	fill bar
+	&::-webkit-progress-value {
+		background-color: var(--inkq-color-action);
+	}
+
+	//	firefox fallback
+	&::-moz-progress-bar {
+		background-color: var(--inkq-color-action);
+	}
+}

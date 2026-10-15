@@ -7,6 +7,7 @@ import { getLegalTitles } from '../utils'
 import { Accordion } from '@/components/data/Accordion'
 import { Button } from '@/components/core/Button'
 import { Grid } from '@/components/layout/Grid'
+import { Progress } from '@/components/data/Progress'
 import { Section } from '@/components/layout/Section'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { PRIVACY_SECTIONS, VERSION_HISTORY } from './privacy-policy.data'
@@ -23,6 +24,7 @@ export default function PrivacyPolicy() {
 
 	return (
 		<>
+			<Progress />
 			<Section
 				className="legal-history"
 				eyebrow="Last updated June 12, 2026 · Effective July 1, 2026"
