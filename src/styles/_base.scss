@@ -48,6 +48,8 @@ h6,
 	font: var(--inkq-text-h6);
 }
 
+h1,
+h2,
 .inkq-h1,
 .inkq-h1-display,
 .inkq-h2,
@@ -56,6 +58,10 @@ h6,
 	text-wrap: balance;
 }
 
+h3,
+h4,
+h5,
+h6,
 .inkq-h3,
 .inkq-h4,
 .inkq-h5,
@@ -192,25 +198,6 @@ mark {
 	flex-direction: column;
 	padding: var(--space-10) var(--space-8);
 	row-gap: var(--space-1);
-
-	&--block {
-		background-color: var(--inkq-background-card);
-		border: 1px solid var(--inkq-border);
-		border-radius: var(--inkq-border-radius-md);
-		height: 100%;
-		overflow: hidden;
-		padding: var(--space-7);
-		position: relative;
-
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-3);
-		justify-content: space-between;
-
-		// transform: none;
-		// transition: opacity 560ms var(--easing-out) 211ms,
-		// 	transform 560ms var(--easing-out) 211ms;
-	}
 }
 
 .inkq-block {
@@ -241,6 +228,17 @@ mark {
 	color: var(--inkq-color-action);
 }
 
+.inkq-sr {
+	border-width: 0;
+	clip: rect(0, 0, 0, 0);
+	height: 1px;
+	margin: -1px;
+	overflow: hidden;
+	padding: 0;
+	position: absolute;
+	white-space: nowrap;
+	width: 1px;
+}
 
 .inkq-loader {
 	display: inline-block;

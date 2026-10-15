@@ -1,13 +1,68 @@
 @use 'sass:map';
+@use 'sass:meta';
+
+//	text
+
+@mixin fontSize($size: null) {
+	$fontSizes: (
+		body: var(--inkq-font-size-body),
+		caption: var(--inkq-font-size-caption),
+		control: var(--inkq-font-size-control),
+		label: var(--inkq-font-size-label),
+	);
+
+	@if $size {
+		$fontSize: map.get($fontSizes, $size);
+
+		@if $fontSize {
+			font-size: $fontSize;
+		}
+	}
+}
+
+@mixin caption($size: null) {
+	color: var(--inkq-color-text-tertiary);
+	font: var(--inkq-text-caption-item);
+	letter-spacing: var(--inkq-font-tracking-wide);
+	text-transform: uppercase;
+	text-wrap: balance;
+
+	@include fontSize($size);
+}
+
+@mixin eyebrow($size: null) {
+	color: var(--inkq-color-text-tertiary);
+	display: inline-block;
+	font: var(--inkq-text-section-eyebrow);
+	letter-spacing: var(--inkq-font-tracking-wide);
+	text-transform: uppercase;
+	text-wrap: pretty;
+
+	@include fontSize($size);
+}
+
+@mixin label($size: null) {
+	color: var(--inkq-color-action);
+	display: inline-block;
+	font-family: var(--inkq-font-family-mono);
+	font-weight: var(--inkq-font-weight-bold);
+	letter-spacing: var(--inkq-font-tracking-wide);
+	line-height: var(--inkq-font-leading-label);
+	text-transform: uppercase;
+	text-wrap: pretty;
+
+	@include fontSize($size);
+}
+
+@mixin prose($size: null) {
+	color: var(--inkq-color-text-secondary);
+	font: var(--inkq-text-prose);
+	text-wrap: pretty;
+
+	@include fontSize($size);
+}
 
 //	content
-
-$fontSizes: (
-	body: var(--inkq-font-size-body),
-	caption: var(--inkq-font-size-caption),
-	control: var(--inkq-font-size-control),
-	label: var(--inkq-font-size-label),
-);
 
 @mixin blurb($layout: null) {
 	align-items: baseline;
@@ -38,42 +93,6 @@ $fontSizes: (
 	}
 }
 
-@mixin caption {
-	color: var(--inkq-color-text-tertiary);
-	font: var(--inkq-text-caption-item);
-	letter-spacing: var(--inkq-font-tracking-wide);
-	text-transform: uppercase;
-	text-wrap: balance;
-}
-
-@mixin eyebrow {
-	color: var(--inkq-color-text-tertiary);
-	display: inline-block;
-	font: var(--inkq-text-section-eyebrow);
-	letter-spacing: var(--inkq-font-tracking-wide);
-	text-transform: uppercase;
-	text-wrap: pretty;
-}
-
-@mixin label($size: null) {
-	@if $size {
-		$fontSize: map.get($fontSizes, $size);
-
-		@if $fontSize {
-			font-size: $fontSize;
-		}
-	}
-
-	color: var(--inkq-color-action);
-	display: inline-block;
-	font-family: var(--inkq-font-family-mono);
-	font-weight: var(--inkq-font-weight-bold);
-	letter-spacing: var(--inkq-font-tracking-wide);
-	line-height: var(--inkq-font-leading-label);
-	text-transform: uppercase;
-	text-wrap: pretty;
-}
-
 @mixin list {
 	display: flex;
 	flex-direction: column;
@@ -92,81 +111,6 @@ $fontSizes: (
 
 	&:last-child {
 		margin-block-end: 0;
-	}
-}
-
-@mixin prose {
-	color: var(--inkq-color-text-secondary);
-	font: var(--inkq-text-prose);
-	text-wrap: pretty;
-}
-
-//	lines
-
-@mixin underline($animated: false) {
-	display: inline-flex;
-	overflow: hidden clip;
-	position: relative;
-	text-wrap: pretty;
-
-	&::after {
-		background-color: var(--inkq-color-action-hover);
-		content: '';
-		display: block;
-		height: 1px;
-		inset: 0;
-		inset-block-start: auto;
-		position: absolute;
-		width: 100%;
-	}
-
-	@if $animated == true {
-		transition-duration: var(--duration-gradual);
-
-		&::after {
-			transform: translateX(-101%);
-			transition: opacity var(--duration-gradual) var(--easing-out) var(--duration-fast),
-				transform var(--duration-gradual) var(--easing-out) var(--duration-fast);
-			will-change: opacity, transform;
-		}
-
-		&:hover::after {
-			transform: translateX(0);
-		}
-	}
-}
-
-@mixin rail($anchor: 'bottom', $rail-height: 1px, $rail-size: 1) {
-	$rail-inset: calc(-1 * #{$rail-height});
-
-	background-color: var(--inkq-color-action);
-	display: block;
-	height: $rail-height;
-	position: absolute;
-	transition: opacity var(--duration-gradual) var(--easing-out) var(--duration-fast),
-		transform var(--duration-gradual) var(--easing-out) var(--duration-fast);
-	z-index: 5;
-
-	@if $anchor == 'bottom' or $anchor == 'top' {
-		inset-inline: 0;
-		transform-origin: left center;
-		transform: scaleX(#{$rail-size});
-
-		@if $anchor == 'bottom' {
-			inset-block: auto $rail-inset;
-		} @else {
-			inset-block: $rail-inset auto;
-		}
-	} @else if $anchor == 'left' or $anchor == 'right' {
-		inset-block: 0;
-		transform-origin: top center;
-		transform: scaleY(#{$rail-size});
-
-		@if $anchor == 'left' {
-			inset-inline: auto $rail-inset;
-		} @else {
-			inset-inline: $rail-inset auto;
-		}
 	}
 }
 
@@ -222,5 +166,131 @@ $fontSizes: (
 
 	&:hover {
 		color: var(--inkq-color-link-hover);
+	}
+}
+
+//	layout
+
+@mixin item-block {
+	background-color: var(--inkq-background-card);
+	border-radius: var(--inkq-border-radius-md);
+	border: 1px solid var(--inkq-border);
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-3);
+	height: 100%;
+	justify-content: space-between;
+	overflow: hidden;
+	padding: var(--space-7);
+	position: relative;
+}
+
+@mixin step {
+	align-items: start;
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	justify-content: start;
+	padding-block-start: var(--space-4);
+	position: relative;
+	row-gap: var(--space-3);
+}
+
+//	lines
+
+@mixin underline($animated: false) {
+	display: inline-flex;
+	overflow: hidden clip;
+	position: relative;
+	text-wrap: pretty;
+
+	&::after {
+		background-color: var(--inkq-color-action-hover);
+		content: '';
+		display: block;
+		height: 1px;
+		inset: 0;
+		inset-block-start: auto;
+		pointer-events: none;
+		position: absolute;
+		user-select: none;
+		width: 100%;
+	}
+
+	@if $animated == true {
+		transition-duration: var(--duration-gradual);
+
+		&::after {
+			transform: translateX(-101%);
+			transition: opacity var(--duration-gradual) var(--easing-out) var(--duration-fast),
+				transform var(--duration-gradual) var(--easing-out) var(--duration-fast);
+			will-change: opacity, transform;
+		}
+
+		&:hover::after {
+			transform: translateX(0);
+		}
+	}
+}
+
+@mixin rail($anchor: 'bottom', $config: null) {
+	$rail-color: var(--inkq-color-action);
+	$rail-scale: 1;
+	$rail-size: 2px;
+	$rail-transition: var(--duration-gradual) var(--easing-out) var(--duration-fast);
+
+	@if $config and meta.type-of($config) == 'map' {
+		@if map.has-key($config, 'color') {
+			$rail-color: map.get($config, 'color');
+		}
+
+		@if map.has-key($config, 'scale') {
+			$rail-scale: map.get($config, 'scale');
+		}
+
+		@if map.has-key($config, 'size') {
+			$rail-size: map.get($config, 'size');
+		}
+
+		@if map.has-key($config, 'transition') {
+			$rail-transition: map.get($config, 'transition');
+		}
+	}
+
+	background-color: $rail-color;
+	display: block;
+	pointer-events: none;
+	position: absolute;
+	transition: opacity $rail-transition, transform $rail-transition;
+	user-select: none;
+	z-index: 5;
+
+	// $rail-inset: calc(#{$rail-scale} * #{$rail-size});
+	$rail-inset: 0;
+
+	@if $anchor == 'bottom' or $anchor == 'top' {
+		height: $rail-size;
+		inset-inline: 0;
+		transform: scaleX(#{$rail-scale});
+
+		@if $anchor == 'bottom' {
+			inset-block: auto $rail-inset;
+			transform-origin: left bottom;
+		} @else {
+			inset-block: $rail-inset auto;
+			transform-origin: left top;
+		}
+	} @else if $anchor == 'left' or $anchor == 'right' {
+		inset-block: 0;
+		transform: scaleY(#{$rail-scale});
+		width: $rail-size;
+
+		@if $anchor == 'left' {
+			inset-inline: $rail-inset auto;
+			transform-origin: left top;
+		} @else {
+			inset-inline: auto $rail-inset;
+			transform-origin: right top;
+		}
 	}
 }
