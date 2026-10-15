@@ -39,9 +39,9 @@ const listSharedTokens = <
 		rowGap
 
 	if (order) {
-		const isDescend = order === 'descend'
-		flexAlign = isDescend ? 'start' : 'end'
-		flexDirection = `column${isDescend ? '' : '-reverse'}`
+		const isAscend = order === 'ascend'
+		flexAlign = isAscend ? 'start' : 'end'
+		flexDirection = `column${isAscend ? '-reverse' : ''}`
 	}
 
 	if (size) {

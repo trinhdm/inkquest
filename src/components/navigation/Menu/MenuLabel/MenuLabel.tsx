@@ -56,6 +56,8 @@ export const MenuLabel = polymorphic<MenuLabelSpecs>((_props, { useProps, useSty
 				as={ Link }
 				attributes={ { aria: { current: isActive ? 'page' : undefined } } }
 				href={ item.route }
+				scroll={ true }
+				shallow={ false }
 			>
 				{ item.label }
 			</Box>

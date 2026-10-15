@@ -39,7 +39,7 @@
 		align-self: stretch;
 		display: flex;
 		justify-content: center;
-		padding-top: calc(var(--timeline-space) - var(--timeline-bullet-border));
+		padding-block-start: calc(var(--timeline-space) - var(--timeline-bullet-border));
 		position: relative;
 	}
 

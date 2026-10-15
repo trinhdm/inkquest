@@ -57,7 +57,7 @@ const tokensBySize = <N extends AccordionName = 'root'>({
 		step = { sm: 2, md: 1, lg: 0 }[size]
 
 	const base: AccordionTokenConfig = {
-		colWidth: 11,
+		colWidth: isBlockquote ? 9 : 11,
 		gap: 9,
 		indicator: isBlockquote ? 20 : 24,
 		order: order ?? 3,
@@ -82,12 +82,12 @@ const listSharedTokens = <
 	if (!config) return {} as SpecsTokenGroups<S>
 
 	let stepSize,
-		titleGap = `var(--space-${config.gap})`,
+		titleGap: number | string = `var(--space-${config.gap})`,
 		titleSize = `var(--inkq-font-size-h${config.order})`
 
 	switch (props.layout) {
 		case 'blockquote':
-			titleGap = `${0}`
+			titleGap = 0
 			titleSize = theme.fontSize('caption')
 			break
 		case 'steps':

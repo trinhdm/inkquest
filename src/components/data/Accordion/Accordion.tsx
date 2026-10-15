@@ -164,7 +164,7 @@ export const Accordion = polymorphic<AccordionSpecs>((_props, { useProps, useSty
 		>
 			<AccordionProvider value={ ctxValues }>
 				<div { ...styles('wrapper') }>
-					<span { ...styles('divider') } />
+					{ layout !== 'blockquote' && <span { ...styles('divider') } /> }
 					{ buildAccordion(children) }
 				</div>
 			</AccordionProvider>

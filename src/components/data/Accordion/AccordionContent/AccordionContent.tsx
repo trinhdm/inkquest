@@ -39,7 +39,7 @@ const tokens = defineTokens<AccordionContentSpecs>()(({ context, theme }) => {
 	let contentIndent, contentSize
 
 	if (layout === 'steps')
-		contentIndent = 'calc(var(--accordion-column-width) + var(--accordion-gap))'
+		contentIndent = 'calc(var(--accordion-column-width) + var(--accordion-title-gap))'
 
 	if (!!size) {
 		const fontSize = []

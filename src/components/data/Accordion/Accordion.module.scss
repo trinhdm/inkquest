@@ -10,6 +10,7 @@
 	position: relative;
 
 	&__divider {
+		background-color: var(--accordion-border-color);
 		display: block;
 		height: 1px;
 		inset: 0;
@@ -26,9 +27,7 @@
 	}
 
 	&:not([class$="blockquote"]) {
-		#{$name}__divider {
-			background-color: var(--accordion-border-color);
-		}
+		width: 100%;
 
 		&:last-of-type {
 			border-bottom: 1px solid var(--accordion-border-color);
@@ -47,16 +46,31 @@
 			--accordion-title-color: var(--inkq-color-text);
 			--accordion-title-tracking: var(--inkq-font-tracking-display);
 		}
+
+		#{$name}__wrapper:hover #{$title-name} {
+			--accordion-indicator-color: var(--inkq-color-action-active);
+		}
 	}
 
 	&:where([class$="blockquote"]) {
+		width: max-content;
+
 		#{$title-name} {
 			--accordion-indicator-color: var(--accordion-title-color);
+			--accordion-title-color: var(--inkq-color-text-tertiary);
 			--accordion-title-tracking: var(--inkq-font-tracking-wide);
+
+			&:hover {
+				--accordion-indicator-color: var(--inkq-color-action-hover);
+			}
 		}
 
 		&:is([data-open]) #{$title-name} {
 			--accordion-title-color: var(--inkq-color-action);
+
+			&:hover {
+				--accordion-indicator-color: var(--inkq-color-text-tertiary);
+			}
 		}
 	}
 }
@@ -69,14 +83,19 @@
 	display: flex;
 	flex-direction: var(--accordion-title-direction, 'row');
 	justify-content: space-between;
-	width: 100%;
 
 	.inkq-accordion:not([class$="blockquote"]) & {
 		padding-block: var(--accordion-padding);
+		width: 100%;
 	}
 
 	.inkq-accordion:where([class$="blockquote"]) & {
 		margin-block: var(--accordion-padding);
+		width: max-content;
+	}
+
+	&__wrapper {
+		line-height: var(--inkq-font-leading-label);
 	}
 
 	&__indicator,
@@ -84,6 +103,7 @@
 		align-items: center;
 		display: grid;
 		flex: 1 0 var(--accordion-column-width);
+		line-height: inherit;
 	}
 
 	&__indicator {
@@ -111,10 +131,6 @@
 			.inkq-accordion:where([data-open]) & {
 				transform: rotate(var(--icon-rotate));
 			}
-
-			.inkq-accordion__wrapper:hover & {
-				color: var(--inkq-color-action-hover);
-			}
 		}
 	}
 
@@ -131,7 +147,7 @@
 		font-size: var(--accordion-title-size, var(--inkq-font-size-h3));
 		font-weight: var(--inkq-font-weight-semibold);
 		letter-spacing: var(--accordion-title-tracking);
-		line-height: var(--inkq-font-leading-label);
+		line-height: inherit;
 		text-align: left;
 
 		&:first-child {
@@ -177,6 +193,7 @@
 	&__inner {
 		margin-inline: var(--accordion-content-indent, var(--accordion-indent));
 		max-width: var(--inkq-container-block);
+		width: 100%;
 
 		.inkq-accordion:not([class$="blockquote"]) & {
 			padding-block-end: var(--accordion-padding);

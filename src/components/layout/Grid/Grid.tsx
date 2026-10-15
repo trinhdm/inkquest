@@ -14,6 +14,7 @@ const NAME = 'Grid' as const,
 
 const DEFAULT_PROPS = {
 	as: TAG,
+	equalWidth: true,
 } as const
 
 const SUBCOMPONENTS = {
@@ -72,20 +73,21 @@ const tokens = defineTokens<GridSpecs>()(({ props, theme }) => {
 	const { columns, equalWidth, gap, layout } = props
 
 	const gridCols = [], gridWidth = 'minmax(0, 1fr)',
-		gridGap = ['grid']
+		gridGap = ['grid'],
+		isLayoutSidebar = layout === 'sidebar'
 
 	if (gap) gridGap.push(gap)
 
 	if (!!(columns && columns > 0))
 		gridCols.push(columns)
-	else if (layout === 'sidebar')
-		gridCols.push('minmax(15rem, auto)')
+	else if (isLayoutSidebar)
+		gridCols.push('minmax(auto, 15rem)')
 	else
 		gridCols.push('auto-fit')
 
 	gridCols.push(gridWidth)
 
-	const gridTemplate = typeof equalWidth === 'boolean' && !!equalWidth
+	const gridTemplate = (typeof equalWidth === 'boolean' && !!equalWidth) && !isLayoutSidebar
 		? `repeat(${gridCols.join(', ')})`
 		: gridCols.join(' ')
 

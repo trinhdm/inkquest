@@ -58,6 +58,7 @@ const buildHeader = (
 			Tag = `h${order}` as const
 
 		switch (layout) {
+			case 'hero':
 			case 'hero-split':
 				clsxNames.push(`${Tag}-display`)
 				break
@@ -160,7 +161,12 @@ const buildContent = (
 		if (isHeroVariation)
 			Object.assign(ctxValues, { as: Grid.Item, span: 1 })
 
-		const footnote = <SectionProvider value={ ctxValues }>{ footer }</SectionProvider>
+		const footnote = (
+			<SectionProvider key={ `${id}-footer` } value={ ctxValues }>
+				{ footer }
+			</SectionProvider>
+		)
+
 		content.footer = footnote
 	}
 
@@ -191,7 +197,7 @@ export const buildSection = (config: Omit<BuildSectionConfig, 'id'>) => {
 				span = !!columns ? columns - 1 : undefined
 
 			return (
-				<Grid equalWidth columns={ columns } { ...styles('inner') }>
+				<Grid columns={ columns } { ...styles('inner') }>
 					<Grid.Item span={ span } { ...styles('content') }>
 						{ header }{ body }
 					</Grid.Item>
