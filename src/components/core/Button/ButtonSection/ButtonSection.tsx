@@ -1,5 +1,6 @@
-import { useButtonCtx, useButtonProps } from '../Button.context'
+import { useButton } from '../Button.context'
 import { extractOthers } from '@/hooks/useProps'
+import { keyHasValue } from '@/utils/helpers'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import type { Button } from '../Button'
@@ -32,12 +33,20 @@ type ButtonSectionSelectors =
 	| 'section'
 
 export const ButtonSection = polymorphic<ButtonSectionSpecs>((_props, { useProps, useStyles }) => {
+	const { useButtonCtx, useButtonProps } = useButton()
+
 	const context = useButtonCtx(NAME)
 	const props = useProps(useButtonProps(_props))
 	const styles = useStyles({ context, props, withRootName: true })
 
-	const { children, left, right, ...rest } = props
+	const {
+		children,
+		left, right,
+		...rest
+	} = props
+
 	const others = extractOthers(rest)
+	const isRight = keyHasValue(props, { right: true })
 
 	return (
 		<Box
@@ -45,7 +54,7 @@ export const ButtonSection = polymorphic<ButtonSectionSpecs>((_props, { useProps
 			{ ...others }
 			as="span"
 			attributes={ { data: {
-				side: left ? 'left' : 'right',
+				side: isRight ? 'right' : 'left',
 			} } }
 		>
 			{ children }

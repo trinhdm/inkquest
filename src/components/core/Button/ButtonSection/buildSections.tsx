@@ -1,4 +1,5 @@
 import { isValidElement, Children, type ReactNode } from 'react'
+import { keyHasValue } from '@/utils/helpers'
 import { verifyChildren } from '@/lib/component/children'
 import { ButtonSection } from './ButtonSection'
 import type { Button } from '../Button'
@@ -21,14 +22,14 @@ export const buildSections = ({
 
 	Children.toArray(children).forEach(child => {
 		if (isValidElement<ButtonSection.Props>(child) && child.type === ButtonSection) {
-			const isLeft = 'left' in child.props && !!child.props.left,
-				taken = isLeft ? left : right
+			const isRight = keyHasValue(child.props, { right: true }),
+				taken = isRight ? right : left
 
 			if (!taken) {
-				if (isLeft) left = child
-				else right = child
+				if (isRight) right = child
+				else left = child
 			} else {
-				const childName = `${ButtonSection.displayName}[${isLeft ? 'left' : 'right'}]`
+				const childName = `${ButtonSection.displayName}[${isRight ? 'right' : 'left'}]`
 				verifyChildren({ name: { childName, parentName }, repeated: [child] })
 			}
 			return

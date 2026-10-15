@@ -9,3 +9,5 @@ export const {
 	useRootCtx: useButtonCtx,
 	useRootProps: useButtonProps,
 } = createCompoundCtx<ButtonContext, 'Button'>('Button')
+
+export const useButton = () => ({ useButtonCtx, useButtonProps })
