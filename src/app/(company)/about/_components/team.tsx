@@ -1,6 +1,7 @@
 import { Card } from '@/components/core/Card'
 import { Grid } from '@/components/layout/Grid'
 import { Section } from '@/components/layout/Section'
+import { SEPARATOR } from '@/utils/constants'
 import { TEAM_MEMBERS } from '../_utils/about.data'
 
 export const AboutTeam = () => {
@@ -18,7 +19,7 @@ export const AboutTeam = () => {
 					<Card
 						key={ `${id}-member` }
 						title={ name }
-						caption={ role?.join(' · ') }
+						caption={ role?.join(SEPARATOR) }
 					/>
 				)) }
 			</Grid>

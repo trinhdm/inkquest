@@ -1,4 +1,23 @@
+import type { AddressData } from '@/types/shared'
+
+export const SEPARATOR = ' · '
 export const COMPANY_NAME = 'Inkquest'
+
+export const COMPANY_INFO = {
+	legal_name: `${COMPANY_NAME}, Inc.`,
+	address: {
+		street_line1: '550 Bryant Street',
+		street_line2: 'Suite 400',
+		city: 'San Francisco',
+		state: 'CA',
+		zip: '94107',
+		country: 'US',
+	},
+} as const satisfies {
+	legal_name: string
+	address: AddressData
+}
+
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? ''
 
 export const PREFIX_CSS_SELECTOR = 'inkq'

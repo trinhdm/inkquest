@@ -1,6 +1,6 @@
 @use '@/styles/mixins' as global;
 
-.legal-history {
+.changelog {
 	$name: &;
 
 	&__list {
@@ -18,17 +18,13 @@
 		line-height: inherit;
 	}
 
-	&__details {
+	&__note {
 		color: var(--inkq-color-text-secondary);
 	}
 }
 
-.legal-content {
+.legality {
 	$name: &;
-
-	&__section {
-		scroll-margin-top: var(--inkq-stack-gap-head);
-	}
 
 	&__label {
 		@include global.label('control');
@@ -41,7 +37,7 @@
 	&__body {
 		@include global.prose;
 
-		#{$name}__intro & {
+		#{$name}--intro & {
 			color: var(--inkq-color-text);
 		}
 	}
@@ -49,9 +45,13 @@
 	&__list {
 		@include global.list;
 	}
+
+	&--section {
+		scroll-margin-top: var(--inkq-stack-gap-head);
+	}
 }
 
-.legal-footnote {
+.footnote {
 	$name: &;
 
 	@include global.blurb('note');

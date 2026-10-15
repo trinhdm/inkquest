@@ -1,21 +1,18 @@
 'use client'
 
+import { LegalContent } from '../_components/content'
+import { LegalFooter } from '../_components/footer'
+import { LegalHero } from '../_components/hero'
 import { Progress } from '@/components/data/Progress'
-import { Section } from '@/components/layout/Section'
+import { TERMS_PAGE_DATA } from './terms.data'
 
 export default function TermsConditions() {
-	const pageID = 'terms-conditions'
-
 	return (
 		<>
 			<Progress />
-			<Section
-				id={ `${pageID}-hero` }
-				layout="hero"
-				title="Terms & Conditions"
-			>
-				content
-			</Section>
+			<LegalHero { ...TERMS_PAGE_DATA } />
+			<LegalContent { ...TERMS_PAGE_DATA } />
+			<LegalFooter { ...TERMS_PAGE_DATA } />
 		</>
 	)
 }

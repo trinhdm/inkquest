@@ -3,6 +3,7 @@ import { Grid } from '@/components/layout/Grid'
 import { Group } from '@/components/layout/Group'
 import { Section } from '@/components/layout/Section'
 import { ASSETS_LIST } from '../_utils/press.data'
+import { SEPARATOR } from '@/utils/constants'
 import type { Route } from 'next'
 
 export const PressAssets = () => {
@@ -40,7 +41,9 @@ export const PressAssets = () => {
 									<h3 className="inkq-h5 asset__title">{ title }</h3>
 									<p className="asset__content">{ content }</p>
 									{ !!info.length && (
-										<span className="asset__info">{ info.join(' · ') }</span>
+										<span className="asset__info">
+											{ info.join(SEPARATOR) }
+										</span>
 									) }
 								</Group.Item>
 
