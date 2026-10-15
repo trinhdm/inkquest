@@ -1,38 +1,18 @@
 'use client'
 
-import {
-	PRIVACY_SECTIONS, VERSION_HISTORY,
-	type LegalSection,
-} from './privacy-policy.data'
-
 import { useState } from 'react'
 import { useActiveID } from '@/hooks/useActiveID'
 import { formatDate } from '@/utils/helpers'
+import { getLegalTitles } from '../utils'
 import { Accordion } from '@/components/data/Accordion'
 import { Button } from '@/components/core/Button'
 import { Grid } from '@/components/layout/Grid'
 import { Section } from '@/components/layout/Section'
 import { Sidebar } from '@/components/layout/Sidebar'
-import type { Route } from 'next'
-
-const getSectionUrl = (id: string): Route<string> =>
-	`/privacy-policy#${id}`
-
-const formatLegalTitle = (
-	title: LegalSection['title'],
-	index: number,
-): string =>
-	`${index + 1}. ${title}`
-
-const findLegalTitles = (sections: LegalSection[]): Sidebar.LinkItem[] =>
-	sections.map(({ id, title }, i) => ({
-		id,
-		label: formatLegalTitle(title, i),
-		url: getSectionUrl(id),
-	}))
+import { PRIVACY_SECTIONS, VERSION_HISTORY } from './privacy-policy.data'
 
 const SECTIONS = PRIVACY_SECTIONS.filter(({ title }) => !!title),
-	TITLES = findLegalTitles('privacy-policy', SECTIONS),
+	TITLES = getLegalTitles('privacy-policy', SECTIONS),
 	IDS = TITLES.map(({ id }) => id)
 
 export default function PrivacyPolicy() {

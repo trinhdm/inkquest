@@ -1,10 +1,4 @@
-import type { CalendarDate, PageDataItem } from '@/types/shared'
-
-interface VersionGroup {
-	date?: CalendarDate
-	note?: string
-	version: number | `${number}`
-}
+import type { LegalSection, VersionGroup } from '../legal.types'
 
 export const VERSION_HISTORY: VersionGroup[] = [
 	{
@@ -35,30 +29,6 @@ export const VERSION_HISTORY: VersionGroup[] = [
 		note: 'Full rewrite for marketplace launch; new payment-processor disclosures.',
 	},
 ]
-
-type LegalSectionBody =
-	| { list: string[] }
-	| { p: string }
-
-interface LegalIntroSection {
-	title?: never
-	summary?: never
-	body: LegalSectionBody[]
-}
-
-interface LegalContentSection {
-	title?: PageDataItem['title']
-	summary?: string
-	body: LegalSectionBody[]
-}
-
-type LegalSectionTypes =
-	| LegalIntroSection
-	| LegalContentSection
-
-export type LegalSection =
-	& Pick<PageDataItem, 'id'>
-	& LegalSectionTypes
 
 export const PRIVACY_SECTIONS: LegalSection[] = [
 	{
