@@ -1,5 +1,5 @@
 import { Eye } from 'lucide-react'
-import { useChosenFieldProps, useFieldCtx, type Field } from '../Field'
+import { useField, type Field } from '../Field'
 import { extractOthers } from '@/hooks/useProps'
 import { getSharedTokens, type FieldTokens as TextInputTokens } from '../utils'
 import { polymorphic } from '@/lib/component/factory'
@@ -57,6 +57,8 @@ type TextInputSelectors =
 const tokens = getSharedTokens('input')
 
 export const TextInput = polymorphic<TextInputSpecs>((_props, { useProps, useStyles }) => {
+	const { useChosenFieldProps, useFieldCtx } = useField()
+
 	const context = useFieldCtx(NAME)
 	const props = useProps(useChosenFieldProps(_props))
 	const styles = useStyles({ context, props, tokens })

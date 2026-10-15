@@ -22,7 +22,11 @@ export const FaqsHero = () => {
 			<Section.Footer>
 				<Suspense fallback={ (
 					<Field disabled id={ `${pageID}-search` } size="lg">
-						<Field.Input placeholder="Search all FAQs…" type="search" />
+						<Field.Input
+							name="faq-search"
+							placeholder="Search all FAQs…"
+							type="search"
+						/>
 					</Field>
 				) }>
 					<FaqSearch />

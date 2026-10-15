@@ -63,6 +63,7 @@ export const FaqSearch = () => {
 	return (
 		<Field id={ `${pageID}-search` } size="lg">
 			<Field.Input
+				name="faq-search"
 				onChange={ handleChange }
 				placeholder="Search all FAQs…"
 				type="search"

@@ -57,3 +57,5 @@ const sharedFieldProps = [
 
 export const useChosenFieldProps = <P extends object>(_props: P) =>
 	useFieldProps(_props, ...sharedFieldProps)
+
+export const useField = () => ({ useChosenFieldProps, useFieldCtx, useFieldProps })
