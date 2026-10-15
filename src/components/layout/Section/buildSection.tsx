@@ -48,17 +48,36 @@ const buildHeader = (
 				{ eyebrow }
 			</span>
 		)
+
 		header.eyebrow = tagline
 	}
 
 	if (!!title) {
-		const Tag = layout?.includes('hero') ? 'h1' : 'h2',
-			clsx = layout === 'hero-split' ? { global: { [`${Tag}-display`]: true } } : {}
+		const clsxNames: string[] = [],
+			order = layout?.includes('hero') ? 1 : 2,
+			Tag = `h${order}` as const
+
+		switch (layout) {
+			case 'hero-split':
+				clsxNames.push(`${Tag}-display`)
+				break
+			case 'hero-tight':
+			case 'content':
+				clsxNames.push(`h${order + 2}`)
+				break
+		}
+
+		const global = clsxNames.reduce<Record<string, boolean>>((acc, cn) => {
+			acc[cn] = true
+			return acc
+		}, {})
+
 		const headline = (
-			<Tag key={ `${id}-title` } { ...styles('title', clsx) } { ...reveal.next() }>
+			<Tag key={ `${id}-title` } { ...styles('title', { global }) } { ...reveal.next() }>
 				{ title }
 			</Tag>
 		)
+
 		header.title = headline
 	}
 
@@ -102,13 +121,12 @@ const buildContent = (
 	}
 
 	const { eyebrow, layout, title } = props,
-		hasSiblings = !!(title || eyebrow || footer)
+		hasSiblings = !!(title || eyebrow || footer),
+		isHeroTight = layout === 'hero-tight'
 
 	if (!!items?.length) {
-		const clsx = { global: { prose: true } },
-			[first] = items
-
-		let args = { ...styles('description', clsx) },
+		const [first] = items
+		let args = { ...styles('description', { global: { prose: !isHeroTight } }) },
 			DescTag: ElementType | undefined
 
 		if (items.length > 1) {
@@ -123,7 +141,7 @@ const buildContent = (
 			: items
 
 		const key = `${id}-body`,
-			body = hasSiblings
+			body = hasSiblings && !isHeroTight
 				? <div key={ key } { ...styles('body') }>{ description }</div>
 				: <Fragment key={ key }>{ description }</Fragment>
 

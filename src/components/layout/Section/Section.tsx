@@ -26,9 +26,11 @@ const SUBCOMPONENTS = {
 type SectionLayout =
 	| 'banner'
 	| 'blocks'
+	| 'content'
 	| 'default'
 	| 'hero'
 	| 'hero-split'
+	| 'hero-tight'
 	| 'split'
 
 interface BaseSectionProps {

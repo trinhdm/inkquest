@@ -38,7 +38,16 @@ interface LayoutItemTokens {
 }
 
 export interface GridTokens {
-	gutter: string
+	gutter: {
+		base: TokenVariableShape
+		content: TokenVariableShape
+		list: TokenVariableShape
+	}
+
+	indent: {
+		list: TokenVariableShape
+	}
+
 	hero: LayoutItemTokens
 	section: LayoutItemTokens
 
@@ -63,43 +72,64 @@ export interface GridTokens {
 		gap: TokenVariableShape
 		padding: TokenSizeShape
 	}
+
+	// paragraph: {
+	// 	gap: TokenVariableShape
+	// }
 }
 
-export const getGridTokens = (): GridTokens => ({
-	gutter: base.space('10'),
+export const getGridTokens = (): GridTokens => {
+	const start = 5,
+		step = 2,
+		stack = Array.from({ length: 4 }, (_, i) => (start + (i * step)))
 
-	hero: {
-		padding: base.space('16'),
-	},
-
-	section: {
-		padding: base.space('15'),
-	},
-
-	stack: {
-		padding: base.space('15'),
-
-		gap: {
-			kicker: base.space('5'),
-			head: base.space('11'),
-			lede: base.space('7'),
-			cta: base.space('9'),
+	return {
+		gutter: {
+			base: base.space('10'),
+			content: base.space('4'),
+			list: base.space('2'),
 		},
-	},
 
-	footer: {
-		padding: `${base.space('12')} ${base.space('10')}`,
-	},
-
-	navbar: { size: base.space('13') },
-	subnav: { size: base.space('10') },
-
-	field: {
-		gap: base.space('3'),
-		padding: {
-			sm: base.space('2'),
-			md: base.space('3'),
-			lg: base.space('4'),
+		indent: {
+			list: base.space('5'),
 		},
-	},
-})
+
+		stack: {
+			gap: {
+				kicker: base.space(`${stack[0]}`),
+				head: base.space(`${stack[3]}`),
+				lede: base.space(`${stack[1]}`),
+				cta: base.space(`${stack[2]}`),
+			},
+			padding: base.space('15'),
+		},
+
+		hero: {
+			padding: base.space('16'),
+		},
+
+		section: {
+			padding: base.space('15'),
+		},
+
+		footer: {
+			padding: `${base.space('12')} ${base.space('10')}`,
+		},
+
+		navbar: { size: base.space('13') },
+		subnav: { size: base.space('10') },
+
+		// paragraph: {
+		// 	gap: contentGutter,
+		// },
+
+		field: {
+			gap: base.space('3'),
+			padding: {
+				sm: base.space('2'),
+				md: base.space('3'),
+				lg: base.space('4'),
+			},
+		},
+	}
+}
