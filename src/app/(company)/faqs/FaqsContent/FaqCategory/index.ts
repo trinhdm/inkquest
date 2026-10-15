@@ -1,1 +1,0 @@
-export { FaqCategory } from './FaqCategory'

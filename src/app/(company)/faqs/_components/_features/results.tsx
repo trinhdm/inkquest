@@ -1,9 +1,7 @@
-'use client'
-
 import Link from 'next/link'
-import { countFaqs } from '../../utils'
-import { FaqCategory } from '../FaqCategory'
-import type { FaqGroup } from '../../faqs.data'
+import { countFaqs } from '../../_utils'
+import { FaqCategory } from './category'
+import type { FaqGroup } from '../../_utils/faqs.data'
 
 interface FaqResultsProps {
 	groups: FaqGroup[]
@@ -17,13 +15,13 @@ export const FaqResults = ({ groups, query, terms }: FaqResultsProps) => {
 
 	return (
 		<>
-			<div className="faq-heading">
-				<span aria-live="polite" className="inkq-eyebrow" role="status">
-					{ count > 0 ? count : 'No' } { resultStr } &quot;<strong>{ query }</strong>&quot;
+			<div className="faq__heading">
+				<span aria-live="polite" className="faq__count" role="status">
+					{ count > 0 ? <span>{ count }</span> : 'No' } { resultStr } &quot;<strong>{ query }</strong>&quot;
 				</span>
 			</div>
 
-			<div className="faq-content">
+			<div className="faq__content">
 				{ !!groups.length
 					? groups.map(group => (
 						<FaqCategory

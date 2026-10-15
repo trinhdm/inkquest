@@ -1,10 +1,8 @@
-'use client'
-
 import { Suspense } from 'react'
-import { useFaqsCtx } from '../faqs.context'
-import { resolveFaqGroup } from '../utils'
-import { FaqBrowser } from './FaqBrowser'
-import { FaqCategory } from './FaqCategory'
+import { useFaqsCtx } from '../_utils/faqs.context'
+import { resolveFaqGroup } from '../_utils'
+import { FaqBrowser } from './_features/browser'
+import { FaqCategory } from './_features/category'
 import { Section } from '@/components/layout/Section'
 
 export const FaqsContent = () => {

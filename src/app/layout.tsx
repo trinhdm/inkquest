@@ -1,12 +1,16 @@
 import { Archivo, Archivo_Black, Space_Mono } from 'next/font/google'
 import { AppProvider } from '@/providers/AppProvider'
 import { ScriptInjector } from '@/components/document/ScriptInjector'
+import { COMPANY_NAME } from '@/utils/constants'
 import type { Metadata } from 'next'
 import '@/styles/_global.scss'
 
 export const metadata: Metadata = {
-	title: "Inkquest",
-	description: "Tattoo artist platform",
+	title: {
+		default: COMPANY_NAME,
+		template: `%s | ${COMPANY_NAME}`,
+	},
+	description: 'Tattoo artist platform',
 }
 
 const archivo = Archivo({

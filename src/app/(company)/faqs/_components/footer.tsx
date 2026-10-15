@@ -1,10 +1,8 @@
-'use client'
-
-import { useFaqsCtx } from '../faqs.context'
+import { useFaqsCtx } from '../_utils/faqs.context'
 import { Button } from '@/components/core/Button'
 import { Section } from '@/components/layout/Section'
 
-export const FaqsBanner = () => {
+export const FaqsFooter = () => {
 	const { pageID } = useFaqsCtx()
 
 	return (
@@ -24,4 +22,4 @@ export const FaqsBanner = () => {
 	)
 }
 
-FaqsBanner.displayName = 'FaqsBanner'
+FaqsFooter.displayName = 'FaqsFooter'

@@ -1,9 +1,7 @@
-'use client'
-
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useDebounce } from '@/hooks/useDebounce'
-import { useFaqsCtx, type FaqsContext } from '../../faqs.context'
+import { useFaqsCtx, type FaqsContext } from '../../_utils/faqs.context'
 import { Field } from '@/components/form/Field'
 import type { ChangeEventHandler } from 'react'
 import type { Route } from 'next'

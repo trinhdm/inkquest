@@ -1,17 +1,14 @@
-'use client'
-
 import { useOptimistic, useTransition } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useFaqsCtx } from '../../faqs.context'
+import { useFaqsCtx } from '../../_utils/faqs.context'
 import { extractText } from '@/lib/component/children'
-import { resolveFaqGroup } from '../../utils'
-import { FaqCategory } from '../FaqCategory'
-import { FaqResults } from '../FaqResults'
+import { resolveFaqGroup } from '../../_utils'
+import { FaqCategory } from './category'
+import { FaqResults } from './results'
 import { Grid } from '@/components/layout/Grid'
 import { Sidebar } from '@/components/layout/Sidebar'
-import { FAQ_ITEMS, type FaqGroup } from '../../faqs.data'
+import { FAQ_ITEMS, type FaqGroup } from '../../_utils/faqs.data'
 import type { Route } from 'next'
-
 
 const getCategoryUrl = (id: string, param: string): Route<string> =>
 	`/faqs?${param}=${id}`

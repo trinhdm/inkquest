@@ -1,1 +1,0 @@
-export { FaqResults } from './FaqResults'

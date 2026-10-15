@@ -1,26 +1,40 @@
-#faqs-content {
-	.faq-heading {
+@use '@/styles/mixins' as global;
+
+#faqs-content .faq {
+	$name: &;
+
+	&__heading {
 		align-items: baseline;
 		column-gap: var(--space-5);
 		display: flex;
 		margin-block-end: var(--inkq-stack-gap-lede);
 
 		h2 {
+			color: var(--inkq-color-text);
 			font-size: var(--inkq-font-size-h3);
 		}
 	}
 
-	.faq-content {
-		p {
+	&__content {
+		color: var(--inkq-color-text-secondary);
+	}
+
+	&__count {
+		@include global.eyebrow;
+
+		span {
 			color: var(--inkq-color-text-secondary);
+			font-weight: var(--inkq-font-weight-semibold);
+		}
+	}
+
+	&__category {
+		&:has(+ &) {
+			padding-block: var(--inkq-stack-gap-lede);
 		}
 
-		.faq-category-group {
-			padding-block: var(--inkq-stack-gap-lede);
-
-			&:last-child {
-				padding-block-end: 0;
-			}
+		&:last-child:not(:only-of-type) {
+			padding-block-start: var(--inkq-stack-gap-lede);
 		}
 	}
 }

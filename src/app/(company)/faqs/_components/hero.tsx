@@ -1,9 +1,7 @@
-'use client'
-
 import Link from 'next/link'
 import { Suspense } from 'react'
-import { useFaqsCtx } from '../faqs.context'
-import { FaqSearch } from './FaqSearch'
+import { useFaqsCtx } from '../_utils/faqs.context'
+import { FaqSearch } from './_features/search'
 import { Field } from '@/components/form/Field'
 import { Section } from '@/components/layout/Section'
 

@@ -1,10 +1,8 @@
-'use client'
-
-import { countFaqs } from '../../utils'
+import { countFaqs } from '../../_utils'
 import { highlightText } from '@/lib/component/children'
 import { Accordion } from '@/components/data/Accordion'
 import { Section } from '@/components/layout/Section'
-import type { FaqGroup } from '../../faqs.data'
+import type { FaqGroup } from '../../_utils/faqs.data'
 
 interface FaqCategoryProps {
 	group: FaqGroup
@@ -24,12 +22,12 @@ export const FaqCategory = ({
 		<Section
 			unstyled
 			attributes={ { aria: { labelledby: headingID } } }
-			className="faq-category-group"
+			className="faq__category"
 			id={ id }
 		>
-			<div className="faq-heading">
+			<div className="faq__heading">
 				<h2 id={ headingID }>{ category }</h2>
-				<span className="inkq-eyebrow">{ count } question{ count === 1 ? '' : 's' }</span>
+				<span className="faq__count">{ count } question{ count === 1 ? '' : 's' }</span>
 			</div>
 
 			{ count > 0 ? (
@@ -46,7 +44,7 @@ export const FaqCategory = ({
 					)) }
 				</Accordion.Group>
 			) : (
-				<div className="faq-content">
+				<div className="faq__content">
 					<p>Nothing here yet. Check back soon.</p>
 				</div>
 			) }
