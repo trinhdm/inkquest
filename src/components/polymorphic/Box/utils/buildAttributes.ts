@@ -14,6 +14,8 @@ const STATE_KEYS = new Set([
 	'busy', 'checked', 'disabled', 'expanded',
 	'invalid', 'loading', 'pressed', 'readonly',
 	'required', 'selected',
+	//	custom data-attrs for storing strings
+	'keep', 'tooltip',
 ])
 const DISABLEABLE_TAGS: readonly string[] = [
 	'button', 'fieldset', 'input',

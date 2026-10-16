@@ -35,7 +35,6 @@ interface SidebarItemSpecs {
 type SidebarItemSelectors =
 	| 'item' | 'button'
 
-
 const replaceUrl = (url: SidebarLinkItem['url']) =>
 	(event: { preventDefault: () => void }) => {
 		event.preventDefault()
@@ -59,10 +58,13 @@ export const SidebarItem = polymorphic<SidebarItemSpecs>((_props, { useProps, us
 
 	if (url) {
 		return (
-			<Box { ...outerProps } role="menuitem">
+			<Box { ...outerProps }>
 				<Button
 					{ ...innerProps }
-					attributes={ { aria: { current: isActive ? 'page' : undefined } } }
+					attributes={ {
+						aria: { current: isActive ? 'page' : undefined },
+						data: { keep: label },
+					} }
 					href={ url }
 					onNavigate={ event => {
 						if (shallow) replaceUrl(url)(event)
@@ -80,7 +82,10 @@ export const SidebarItem = polymorphic<SidebarItemSpecs>((_props, { useProps, us
 		<Box { ...outerProps }>
 			<Button
 				{ ...innerProps }
-				attributes={ { aria: { current: isActive || undefined } } }
+				attributes={ {
+					aria: { current: isActive || undefined },
+					data: { keep: label },
+				} }
 				onClick={ () => onChange?.(id) }
 			>
 				{ label }

@@ -80,9 +80,8 @@ interface SidebarSpecs {
 }
 
 type SidebarSelectors =
-	| 'root' | 'inner' | 'wrapper'
+	| 'root' | 'wrapper' | 'inner'
 	| 'label' | 'highlight'
-	| 'button' | 'item'
 
 //	where the highlight sits: the active row's offset from the top of the list (in rem),
 //	and how far to stretch the highlight's own height to cover the row
@@ -152,9 +151,7 @@ export const Sidebar = polymorphic<SidebarSpecs>((_props, { useProps, useStyles 
 	const sharedProps = { ...styles('root', clsx), ...others, as, unstyled }
 
 	if (hasItems) {
-		const highlightStyles = styles('highlight'),
-			isMenu = Object.hasOwn(items[0], 'url'),
-			role = isMenu ? 'menu' : undefined
+		const highlightStyles = styles('highlight')
 
 		return (
 			<Box { ...sharedProps }>
@@ -174,7 +171,7 @@ export const Sidebar = polymorphic<SidebarSpecs>((_props, { useProps, useStyles 
 					/>
 
 					<SidebarProvider value={ ctxValues }>
-						<ul { ...styles('inner') } ref={ listRef } role={ role }>
+						<ul { ...styles('inner') } ref={ listRef }>
 							{ items.map(item => <SidebarItem key={ item.id } { ...item } />) }
 						</ul>
 					</SidebarProvider>
