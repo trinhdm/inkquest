@@ -1,5 +1,7 @@
+import { usePathname } from 'next/navigation'
 import { useSidebarCtx } from '../Sidebar.context'
 import { extractOthers } from '@/hooks/useProps'
+import { isAnchorLink } from '@/utils/helpers'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import { Button } from '@/components/core/Button'
@@ -45,6 +47,7 @@ export const SidebarItem = polymorphic<SidebarItemSpecs>((_props, { useProps, us
 	const context = useSidebarCtx(NAME)
 	const props = useProps(_props)
 	const styles = useStyles({ context, props, withRootName: true })
+	const pathname = usePathname()
 
 	const { active, onChange, scroll, shallow } = context
 	const { id, label, url, ...rest } = props
@@ -57,12 +60,16 @@ export const SidebarItem = polymorphic<SidebarItemSpecs>((_props, { useProps, us
 		innerProps = { ...styles('button'), unstyled: true }
 
 	if (url) {
+		//	a link to a section of this page is the current item in the list ("true"),
+		//	not the current page ("page") - e.g. the legal pages' "On this page" sidebar
+		const current = isAnchorLink(url, pathname) ? true : 'page'
+
 		return (
 			<Box { ...outerProps }>
 				<Button
 					{ ...innerProps }
 					attributes={ {
-						aria: { current: isActive ? 'page' : undefined },
+						aria: { current: isActive ? current : undefined },
 						data: { keep: label },
 					} }
 					href={ url }
