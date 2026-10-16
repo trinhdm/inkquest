@@ -24,4 +24,8 @@
 	&::-moz-progress-bar {
 		background-color: var(--inkq-color-action);
 	}
+
+	@media (prefers-reduced-motion: reduce) {
+		display: none;
+	}
 }

@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useId, useRef } from 'react'
 import { defineTokens } from '@/lib/component/tokens'
 import { extractOthers } from '@/hooks/useProps'
 import { polymorphic } from '@/lib/component/factory'
@@ -15,16 +15,14 @@ const DEFAULT_PROPS = {
 	as: TAG,
 	height: '3px',
 	max: 100,
-	min: 0,
 	width: '100%',
 } as const
 
 interface ProgressProps {
 	height?: CSSUnit | number
 	id?: string
-	label?: string
+	label: string
 	max?: number
-	min?: number
 	width?: CSSUnit | number
 }
 
@@ -67,52 +65,59 @@ export const Progress = polymorphic<ProgressSpecs>((_props, { useProps, useStyle
 	const styles = useStyles({ props, tokens })
 
 	const {
-		as, height, id, label,
-		max, min, width,
+		as, height, id,
+		label, max, width,
 		...rest
 	} = props
 
 	const others = extractOthers(rest)
-
-	const [progress, setProgress] = useState(0)
 	const ref = useRef<HTMLProgressElement>(null)
 
 	useEffect(() => {
+		const progressBar = ref.current
+		if (!progressBar) return
+
+		let frameID: number
+
 		const updateProgress = () => {
 			const { clientHeight, scrollHeight, scrollTop } = document.documentElement,
-				max = scrollHeight - clientHeight,
-				width = max > 0 ? (scrollTop / max) * 100 : 0
+				range = scrollHeight - clientHeight
 
-			setProgress(width)
+			const percent = range > 0 ? Math.round((scrollTop / range) * 100) : 0,
+				progress = percent * (max / 100)
+
+			frameID = requestAnimationFrame(() => {
+				if (progressBar.value !== progress)
+					progressBar.value = progress
+			})
 		}
 
 		window.addEventListener('scroll', updateProgress, { passive: true })
 		updateProgress()
 
-		return () => window.removeEventListener('scroll', updateProgress)
-	}, [])
+		return () => {
+			window.removeEventListener('scroll', updateProgress)
+			cancelAnimationFrame(frameID)
+		}
+	}, [max])
 
 	const uid = useId(),
 		barID = id ?? uid
 
 	return (
 		<>
-			{ label && <label { ...styles('sr', true) } htmlFor={ barID }>{ label }</label> }
+			<label { ...styles('sr', true) } htmlFor={ barID }>
+				{ label }
+			</label>
 
 			<Box
 				{ ...styles('root') }
 				{ ...others }
 				as={ as }
-				attributes={ { aria: {
-					label: label ?? undefined,
-					valuemax: max,
-					valuemin: min,
-					valuenow: progress,
-				} } }
 				id={ barID }
 				max={ max }
 				ref={ ref }
-				value={ progress }
+				value={ 0 }
 			/>
 		</>
 	)
