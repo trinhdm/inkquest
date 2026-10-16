@@ -1,12 +1,12 @@
-import { useCallback, useId, useMemo, useRef, type ReactNode, type RefObject } from 'react'
-// import { defineTokens } from '@/lib/component/tokens'
+import { useCallback, useMemo, type ReactNode } from 'react'
+import { useTabGroupCtx } from './TabGroup/TabGroup.context'
 import { extractOthers } from '@/hooks/useProps'
+import { getTabIds } from './TabPanel/TabPanel.context'
 import { polymorphic } from '@/lib/component/factory'
-import { toKebabCase } from '@/utils/helpers'
 import { Box } from '@/components/polymorphic/Box'
+import { TabGroup } from './TabGroup'
 import { TabList, useTabListProps } from './TabList'
 import { TabPanel } from './TabPanel'
-import { TabProvider, type TabContext } from './Tab.context'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Tab.module.scss'
 
@@ -19,6 +19,7 @@ const DEFAULT_PROPS = {
 } as const
 
 const SUBCOMPONENTS = {
+	Group: TabGroup,
 	List: TabList,
 	Panel: TabPanel,
 } as const
@@ -26,12 +27,9 @@ const SUBCOMPONENTS = {
 interface TabProps {
 	active?: boolean
 	children: ReactNode
-	defaultActive?: boolean
 	disabled?: boolean
-	id?: string
 	index?: number
-	onToggle?: (ref: RefObject<HTMLButtonElement | null>, index: number, active: boolean) => void
-	railWidth?: 0 | `${number}rem`
+	onSelect?: (index: number) => void
 }
 
 interface TabSpecs {
@@ -49,67 +47,29 @@ interface TabSpecs {
 type TabSelectors =
 	| 'root' | 'label'
 
-// type TabTokens = {
-// 	root:
-// 		| '--tab-rail-width'
-// }
-
-// const tokens = defineTokens<TabSpecs>()(({ props }) => {
-// 	const { active, railWidth } = props
-
-// 	return {
-// 		root: {
-// 			'--tab-rail-width': active && railWidth !== undefined
-// 				? `translateX(${railWidth})`
-// 				: undefined,
-// 		},
-// 	}
-// })
-
 export const Tab = polymorphic<TabSpecs>((_props, { useProps, useStyles }) => {
+	const { uid } = useTabGroupCtx(NAME)
 	const props = useProps(useTabListProps(_props))
 	const styles = useStyles({ props })
 
 	const {
 		active, as, children,
-		defaultActive, disabled, id,
-		index, onToggle, railWidth, unstyled,
+		disabled, id, index,
+		onSelect, unstyled,
 		...rest
 	} = props
 
 	const others = extractOthers(rest)
 
-	const ref = useRef<HTMLButtonElement>(null)
+	const idx = useMemo(() => getTabIds(uid, index), [uid, index])
 
-	// const [uncontrolled, setUncontrolled] = useState(() => !!defaultActive)
-	const isControlled = typeof active === 'boolean',
-		isActive = isControlled ? !!active :  !!defaultActive
 
-	const uid = useId()
-	const idx = useMemo(() => {
-		const root = toKebabCase(`tab-${id ?? uid}`)
-		return { control: root, panel: `${root}-panel` }
-	}, [id, uid])
+	const handleSelect = useCallback(() => {
+		if (!disabled) onSelect?.(index)
+	}, [disabled, index, onSelect])
 
-	const handleTab = useCallback(() => {
-		if (disabled) return
-		const next = !isActive
-		onToggle?.(ref, index, next)
-	}, [
-		disabled, isActive,
-		index, onToggle,
-	])
-
-	const ctxValues = useMemo(() => ({
-		disabled, idx, isActive,
-		index, unstyled,
-	}), [
-		disabled, idx, index,
-		isActive, unstyled,
-	])
-
-	const aria = { controls: idx.panel, selected: isActive },
-		data = { active: isActive || null, tab: true }
+	const aria = { controls: idx.panel, selected: !!active },
+		data = { active: active || null, tab: true }
 
 	return (
 		<Box
@@ -117,15 +77,12 @@ export const Tab = polymorphic<TabSpecs>((_props, { useProps, useStyles }) => {
 			{ ...others }
 			as={ as }
 			attributes={ { aria, data } }
-			onClick={ handleTab }
-			ref={ ref }
+			onClick={ handleSelect }
 			role="tab"
 		>
-			<TabProvider value={ ctxValues }>
-				<span { ...styles('label') }>
-					{ children }
-				</span>
-			</TabProvider>
+			<span { ...styles('label') }>
+				{ children }
+			</span>
 		</Box>
 	)
 }, { name: NAME, classes })
@@ -137,9 +94,14 @@ Tab.set({
 })
 
 export declare namespace Tab {
-	export type Context = TabContext
 	export type Props = TabProps
 	export type Specs = TabSpecs
+
+	export namespace Group {
+		export type Context = TabGroup.Context
+		export type Props = TabGroup.Props
+		export type Specs = TabGroup.Specs
+	}
 
 	export namespace List {
 		export type Context = TabList.Context

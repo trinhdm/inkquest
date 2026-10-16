@@ -5,8 +5,7 @@ type SharedTabProp =
 	| 'active'
 	| 'disabled'
 	| 'index'
-	| 'onToggle'
-	| 'railWidth'
+	| 'onSelect'
 
 export interface TabListContext
 	extends Pick<Tab.Props, SharedTabProp> {

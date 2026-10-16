@@ -16,6 +16,10 @@
 	margin-block-end: var(--space-8);
 
 	&__rail {
-		@include global.rail('bottom', (scale: var(--tab-rail-width)));
+		@include global.rail('bottom', (transition: var(--duration-slow) var(--easing)));
+
+		transform:
+			translateX(var(--tab-rail-position))
+			scaleX(var(--tab-rail-scale, 1));
 	}
 }

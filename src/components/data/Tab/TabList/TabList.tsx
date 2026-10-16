@@ -1,4 +1,9 @@
-import { useCallback, useMemo, useState, type RefObject } from 'react'
+import {
+	useLayoutEffect, useMemo, useRef,
+	useState, type CSSProperties,
+} from 'react'
+
+import { useTabGroupCtx } from '../TabGroup/TabGroup.context'
 import { extractOthers } from '@/hooks/useProps'
 import { filterChildren } from '@/lib/component/children'
 import { polymorphic } from '@/lib/component/factory'
@@ -6,23 +11,18 @@ import { rem } from '@/lib/general'
 import { withProvider } from '@/lib/component/context'
 import { Box } from '@/components/polymorphic/Box'
 import { TabListProvider } from './TabList.context'
+import type { CSSVars } from '@/types/shared'
 import type { Tab } from '../Tab'
 import type { TabListContext } from './TabList.context'
-import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from '../Tab.module.scss'
 
 const NAME = 'Tab.List' as const
-const DEFAULT_PROPS = {
-	defaultActive: 0,
-} as const
 
 interface TabListProps {
-	defaultActive?: number
 	disabled?: Tab.Props['disabled']
 }
 
 type TabListSpecs = {
-	defaults: { props: PropsDefaultList<typeof DEFAULT_PROPS> }
 	isCompound: true
 	props: TabListProps
 	selectors: TabListSelectors
@@ -31,56 +31,67 @@ type TabListSpecs = {
 type TabListSelectors =
 	| 'root' | 'inner' | 'rail'
 
+interface TabListRail {
+	position: string
+	scale: number
+}
+
 export const TabList = polymorphic<TabListSpecs>((_props, { useProps, useStyles }) => {
+	const context = useTabGroupCtx(NAME)
 	const props = useProps(_props)
 	const styles = useStyles({ props })
 
-	const {
-		children, defaultActive,
-		disabled, unstyled,
-		...rest
-	} = props
-
+	const { active, onSelect } = context
+	const { children, disabled, unstyled,...rest } = props
 	const others = extractOthers(rest)
 
-	const [activeTab, setActiveTab] = useState<number>(() => defaultActive)
-	const [railWidth, setRailWidth] = useState<0 | `${number}rem`>(0)
-
-	const handleRailWidth = (ref: RefObject<HTMLButtonElement | null>) => {
-		const item = ref.current
-
-		if (!!item) {
-			const width = item.offsetWidth
-			setRailWidth(rem(width, .125))
-			console.log({ width, rem: rem(width), round: rem(width, .125) })
-		}
-	}
-
-	const handleToggle = useCallback((
-		ref: RefObject<HTMLButtonElement | null>,
-		index: number,
-		next: boolean,
-	) => {
-		handleRailWidth(ref)
-		setActiveTab(prev => (next ? index : prev))
-	}, [])
+	const [rail, setRail] = useState<TabListRail | null>(null)
+	const rootRef = useRef<HTMLDivElement>(null),
+		listRef = useRef<HTMLDivElement>(null)
 
 	const items = filterChildren(children, 'Tab', { name: NAME }),
 		total = items.length
 
+	useLayoutEffect(() => {
+		const root = rootRef.current,
+			list = listRef.current
+
+		if (!root || !list) return
+
+		//	the rail spans the whole list and is shrunk with `scaleX`, so moving it never triggers layout
+		const measure = () => {
+			const tab = list.children[active] as HTMLElement | undefined
+			const next = tab && root.clientWidth ? {
+				position: rem(list.offsetLeft + tab.offsetLeft),
+				scale: tab.offsetWidth / root.clientWidth,
+			} : null
+
+			setRail(prev => (
+				prev?.position === next?.position && prev?.scale === next?.scale ? prev : next
+			))
+		}
+
+		measure()
+
+		const observer = new ResizeObserver(measure)
+		observer.observe(root)
+		Array.from(list.children).forEach(tab => observer.observe(tab))
+
+		return () => observer.disconnect()
+	}, [active, total])
+
 	const ctxValues = useMemo(
 		() => Array.from({ length: total }, (_, index): TabListContext => ({
-			disabled, index, unstyled,
-			active: activeTab === index,
-			railWidth,
-			onToggle: handleToggle,
+			active: active === index,
+			disabled, index, onSelect, unstyled,
 		})),
 		[
-			handleToggle,
-			activeTab, disabled,
-			railWidth, total, unstyled,
+			active, disabled,
+			onSelect, total, unstyled,
 		]
 	)
+
+	const railStyles = styles('rail')
 
 	return (
 		<Box
@@ -88,18 +99,28 @@ export const TabList = polymorphic<TabListSpecs>((_props, { useProps, useStyles 
 			{ ...others }
 			as="div"
 			attributes={ { data: { group: true } } }
+			ref={ rootRef }
 			role="tablist"
 		>
-			<div { ...styles('inner') }>
+			{ rail && (
+				<span
+					{ ...railStyles }
+					style={ {
+						...railStyles.style,
+						'--tab-rail-position': rail.position,
+						'--tab-rail-scale': rail.scale,
+					} as CSSProperties & CSSVars }
+				/>
+			) }
+
+			<div { ...styles('inner') } ref={ listRef }>
 				{ withProvider(items, TabListProvider, ctxValues) }
-				<span { ...styles('rail') } />
 			</div>
 		</Box>
 	)
 }, { name: NAME, classes })
 
 TabList.set({
-	defaultProps: DEFAULT_PROPS,
 	displayName: NAME,
 })
 
