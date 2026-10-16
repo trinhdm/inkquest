@@ -2,20 +2,25 @@ import { Badge } from '@/components/core/Badge'
 import { Button } from '@/components/core/Button'
 import { Section } from '@/components/layout/Section'
 import { Table } from '@/components/data/Table'
-import { OPEN_POSITIONS } from '../_utils/careers.data'
+import type { ContentData, JobItem } from '@/types/shared'
 
-export const CareersListings = () => {
-	const pageID = 'careers'
-	if (!OPEN_POSITIONS.length) return null
+export const CareersListings = ({
+	body,
+	buttons,
+	eyebrow,
+	heading,
+	id,
+}: ContentData<JobItem[]>) => {
+	if (!body?.length) return null
 
 	return (
 		<Section
-			eyebrow="Open roles"
-			id={ `${pageID}-list` }
-			title="Join the crew."
+			eyebrow={ eyebrow }
+			id={ id }
+			title={ heading }
 		>
 			<Table>
-				{ OPEN_POSITIONS.map(({
+				{ body.map(({
 					department, id,
 					title, url,
 				}) => {
@@ -36,9 +41,13 @@ export const CareersListings = () => {
 				}) }
 			</Table>
 
-			<Section.Footer>
-				<Button variant="outline">See all roles</Button>
-			</Section.Footer>
+			{ buttons?.length && (
+				<Section.Footer>
+					{ buttons.map(({ id, label, url, ...props }) => (
+						<Button key={ id } href={ url } { ...props }>{ label }</Button>
+					)) }
+				</Section.Footer>
+			) }
 		</Section>
 	)
 }

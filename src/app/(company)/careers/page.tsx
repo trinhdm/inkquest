@@ -1,10 +1,11 @@
 import { CareersBase } from './_components'
+import { CAREERS_PAGE_DATA } from './_utils/careers.data'
 import type { Metadata } from 'next'
 import './careers.scss'
 
 export const metadata: Metadata = {
-	title: 'Careers',
-	description: `We're a team building the place where tattoo work gets found, priced, and booked on the artist's terms.`,
+	title: CAREERS_PAGE_DATA.title,
+	description: CAREERS_PAGE_DATA.description,
 }
 
 export default function Careers() {

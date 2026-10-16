@@ -1,6 +1,9 @@
-import type { JobItem, PageDataItem } from '@/types/shared'
+import type {
+	BasePageData, ContentData,
+	JobItem, PageDataItem,
+} from '@/types/shared'
 
-export const CULTURE_PILLARS: PageDataItem[] = [
+const CULTURE_PILLARS: PageDataItem[] = [
 	{
 		id: 'goals',
 		title: 'Craft over volume',
@@ -18,7 +21,7 @@ export const CULTURE_PILLARS: PageDataItem[] = [
 	},
 ]
 
-export const OPEN_POSITIONS: JobItem[] = [
+const OPEN_POSITIONS: JobItem[] = [
 	{
 		id: 'senior-product-engineer',
 		title: 'Senior Product Engineer',
@@ -45,7 +48,7 @@ export const OPEN_POSITIONS: JobItem[] = [
 	},
 ]
 
-export const HIRING_STEPS: PageDataItem[] = [
+const HIRING_STEPS: PageDataItem[] = [
 	{
 		id: 'application',
 		title: 'Apply',
@@ -67,3 +70,54 @@ export const HIRING_STEPS: PageDataItem[] = [
 		content: 'Decision within a week of the work session. We tell you either way.',
 	},
 ]
+
+export type CareersContent =
+	ContentData<PageDataItem[]>
+
+export type CareersSection =
+	| ContentData<PageDataItem[], 'culture'>
+	| ContentData<JobItem[], 'listings'>
+	| ContentData<PageDataItem[], 'process'>
+
+export interface CareersPageData
+	extends BasePageData {
+	content?: CareersSection[]
+}
+
+export const CAREERS_PAGE_DATA: CareersPageData = {
+	id: 'careers',
+	title: 'Careers',
+	description: `We're a team building the place where tattoo work gets found, priced, and booked on the artist's terms.`,
+	hero: {
+		id: 'hero',
+		eyebrow: 'Careers · Brooklyn + remote',
+		heading: 'Small crew, sharp needles.',
+		body: `We're a team of fourteen building the place where tattoo work gets found, priced, and booked on the artist's terms. Half of us are tattooed. All of us ship.`
+	},
+	content: [
+		{
+			id: 'culture',
+			body: CULTURE_PILLARS,
+		},
+		{
+			id: 'listings',
+			heading: 'Join the crew.',
+			eyebrow: 'Open roles',
+			body: OPEN_POSITIONS,
+			buttons: [
+				{
+					id: 'btn_listings',
+					label: 'See all roles',
+					url: '/careers',
+					variant: 'outline',
+				},
+			],
+		},
+		{
+			id: 'process',
+			heading: 'Four steps. No mazes.',
+			eyebrow: 'How hiring works',
+			body: HIRING_STEPS,
+		},
+	],
+}

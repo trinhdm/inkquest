@@ -1,19 +1,23 @@
 import { Grid } from '@/components/layout/Grid'
 import { Section } from '@/components/layout/Section'
-import { HIRING_STEPS } from '../_utils/careers.data'
+import type { CareersContent } from '../_utils/careers.data'
 
-export const CareersProcess = () => {
-	const pageID = 'careers'
-	if (!HIRING_STEPS.length) return null
+export const CareersProcess = ({
+	body,
+	eyebrow,
+	heading,
+	id,
+}: CareersContent) => {
+	if (!body?.length) return null
 
 	return (
 		<Section
-			eyebrow="How hiring works"
-			id={ `${pageID}-steps` }
-			title="Four steps. No mazes."
+			eyebrow={ eyebrow }
+			id={ id }
+			title={ heading }
 		>
 			<Grid columns={ 4 }>
-				{ HIRING_STEPS.map(({ content, id, title }, i) => {
+				{ body.map(({ content, id, title }, i) => {
 					const index = i + 1,
 						step = index > 9 ? index : `0${index}`
 

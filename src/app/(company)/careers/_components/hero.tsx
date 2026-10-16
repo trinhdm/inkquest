@@ -1,16 +1,16 @@
+import { useParser } from '@/hooks/useParser'
 import { Section } from '@/components/layout/Section'
+import type { CareersPageData } from '../_utils/careers.data'
 
-export const CareersHero = () => {
-	const pageID = 'careers'
-
+export const CareersHero = ({ hero, id, title }: CareersPageData) => {
 	return (
 		<Section
-			eyebrow="Careers · Brooklyn + remote"
-			id={ `${pageID}-hero` }
+			eyebrow={ hero?.eyebrow }
+			id={ `${id}-${hero?.id}` }
 			layout="hero"
-			title="Small crew, sharp needles."
+			title={ hero?.heading ?? title }
 		>
-			We&apos;re a team of fourteen building the place where tattoo work gets found, priced, and booked on the artist&apos;s terms. Half of us are tattooed. All of us ship.
+			{ useParser(hero?.body) }
 		</Section>
 	)
 }
