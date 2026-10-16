@@ -3,7 +3,7 @@ import { Section } from '@/components/layout/Section'
 import type { LegalPageData } from '../../_utils/legal.types'
 
 type LegalSectionProps =
-	& LegalPageData['sections'][number]
+	& LegalPageData['content'][number]
 	& { index: number }
 
 export const LegalSection = ({

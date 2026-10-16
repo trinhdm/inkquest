@@ -47,24 +47,30 @@ export interface AddressData {
 //	nextjs page data
 
 interface ButtonData
-	extends Omit<Button.Props, 'children' | 'href'> {
+	extends Omit<Button.BaseProps, 'children' | 'href'> {
 	id: string
 	label: string
 	url: Route
 }
 
-interface ContentData  {
+export interface ContentData<
+	Body = unknown,
+	Id extends string = string
+> {
+	id: Id
 	eyebrow?: string
-	heading: string
-	body?: string
+	heading?: string
+	body?: Body
 	buttons?: ButtonData[]
 }
 
 export interface BasePageData {
 	id: string
 	title: string
-	hero?: ContentData
-	footer?: ContentData
+	description: string
+	hero?: ContentData<string>
+	content?: ContentData[]
+	footer?: ContentData<string>
 }
 
 export interface PageDataItem {

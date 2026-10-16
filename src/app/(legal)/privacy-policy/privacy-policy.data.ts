@@ -1,4 +1,4 @@
-import { COMPANY_INFO } from '@/utils/constants'
+import { COMPANY_INFO, COMPANY_NAME } from '@/utils/constants'
 import type { LegalPageData } from '../_utils/legal.types'
 
 const VERSION_HISTORY: LegalPageData['changelog'] = [
@@ -34,7 +34,7 @@ const VERSION_HISTORY: LegalPageData['changelog'] = [
 	},
 ]
 
-const PRIVACY_SECTIONS: LegalPageData['sections'] = [
+const PRIVACY_SECTIONS: LegalPageData['content'] = [
 	{
 		id: 'intro',
 		body: [
@@ -120,6 +120,7 @@ const PRIVACY_SECTIONS: LegalPageData['sections'] = [
 export const PRIVACY_PAGE_DATA: LegalPageData = {
 	id: 'privacy-policy',
 	title: 'Privacy Policy',
+	description: `${COMPANY_NAME} Privacy Policy.`,
 	updated_date: {
 		month: 'March',
 		day: 30,
@@ -132,9 +133,13 @@ export const PRIVACY_PAGE_DATA: LegalPageData = {
 	},
 	changelog: VERSION_HISTORY,
 	company_info: COMPANY_INFO,
-	hero: { heading: 'Privacy Policy' },
-	sections: PRIVACY_SECTIONS,
+	hero: {
+		id: 'privacy-hero',
+		heading: 'Privacy Policy',
+	},
+	content: PRIVACY_SECTIONS,
 	footer: {
+		id: 'privacy-footer',
 		heading: 'Data Protection Officer',
 		body: 'Questions, access requests, or complaints about how we handle your personal data can be directed to our Data Protection Officer.',
 		recipient: 'Attn: DPO',

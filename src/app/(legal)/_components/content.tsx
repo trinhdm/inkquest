@@ -7,20 +7,20 @@ import { Section } from '@/components/layout/Section'
 import { Sidebar } from '@/components/layout/Sidebar'
 import type { LegalPageData } from '../_utils/legal.types'
 
-export const LegalContent = ({ id: pageID, sections }: LegalPageData) => {
-	const { content, ids, titles } = useMemo(() => {
-		const content = sections.filter(({ title }) => !!title),
-			titles = getLegalTitles(pageID, content)
+export const LegalContent = ({ content, id: pageID }: LegalPageData) => {
+	const { ids, sections, titles } = useMemo(() => {
+		const sections = content.filter(({ title }) => !!title),
+			titles = getLegalTitles(pageID, sections)
 
-		return { content, titles, ids: titles.map(({ id }) => id) }
-	}, [pageID, sections])
+		return { ids: titles.map(({ id }) => id), sections, titles }
+	}, [pageID, content])
 
 	const [activeID, selectID] = useActiveID(ids)
-	if (!sections.length) return null
+	if (!content.length) return null
 
 	return (
-		<Section animated={ false } id={ `${pageID}-content` }>
-			<Grid gap="lg" layout="sidebar">
+		<Section animated={ false } id={ `${pageID}-sections` }>
+			<Grid layout="sidebar">
 				<Sidebar
 					active={ activeID }
 					items={ titles }
@@ -31,8 +31,8 @@ export const LegalContent = ({ id: pageID, sections }: LegalPageData) => {
 				/>
 
 				<Grid.Item className="legal-content">
-					{ sections.map(section => {
-						const index = content.findIndex(({ id }) => section.id === id),
+					{ content.map(section => {
+						const index = sections.findIndex(({ id }) => section.id === id),
 							isIntro = index === -1
 
 						return (

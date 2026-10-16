@@ -50,8 +50,8 @@ interface BaseButtonProps {
 	fullWidth?: boolean
 	loading?: boolean
 	priority?: ThemePriority
-	size?: Size
 	showLabel?: boolean
+	size?: Size
 	tone?: ThemeTone
 	variant?: ThemeVariant
 }
@@ -274,6 +274,8 @@ export declare namespace Button {
 	export type Context = ButtonContext
 	export type Props = ButtonProps
 	export type Specs = ButtonSpecs
+
+	export type BaseProps = BaseButtonProps
 
 	export type Priority = ThemePriority
 	export type Size = NonNullable<Button.Props['size']>

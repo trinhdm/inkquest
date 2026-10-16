@@ -1,4 +1,4 @@
-import { COMPANY_INFO } from '@/utils/constants'
+import { COMPANY_INFO, COMPANY_NAME } from '@/utils/constants'
 import type { LegalPageData } from '../_utils/legal.types'
 
 const VERSION_HISTORY: LegalPageData['changelog'] = [
@@ -24,7 +24,7 @@ const VERSION_HISTORY: LegalPageData['changelog'] = [
 	},
 ]
 
-const TERMS_SECTIONS: LegalPageData['sections'] = [
+const TERMS_SECTIONS: LegalPageData['content'] = [
 	{
 		id: 'intro',
 		body: [
@@ -113,6 +113,7 @@ const TERMS_SECTIONS: LegalPageData['sections'] = [
 export const TERMS_PAGE_DATA: LegalPageData = {
 	id: 'terms',
 	title: 'Terms',
+	description: `${COMPANY_NAME} Terms and Conditions.`,
 	updated_date: {
 		month: 'October',
 		day: 13,
@@ -125,9 +126,13 @@ export const TERMS_PAGE_DATA: LegalPageData = {
 	},
 	changelog: VERSION_HISTORY,
 	company_info: COMPANY_INFO,
-	hero: { heading: 'Terms of Service' },
-	sections: TERMS_SECTIONS,
+	hero: {
+		id: 'terms-hero',
+		heading: 'Terms of Service',
+	},
+	content: TERMS_SECTIONS,
 	footer: {
+		id: 'terms-footer',
 		heading: 'Questions about these Terms',
 		body: 'Our legal team can clarify anything in this agreement before you accept it.',
 		recipient: 'Legal Department',

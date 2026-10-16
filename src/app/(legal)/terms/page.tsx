@@ -1,10 +1,10 @@
 import { TermsConditionsBase } from './_components'
-import { COMPANY_NAME } from '@/utils/constants'
+import { TERMS_PAGE_DATA } from './terms.data'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-	title: 'Terms of Service',
-	description: `${COMPANY_NAME} Terms and Conditions.`,
+	title: TERMS_PAGE_DATA.title,
+	description: TERMS_PAGE_DATA.description,
 }
 
 export default function TermsConditions() {

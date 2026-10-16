@@ -53,9 +53,9 @@ export interface LegalPageData
 		legal_name: string
 		address: AddressData
 	}
-	// introduction: string
-	sections: LegalSection[]
+	content: LegalSection[]
 	footer?: {
+		id: string
 		heading: string
 		body: string
 		recipient: string
