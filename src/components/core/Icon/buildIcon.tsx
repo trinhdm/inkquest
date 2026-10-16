@@ -7,6 +7,28 @@ import type { StyleFn } from '@/hooks/useStyles'
 
 const getBrandProps = (type: Icon.Props['type']): Icon.Svg.Props | undefined => {
 	switch (type) {
+		case 'google':
+			return {
+				children: (
+					<g>
+						<path d="M20.6 12.2c0 4.8-3.4 8.2-8.4 8.2a8.4 8.4 0 0 1 0-16.8c2.3 0 4.2.8 5.6 2.2l-2.3 2.2a4.8 4.8 0 0 0-3.3-1.3 5.2 5.2 0 0 0 0 10.4c2.6 0 4.4-1.5 4.8-3.6h-4.8" />
+						<path d="M16.2 13.5h4.4" />
+					</g>
+				),
+				strokeWidth: '1.999',
+				viewBox: '1.776 1.776 23.999 23.999',
+			}
+		case 'apple':
+			return {
+				children: (
+					<g>
+						<path d="M15.6 5.6c-.9 1.1-2.3 1.2-2.3 1.2s-.2-1.4.8-2.5c.9-1.1 2.3-1.1 2.3-1.1s.2 1.3-.8 2.4Z" />
+						<path d="M16.9 20.4c-.9.5-1.9.5-2.8-.1-.9-.5-1.9-.5-2.8 0-1.2.6-2.3.4-3.2-.8-2.2-3-2.7-6.9-.5-9 1.1-1.1 2.7-1.2 3.9-.5.8.5 1.7.5 2.5 0 1.2-.7 2.8-.6 3.9.5-1.5 1.1-1.8 3-.6 4.6.4.5.8.8 1.4 1-.5 1.7-1 3.3-1.8 4.3Z" />
+					</g>
+				),
+				strokeWidth: '2.133',
+				viewBox: '-0.799 -0.7999 25.599 25.599',
+			}
 		case 'instagram':
 			return {
 				children: (

@@ -30,7 +30,9 @@ export const MONTH_NAMES = [
 ] as const
 
 export const SOCIAL_BRANDS = [
+	'apple',
 	'facebook',
+	'google',
 	'instagram',
 	'pinterest',
 	'tiktok',

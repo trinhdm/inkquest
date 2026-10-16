@@ -15,6 +15,7 @@ import { extractOthers } from '@/hooks/useProps'
 import { extractText } from '@/lib/component/children'
 import { isExternalLink, keyHasValue } from '@/utils/helpers'
 import { polymorphic } from '@/lib/component/factory'
+import { rem } from '@/lib/general'
 import { Box } from '@/components/polymorphic/Box'
 import { ButtonProvider, type ButtonContext } from './Button.context'
 
@@ -45,6 +46,7 @@ const SUBCOMPONENTS = {
 } as const
 
 interface BaseButtonProps {
+	animate?: 'arrow-left' | 'arrow-right'
 	children: ReactNode
 	disabled?: boolean
 	fullWidth?: boolean
@@ -113,6 +115,7 @@ type ButtonTokens = {
 	root:
 		| '--button-font-size'
 		| '--button-icon-size'
+		| '--button-icon-translate'
 		| '--button-tracking'
 	inner:
 		| '--button-gap'
@@ -120,9 +123,10 @@ type ButtonTokens = {
 }
 
 const tokens = defineTokens<ButtonSpecs>()(({ props, theme }) => {
-	const { loading, size } = props
+	const { animate, loading, size } = props
 	let buttonFontSize, buttonIconSize,
-		buttonPadding, buttonTracking
+		buttonPadding, buttonTracking,
+		iconTranslate
 
 	if (size) {
 		const buttonFontSizes: Record<Button.Size, string> = {
@@ -149,12 +153,21 @@ const tokens = defineTokens<ButtonSpecs>()(({ props, theme }) => {
 
 		buttonIconSize = theme.el.icon.size(size)
 		if (loading) buttonIconSize = `calc(.125rem + ${buttonIconSize})`
+
+		if (animate) {
+			const baseDistance = theme.space('icon'),
+				steps = { sm: 2, md: 1, lg: 0 },
+				step = rem(steps[size])
+
+			iconTranslate = `calc(${baseDistance} - ${step})`
+		}
 	}
 
 	return {
 		root: {
 			'--button-font-size': buttonFontSize,
 			'--button-icon-size': buttonIconSize,
+			'--button-icon-translate': iconTranslate,
 			'--button-tracking': buttonTracking,
 		},
 		inner: {
@@ -170,8 +183,9 @@ export const Button = polymorphic<ButtonSpecs>((_props, { useProps, useStyles, u
 	const styles = useStyles({ props, tokens })
 
 	const {
-		action, children, disabled,
-		fullWidth, hasIcon, loading,
+		action, animate, children,
+		disabled, fullWidth,
+		hasIcon, loading,
 		prefetch, priority, replace,
 		scroll, showLabel, size,
 		tone, unstyled, variant,
@@ -184,7 +198,7 @@ export const Button = polymorphic<ButtonSpecs>((_props, { useProps, useStyles, u
 		aria = { label: !!(showLabel && ariaLabel.length) ? ariaLabel : undefined }
 
 	const data = {
-		variant, tone, priority,
+		variant, tone, priority, animate,
 		block: !!fullWidth || null,
 		disabled: !!disabled || null,
 		loading: !!loading || null,

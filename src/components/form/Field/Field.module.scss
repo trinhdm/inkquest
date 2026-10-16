@@ -195,6 +195,7 @@
 
     border: none;
     display: flex;
+    flex-wrap: wrap;
     gap: var(--space-5);
     margin-inline: 0;
     padding-block: 0;

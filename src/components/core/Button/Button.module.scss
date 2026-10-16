@@ -64,6 +64,24 @@
 		width: fit-content;
 	}
 
+	&:where([data-animate]) {
+		svg {
+			transition: transform var(--duration-fast) var(--easing);
+			will-change: transform;
+		}
+
+		&:is(:focus, :hover) {
+			&[data-animate="arrow-left"] svg {
+				--button-icon-translate: calc(-1 * var(--button-icon-translate));
+				transform: translateX(var(--button-icon-translate));
+			}
+
+			&[data-animate="arrow-right"] svg {
+				transform: translateX(var(--button-icon-translate));
+			}
+		}
+	}
+
 	&:where([data-disabled]) {
 		background-color: rgb(from var(--button-background) r g b / var(--inkq-opacity-disabled));
 	}
