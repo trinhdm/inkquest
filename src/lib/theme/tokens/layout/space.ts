@@ -11,8 +11,7 @@ export interface SpaceTokens {
 	}
 	grid: TokenSizeShape & {
 		base: TokenVariableShape
-		// sm: TokenVariableShape
-		lg: TokenVariableShape
+		xl: TokenVariableShape
 	}
 
 	menu: TokenVariableShape
@@ -28,6 +27,7 @@ export const getSpaceTokens = (): SpaceTokens => ({
 		sm: base.space('8'),
 		md: base.space('10'),
 		lg: base.space('12'),
+		xl: base.space('14'),
 	},
 	group: {
 		base: `${base.space('3')} ${base.space('4')}`,

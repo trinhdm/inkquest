@@ -38,8 +38,9 @@ export const partitionFooter = (children: ReactNode): FooterParts => {
 		content: ReactNode[] = []
 
 	Children.toArray(children).forEach(child => {
-		if (isValidElement(child) && child.type === Button) buttons.push(child)
-		else content.push(child)
+		const isButton = isValidElement(child) && child.type === Button
+		if (isButton && buttons.length < 2) buttons.push(child)
+		else if (!isButton) content.push(child)
 	})
 
 	return {

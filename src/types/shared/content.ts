@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import type { Route } from 'next'
+import type { Button } from '@/components/core/Button'
 import type { CalendarDate } from './datetime'
 import type { SOCIAL_BRANDS } from '@/utils/constants'
 
@@ -45,14 +46,18 @@ export interface AddressData {
 
 //	nextjs page data
 
+interface ButtonData
+	extends Omit<Button.Props, 'children' | 'href'> {
+	id: string
+	label: string
+	url: Route
+}
+
 interface ContentData  {
 	eyebrow?: string
 	heading: string
 	body?: string
-	buttons?: {
-		label: string
-		url: string
-	}[]
+	buttons?: ButtonData[]
 }
 
 export interface BasePageData {
