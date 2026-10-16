@@ -3,8 +3,9 @@
 .inkq-sidebar {
 	$name: &;
 
+	--sidebar-duration: var(--duration-slow);
+	--sidebar-transition: var(--sidebar-duration) var(--easing);
 	--sidebar-radius: var(--inkq-border-radius-sm);
-	--sidebar-transition: var(--duration-slow) var(--easing);
 
 	&__wrapper {
 		position: relative;

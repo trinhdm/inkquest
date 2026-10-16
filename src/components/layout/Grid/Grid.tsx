@@ -23,18 +23,19 @@ const SUBCOMPONENTS = {
 
 interface BaseGridProps {
 	children: ReactNode
-	gap?: Exclude<UnpackArray<GridGapOptions>, Lowercase<typeof NAME>>
 }
 
 interface ColumnsGridProps {
 	columns?: number
 	equalWidth?: boolean
+	gap?: Exclude<UnpackArray<GridGapOptions>, Lowercase<typeof NAME>>
 	layout?: 'default'
 }
 
 interface SidebarGridProps {
 	columns?: never
 	equalWidth?: never
+	gap?: never
 	layout: 'sidebar'
 }
 
@@ -73,21 +74,22 @@ const tokens = defineTokens<GridSpecs>()(({ props, theme }) => {
 	const { columns, equalWidth, gap, layout } = props
 
 	const gridCols = [], gridWidth = 'minmax(0, 1fr)',
-		gridGap = ['grid'],
+		 gridGap = ['grid'],
 		isLayoutSidebar = layout === 'sidebar'
 
-	if (gap) gridGap.push(gap)
+	if (isLayoutSidebar) gridGap.push('xl')
+	else if (gap) gridGap.push(gap)
 
 	if (!!(columns && columns > 0))
 		gridCols.push(columns)
 	else if (isLayoutSidebar)
-		gridCols.push('minmax(auto, 15rem)')
+		gridCols.push(4)
 	else
 		gridCols.push('auto-fit')
 
 	gridCols.push(gridWidth)
 
-	const gridTemplate = (typeof equalWidth === 'boolean' && !!equalWidth) && !isLayoutSidebar
+	const gridTemplate = (typeof equalWidth === 'boolean' && !!equalWidth)
 		? `repeat(${gridCols.join(', ')})`
 		: gridCols.join(' ')
 
@@ -110,10 +112,11 @@ export const Grid = polymorphic<GridSpecs>((_props, { useProps, useStyles }) => 
 	} = props
 
 	const others = extractOthers(rest)
+	const clsx = { selector: { [`${layout}`]: layout !== 'default' } }
 
 	return (
 		<Box
-			{ ...styles('root') }
+			{ ...styles('root', clsx) }
 			{ ...others }
 			as={ as }
 		>

@@ -55,6 +55,15 @@
 	}
 
 	&--hero,
+	&--hero-split,
+	&--hero-tight,
+	&--banner {
+		#{$name}__title:has(+ div) {
+			margin-block-end: 0;
+		}
+	}
+
+	&--hero,
 	&--hero-split {
 		#{$name}__eyebrow {
 			color: var(--inkq-color-action);
@@ -75,12 +84,12 @@
 	&--hero,
 	&--banner {
 		#{$name} {
-			&__inner {
+			&__body {
 				max-width: var(--inkq-container-block);
 			}
 
-			&__title:has(+ div) {
-				margin-block-end: 0;
+			&__title {
+				max-width: max-content;
 			}
 		}
 	}

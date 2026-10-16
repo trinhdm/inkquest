@@ -6,6 +6,16 @@
 	display: grid;
 	gap: var(--grid-gap, var(--inkq-space-grid));
 	grid-template-columns: var(--grid-cols, repeat(auto-fit, minmax(0, 1fr)));
+
+	&--sidebar:has(> :nth-child(2)):not(:has(> :nth-child(3))):has(> aside) {
+		& > :is(aside) {
+			grid-column: span 1;
+		}
+
+		& > :not(aside) {
+			grid-column: span 3;
+		}
+	}
 }
 
 .inkq-grid-item {
