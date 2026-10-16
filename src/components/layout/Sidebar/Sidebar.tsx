@@ -1,11 +1,15 @@
-import { defineTokens } from '@/lib/component/tokens'
+import {
+	useLayoutEffect, useRef, useState,
+	type CSSProperties, type ReactNode,
+} from 'react'
+
 import { extractOthers } from '@/hooks/useProps'
 import { polymorphic } from '@/lib/component/factory'
 import { rem } from '@/lib/general'
 import { Box } from '@/components/polymorphic/Box'
 import { Button } from '@/components/core/Button'
-import type { ReactNode } from 'react'
 import type { Route } from 'next'
+import type { CSSVars } from '@/types/shared'
 import type { MaybeAnimationProps } from '@/hooks/animation'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Sidebar.module.scss'
@@ -84,7 +88,6 @@ interface SidebarSpecs {
 	}
 	props: SidebarProps
 	selectors: SidebarSelectors
-	tokens: SidebarTokens
 }
 
 type SidebarSelectors =
@@ -92,10 +95,9 @@ type SidebarSelectors =
 	| 'label' | 'highlight'
 	| 'button' | 'item'
 
-type SidebarTokens = {
-	highlight:
-		| '--sidebar-highlight-height'
-		| '--sidebar-highlight-position'
+interface SidebarHighlight {
+	height: `${number}rem`
+	top: `${number}rem`
 }
 
 const replaceUrl = (url: SidebarLinkItem['url']) =>
@@ -104,28 +106,9 @@ const replaceUrl = (url: SidebarLinkItem['url']) =>
 		window.history.pushState(null, '', url)
 	}
 
-const tokens = defineTokens<SidebarSpecs>()(({ props }) => {
-	const { active, items } = props
-	if (!items?.length) return {}
-
-	// TODO: when `active` is missing or matches no item, `activeIndex` is -1, so the
-	// rail is drawn one row ABOVE the list (`--sidebar-rail-position: -3rem`) at full
-	// opacity. A linked sidebar may omit `active`, so this is reachable. Return no rail
-	// tokens, or hide the rail, when `activeIndex < 0`. See `it.todo` in Sidebar.test.tsx.
-	const activeIndex = items.findIndex(item => active === item.id),
-		height = 48
-
-	return {
-		highlight: {
-			'--sidebar-highlight-height': rem(height),
-			'--sidebar-highlight-position': rem(height * activeIndex),
-		},
-	}
-})
-
 export const Sidebar = polymorphic<SidebarSpecs>((_props, { useProps, useStyles }) => {
 	const props = useProps(_props)
-	const styles = useStyles({ props, tokens })
+	const styles = useStyles({ props })
 
 	const {
 		as, active, children,
@@ -135,19 +118,66 @@ export const Sidebar = polymorphic<SidebarSpecs>((_props, { useProps, useStyles 
 	} = props
 
 	const others = extractOthers(rest)
-	const hasItems = !!items?.length
+
+	const [highlight, setHighlight] = useState<SidebarHighlight | null>(null)
+	const listRef = useRef<HTMLUListElement>(null)
+
+	const activeIndex = items?.findIndex(item => item.id === active) ?? -1,
+		hasItems = !!items?.length,
+		itemCount = hasItems ?? 0
+
+	//	measure the active row, so the highlight fits labels that wrap onto more lines;
+	//	re-measure whenever a row resizes (fonts loading, the sidebar narrowing, bold text wrapping)
+	useLayoutEffect(() => {
+		const list = listRef.current
+		if (!list) return
+
+		const measure = () => {
+			const row = list.children[activeIndex] as HTMLElement | undefined
+			let next: SidebarHighlight | null = null
+
+			if (row) {
+				const height = rem(row.offsetHeight),
+					top = rem(list.offsetTop + row.offsetTop)
+				next = { height, top }
+			}
+
+			setHighlight(prev => (
+				prev?.height === next?.height && prev?.top === next?.top ? prev : next
+			))
+		}
+
+		measure()
+
+		const observer = new ResizeObserver(measure)
+		observer.observe(list)
+		Array.from(list.children).forEach(row => observer.observe(row))
+
+		return () => observer.disconnect()
+	}, [activeIndex, itemCount])
 
 	const clsx = { selector: { nav: hasItems, sticky }}
 	const sharedProps = { ...styles('root', clsx), ...others, as }
 
 	if (hasItems) {
+		const highlightStyles = styles('highlight')
+
 		return (
 			<Box { ...sharedProps }>
 				{ label && <span { ...styles('label') }>{ label }</span> }
 
 				<nav { ...styles('wrapper') }>
-					<span { ...styles('highlight') } />
-					<ul { ...styles('inner') } role="menu">
+					{ highlight && (
+						<span
+							{ ...highlightStyles }
+							style={ {
+								...highlightStyles.style,
+								'--sidebar-highlight-height': highlight.height,
+								'--sidebar-highlight-position': highlight.top,
+							} as CSSProperties & CSSVars }
+						/>
+					) }
+					<ul { ...styles('inner') } ref={ listRef } role="menu">
 						{ items.map(({ id, label, url }) => {
 							const itemProps = { ...styles('button'), unstyled: true }
 							const isActive = active === id,

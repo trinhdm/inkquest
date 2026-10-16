@@ -64,7 +64,9 @@
 			pointer-events: none;
 			position: absolute;
 			transform: translateY(var(--sidebar-highlight-position));
-			transition: transform var(--sidebar-transition);
+			transition:
+				height var(--sidebar-transition),
+				transform var(--sidebar-transition);
 			user-select: none;
 		}
 
