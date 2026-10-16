@@ -1,0 +1,21 @@
+@use '@/styles/utils' as global;
+
+.inkq-tab {
+	@include global.navitem(var(--inkq-font-size-body));
+
+	$name: &;
+
+    height: 2.5rem;
+}
+
+.inkq-tab-list {
+	@include global.navmenu;
+
+	$name: &;
+
+	margin-block-end: var(--space-8);
+
+	&__rail {
+		@include global.rail('bottom', (scale: var(--tab-rail-width)));
+	}
+}
