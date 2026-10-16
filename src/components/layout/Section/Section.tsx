@@ -25,13 +25,13 @@ const SUBCOMPONENTS = {
 
 type SectionLayout =
 	| 'banner'
-	| 'blocks'
 	| 'content'
+	| 'content-blocks'
+	| 'content-split'
 	| 'default'
 	| 'hero'
 	| 'hero-split'
 	| 'hero-tight'
-	| 'split'
 
 interface BaseSectionProps {
 	children: ReactNode
@@ -39,13 +39,13 @@ interface BaseSectionProps {
 
 interface SectionBlocksProps {
 	eyebrow?: never
-	layout: Extract<SectionLayout, 'blocks'>
+	layout: Extract<SectionLayout, 'content-blocks'>
 	title?: never
 }
 
 interface SectionContentProps {
 	eyebrow?: string
-	layout?: Exclude<SectionLayout, 'blocks'>
+	layout?: Exclude<SectionLayout, 'content-blocks'>
 	title?: string
 }
 

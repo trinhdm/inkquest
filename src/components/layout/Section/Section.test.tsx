@@ -330,7 +330,7 @@ describe('Section', () => {
 
 	it('wraps header and content in two separate Grid.Items for the split layout', () => {
 		render(
-			<Section layout="split" title="Split title">
+			<Section layout="content-split" title="Split title">
 				A split description.
 			</Section>
 		)

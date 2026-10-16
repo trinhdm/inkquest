@@ -81,8 +81,9 @@
 		}
 	}
 
-	&--hero,
-	&--banner {
+	&--hero {
+		padding-block: var(--inkq-hero-padding);
+
 		#{$name} {
 			&__body {
 				max-width: var(--inkq-container-block);
@@ -91,14 +92,10 @@
 			&__title {
 				max-width: max-content;
 			}
-		}
-	}
 
-	&--hero {
-		padding-block: var(--inkq-hero-padding);
-
-		#{$name}__footer {
-			justify-items: left;
+			&__footer {
+				justify-items: left;
+			}
 		}
 	}
 
@@ -153,7 +150,11 @@
 		}
 	}
 
-	&--split {
+	&--content-blocks {
+		padding-block: 0;
+	}
+
+	&--content-split {
 		#{$name} {
 			&__inner {
 				grid-template-columns: 50% 1fr;
@@ -173,14 +174,11 @@
 		}
 	}
 
-	&--blocks {
-		padding-block: 0;
-	}
-
 	&--banner {
 		#{$name} {
 			&__inner {
 				margin: 0 auto;
+				max-width: var(--inkq-container-block);
 				text-align: center;
 			}
 

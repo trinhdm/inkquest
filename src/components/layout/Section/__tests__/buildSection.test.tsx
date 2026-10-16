@@ -259,7 +259,7 @@ describe('buildSection', () => {
 		it('renders header and content side-by-side in a Grid for layout="split"', () => {
 			render(
 				<>{ buildSection({
-					props: buildProps({ children: 'Split body', layout: 'split', title: 'Split title' }),
+					props: buildProps({ children: 'Split body', layout: 'content-split', title: 'Split title' }),
 					reveal: makeReveal(),
 					styles: makeStyles(),
 				}) }</>

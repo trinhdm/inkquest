@@ -7,7 +7,7 @@ export const AboutStats = () => {
 	if (!PLATFORM_STATS.length) return null
 
 	return (
-		<Section id={ `${pageID}-stats` } layout="blocks">
+		<Section id={ `${pageID}-stats` } layout="content-blocks">
 			<Statistic.Group>
 				{ PLATFORM_STATS.map(({ isHighlight, ...stat }) => (
 					<Statistic key={ stat.id } highlight={ isHighlight } { ...stat } />

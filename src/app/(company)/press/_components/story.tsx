@@ -8,7 +8,7 @@ export const PressStory = () => {
 		<Section
 			eyebrow="Our story"
 			id={ `${pageID}-about` }
-			layout="split"
+			layout="content-split"
 			title="About Inkquest."
 		>
 			Inkquest is a marketplace and community connecting tattoo artists with clients. Clients search by style and distance, bid on flash designs and open booking slots, and book directly — with the artist setting the floor price on every piece. Founded in Brooklyn in 2024, Inkquest hosts more than 12,400 verified artists across 38 cities and has paid over $9.2M directly to artists.

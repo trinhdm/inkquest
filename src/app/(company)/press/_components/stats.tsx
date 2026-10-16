@@ -7,7 +7,7 @@ export const PressStats = () => {
 	if (!COMPANY_STATS.length) return null
 
 	return (
-		<Section id={ `${pageID}-stats` } layout="blocks">
+		<Section id={ `${pageID}-stats` } layout="content-blocks">
 			<Statistic.Group animated={ false } order="ascend" size="sm">
 				{ COMPANY_STATS.map(({ isHighlight, ...stat }) => (
 					<Statistic key={ stat.id } highlight={ isHighlight } { ...stat } />

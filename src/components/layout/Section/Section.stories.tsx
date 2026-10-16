@@ -15,10 +15,11 @@ type SectionLayout = NonNullable<Section.Props['layout']>
 const LAYOUT_OPTIONS: readonly SectionLayout[] = [
 	'default',
 	'banner',
-	'blocks',
 	'hero',
 	'hero-split',
-	'split',
+	'content',
+	'content-blocks',
+	'content-split',
 ] as const
 
 const BUTTON_LABELS: string[] = ['Learn more', 'View more']
@@ -190,8 +191,8 @@ export const Layout: Story = {
 		<Row>
 			{ LAYOUT_OPTIONS.map(layout => (
 				<Group key={ layout } label={ layout }>
-					{ layout === 'blocks' ? (
-						<Section { ...args as SectionBlocksArgs } layout="blocks">
+					{ layout === 'content-blocks' ? (
+						<Section { ...args as SectionBlocksArgs } layout="content-blocks">
 							{ `A description for the ${ layout } layout.` }
 							{ buttonFooter() }
 						</Section>

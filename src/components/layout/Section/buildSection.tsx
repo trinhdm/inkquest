@@ -38,7 +38,7 @@ const buildHeader = (
 		title: null,
 	}
 
-	if (layout === 'blocks')
+	if (layout === 'content-blocks')
 		return header
 
 	if (!!eyebrow) {
@@ -203,7 +203,7 @@ export const buildSection = (config: Omit<BuildSectionConfig, 'id'>) => {
 					{ footer }
 				</Grid>
 			)
-		case 'split':
+		case 'content-split':
 			return (
 				<Grid { ...styles('inner') }>
 					<Grid.Item>{ header }</Grid.Item>

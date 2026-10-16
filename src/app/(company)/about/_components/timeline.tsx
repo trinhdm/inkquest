@@ -10,7 +10,7 @@ export const AboutTimeline = () => {
 		<Section
 			eyebrow="Our story"
 			id={ `${pageID}-story` }
-			layout="split"
+			layout="content-split"
 			title="From a flash sheet to parlor."
 		>
 			<Timeline>
