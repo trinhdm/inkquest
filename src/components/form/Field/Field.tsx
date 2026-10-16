@@ -90,7 +90,7 @@ interface FieldSpecs {
 }
 
 type FieldSelectors =
-	| 'root' | 'control' | 'button'
+	| 'root' | 'control' | 'choice'
 	| 'error' | 'caption' | 'loader'
 	| 'label' | 'required'
 
@@ -111,7 +111,7 @@ const buildField = (
 	props: FieldProps,
 	styles: StyleFn<FieldSpecs>,
 ): FieldParts => {
-	const { children, loading } = props
+	const { children, layout, loading } = props
 
 	const displayNames = Object.values(SUBCOMPONENTS).map(sub => sub.displayName),
 		verifyArgs = { name: NAME, max: 1 },
@@ -124,8 +124,10 @@ const buildField = (
 	}
 
 	if (isValidElement<FieldPropsList>(control)) {
-		const { props: childProps } = control
-		parts.control = <div { ...styles('control') }>{ control }</div>
+		const { props: childProps } = control,
+			clsxControl = layout === 'button' ? { global: { 'sr': true } } : {}
+
+		parts.control = <div { ...styles('control', clsxControl) }>{ control }</div>
 
 		if (keyHasValue(childProps, 'type')) {
 			const icon = getIcon((childProps as TextInput.Props).type)
@@ -216,10 +218,10 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 
 	if (layout === 'button') {
 		return (
-			<Box { ...sharedProps }>
+			<Box { ...sharedProps } as={ as }>
 				<FieldProvider value={ ctxValues }>
 					{ control }
-					<label { ...styles('button') } htmlFor={ idx.control }>
+					<label { ...styles('choice') } htmlFor={ idx.control }>
 						<span { ...styles('label', { global: { h5: true } }) }>{ label }</span>
 						{ captionEl }
 					</label>
@@ -236,7 +238,7 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 	)
 
 	return (
-		<Box { ...sharedProps }>
+		<Box { ...sharedProps } as={ as }>
 			{ (!labelPosition || labelPosition === 'first') && labelEl }
 
 			<FieldProvider value={ ctxValues }>

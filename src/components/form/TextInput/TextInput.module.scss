@@ -1,3 +1,4 @@
+@use '@/styles/utils' as global;
 @use '../shared' as shared;
 
 .inkq-text-input {
@@ -7,5 +8,10 @@
 
 	&__icon {
 		@include shared.form-control-icon;
+	}
+
+	&:disabled #{$name}__icon {
+		color: global.disable(var(--inkq-color-text-tertiary));
+		pointer-events: none;
 	}
 }

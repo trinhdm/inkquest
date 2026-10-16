@@ -1,3 +1,5 @@
+@use '@/styles/utils' as global;
+
 @mixin form-tokens {
 	--form-control-background: var(--inkq-background-card);
 	--form-control-background-active: var(--inkq-background-card-hover);
@@ -6,7 +8,8 @@
 	--form-control-border-hover: var(--inkq-border-strong);
 	--form-control-border-focus: var(--inkq-color-action);
 	--form-control-border-active: var(--inkq-color-action-hover);
-	--form-control-border-radius: var(--inkq-border-radius-md);
+
+	--form-control-border-radius: var(--inkq-border-radius-sm);
 	--form-control-border-width: 1px;
 
 	--form-control-color: var(--inkq-color-link);
@@ -17,7 +20,7 @@
 	--form-control-padding-inline: calc(1.5 * var(--inkq-field-padding-md));
     --form-control-padding: var(--inkq-field-padding-md) var(--form-control-padding-inline);
 
-	--form-control-duration: var(--duration-fast);
+	--form-control-duration: var(--duration-default);
 	--form-control-easing: var(--easing);
 	--form-control-transition: var(--form-control-duration) var(--form-control-easing);
 	--form-control-transition-border:
@@ -26,6 +29,12 @@
 	--form-control-transition-bg-border:
 		background-color var(--form-control-transition),
         var(--form-control-transition-border);
+
+	&:disabled,
+	&:has(:disabled) {
+		--form-control-background-disabled: #{global.disable(var(--form-control-background))};
+		--form-control-border-disabled: #{global.disable(var(--form-control-border))};
+	}
 }
 
 @mixin focused-form-control {
@@ -35,14 +44,14 @@
 }
 
 @mixin form-control {
-	@include form-tokens();
+	@include form-tokens;
 
     background-color: var(--form-control-background);
-    border-radius: var(--form-control-border-radius);
     border: var(--form-control-border-width) solid var(--form-control-border);
+    border-radius: var(--form-control-border-radius);
     box-shadow: var(--form-control-shadow);
 	position: relative;
-    transition: var(--form-control-transition-border);
+    transition: var(--form-control-transition-bg-border);
 
 	&:hover {
 		border-color: var(--form-control-border-hover);
@@ -53,12 +62,14 @@
 	}
 
 	&:disabled {
+		background-color: var(--form-control-background-disabled);
+		border-color: var(--form-control-border-disabled);
 		cursor: not-allowed;
 	}
 }
 
 @mixin form-control-content {
-	@include form-control();
+	@include form-control;
 
 	color: var(--form-control-color);
 	font: var(--inkq-text-body);
@@ -67,7 +78,7 @@
 }
 
 @mixin form-control-text {
-	@include form-control-content();
+	@include form-control-content;
 
 	&::placeholder {
 		color: var(--inkq-color-placeholder);
@@ -84,6 +95,8 @@
 }
 
 @mixin form-control-icon {
+	$name: &;
+
 	--icon-size: var(--field-icon-size);
 
 	color: var(--inkq-color-placeholder);
@@ -94,4 +107,14 @@
 	max-height: fit-content;
 	position: absolute;
 	z-index: 2;
+
+	#{$name}:where([data-loading]) {
+        animation: fadeOut var(--duration-default) var(--easing-out) forwards;
+		pointer-events: none;
+    }
+}
+
+@keyframes fadeOut {
+	from { opacity: 1; }
+	to { opacity: 0; }
 }

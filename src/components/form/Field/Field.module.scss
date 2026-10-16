@@ -1,13 +1,17 @@
+@use '@/styles/utils' as global;
 @use '../shared' as shared;
 
 .inkq-field,
 .inkq-field-group {
+    $name: &;
+
     &__label {
         color: var(--inkq-color-text-tertiary);
         column-gap: var(--space-1);
         display: flex;
         font: var(--inkq-text-label-mono);
         letter-spacing: var(--inkq-font-tracking-wide);
+        max-width: fit-content;
         text-transform: uppercase;
     }
 
@@ -34,6 +38,7 @@
     &__control {
         align-items: center;
         display: flex;
+        max-width: 100%;
         position: relative;
     }
 
@@ -41,9 +46,10 @@
     &__error {
         display: block;
         flex: 1 1 100%;
+        text-wrap: pretty;
     }
 
-    &__button {
+    &__choice {
         @include shared.form-control-content;
 
         cursor: pointer;
@@ -55,6 +61,37 @@
         row-gap: var(--space-1);
         text-align: left;
         transition: var(--form-control-transition-bg-border);
+
+        &::after {
+            --form-control-outline-width: calc(var(--form-control-border-width) * 3);
+            --form-control-outline-radius: calc(var(--form-control-border-radius) - var(--form-control-border-width));
+
+            border: var(--form-control-outline-width) solid var(--form-control-border-active);
+            border-radius: var(--form-control-outline-radius);
+            content: '';
+            inset: 0;
+            opacity: 0;
+            pointer-events: none;
+            position: absolute;
+            transition: opacity var(--form-control-transition);
+        }
+
+        #{$name}:focus-within & {
+            @include shared.focused-form-control;
+        }
+
+        #{$name}:has(input:checked) & {
+            --form-control-background-disabled: #{global.disable(var(--form-control-background-active))};
+            --form-control-border-disabled: var(--form-control-border-hover);
+
+            background-color: var(--form-control-background-active);
+            border-color: var(--form-control-border-active);
+        }
+
+        #{$name}:has(:disabled) & {
+            background-color: var(--form-control-background-disabled);
+            border-color: var(--form-control-border-disabled);
+        }
     }
 
     &__loader {
@@ -63,84 +100,94 @@
         z-index: 3;
     }
 
-    &:where([data-loading]) #{$name} {
-		&__icon {
-            animation: fadeOut var(--duration-default) var(--easing-out) forwards;
-        }
-	}
-
-    &:not([class$="button"]):has(input[type="checkbox"], input[type="radio"]) {
-        column-gap: var(--space-3);
-        flex-direction: row;
-
-        #{$name}__label {
-            color: var(--inkq-color-text-secondary);
-            font-weight: var(--inkq-font-weight-normal);
-            font: var(--inkq-text-label);
-            letter-spacing: var(--inkq-font-tracking-prefix);
-            text-transform: none;
+    &:has(:disabled) #{$name} {
+        &__choice,
+        &__label {
+            pointer-events: none;
+            user-select: none;
         }
 
-        &:focus-within input {
-            @include shared.focused-form-control;
+        &__label {
+            color: global.disable(var(--inkq-color-text-secondary));
+        }
+
+        &__required {
+            color: global.disable(var(--inkq-color-placeholder));
         }
     }
 
-    &--button {
-        &,
-        #{$name}__caption {
-            font: var(--inkq-text-label);
-            letter-spacing: 0;
+    &:has(input[type="checkbox"], input[type="radio"]) {
+        #{$name}__label {
+            --form-control-label: var(--inkq-color-text-secondary);
+
+            color: var(--form-control-label);
             text-transform: none;
         }
 
-        #{$name} {
-            &__caption {
+        &:has(:disabled) #{$name}__label {
+            color: global.disable(var(--inkq-color-text));
+        }
+
+        &:not([class$="button"]) {
+            align-items: start;
+            column-gap: var(--inkq-gutter-item);
+            flex-direction: row;
+
+            #{$name} {
+                &__control,
+                &__label {
+                    align-self: center;
+                }
+            }
+
+            #{$name}__label {
+                font: var(--inkq-text-label);
+                line-height: var(--inkq-font-leading-none);
                 font-weight: var(--inkq-font-weight-normal);
+                letter-spacing: var(--inkq-font-tracking-prefix);
             }
 
-            &__control {
-                clip-path: inset(50%);
-                height: 1px;
-                overflow: hidden;
-                position: absolute;
-                white-space: nowrap;
-                width: 1px;
+            &:focus-within input {
+                @include shared.focused-form-control;
             }
+        }
 
-            &__label {
-                font: var(--inkq-text-body);
-                font-weight: var(--inkq-font-weight-semibold);
+        &:where([class$="button"]) {
+            &,
+            #{$name}__caption {
+                font: var(--inkq-text-label);
                 letter-spacing: 0;
                 text-transform: none;
             }
-        }
 
-        &:has(:focus-within) #{$name}__button {
-            @include shared.focused-form-control;
-        }
+            #{$name} {
+                &__caption {
+                    font-weight: var(--inkq-font-weight-normal);
+                }
 
-        &:has(input:checked) #{$name}__button {
-            background-color: var(--form-control-background-active);
-            border-color: var(--form-control-border-active);
+                &__label {
+                    font: var(--inkq-text-body);
+                    font-weight: var(--inkq-font-weight-semibold);
+                    letter-spacing: 0;
+                }
+            }
 
-            // &::after {
-            //     border: var(--form-control-border-width) solid var(--form-control-border-active);
-            //     border-radius: calc(var(--form-control-border-radius) - var(--form-control-border-width));
-            //     content: '';
-            //     inset: 0;
-            //     pointer-events: none;
-            //     position: absolute;
-            // }
-        }
+            &:not(:focus-within, :has(:disabled)) {
+                &:has(input:checked):hover #{$name}__choice::after {
+                    opacity: .375;
+                }
+            }
 
-        &:has(input:disabled) #{$name}__button {
-            cursor: not-allowed;
+            &:has(input:checked) #{$name}__label {
+                --form-control-label: var(--inkq-color-text);
+            }
         }
     }
 }
 
 .inkq-field-group {
+    $name: &;
+
     border: none;
     display: flex;
     gap: var(--space-5);
@@ -152,9 +199,14 @@
         margin-block-end: var(--inkq-field-gap);
         padding-inline: 0;
     }
-}
 
-@keyframes fadeOut {
-	from { opacity: 1; }
-	to { opacity: 0; }
+    &:has(:disabled) #{$name} {
+        &__label {
+            color: global.disable(var(--inkq-color-text-secondary));
+        }
+
+        &__required {
+            color: global.disable(var(--inkq-color-placeholder));
+        }
+    }
 }

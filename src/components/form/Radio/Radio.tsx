@@ -8,8 +8,7 @@ import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Radio.module.scss'
 
 const NAME = 'Radio' as const
-const DEFAULT_PROPS = {
-} as const
+const DEFAULT_PROPS = {} as const
 
 interface BaseRadioProps
 	extends Field.SharedProps {

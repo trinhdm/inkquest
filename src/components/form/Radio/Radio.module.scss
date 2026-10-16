@@ -1,3 +1,4 @@
+@use '@/styles/utils' as global;
 @use '../shared' as shared;
 
 .inkq-radio {
@@ -27,11 +28,23 @@
     }
 
     &:checked {
+        --form-control-background-disabled: #{global.disable(var(--form-control-background-active))};
+        --form-control-border-disabled: var(--form-control-border-hover);
+
         background-color: var(--form-control-background-active);
         border-color: var(--form-control-border-active);
 
         &::before {
             transform: scale(1);
+        }
+    }
+
+    &:disabled {
+        background-color: var(--form-control-background-disabled);
+        border-color: var(--form-control-border-disabled);
+
+        &::before {
+            background-color: var(--form-control-border-disabled);
         }
     }
 }

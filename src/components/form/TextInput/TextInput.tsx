@@ -9,6 +9,7 @@ import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './TextInput.module.scss'
 
 const NAME = 'TextInput' as const
+
 const DEFAULT_PROPS = {
 	required: false,
 	type: 'text',
