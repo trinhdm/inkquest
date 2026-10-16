@@ -3,6 +3,7 @@
 .inkq-sidebar {
 	$name: &;
 
+	--sidebar-radius: var(--inkq-border-radius-sm);
 	--sidebar-transition: var(--duration-slow) var(--easing);
 
 	&__wrapper {
@@ -56,17 +57,21 @@
 		&__highlight {
 			background-color: var(--inkq-background-card-hover);
 			border-left: 2px solid var(--inkq-color-action);
-			border-radius: 0 var(--inkq-border-radius-sm) var(--inkq-border-radius-sm) 0;
-			height: var(--sidebar-highlight-height);
+			border-radius:
+				0 var(--sidebar-radius) var(--sidebar-radius) 0 /
+				0 calc(var(--sidebar-radius) / var(--sidebar-highlight-scale, 1))
+				calc(var(--sidebar-radius) / var(--sidebar-highlight-scale, 1)) 0;
+			height: 3rem;
 			inset: 0;
 			inset-block-end: auto;
 			opacity: 1;
 			pointer-events: none;
 			position: absolute;
-			transform: translateY(var(--sidebar-highlight-position));
-			transition:
-				height var(--sidebar-transition),
-				transform var(--sidebar-transition);
+			transform:
+				translateY(var(--sidebar-highlight-position))
+				scaleY(var(--sidebar-highlight-scale, 1));
+			transform-origin: top;
+			transition: transform var(--sidebar-transition);
 			user-select: none;
 		}
 

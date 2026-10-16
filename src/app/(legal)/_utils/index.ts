@@ -11,7 +11,7 @@ const formatLegalTitle = (
 ): string =>
 	`${index + 1}. ${title}`
 
-export const getLegalTitles = (slug: string, sections: LegalSection[]): Sidebar.LinkItem[] =>
+export const getLegalTitles = (slug: string, sections: LegalSection[]): Sidebar.Item.Link[] =>
 	sections.map(({ id, title }, i) => ({
 		id,
 		label: formatLegalTitle(title, i),

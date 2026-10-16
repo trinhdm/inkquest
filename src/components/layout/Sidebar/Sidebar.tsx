@@ -1,5 +1,5 @@
 import {
-	useLayoutEffect, useRef, useState,
+	useLayoutEffect, useMemo, useRef, useState,
 	type CSSProperties, type ReactNode,
 } from 'react'
 
@@ -8,7 +8,8 @@ import { polymorphic } from '@/lib/component/factory'
 import { rem } from '@/lib/general'
 import { Box } from '@/components/polymorphic/Box'
 import { Button } from '@/components/core/Button'
-import type { Route } from 'next'
+import { SidebarItem } from './SidebarItem'
+import { SidebarProvider, type SidebarContext } from './Sidebar.context'
 import type { CSSVars } from '@/types/shared'
 import type { MaybeAnimationProps } from '@/hooks/animation'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
@@ -24,48 +25,35 @@ const DEFAULT_PROPS = {
 	sticky: true,
 } as const
 
+const SUBCOMPONENTS = {
+	Item: SidebarItem,
+} as const
+
 interface BaseSidebarProps {
 	children?: ReactNode
+	label?: string
 	sticky?: boolean
-}
-
-interface BaseSidebarItem {
-	id: string
-	label: string
-}
-
-interface SidebarActionItem
-	extends BaseSidebarItem {
-	url?: never
 }
 
 interface ActionSidebarProps {
 	active: string
-	items: SidebarActionItem[]
-	label?: string
+	items: SidebarItem.Action[]
 	onChange: (id: string) => void
 	scroll?: never
 	shallow?: never
 }
 
-interface SidebarLinkItem
-	extends BaseSidebarItem {
-	url: Route<string>
-}
-
 interface LinkedSidebarProps {
 	active?: string
-	items: SidebarLinkItem[]
-	label?: string
+	items: SidebarItem.Link[]
 	onChange?: (id: string) => void
 	scroll?: Button.Props['scroll']
 	shallow?: boolean
 }
 
 interface DisplaySidebarProps {
-	active: never
+	active?: never
 	items?: never
-	label?: never
 	onChange?: never
 	scroll?: never
 	shallow?: never
@@ -88,6 +76,7 @@ interface SidebarSpecs {
 	}
 	props: SidebarProps
 	selectors: SidebarSelectors
+	subcomponents: typeof SUBCOMPONENTS
 }
 
 type SidebarSelectors =
@@ -95,16 +84,12 @@ type SidebarSelectors =
 	| 'label' | 'highlight'
 	| 'button' | 'item'
 
+//	where the highlight sits: the active row's offset from the top of the list (in rem),
+//	and how far to stretch the highlight's own height to cover the row
 interface SidebarHighlight {
-	height: `${number}rem`
-	top: `${number}rem`
+	scale: number
+	top: string
 }
-
-const replaceUrl = (url: SidebarLinkItem['url']) =>
-	(event: { preventDefault: () => void }) => {
-		event.preventDefault()
-		window.history.pushState(null, '', url)
-	}
 
 export const Sidebar = polymorphic<SidebarSpecs>((_props, { useProps, useStyles }) => {
 	const props = useProps(_props)
@@ -114,36 +99,43 @@ export const Sidebar = polymorphic<SidebarSpecs>((_props, { useProps, useStyles 
 		as, active, children,
 		items, label, onChange,
 		scroll, shallow, sticky,
+		unstyled,
 		...rest
 	} = props
 
 	const others = extractOthers(rest)
 
 	const [highlight, setHighlight] = useState<SidebarHighlight | null>(null)
-	const listRef = useRef<HTMLUListElement>(null)
+	const highlightRef = useRef<HTMLSpanElement>(null),
+		listRef = useRef<HTMLUListElement>(null)
 
-	const activeIndex = items?.findIndex(item => item.id === active) ?? -1,
-		hasItems = !!items?.length,
-		itemCount = hasItems ?? 0
+	const ctxValues = useMemo(() => ({
+		active, onChange, scroll, shallow, unstyled,
+	}), [active, onChange, scroll, shallow, unstyled])
+
+	const activeIndex = items?.findIndex(item => (item.id === active)) ?? -1
+
+	const hasItems = !!items?.length,
+		itemCount = items?.length ?? 0
 
 	//	measure the active row, so the highlight fits labels that wrap onto more lines;
 	//	re-measure whenever a row resizes (fonts loading, the sidebar narrowing, bold text wrapping)
 	useLayoutEffect(() => {
-		const list = listRef.current
-		if (!list) return
+		const list = listRef.current,
+			base = highlightRef.current
 
+		if (!list || !base) return
+
+		//	the highlight keeps its CSS height and is stretched with `scaleY`, so moving it never triggers layout
 		const measure = () => {
 			const row = list.children[activeIndex] as HTMLElement | undefined
-			let next: SidebarHighlight | null = null
-
-			if (row) {
-				const height = rem(row.offsetHeight),
-					top = rem(list.offsetTop + row.offsetTop)
-				next = { height, top }
-			}
+			const next = row ? {
+				scale: base.offsetHeight ? row.offsetHeight / base.offsetHeight : 1,
+				top: rem(list.offsetTop + row.offsetTop),
+			} : null
 
 			setHighlight(prev => (
-				prev?.height === next?.height && prev?.top === next?.top ? prev : next
+				prev?.scale === next?.scale && prev?.top === next?.top ? prev : next
 			))
 		}
 
@@ -156,61 +148,36 @@ export const Sidebar = polymorphic<SidebarSpecs>((_props, { useProps, useStyles 
 		return () => observer.disconnect()
 	}, [activeIndex, itemCount])
 
-	const clsx = { selector: { nav: hasItems, sticky }}
-	const sharedProps = { ...styles('root', clsx), ...others, as }
+	const clsx = { selector: { nav: hasItems, sticky } }
+	const sharedProps = { ...styles('root', clsx), ...others, as, unstyled }
 
 	if (hasItems) {
-		const highlightStyles = styles('highlight')
+		const highlightStyles = styles('highlight'),
+			isMenu = Object.hasOwn(items[0], 'url'),
+			role = isMenu ? 'menu' : undefined
 
 		return (
 			<Box { ...sharedProps }>
 				{ label && <span { ...styles('label') }>{ label }</span> }
 
 				<nav { ...styles('wrapper') }>
-					{ highlight && (
-						<span
-							{ ...highlightStyles }
-							style={ {
-								...highlightStyles.style,
-								'--sidebar-highlight-height': highlight.height,
+					<span
+						{ ...highlightStyles }
+						ref={ highlightRef }
+						style={ {
+							...highlightStyles.style,
+							...(highlight ? {
 								'--sidebar-highlight-position': highlight.top,
-							} as CSSProperties & CSSVars }
-						/>
-					) }
-					<ul { ...styles('inner') } ref={ listRef } role="menu">
-						{ items.map(({ id, label, url }) => {
-							const itemProps = { ...styles('button'), unstyled: true }
-							const isActive = active === id,
-								selector = { active: isActive }
+								'--sidebar-highlight-scale': highlight.scale,
+							} : { visibility: 'hidden' }),
+						} as CSSProperties & CSSVars }
+					/>
 
-							return (
-								<li key={ `sidebar-item-${id}` } { ...styles('item', { selector }) }>
-									{ url ? (
-										<Button
-											{ ...itemProps }
-											attributes={ { aria: { current: isActive ? 'page' : undefined } } }
-											href={ url }
-											onNavigate={ event => {
-												if (shallow) replaceUrl(url)(event)
-												onChange?.(id)
-											} }
-											scroll={ scroll }
-										>
-											{ label }
-										</Button>
-									) : (
-										<Button
-											{ ...itemProps }
-											attributes={ { aria: { current: isActive || undefined } } }
-											onClick={ () => onChange?.(id) }
-										>
-											{ label }
-										</Button>
-									) }
-								</li>
-							)
-						}) }
-					</ul>
+					<SidebarProvider value={ ctxValues }>
+						<ul { ...styles('inner') } ref={ listRef } role={ role }>
+							{ items.map(item => <SidebarItem key={ item.id } { ...item } />) }
+						</ul>
+					</SidebarProvider>
 				</nav>
 			</Box>
 		)
@@ -218,12 +185,13 @@ export const Sidebar = polymorphic<SidebarSpecs>((_props, { useProps, useStyles 
 
 	return (
 		<Box { ...sharedProps }>
+			{ label && <span { ...styles('label') }>{ label }</span> }
+
 			<div { ...styles('wrapper') }>
 				<div { ...styles('inner') }>
 					{ children }
 				</div>
 			</div>
-
 		</Box>
 	)
 }, { name: NAME, classes })
@@ -231,12 +199,19 @@ export const Sidebar = polymorphic<SidebarSpecs>((_props, { useProps, useStyles 
 Sidebar.set({
 	defaultProps: DEFAULT_PROPS,
 	displayName: NAME,
+	subcomponents: SUBCOMPONENTS,
 })
 
 export declare namespace Sidebar {
+	export type Context = SidebarContext
 	export type Props = SidebarProps
 	export type Specs = SidebarSpecs
 
-	export type ActionItem = SidebarActionItem
-	export type LinkItem = SidebarLinkItem
+	export namespace Item {
+		export type Props = SidebarItem.Props
+		export type Specs = SidebarItem.Specs
+
+		export type Action = SidebarItem.Action
+		export type Link = SidebarItem.Link
+	}
 }

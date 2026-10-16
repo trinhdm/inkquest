@@ -1,6 +1,6 @@
 import { expect, fn, spyOn, userEvent, within } from 'storybook/test'
-import { rem } from '@/lib/general'
 import { getDefaultProps } from '@/hooks/useProps'
+import { rem } from '@/lib/general'
 import { Sidebar } from './Sidebar'
 import type { ReactNode } from 'react'
 import type { Route } from 'next'
@@ -40,21 +40,21 @@ const ROOT_SELECTOR = '.inkq-sidebar'
 const RAIL_SELECTOR = '.inkq-sidebar__rail'
 const ITEM_SELECTOR = '.inkq-sidebar__item'
 
-// A handful of representative `Sidebar.LinkItem`s / `Sidebar.ActionItem`s —
+// A handful of representative `Sidebar.Item.Link`s / `Sidebar.Item.Action`s —
 // `Sidebar.Props['items']` has no upper bound, these are just realistic
 // examples, same precedent as `Grid`'s `COLUMN_VALUES`/`Section`'s
 // `LAYOUT_OPTIONS`.
-const linkItem = (id: string, label: string, url: string): Sidebar.LinkItem => ({
+const linkItem = (id: string, label: string, url: string): Sidebar.Item.Link => ({
 	id, label, url: url as Route<string>,
 })
 
-const LINK_ITEMS: Sidebar.LinkItem[] = [
+const LINK_ITEMS: Sidebar.Item.Link[] = [
 	linkItem('overview', 'Overview', '/dashboard/overview'),
 	linkItem('settings', 'Settings', '/dashboard/settings'),
 	linkItem('billing', 'Billing', '/dashboard/billing'),
 ]
 
-const ACTION_ITEMS: Sidebar.ActionItem[] = [
+const ACTION_ITEMS: Sidebar.Item.Action[] = [
 	{ id: 'overview', label: 'Overview' },
 	{ id: 'settings', label: 'Settings' },
 	{ id: 'billing', label: 'Billing' },

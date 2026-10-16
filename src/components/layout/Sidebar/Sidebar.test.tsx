@@ -1,17 +1,17 @@
+import userEvent from '@testing-library/user-event'
 import { getDefaultProps } from '@/hooks/useProps'
 import { render, reset, screen, within } from '@/tests/test-utils'
-import userEvent from '@testing-library/user-event'
 import { Sidebar } from './Sidebar'
 
 describe('Sidebar', () => {
 	reset('Sidebar', 'Button')
 
-	const linkItems: Sidebar.LinkItem[] = [
+	const linkItems: Sidebar.Item.Link[] = [
 		{ id: 'overview', label: 'Overview', url: '/profile' },
 		{ id: 'settings', label: 'Settings', url: '/settings' },
 	]
 
-	const actionItems: Sidebar.ActionItem[] = [
+	const actionItems: Sidebar.Item.Action[] = [
 		{ id: 'save', label: 'Save' },
 		{ id: 'discard', label: 'Discard' },
 	]

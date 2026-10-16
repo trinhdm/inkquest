@@ -13,7 +13,7 @@ import type { Route } from 'next'
 const getCategoryUrl = (id: string, param: string): Route =>
 	`/faqs?${param}=${id}`
 
-const findCategories = (param: string): Sidebar.LinkItem[] =>
+const findCategories = (param: string): Sidebar.Item.Link[] =>
 	FAQ_ITEMS.map(({ category, id }) => ({
 		id,
 		label: category,
