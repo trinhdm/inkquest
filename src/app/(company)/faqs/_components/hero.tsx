@@ -1,33 +1,34 @@
-import Link from 'next/link'
 import { Suspense } from 'react'
 import { useFaqsCtx } from '../_utils/faqs.context'
+import { useParser } from '@/hooks/useParser'
 import { FaqSearch } from './_features/search'
 import { Field } from '@/components/form/Field'
 import { Section } from '@/components/layout/Section'
 
 export const FaqsHero = () => {
-	const { pageID } = useFaqsCtx()
+	const {
+		data: { hero, search: { field }, title },
+		pageID,
+	} = useFaqsCtx()
+
+	const searchID = `${pageID}-search`
 
 	return (
 		<Section
-			eyebrow="Company · FAQs"
+			eyebrow={ hero?.eyebrow }
 			id={ `${pageID}-hero` }
 			layout="hero"
-			title="Questions, answered."
+			title={ hero?.heading ?? title }
 		>
-			<>Everything about bidding, booking, verification, and payouts — for clients, artists, and studios. Can&apos;t find it? <Link href="/messages" data-cta>Message us</Link>.</>
+			{ useParser(hero?.body) }
 
 			<Section.Footer>
 				<Suspense fallback={ (
-					<Field disabled id={ `${pageID}-search` } size="lg">
-						<Field.Input
-							name="faq-search"
-							placeholder="Search all FAQs…"
-							type="search"
-						/>
+					<Field disabled id={ searchID } size="lg">
+						<Field.Input { ...field } type="search" />
 					</Field>
 				) }>
-					<FaqSearch />
+					<FaqSearch id={ searchID } />
 				</Suspense>
 			</Section.Footer>
 		</Section>

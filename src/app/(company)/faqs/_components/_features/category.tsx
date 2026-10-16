@@ -1,3 +1,5 @@
+import { useFaqsCtx } from '../../_utils/faqs.context'
+import { useParser } from '@/hooks/useParser'
 import { countFaqs } from '../../_utils'
 import { highlightText } from '@/lib/component/children'
 import { Accordion } from '@/components/data/Accordion'
@@ -14,6 +16,9 @@ export const FaqCategory = ({
 	terms,
 }: FaqCategoryProps) => {
 	const { category, id, questions } = group
+
+	const { data: { search: { empty } } } = useFaqsCtx()
+	const emptyMessage = useParser(empty)
 
 	const count = countFaqs([group]),
 		headingID = `${id}-heading`
@@ -45,7 +50,7 @@ export const FaqCategory = ({
 				</Accordion.Group>
 			) : (
 				<div className="faq__content">
-					<p>Nothing here yet. Check back soon.</p>
+					<p>{ emptyMessage }</p>
 				</div>
 			) }
 		</Section>

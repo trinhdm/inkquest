@@ -1,4 +1,5 @@
-import type { PageDataItem } from '@/types/shared'
+import type { Field } from '@/components/form/Field'
+import type { BasePageData, PageDataItem } from '@/types/shared'
 
 export interface FaqGroup {
 	id: string
@@ -159,3 +160,49 @@ export const FAQ_ITEMS: FaqGroup[] = [
 		questions: [],
 	},
 ]
+
+export interface FaqsPageData
+	extends BasePageData {
+	items: FaqGroup[]
+	search: {
+		field: Field.Input.Props
+		empty: string
+		error: string
+	}
+}
+
+export const FAQS_PAGE_DATA: FaqsPageData = {
+	id: 'faqs',
+	title: 'FAQs',
+	items: FAQ_ITEMS,
+	search: {
+		field: {
+			name: 'faq-search',
+			placeholder: 'Search all FAQs…',
+		},
+		empty: 'Nothing here yet. Check back soon.',
+		error: `Try a different word, or <a href="/messages">ask us</a> directly and we'll answer.`,
+	},
+	hero: {
+		eyebrow: 'Company · FAQs',
+		heading: 'Questions, answered.',
+		body: `Everything about bidding, booking, verification, and payouts — for clients, artists, and studios. Can't find it? <a href="/messages">Message us</a>.`
+	},
+	footer: {
+		eyebrow: 'Still need help?',
+		heading: 'Ask a human.',
+		body: 'Our support team answers within a day — usually much faster. For booking disputes or safety concerns, head straight to the Support page.',
+		buttons: [
+			{
+				id: 'btn_ticket',
+				label: 'Open ticket',
+				url: '/careers',
+			},
+			{
+				id: 'btn_email',
+				label: 'Email support',
+				url: '/careers',
+			},
+		],
+	},
+}

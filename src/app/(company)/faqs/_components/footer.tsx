@@ -1,23 +1,33 @@
 import { useFaqsCtx } from '../_utils/faqs.context'
+import { useParser } from '@/hooks/useParser'
 import { Button } from '@/components/core/Button'
 import { Section } from '@/components/layout/Section'
 
 export const FaqsFooter = () => {
-	const { pageID } = useFaqsCtx()
+	const {
+		data: { footer },
+		pageID,
+	} = useFaqsCtx()
+
+	const footerBody = useParser(footer?.body)
+	if (!footer) return null
 
 	return (
 		<Section
-			eyebrow="Still need help?"
+			eyebrow={ footer.eyebrow }
 			id={ `${pageID}-banner` }
 			layout="banner"
-			title="Ask a human."
+			title={ footer.heading }
 		>
-			Our support team answers within a day — usually much faster. For booking disputes or safety concerns, head straight to the Support page.
+			{ footerBody }
 
-			<Section.Footer>
-				<Button href="/careers">Open ticket</Button>
-				<Button href="/press">Email support</Button>
-			</Section.Footer>
+			{ footer.buttons?.length && (
+				<Section.Footer>
+					{ (footer.buttons).map(({ id, label, url }) => (
+						<Button key={ id } href={ url }>{ label }</Button>
+					)) }
+				</Section.Footer>
+			) }
 		</Section>
 	)
 }

@@ -17,7 +17,7 @@ interface FaqsUrlParams {
 // `URLSearchParams` entirely (not written as `category=`/`q=`) so clearing
 // the search field — or navigating with no category selected — lands on a
 // clean `/faqs`, never `/faqs?q=` or `/faqs?category=`.
-export const faqsUrl = ({ category, params, query }: FaqsUrlParams): Route<string> => {
+export const faqsUrl = ({ category, params, query }: FaqsUrlParams): Route => {
 	const urlParams = new URLSearchParams()
 
 	if (category) urlParams.set(params.category, category)
@@ -25,13 +25,20 @@ export const faqsUrl = ({ category, params, query }: FaqsUrlParams): Route<strin
 
 	const search = urlParams.toString()
 
-	// keeps the template-literal return form (not `as Route<string>`) — this
+	// keeps the template-literal return form (not `as Route`) — this
 	// is what satisfies `typedRoutes` today, same as the original `faqCategoryUrl`
-	return `/faqs${search ? `?${search}` : ''}` as Route<string>
+	return `/faqs${search ? `?${search}` : ''}` as Route
 }
 
-export const FaqSearch = () => {
-	const { pageID, params, scroll } = useFaqsCtx()
+interface FaqSearchProps {
+	id: string
+}
+
+export const FaqSearch = ({ id }: FaqSearchProps) => {
+	const {
+		data: { search: { field } },
+		params, scroll,
+	} = useFaqsCtx()
 
 	const router = useRouter()
 	const searchParams = useSearchParams()
@@ -59,11 +66,10 @@ export const FaqSearch = () => {
 	}
 
 	return (
-		<Field id={ `${pageID}-search` } size="lg">
+		<Field id={ id } size="lg">
 			<Field.Input
-				name="faq-search"
+				{ ...field }
 				onChange={ handleChange }
-				placeholder="Search all FAQs…"
 				type="search"
 				value={ draft }
 			/>

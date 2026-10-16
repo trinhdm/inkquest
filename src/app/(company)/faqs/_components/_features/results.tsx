@@ -1,4 +1,5 @@
-import Link from 'next/link'
+import { useFaqsCtx } from '../../_utils/faqs.context'
+import { useParser } from '@/hooks/useParser'
 import { countFaqs } from '../../_utils'
 import { FaqCategory } from './category'
 import type { FaqGroup } from '../../_utils/faqs.data'
@@ -10,6 +11,9 @@ interface FaqResultsProps {
 }
 
 export const FaqResults = ({ groups, query, terms }: FaqResultsProps) => {
+	const { data: { search: { error } } } = useFaqsCtx()
+	const errorMessage = useParser(error)
+
 	const count = countFaqs(groups),
 		resultStr = `result${count === 1 ? '' : 's'} for`
 
@@ -17,7 +21,7 @@ export const FaqResults = ({ groups, query, terms }: FaqResultsProps) => {
 		<>
 			<div className="faq__heading">
 				<span aria-live="polite" className="faq__count" role="status">
-					{ count > 0 ? <span>{ count }</span> : 'No' } { resultStr } &quot;<strong>{ query }</strong>&quot;
+					<span>{ count > 0 ? count : 'No' }</span> { resultStr } &quot;<strong>{ query }</strong>&quot;
 				</span>
 			</div>
 
@@ -30,7 +34,7 @@ export const FaqResults = ({ groups, query, terms }: FaqResultsProps) => {
 							terms={ terms }
 						/>
 					))
-					: <p>Try a different word, or <Link href="/messages" data-cta>ask us</Link> directly and we&apos;ll answer.</p>
+					: <p>{ errorMessage }</p>
 				}
 			</div>
 		</>

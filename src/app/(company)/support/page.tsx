@@ -26,7 +26,7 @@ export default function Support() {
 				</>
 			</Section>
 			<Section id={ `${pageID}-contact` }>
-				<Grid columns={ 4 }>
+				<Grid columns={ 4 } gap="xl">
 					<Grid.Item id={ `${pageID}-contact-form` } span={ 3 }>
 						<Tab.List>
 							<Tab id="client-tab">Client</Tab>

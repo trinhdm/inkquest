@@ -10,7 +10,7 @@ import { Sidebar } from '@/components/layout/Sidebar'
 import { FAQ_ITEMS, type FaqGroup } from '../../_utils/faqs.data'
 import type { Route } from 'next'
 
-const getCategoryUrl = (id: string, param: string): Route<string> =>
+const getCategoryUrl = (id: string, param: string): Route =>
 	`/faqs?${param}=${id}`
 
 const findCategories = (param: string): Sidebar.LinkItem[] =>
@@ -99,6 +99,7 @@ export const FaqBrowser = () => {
 				onChange={ selectCategory }
 				scroll={ scroll }
 			/>
+
 			<FaqCategory group={ activeGroup } />
 		</Grid>
 	)

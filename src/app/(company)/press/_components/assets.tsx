@@ -23,7 +23,7 @@ export const PressAssets = () => {
 					id, title,
 				}) => {
 					const info: string[] = []
-					let href: Route<string> | undefined
+					let href: Route | undefined
 
 					if (attachment) {
 						const { url, ...details } = attachment
