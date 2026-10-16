@@ -1,4 +1,4 @@
-@use './mixins' as global;
+@use './utils' as global;
 
 @media (prefers-reduced-motion: no-preference) {
 	html {
@@ -111,19 +111,23 @@ button {
 }
 
 a {
-	color: var(--inkq-color-link);
+	--link-color: var(--inkq-color-link);
+
+	color: var(--link-color);
 	text-decoration: none;
 	transition: var(--inkq-motion-colors);
 
 	&:hover {
-		color: var(--inkq-color-link-hover);
+		--link-color: var(--inkq-color-link-hover);
+
+		color: var(--link-color);
 	}
 
 	&:where(.inkq-cta, [data-cta]) {
-		color: var(--inkq-color-action);
+		--link-color: var(--inkq-color-action);
 
 		&:hover {
-			color: var(--inkq-color-action-hover);
+			--link-color: var(--inkq-color-action-hover);
 		}
 	}
 
@@ -231,6 +235,7 @@ mark {
 .inkq-sr {
 	border-width: 0;
 	clip: rect(0, 0, 0, 0);
+	clip-path: inset(50%);
 	height: 1px;
 	margin: -1px;
 	overflow: hidden;

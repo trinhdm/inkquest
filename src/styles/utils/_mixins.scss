@@ -199,13 +199,15 @@
 //	lines
 
 @mixin underline($animated: false) {
+	--underline-transition: var(--duration-gradual) var(--easing-out) var(--duration-fast);
+
 	display: inline-flex;
 	overflow: hidden clip;
 	position: relative;
 	text-wrap: pretty;
 
 	&::after {
-		background-color: var(--inkq-color-action-hover);
+		background-color: var(--link-color);
 		content: '';
 		display: block;
 		height: 1px;
@@ -213,22 +215,24 @@
 		inset-block-start: auto;
 		pointer-events: none;
 		position: absolute;
+		transition: background-color var(--underline-transition);
 		user-select: none;
 		width: 100%;
+		will-change: background-color;
 	}
 
 	@if $animated == true {
 		transition-duration: var(--duration-gradual);
 
 		&::after {
-			transform: translateX(-101%);
-			transition: opacity var(--duration-gradual) var(--easing-out) var(--duration-fast),
-				transform var(--duration-gradual) var(--easing-out) var(--duration-fast);
-			will-change: opacity, transform;
+			transform: translateX(0);
+			transition: background-color var(--underline-transition),
+				transform var(--underline-transition);
+			will-change: background-color, transform;
 		}
 
 		&:hover::after {
-			transform: translateX(0);
+			transform: translateX(-101%);
 		}
 	}
 }

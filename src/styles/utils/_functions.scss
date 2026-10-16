@@ -1,0 +1,4 @@
+
+@function disable($color) {
+	@return rgb(from #{$color} r g b / var(--inkq-opacity-disabled));
+}

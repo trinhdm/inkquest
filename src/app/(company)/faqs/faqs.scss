@@ -1,4 +1,4 @@
-@use '@/styles/mixins' as global;
+@use '@/styles/utils' as global;
 
 #faqs-content .faq {
 	$name: &;
@@ -17,6 +17,14 @@
 
 	&__content {
 		color: var(--inkq-color-text-secondary);
+
+		a:where([data-cta]) {
+			--link-color: var(--inkq-color-link);
+
+			&:hover {
+				--link-color: var(--inkq-color-link-hover);
+			}
+		}
 	}
 
 	&__count {
