@@ -26,6 +26,7 @@ type SharedFieldProp =
 	| 'loading'
 	| 'required'
 	| 'size'
+	| 'type'
 
 export interface SharedFieldProps
 	extends Pick<Field.Props, SharedFieldProp>,
@@ -52,6 +53,7 @@ const sharedFieldProps = [
 	'loading',
 	'required',
 	'size',
+	'type',
 	'unstyled',
 ] as const satisfies readonly (keyof SharedFieldProps)[]
 

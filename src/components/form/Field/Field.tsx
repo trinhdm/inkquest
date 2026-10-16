@@ -19,8 +19,8 @@ import { getIcon, type FieldPropsList } from '../utils'
 import { keyHasValue, toKebabCase } from '@/utils/helpers'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
+import { Choice as ChoiceInput } from '../Choice'
 import { FieldGroup } from './FieldGroup'
-import { Radio } from '../Radio'
 import { TextArea } from '../TextArea'
 import { TextInput } from '../TextInput'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
@@ -38,7 +38,7 @@ const DEFAULT_PROPS = {
 } as const
 
 export const SUBCOMPONENTS = {
-	Choice: Radio,
+	Choice: ChoiceInput,
 	Group: FieldGroup,
 	Input: TextInput,
 	Textarea: TextArea,
@@ -54,6 +54,7 @@ interface BaseFieldProps {
 	label?: string
 	loading?: boolean
 	required?: boolean
+	type?: Field.Choice.Types | Field.Input.Types
 }
 
 interface FieldDefaultLayout {
@@ -129,7 +130,7 @@ const buildField = (
 
 		parts.control = <div { ...styles('control', clsxControl) }>{ control }</div>
 
-		if (keyHasValue(childProps, 'type')) {
+		if (keyHasValue(childProps, 'type') && control.type === TextInput) {
 			const icon = getIcon((childProps as TextInput.Props).type)
 			if (icon) parts.icon = icon
 		}
@@ -164,7 +165,8 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 		as, caption, children,
 		disabled, error, id,
 		label, labelPosition, layout,
-		loading, required, size, unstyled,
+		loading, required, size,
+		type, unstyled,
 		...rest
 	} = props
 
@@ -196,11 +198,11 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 	const ctxValues = useMemo(() => ({
 		aria, clsx, disabled, hasError,
 		icon,  idx, loader, loading,
-		required, size, unstyled,
+		required, size, type, unstyled,
 	}), [
 		aria, clsx, disabled, hasError,
-		icon, idx, loader, loading,
-		required, size, unstyled,
+		icon,  idx, loader, loading,
+		required, size, type, unstyled,
 	])
 
 	const sharedProps = {
@@ -278,8 +280,9 @@ export declare namespace Field {
 	}
 
 	export namespace Choice {
-		export type Props = Radio.Props
-		export type Specs = Radio.Specs
+		export type Props = ChoiceInput.Props
+		export type Specs = ChoiceInput.Specs
+		export type Types = ChoiceInput.Types
 	}
 
 	export namespace Input {

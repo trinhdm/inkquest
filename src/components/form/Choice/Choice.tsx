@@ -1,54 +1,58 @@
 import { useField, type Field } from '../Field'
 import { extractOthers } from '@/hooks/useProps'
-import { getSharedTokens, type FieldTokens as RadioTokens } from '../utils'
+import { getSharedTokens, type FieldTokens as ChoiceTokens } from '../utils'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
-import type { ChangeEventHandler, MouseEventHandler } from 'react'
+import type { ChangeEventHandler, HTMLInputTypeAttribute, MouseEventHandler } from 'react'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
-import classes from './Radio.module.scss'
+import classes from './Choice.module.scss'
 
-const NAME = 'Radio' as const
-const DEFAULT_PROPS = {} as const
+const NAME = 'Choice' as const
 
-interface BaseRadioProps
+const DEFAULT_PROPS = {
+	type: 'radio',
+} as const
+
+interface BaseChoiceProps
 	extends Field.SharedProps {
 	name: string
 	onClick?: MouseEventHandler<HTMLInputElement>
+	type?: Extract<HTMLInputTypeAttribute, Choice.Types>
 	value: string
 }
 
-interface ControlledRadioProps {
+interface ControlledChoiceProps {
 	checked?: boolean
 	onChange?: ChangeEventHandler<HTMLInputElement>
 }
 
-interface UncontrolledRadioProps {
+interface UncontrolledChoiceProps {
 	checked?: never
 	onChange?: never
 }
 
-type RadioControlProps =
-	| ControlledRadioProps
-	| UncontrolledRadioProps
+type ChoiceControlProps =
+	| ControlledChoiceProps
+	| UncontrolledChoiceProps
 
-type RadioProps =
-	& BaseRadioProps
-	& RadioControlProps
+type ChoiceProps =
+	& BaseChoiceProps
+	& ChoiceControlProps
 
-interface RadioSpecs {
+interface ChoiceSpecs {
 	context: Field.Context
 	defaults: { props: PropsDefaultList<typeof DEFAULT_PROPS> }
-	props: RadioProps
-	selectors: RadioSelectors
-	tokens: RadioTokens
+	props: ChoiceProps
+	selectors: ChoiceSelectors
+	tokens: ChoiceTokens
 }
 
-type RadioSelectors =
+type ChoiceSelectors =
 	| 'root' | 'icon'
 
 const tokens = getSharedTokens('choice')
 
-export const Radio = polymorphic<RadioSpecs>((_props, { useProps, useStyles }) => {
+export const Choice = polymorphic<ChoiceSpecs>((_props, { useProps, useStyles }) => {
 	const { useChosenFieldProps, useFieldCtx } = useField()
 
 	const context = useFieldCtx(NAME)
@@ -59,8 +63,8 @@ export const Radio = polymorphic<RadioSpecs>((_props, { useProps, useStyles }) =
 
 	const {
 		disabled, loading, name,
-		onChange,
-		required, size, value,
+		onChange, required, size,
+		type, value,
 		...rest
 	} = props
 
@@ -77,18 +81,19 @@ export const Radio = polymorphic<RadioSpecs>((_props, { useProps, useStyles }) =
 			name={ name }
 			onChange={ onChange }
 			required={ required }
-			type="radio"
+			type={ type }
 			value={ value }
 		/>
 	)
 }, { name: NAME, classes })
 
-Radio.set({
+Choice.set({
 	defaultProps: DEFAULT_PROPS,
 	displayName: NAME,
 })
 
-export declare namespace Radio {
-	export type Props = RadioProps
-	export type Specs = RadioSpecs
+export declare namespace Choice {
+	export type Props = ChoiceProps
+	export type Specs = ChoiceSpecs
+	export type Types = 'checkbox' | 'radio'
 }

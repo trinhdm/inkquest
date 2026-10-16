@@ -5,6 +5,7 @@ type SharedFieldProp =
 	| 'disabled'
 	| 'labelPosition'
 	| 'layout'
+	| 'type'
 
 export interface FieldGroupContext
 	extends Pick<Field.Props, SharedFieldProp> {

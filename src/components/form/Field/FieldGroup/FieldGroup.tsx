@@ -11,6 +11,7 @@ interface BaseFieldGroupProps {
 	disabled?: Field.Props['disabled']
 	legend: string
 	required?: Field.Props['required']
+	type?: Field.Props['type']
 }
 
 type FieldGroupProps =
@@ -33,7 +34,8 @@ export const FieldGroup = polymorphic<FieldGroupSpecs>((_props, { useProps, useS
 
 	const {
 		children, disabled, labelPosition,
-		layout, legend, required, unstyled,
+		layout, legend, required,
+		type, unstyled,
 		...rest
 	} = props
 
@@ -57,7 +59,7 @@ export const FieldGroup = polymorphic<FieldGroupSpecs>((_props, { useProps, useS
 			provider={ FieldGroupProvider }
 			values={ {
 				disabled, labelPosition,
-				layout, unstyled,
+				layout, type, unstyled,
 			} }
 		>
 			{ children }
