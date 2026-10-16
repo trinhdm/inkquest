@@ -1,21 +1,10 @@
+import { useParser, withEmailLink } from '@/hooks/useParser'
 import { Section } from '@/components/layout/Section'
 import type { LegalPageData } from '../../_utils/legal.types'
 
 type LegalSectionProps =
 	& LegalPageData['sections'][number]
 	& { index: number }
-
-const withEmailLink = (text: string) => {
-	const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g,
-		parts = text.split(emailRegex);
-
-	return parts.map((part, index) => {
-		if (emailRegex.test(part))
-			return <a key={index} href={ `mailto:${part}` } data-cta>{part}</a>
-
-		return part
-	})
-}
 
 export const LegalSection = ({
 	body,
@@ -24,6 +13,8 @@ export const LegalSection = ({
 	summary,
 	title,
 }: LegalSectionProps) => {
+	const synopsis = useParser(summary)
+
 	const isIntro = index === -1,
 		modifier = `legality--${isIntro ? 'intro' : 'section' }`
 
@@ -38,7 +29,7 @@ export const LegalSection = ({
 			{ (summary && !isIntro) && (
 				<aside className="legality__summary">
 					<span className="legality__label">TL;DR</span>
-					<p>{ summary }</p>
+					<p>{ synopsis }</p>
 				</aside>
 			) }
 

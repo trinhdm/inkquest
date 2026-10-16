@@ -22,6 +22,9 @@ const URL_SCHEME = /^[a-z][a-z0-9+.-]*:/i,
 export const isExternalLink = (href?: string) => {
 	if (!href) return false
 
+	const isInternal = href.startsWith('/') || href.startsWith('#')
+	if (isInternal) return false
+
 	const isHttp = HTTP_SCHEME.test(href),
 		isUrlScheme = URL_SCHEME.test(href),
 		sameProtocol = href.startsWith('//')
