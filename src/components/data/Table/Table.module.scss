@@ -2,7 +2,6 @@
 .inkq-table {
 	$name: &;
 
-	-webkit-overflow-scrolling: touch;
 	border-collapse: collapse;
 	border-spacing: 0;
     caption-side: var(--table-caption-side, bottom);
@@ -11,26 +10,32 @@
 	overflow-x: auto;
 	table-layout: var(--table-layout, auto);
 	width: 100%;
-
-	// &__cell {}
 }
 
 .inkq-table-row {
 	align-items: baseline;
 	border-top: 1px solid var(--inkq-border);
 	display: grid;
-	gap: var(--rs-gap, var(--space-6));
-	grid-template-columns: var(--rs-cols, 200px 1fr auto);
-	padding: var(--space-6) 0;
-	// transition: opacity 480ms var(--easing-out) 43ms, transform 480ms var(--easing-out) 43ms;
+	column-gap: var(--inkq-space-grid);
+	padding: var(--inkq-space-grid) 0;
 
 	&:last-of-type {
 		border-bottom: 1px solid var(--inkq-border);
 	}
+
+	&:has(> :nth-child(2):last-child) {
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+
+	&:has(> :nth-child(3):last-child) {
+		grid-template-columns:
+			minmax(0, calc(var(--inkq-breakpoint-xs) * .45)) minmax(0, 1fr) max-content;
+	}
 }
 
 .inkq-table-cell {
-	padding: .625rem;
+	align-items: center;
+	column-gap: var(--inkq-space-grid);
+	display: flex;
 	text-align: left;
-	white-space: nowrap;
 }

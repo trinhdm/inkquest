@@ -2,7 +2,7 @@ import type { CalendarDate } from '@/types/shared'
 
 export const formatDate = (
 	date?: CalendarDate,
-	isAbbrev: boolean = false,
+	withAbbr: (keyof CalendarDate)[] | true = [],
 ): string => {
 	if (!date) return ''
 
@@ -13,8 +13,8 @@ export const formatDate = (
 		const value = String(date[key]) as Extract<CalendarDate[typeof key], string>
 
 		if (!!value.length) {
-			let index,
-				output: string = value
+			const isAbbrev = Array.isArray(withAbbr) ? withAbbr.includes(key) : true
+			let index, output: string = value
 
 			switch (key) {
 				case 'month':

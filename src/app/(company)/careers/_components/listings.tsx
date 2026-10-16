@@ -22,17 +22,40 @@ export const CareersListings = ({
 			<Table>
 				{ body.map(({
 					department, id,
+					location,
 					title, url,
 				}) => {
+					const deptProps = {}
+
+					if (department) {
+						const badgeCode = ['dark', 'light'].includes(department.code)
+							? 'variant' : 'tone'
+						Object.assign(deptProps, { [`${badgeCode}`]: department.code })
+					}
+
 					return (
-						<Table.Row key={ `press-${id}` }>
+						<Table.Row className="job" key={ `press-${id}` }>
 							<Table.Cell>
-								<span className="inkq-h5">{ title }</span>
+								<span className="inkq-h5 job__role">{ title }</span>
 							</Table.Cell>
 
 							<Table.Cell>
-								{ department && <Badge variant="dark">{ department }</Badge> }
-								<Button href={ url } size="sm" variant="outline">
+								{ department && (
+									<Badge { ...deptProps } className="job__dept">
+										{ department.name }
+									</Badge>
+								) }
+
+								{ location && (
+									<span className="job__location">{ location }</span>
+								) }
+
+								<Button
+									className="job__btn"
+									href={ url }
+									size="sm"
+									variant="outline"
+								>
 									View Role
 								</Button>
 							</Table.Cell>

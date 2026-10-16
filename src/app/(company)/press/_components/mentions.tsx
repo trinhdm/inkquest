@@ -20,7 +20,7 @@ export const PressMentions = () => {
 					publishDate,
 					title, url,
 				}) => {
-					const date = formatDate(publishDate, true),
+					const date = formatDate(publishDate, ['month']),
 						headline = `"${title.replace(/^['"]|['"]$/g, '')}"`
 
 					return (

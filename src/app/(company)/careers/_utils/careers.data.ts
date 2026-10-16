@@ -26,25 +26,34 @@ const OPEN_POSITIONS: JobItem[] = [
 		id: 'senior-product-engineer',
 		title: 'Senior Product Engineer',
 		content: 'Build the surfaces where artists list work and clients book it — from the marketplace and auction flows to the tools artists use to run their books.',
-		department: 'engineering',
-		location: ['Brooklyn', 'remote'],
+		department: {
+			name: 'engineering',
+			code: 'dark',
+		},
+		location: 'remote',
 		url: '/about',
-	},
-	{
-		id: 'community-manager',
-		title: 'Community Manager',
-		content: 'Run the programs that keep the Inkquest community healthy — the feed, events, spotlights, and the day-to-day relationships with the artists and collectors who show up.',
-		department: 'community',
-		location: ['remote'],
-		url: '/community',
 	},
 	{
 		id: 'artist-relations-lead',
 		title: 'Artist Relations Lead',
 		content: 'Own the relationship with the artists on the platform — onboarding, education, pricing guidance, and being their advocate in every product decision we make.',
-		department: 'artist relations',
-		location: ['san diego'],
+		department: {
+			name: 'artist relations',
+			code: 'neutral',
+		},
+		location: 'San Francisco, CA',
 		url: '/community/events',
+	},
+	{
+		id: 'community-manager',
+		title: 'Community Manager',
+		content: 'Run the programs that keep the Inkquest community healthy — the feed, events, spotlights, and the day-to-day relationships with the artists and collectors who show up.',
+		department: {
+			name: 'community',
+			code: 'info',
+		},
+		location: 'Brooklyn, NY',
+		url: '/community',
 	},
 ]
 

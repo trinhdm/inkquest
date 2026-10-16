@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import type { Route } from 'next'
+import type { Badge } from '@/components/core/Badge'
 import type { Button } from '@/components/core/Button'
 import type { CalendarDate } from './datetime'
 import type { SOCIAL_BRANDS } from '@/utils/constants'
@@ -84,10 +85,26 @@ export interface AssetItem
 	attachment?: FileItem
 }
 
+type Department =
+	| 'artist relations'
+	| 'community'
+	| 'engineering'
+	| 'trust & safety'
+
+// const DEPT_CODES = {
+// 	'artist relations': 'success',
+// 	'community': 'info',
+// 	'engineering': 'action',
+// 	'trust & safety': 'info',
+// } as const satisfies Record<Department, Button.Tone>
+
 export interface JobItem
 	extends PageDataItem {
-	department: | 'artist relations' | 'community' | 'engineering' | 'trust & safety'
-	location: string[]
+	department: Omit<Badge.Props, 'children' | 'tone' | 'variant'> & {
+		name: Department
+		code: Badge.Tone | Extract<Badge.Variant, 'dark' | 'light'>
+	}
+	location: string
 	publishDate?: CalendarDate
 	role?: ReactNode[]
 	url: Route

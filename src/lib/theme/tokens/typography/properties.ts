@@ -74,27 +74,27 @@ export const getFontPropertyTokens = (): FontPropertyTokens => ({
 	fontSize: {
 		h1:	{
 			base:	base.fontSize('48'),
-			fluid:	`clamp(${alias.fontSize('h1')}, 4vw, ${alias.fontSize('display', 'lg')})`,
+			fluid:	`clamp(${alias.fontSize('display', 'md')}, 4vw, ${alias.fontSize('display', 'lg')})`,
 		},
 		h2:	{
 			base:	base.fontSize('40'),
-			fluid: 	`clamp(${alias.fontSize('h2')}, 3vw, ${alias.fontSize('h1')})`,
+			fluid: `clamp(${alias.fontSize('display', 'sm')}, 4vw, ${alias.fontSize('display', 'md')})`,
 		},
 		h3:	{
 			base:	base.fontSize('32'),
-			fluid: 	`clamp(${alias.fontSize('h3')}, 3vw, ${alias.fontSize('h2')})`,
+			fluid: 	`clamp(${alias.fontSize('h1')}, 4vw, ${alias.fontSize('display', 'sm')})`,
 		},
 		h4:	{
 			base:	base.fontSize('24'),
-			fluid: 	`clamp(${alias.fontSize('h4')}, 3vw, ${alias.fontSize('h3')})`,
+			fluid: 	`clamp(${alias.fontSize('h2')}, 3vw, ${alias.fontSize('h1')})`,
 		},
 		h5:	{
 			base:	base.fontSize('20'),
-			fluid: 	`clamp(${alias.fontSize('h5')}, 3vw, ${alias.fontSize('h4')})`,
+			fluid: 	`clamp(${alias.fontSize('h3')}, 3vw, ${alias.fontSize('h2')})`,
 		},
 		h6:	{
 			base:	base.fontSize('16'),
-			fluid: 	`clamp(${alias.fontSize('h6')}, 3vw, ${alias.fontSize('h5')})`,
+			fluid: 	`clamp(${alias.fontSize('h4')}, 3vw, ${alias.fontSize('h3')})`,
 		},
 		display:	{
 			sm:		base.fontSize('60'),

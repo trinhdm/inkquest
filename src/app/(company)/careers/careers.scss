@@ -25,6 +25,12 @@
 	@include global.item-block;
 }
 
+#careers-listings .job {
+	&__location {
+		@include global.eyebrow;
+	}
+}
+
 #careers-process .step {
 	$name: &;
 

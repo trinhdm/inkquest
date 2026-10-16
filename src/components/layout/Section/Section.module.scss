@@ -90,7 +90,7 @@
 			}
 
 			&__title {
-				max-width: max-content;
+				max-width: var(--inkq-breakpoint-sm);
 			}
 
 			&__footer {

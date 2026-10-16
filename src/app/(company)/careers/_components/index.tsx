@@ -14,12 +14,16 @@ export const CareersBase = () => {
 			<CareersHero { ...CAREERS_PAGE_DATA } />
 
 			{ CONTENT?.map(section => {
-				const id = `${ID}-${section.id}`
+				const id = `${ID}-${section.id}`,
+					key = `${id}-section`
 
 				switch (section.id) {
-					case 'culture': return <CareersCulture { ...section } id={ id } />
-					case 'listings': return <CareersListings { ...section } id={ id } />
-					case 'process': return <CareersProcess { ...section } id={ id } />
+					case 'culture':
+						return <CareersCulture { ...section } id={ id } key={ key } />
+					case 'listings':
+						return <CareersListings { ...section } id={ id } key={ key} />
+					case 'process':
+						return <CareersProcess { ...section } id={ id } key={ key } />
 				}
 			}) }
 		</>

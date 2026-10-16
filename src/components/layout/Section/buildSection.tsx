@@ -57,13 +57,12 @@ const buildHeader = (
 			Tag = `h${order}` as const
 
 		switch (layout) {
-			case 'hero':
-			case 'hero-split':
-				clsxNames.push(`${Tag}-display`)
-				break
 			case 'hero-tight':
 			case 'content':
 				clsxNames.push(`h${order + 2}`)
+				break
+			case 'hero-split':
+				clsxNames.push(`${Tag}-display`)
 				break
 		}
 
