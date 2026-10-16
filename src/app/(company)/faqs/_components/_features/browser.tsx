@@ -7,14 +7,14 @@ import { FaqCategory } from './category'
 import { FaqResults } from './results'
 import { Grid } from '@/components/layout/Grid'
 import { Sidebar } from '@/components/layout/Sidebar'
-import { FAQ_ITEMS, type FaqGroup } from '../../_utils/faqs.data'
+import type { FaqGroup, FaqsPageData } from '../../_utils/faqs.data'
 import type { Route } from 'next'
 
 const getCategoryUrl = (id: string, param: string): Route =>
 	`/faqs?${param}=${id}`
 
-const findCategories = (param: string): Sidebar.Item.Link[] =>
-	FAQ_ITEMS.map(({ category, id }) => ({
+const findCategories = (items: FaqsPageData['items'], param: string): Sidebar.Item.Link[] =>
+	items.map(({ category, id }) => ({
 		id,
 		label: category,
 		url: getCategoryUrl(id, param),
@@ -23,10 +23,10 @@ const findCategories = (param: string): Sidebar.Item.Link[] =>
 const findTerms = (query: string): string[] =>
 	query.split(/\s+/).filter(Boolean).map(term => term.toLowerCase())
 
-const findGroups = (terms: string[]): FaqGroup[] => {
+const findGroups = (items: FaqsPageData['items'], terms: string[]): FaqGroup[] => {
 	if (!terms.length) return []
 
-	return FAQ_ITEMS.reduce<FaqGroup[]>((acc, group) => {
+	return items.reduce<FaqGroup[]>((acc, group) => {
 		const questions = group.questions.filter(({ content, title }) => {
 			const haystack = `${title}${extractText(content)}`.toLowerCase()
 			return terms.every(term => haystack.includes(term))
@@ -43,18 +43,21 @@ interface SearchFaqsResults {
 	terms: string[]
 }
 
-const searchFaqs = (query?: string | string[]): SearchFaqsResults => {
+const searchFaqs = (items: FaqsPageData['items'], query?: string | string[]): SearchFaqsResults => {
 	const search = ((Array.isArray(query) ? query[0] : query) ?? '').trim(),
 		isSearching = search.length > 0
 
 	const terms = findTerms(search),
-		groups = isSearching ? findGroups(terms) : []
+		groups = isSearching ? findGroups(items, terms) : []
 
 	return { groups, isSearching, terms }
 }
 
 export const FaqBrowser = () => {
-	const { params, scroll } = useFaqsCtx()
+	const {
+		data: { items },
+		params, scroll,
+	} = useFaqsCtx()
 
 	const router = useRouter()
 	const searchParams = useSearchParams()
@@ -63,8 +66,8 @@ export const FaqBrowser = () => {
 	const [optimisticID, setOptimisticID] = useOptimistic(urlID)
 	const [isPending, startTransition] = useTransition()
 
-	const activeGroup = resolveFaqGroup(optimisticID)
-	const categories = findCategories(params.category)
+	const activeGroup = resolveFaqGroup(items, optimisticID)
+	const categories = findCategories(items, params.category)
 
 	const selectCategory = (id: string) => {
 		startTransition(() => {
@@ -74,7 +77,7 @@ export const FaqBrowser = () => {
 	}
 
 	const query = searchParams.get(params.query) ?? ''
-	const { groups, isSearching, terms } = searchFaqs(query)
+	const { groups, isSearching, terms } = searchFaqs(items, query)
 
 	if (isSearching) {
 		return (
@@ -90,7 +93,6 @@ export const FaqBrowser = () => {
 	return (
 		<Grid
 			attributes={ { aria: { busy: isPending || undefined } } }
-			gap="lg"
 			layout="sidebar"
 		>
 			<Sidebar

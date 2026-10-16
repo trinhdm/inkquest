@@ -6,8 +6,12 @@ import { FaqCategory } from './_features/category'
 import { Section } from '@/components/layout/Section'
 
 export const FaqsContent = () => {
-	const { pageID } = useFaqsCtx()
-	const initGroup = resolveFaqGroup()
+	const {
+		data: { items },
+		pageID,
+	} = useFaqsCtx()
+
+	const initGroup = resolveFaqGroup(items)
 
 	return (
 		<Section id={ `${pageID}-content` }>

@@ -7,6 +7,30 @@ import { Grid } from '@/components/layout/Grid'
 import { Section } from '@/components/layout/Section'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { Tab } from '@/components/data/Tab'
+import './support.scss'
+
+const EMAIL_GROUPS = [
+	{
+		id: 'support',
+		recipient: 'Support',
+		email: 'support@inkquest.com',
+	},
+	{
+		id: 'safety',
+		recipient: 'Trust & Safety',
+		email: 'safety@inkquest.com',
+	},
+	{
+		id: 'press',
+		recipient: 'Press',
+		email: 'press@inkquest.com',
+	},
+	{
+		id: 'partners',
+		recipient: 'Partnerships',
+		email: 'partners@inkquest.com',
+	},
+]
 
 export default function Support() {
 	const pageID = 'support',
@@ -25,9 +49,10 @@ export default function Support() {
 					Pick who you are and what it&apos;s about — we&apos;ll route it to the right person. Quick question? The <Link href="/faqs" data-cta>FAQs</Link> might already have it.
 				</>
 			</Section>
+
 			<Section id={ `${pageID}-contact` }>
-				<Grid columns={ 4 } gap="xl">
-					<Grid.Item id={ `${pageID}-contact-form` } span={ 3 }>
+				<Grid layout="sidebar">
+					<Grid.Item id={ `${pageID}-contact-form` }>
 						<Tab.List>
 							<Tab id="client-tab">Client</Tab>
 							<Tab id="artist-tab">Artist</Tab>
@@ -121,10 +146,21 @@ export default function Support() {
 							<Button type="submit">Send Message</Button>
 						</Grid>
 					</Grid.Item>
-					<Grid.Item as={ Sidebar } span={ 1 }>
-						<span className="inkq-eyebrow">Prefer Email?</span>
-						<span>No phone lines, no office — Inkquest is fully online. Everything lands with a human either way.</span>
-					</Grid.Item>
+
+					<Sidebar label="Prefer Email?" id={ `${pageID}-emails` }>
+						<div className="recipients">
+							<div className="recipients__list">
+								{ EMAIL_GROUPS.map(({ email, id, recipient }) => (
+									<div className="recipient" key={ `${id}-email` }>
+										<span className="recipient__name">{ recipient }</span>
+										<a href={ `mailto:${email}` } className="recipient__email" data-cta>{ email }</a>
+									</div>
+								)) }
+							</div>
+
+							<p className="recipient__note">No phone lines, no office — Inkquest is fully online. Everything lands with a human either way.</p>
+						</div>
+					</Sidebar>
 				</Grid>
 			</Section>
 		</>

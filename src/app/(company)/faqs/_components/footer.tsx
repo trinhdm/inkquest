@@ -23,8 +23,8 @@ export const FaqsFooter = () => {
 
 			{ footer.buttons?.length && (
 				<Section.Footer>
-					{ (footer.buttons).map(({ id, label, url }) => (
-						<Button key={ id } href={ url }>{ label }</Button>
+					{ (footer.buttons).map(({ id, label, url, ...props }) => (
+						<Button key={ id } href={ url } { ...props }>{ label }</Button>
 					)) }
 				</Section.Footer>
 			) }
