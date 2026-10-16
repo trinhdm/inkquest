@@ -1,3 +1,4 @@
+import { useParser } from '@/hooks/useParser'
 import { keyHasValue } from '@/utils/helpers'
 import { Section } from '@/components/layout/Section'
 import { SEPARATOR } from '@/utils/constants'
@@ -17,15 +18,14 @@ const formatAddress = (data: AddressData) =>
 				if ((i < keys.length - 1) && k !== 'state') value += ','
 				str += ` ${value}`
 			}
-
 			return str
 		}, '')
-
-		lines.push(line)
-		return lines
+		return [...lines, line]
 	}, [] as string[]).join(SEPARATOR)
 
 export const LegalFooter = ({ company_info, footer, id: pageID }: LegalPageData) => {
+	const footerBody = useParser(footer?.body)
+
 	if (!footer) return null
 
 	const { legal_name: company } = company_info
@@ -39,7 +39,7 @@ export const LegalFooter = ({ company_info, footer, id: pageID }: LegalPageData)
 			<div className="footnote">
 				<h2 className="footnote__label">{ footer.heading }</h2>
 				<div className="footnote__content">
-					{ footer.body }
+					{ footerBody }
 					<a href={ `mailto:${email}` }>{ email }</a>
 					<span>{ contact.join(SEPARATOR) }</span>
 				</div>

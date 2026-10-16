@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useActiveID } from '@/hooks/useActiveID'
 import { getLegalTitles } from '../_utils'
 import { Grid } from '@/components/layout/Grid'
@@ -7,9 +8,12 @@ import { Sidebar } from '@/components/layout/Sidebar'
 import type { LegalPageData } from '../_utils/legal.types'
 
 export const LegalContent = ({ id: pageID, sections }: LegalPageData) => {
-	const content = sections.filter(({ title }) => !!title),
-		titles = getLegalTitles(pageID, content),
-		ids = titles.map(({ id }) => id)
+	const { content, ids, titles } = useMemo(() => {
+		const content = sections.filter(({ title }) => !!title),
+			titles = getLegalTitles(pageID, content)
+
+		return { content, titles, ids: titles.map(({ id }) => id) }
+	}, [pageID, sections])
 
 	const [activeID, selectID] = useActiveID(ids)
 	if (!sections.length) return null

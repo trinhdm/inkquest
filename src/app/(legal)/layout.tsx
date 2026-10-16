@@ -8,7 +8,7 @@ export default function LegalLayout({
 }: Readonly<{ children: ReactNode }>) {
 	const subnav: Header.Props['subnav'] = {
 		category: 'Legal',
-		routes: ['/privacy-policy', '/terms'],
+		routes: ['/privacy-policy', '/terms', '/cookies'],
 	}
 
 	return (

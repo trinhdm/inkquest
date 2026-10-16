@@ -2,8 +2,8 @@ import type { Route } from 'next'
 import type { LegalSection } from './legal.types'
 import type { Sidebar } from '@/components/layout/Sidebar'
 
-const getLegalSlug = (slug: string, id: string): Route<string> =>
-	`/${slug}#${id}` as Route<string>
+const getLegalSlug = (slug: string, id: string): Route =>
+	`/${slug}#${id}` as Route
 
 const formatLegalTitle = (
 	title: LegalSection['title'],
