@@ -8,6 +8,7 @@ import classes from '../Field.module.scss'
 const NAME = 'Field.Group' as const
 
 interface BaseFieldGroupProps {
+	disabled?: Field.Props['disabled']
 	legend: string
 	required?: Field.Props['required']
 }
@@ -31,8 +32,8 @@ export const FieldGroup = polymorphic<FieldGroupSpecs>((_props, { useProps, useS
 	const styles = useStyles({ props })
 
 	const {
-		children, labelPosition, layout,
-		legend, required, unstyled,
+		children, disabled, labelPosition,
+		layout, legend, required, unstyled,
 		...rest
 	} = props
 
@@ -54,7 +55,10 @@ export const FieldGroup = polymorphic<FieldGroupSpecs>((_props, { useProps, useS
 			childName="Field"
 			header={ header }
 			provider={ FieldGroupProvider }
-			values={ { labelPosition, layout, unstyled } }
+			values={ {
+				disabled, labelPosition,
+				layout, unstyled,
+			} }
 		>
 			{ children }
 		</Group>

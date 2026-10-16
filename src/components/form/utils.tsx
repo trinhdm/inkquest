@@ -36,10 +36,14 @@ export type FieldTokens = {
 		| '--form-control-icon-inset'
 }
 
+export type FlattenFieldTokens =
+	FieldTokens[keyof FieldTokens]
+
 type FieldSpecsList = {
 	choice: Field.Choice.Specs
 	input: Field.Input.Specs
 	textarea: Field.Textarea.Specs
+		& { tokens: { root: FlattenFieldTokens } }
 }
 
 type FieldName =
@@ -48,8 +52,7 @@ type FieldName =
 export type FieldPropsList<N extends FieldName = FieldName> =
 	FieldSpecsList[N]['props']
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
-const listSharedTokens = <
+export const listSharedTokens = <
 	N extends FieldName = 'input',
 	S extends FieldSpecsList[N] = FieldSpecsList[N]
 >(
@@ -89,7 +92,11 @@ const listSharedTokens = <
 		},
 	}
 
-	return tokens as SpecsTokenGroups<S>
+	const textarea: SpecsTokenGroups<FieldSpecsList['textarea']> = {
+		root: { ...tokens.root, ...tokens.icon },
+	}
+
+	return (name === 'textarea' ? textarea : tokens) as SpecsTokenGroups<S>
 }
 
 export const getSharedTokens = <N extends FieldName = 'input'>(name: N = 'input' as N) =>

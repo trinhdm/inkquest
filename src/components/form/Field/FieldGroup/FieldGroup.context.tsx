@@ -2,6 +2,7 @@ import { createCompoundCtx } from '@/lib/component/context'
 import type { Field } from '../Field'
 
 type SharedFieldProp =
+	| 'disabled'
 	| 'labelPosition'
 	| 'layout'
 

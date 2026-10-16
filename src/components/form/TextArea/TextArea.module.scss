@@ -4,4 +4,12 @@
     @include shared.form-control-text;
 
 	$name: &;
+
+	max-height: var(--textarea-max-rows, 'none');
+	min-height: var(--textarea-min-rows, 1lh);
+	resize: var(--textarea-resize);
+
+	&:disabled {
+		resize: none;
+	}
 }
