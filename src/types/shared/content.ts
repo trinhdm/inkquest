@@ -11,7 +11,7 @@ type FileType =
 export interface FileItem {
 	size?: string
 	type?: FileType
-	url: Route<string>
+	url: Route
 }
 
 
@@ -79,14 +79,14 @@ export interface JobItem
 	location: string[]
 	publishDate?: CalendarDate
 	role?: ReactNode[]
-	url: Route<string>
+	url: Route
 }
 
 export interface PressItem
 	extends Omit<PageDataItem, 'content'> {
 	author: string
 	publishDate?: CalendarDate
-	url?: Route<string>
+	url?: Route
 }
 
 export interface StaffItem {

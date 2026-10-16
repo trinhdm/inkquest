@@ -26,7 +26,6 @@ interface SectionParts {
 	body: ReactNode
 	eyebrow: ReactNode
 	footer: ReactNode
-	// footer: ReactElement<SectionFooter.Props> | undefined
 	title: ReactNode
 }
 

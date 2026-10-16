@@ -45,7 +45,7 @@ const RENDERABLE_SOCIAL_COUNT = 3
 // their matched children directly.
 const CUSTOM_ITEMS: NonNullable<Footer.Props['items']> = [
 	{ category: 'Company', routes: ['/about', '/careers'] },
-	{ routes: ['/privacy-policy', '/terms-conditions'], location: 'legal' },
+	{ routes: ['/privacy-policy', '/terms'], location: 'legal' },
 ]
 
 // `Footer.Props` (the `declare namespace` export) is just the raw `FooterProps`

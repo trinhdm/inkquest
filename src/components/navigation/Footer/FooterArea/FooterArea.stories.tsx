@@ -37,7 +37,7 @@ const SAMPLE_ITEMS: Footer.Area.Props['items'] = [
 ]
 
 const NO_CATEGORY_ITEMS: Footer.Area.Props['items'] = [
-	{ routes: ['/privacy-policy', '/terms-conditions'] },
+	{ routes: ['/privacy-policy', '/terms'] },
 ]
 
 // `FooterArea`'s own `useStyles('footer', ...)` call (NOT `'FooterArea'`) intentionally
@@ -206,7 +206,7 @@ export const Orientation: Story = {
 	args: {
 		items: [
 			{ category: 'Vertical (default)', routes: ['/about', '/careers'] },
-			{ category: 'Horizontal', orientation: 'horizontal', routes: ['/privacy-policy', '/terms-conditions'] },
+			{ category: 'Horizontal', orientation: 'horizontal', routes: ['/privacy-policy', '/terms'] },
 		],
 	},
 	play: async ({ canvasElement }) => {

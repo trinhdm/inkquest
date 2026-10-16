@@ -248,14 +248,14 @@ export const FOOTER_GLOBAL_NAV: FooterNavGroup[] = [
 
 interface SocialBrandGroup {
 	type: SocialBrand
-	url: Route<string>
+	url: Route
 }
 
 const getSocials = (handle: string): SocialBrandGroup[] => {
 	const socials: SocialBrandGroup[] = []
 
 	for (const brand of SOCIAL_BRANDS) {
-		const url: Route<string> = `https://${brand}.com/${handle}`
+		const url: Route = `https://${brand}.com/${handle}`
 		socials.push({ type: brand, url })
 	}
 

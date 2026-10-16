@@ -25,7 +25,7 @@ type SvgProps =
 
 interface BaseIconProps<T extends LucideProps | SvgProps> {
 	color?: T['color']
-	href?: Route<string>
+	href?: Route
 	hidden?: boolean
 	strokeWidth?: T['strokeWidth']
 }

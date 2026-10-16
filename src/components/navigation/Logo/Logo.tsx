@@ -39,7 +39,7 @@ const LOGOS_CONFIG = [
 interface LogoProps
 	extends Omit<ImageProps, 'alt' | 'height' | 'fill' | 'src'> {
 	alt?: string
-	href?: Route<string> | null
+	href?: Route | null
 	type?: 'mark' | 'wordmark'
 }
 
