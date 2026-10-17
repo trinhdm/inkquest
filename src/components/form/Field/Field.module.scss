@@ -81,13 +81,13 @@
         }
 
         #{$name}:not(input:checked) & {
-            --form-control-shadow-focus: #{shared.shadow(var(--inkq-color-text-tertiary))};
+            --form-control-shadow-focus: #{global.shadow-focus(var(--inkq-color-text-tertiary))};
         }
 
         #{$name}:has(input:checked) & {
             --form-control-background-disabled: #{global.disable(var(--form-control-background-active))};
             --form-control-border-disabled: var(--form-control-border-hover);
-            --form-control-shadow-focus: #{shared.shadow(var(--form-control-border-focus))};
+            --form-control-shadow-focus: #{global.shadow-focus(var(--form-control-border-focus))};
 
             background-color: var(--form-control-background-active);
             border-color: var(--form-control-border-active);

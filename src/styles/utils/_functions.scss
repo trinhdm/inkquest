@@ -1,4 +1,10 @@
 
+//	colors
+
 @function disable($color) {
 	@return rgb(from #{$color} r g b / var(--inkq-opacity-disabled));
+}
+
+@function shadow-focus($color) {
+	@return 0 0 0 calc(var(--space-1) - var(--form-control-border-width)) rgb(from #{$color} r g b / .25);
 }

@@ -1,9 +1,5 @@
 @use '@/styles/utils' as global;
 
-@function shadow($color) {
-	@return 0 0 0 calc(var(--space-1) - var(--form-control-border-width)) rgb(from #{$color} r g b / .25);
-}
-
 @mixin form-tokens {
 	--form-control-background: var(--inkq-background-card);
 	--form-control-background-active: var(--inkq-background-card-hover);
@@ -19,7 +15,7 @@
 	--form-control-color: var(--inkq-color-link);
 
 	--form-control-shadow: none;
-	--form-control-shadow-focus: #{shadow(var(--form-control-border-focus))};
+	--form-control-shadow-focus: #{global.shadow-focus(var(--form-control-border-focus))};
 
 	--form-control-padding-inline: calc(1.5 * var(--inkq-field-padding-md));
     --form-control-padding: var(--inkq-field-padding-md) var(--form-control-padding-inline);

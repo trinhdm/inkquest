@@ -198,7 +198,7 @@
 
 //	lines
 
-@mixin underline($animated: false) {
+@mixin underline($animated: null) {
 	--underline-transition: var(--duration-gradual) var(--easing-out) var(--duration-fast);
 
 	display: inline-flex;
@@ -221,18 +221,31 @@
 		will-change: background-color;
 	}
 
-	@if $animated == true {
+	@if $animated {
 		transition-duration: var(--duration-gradual);
 
 		&::after {
-			transform: translateX(0);
 			transition: background-color var(--underline-transition),
 				transform var(--underline-transition);
 			will-change: background-color, transform;
 		}
 
-		&:hover::after {
-			transform: translateX(-101%);
+		@if $animated == 'in' or $animated == true {
+			&::after {
+				transform: translateX(-101%);
+			}
+
+			&:hover::after {
+				transform: translateX(0);
+			}
+		} @else if $animated == 'out' {
+			&::after {
+				transform: translateX(0);
+			}
+
+			&:hover::after {
+				transform: translateX(-101%);
+			}
 		}
 	}
 }
