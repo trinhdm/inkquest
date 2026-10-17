@@ -158,8 +158,12 @@ export const Unstyled: Story = {
 }
 
 /**
- * A `Table.Row` with a single `Table.Cell` vs. several — `Table.Row` renders
+ * A `Table.Row` with one, two or three `Table.Cell`s — `Table.Row` renders
  * `children` completely as-is, with no minimum/maximum cell count enforced.
+ * `Table.module.scss` picks the row's grid columns from the cell count: a row
+ * of exactly two cells gets two tracks, exactly three gets three, and any
+ * other count has no explicit template from the `:has()` rules, so a
+ * one-cell row resolves to a single implicit track.
  */
 export const CellCounts: Story = {
 	parameters: { layout: 'padded' },
@@ -170,7 +174,13 @@ export const CellCounts: Story = {
 					<Table.Cell>Only cell</Table.Cell>
 				</Table.Row>
 			</Group>
-			<Group label="several cells">
+			<Group label="two cells">
+				<Table.Row { ...args }>
+					<Table.Cell>Two A</Table.Cell>
+					<Table.Cell>Two B</Table.Cell>
+				</Table.Row>
+			</Group>
+			<Group label="three cells">
 				<Table.Row { ...args }>
 					<Table.Cell>Cell 1</Table.Cell>
 					<Table.Cell>Cell 2</Table.Cell>
@@ -182,10 +192,21 @@ export const CellCounts: Story = {
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement),
 			singleRoot = canvas.getByText('Only cell').closest(ROOT_SELECTOR) as HTMLElement,
-			severalRoot = canvas.getByText('Cell 1').closest(ROOT_SELECTOR) as HTMLElement
+			twoRoot = canvas.getByText('Two A').closest(ROOT_SELECTOR) as HTMLElement,
+			threeRoot = canvas.getByText('Cell 1').closest(ROOT_SELECTOR) as HTMLElement
 
 		await expect(singleRoot.querySelectorAll('td')).toHaveLength(1)
-		await expect(severalRoot.querySelectorAll('td')).toHaveLength(3)
+		await expect(twoRoot.querySelectorAll('td')).toHaveLength(2)
+		await expect(threeRoot.querySelectorAll('td')).toHaveLength(3)
+
+		// Resolved track lists are space-separated pixel sizes, so counting
+		// them counts the columns.
+		const tracks = (row: HTMLElement) =>
+			getComputedStyle(row).gridTemplateColumns.split(' ').filter(Boolean)
+
+		await expect(tracks(singleRoot)).toHaveLength(1)
+		await expect(tracks(twoRoot)).toHaveLength(2)
+		await expect(tracks(threeRoot)).toHaveLength(3)
 	},
 }
 

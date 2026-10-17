@@ -1,4 +1,4 @@
-// Foundation/Motion.
+// Design Tokens/Motion.
 //
 // Same class of gap as Typography's `font.display/title/body/label`: the
 // declared semantic accessor `alias.motion.interactive()`
@@ -215,7 +215,7 @@ const GlobalMotionStyles = () => (
 )
 
 const meta: Meta = {
-	title: 'Foundation/Motion',
+	title: 'Design Tokens/Motion',
 	parameters: { layout: 'padded' },
 }
 

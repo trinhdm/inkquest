@@ -1,4 +1,4 @@
-// Foundation/Typography.
+// Design Tokens/Typography.
 //
 // IMPORTANT — a real gap still exists, found by tracing the source rather than
 // invented for documentation purposes: `semanticTokens.font`
@@ -96,6 +96,7 @@ const HeadingSizes = () => {
 		{ key: 'h3', base: alias.fontSize('h3'), fluid: alias.fontSize('h3', 'fluid') },
 		{ key: 'h4', base: alias.fontSize('h4'), fluid: alias.fontSize('h4', 'fluid') },
 		{ key: 'h5', base: alias.fontSize('h5'), fluid: alias.fontSize('h5', 'fluid') },
+		{ key: 'h6', base: alias.fontSize('h6'), fluid: alias.fontSize('h6', 'fluid') },
 	] as const
 
 	return (
@@ -188,8 +189,9 @@ const FontPropertyTokens = () => {
 				Property scales from <code>FontPropertyTokens</code> (<code>tokens/typography/properties.ts</code>),
 				reached through <code>alias.fontFamily</code> / <code>fontWeight</code> / <code>lineHeight</code> /{ ' ' }
 				<code>letterSpacing</code> / <code>fontSize</code> (<code>reference/semantic.ts</code>). Heading font sizes
-				(<code>FontSizeTokens</code>) exist for <code>h1</code>–<code>h5</code> only, each with a <code>base</code> and a <code>fluid</code>{ ' ' }
-				(<code>clamp()</code>) variant.
+				(<code>FontSizeTokens</code>) exist for <code>h1</code>–<code>h6</code>, each with a <code>base</code> and a <code>fluid</code>{ ' ' }
+				(<code>clamp()</code>) variant. Each fluid size is a <code>clamp()</code> between two other size tokens,
+				and the live readback under every sample shows the resolved value.
 			</p>
 
 			<h4 style={ headingStyle }>font family</h4>
@@ -254,6 +256,7 @@ const PresetTokens = () => {
 		{ label: 'text.h3', path: 'tokens.presets.text.h3()', varName: '--inkq-text-h3', value: text.h3(), sample: 'Heading three' },
 		{ label: 'text.h4', path: 'tokens.presets.text.h4()', varName: '--inkq-text-h4', value: text.h4(), sample: 'Heading four' },
 		{ label: 'text.h5', path: 'tokens.presets.text.h5()', varName: '--inkq-text-h5', value: text.h5(), sample: 'Heading five' },
+		{ label: 'text.h6', path: 'tokens.presets.text.h6()', varName: '--inkq-text-h6', value: text.h6(), sample: 'Heading six' },
 		{ label: 'text.body', path: 'tokens.presets.text.body()', varName: '--inkq-text-body', value: text.body() },
 		{ label: 'text.prose', path: 'tokens.presets.text.prose()', varName: '--inkq-text-prose', value: text.prose() },
 		{ label: 'text.label', path: 'tokens.presets.text.label()', varName: '--inkq-text-label', value: text.label(), sample: 'Label text' },
@@ -296,7 +299,7 @@ const PresetTokens = () => {
 
 // --- global text styles (src/styles/_base.scss) ---------------------------------
 
-const GLOBAL_HEADINGS = ['h1', 'h2', 'h3', 'h4', 'h5'] as const
+const GLOBAL_HEADINGS = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'] as const
 
 /** Real elements, styled only by the global stylesheet loaded through `.storybook/preview.tsx` (`_global.scss` -> `_base.scss`). */
 const GlobalTextStyles = () => (
@@ -305,11 +308,12 @@ const GlobalTextStyles = () => (
 			Global element styles from <code>src/styles/_base.scss</code>, applied to unstyled elements below.
 			<code> h1</code> / <code>h2</code> use their <code>--inkq-text-*</code> preset, then override the size with
 			the <code>fluid</code> font size and set <code>--inkq-font-tracking-display</code>, uppercase and balanced
-			wrapping; <code>h3</code> and <code>h5</code> use their preset directly, and <code>h4</code> uses its
-			preset plus <code>--inkq-font-tracking-display</code>. <code>.inkq-h1-display</code> /{ ' ' }
-			<code>.inkq-h2-display</code> swap the size for <code>--inkq-font-size-display-md</code> /{ ' ' }
-			<code>-sm</code>. <code>_base.scss</code> has no <code>h6</code> rule. The readbacks below show the
-			resolved <code>--inkq-text-*</code> variable for each styled heading.
+			wrapping; <code>h3</code>, <code>h5</code> and <code>h6</code> use their preset directly, and{ ' ' }
+			<code>h4</code> uses its preset plus <code>--inkq-font-tracking-display</code>. Each heading also has an{ ' ' }
+			<code>.inkq-hN</code> class with the same styles. <code>.inkq-h1-display</code> /{ ' ' }
+			<code>.inkq-h2-display</code> swap the size for <code>--inkq-font-size-display-lg</code> /{ ' ' }
+			<code>-md</code>. The readbacks below show the resolved <code>--inkq-text-*</code> variable for
+			each styled heading.
 		</p>
 		<div style={ rowStyle }>
 			{ GLOBAL_HEADINGS.map(tag => {
@@ -331,7 +335,7 @@ const GlobalTextStyles = () => (
 			</div>
 			<div>
 				<span className="inkq-label">Label</span>
-				<div style={ metaStyle }>.inkq-label — text.caption.item, action color, bold, wide tracking, uppercase</div>
+				<div style={ metaStyle }>.inkq-label — action color, mono family, bold, label leading, wide tracking, uppercase, control font size</div>
 			</div>
 			<div>
 				<span className="inkq-caption">Caption</span>
@@ -358,6 +362,7 @@ const PrimitiveTypeScale = () => (
 			(<code>src/lib/theme/scales.ts</code>), accessed through <code>primitiveTokens</code>{ ' ' }
 			(exported as <code>base</code>). The font property tokens above are composed from these
 			(e.g. <code>font.size.h1</code> = <code>base.fontSize(&apos;48&apos;)</code>,{ ' ' }
+			<code>font.size.h6</code> = <code>base.fontSize(&apos;16&apos;)</code>,{ ' ' }
 			<code>font.family.display</code> = <code>base.fontFamily(&apos;black&apos;)</code>).
 		</p>
 
@@ -416,7 +421,7 @@ const PrimitiveTypeScale = () => (
 // --- stories ------------------------------------------------------------------
 
 const meta: Meta = {
-	title: 'Foundation/Typography',
+	title: 'Design Tokens/Typography',
 	parameters: { layout: 'padded' },
 }
 

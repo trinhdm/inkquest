@@ -50,6 +50,9 @@ const hasStatisticModuleClass = (el: Element, base: string) => {
 	return !!moduleClass && el.classList.contains(moduleClass)
 }
 
+const read = (el: Element, token: string) =>
+	(el as HTMLElement).style.getPropertyValue(token)
+
 // Every child here is rendered with its own `animated={false}` purely for
 // story determinism (structural stories about `columns`/`divider`/
 // `fullWidth`/`orientation`/`justify` don't need a live count-up race to
@@ -113,16 +116,16 @@ const meta: Meta<StatisticGroupStoryProps> = {
 		order: {
 			control: 'select',
 			options: ORDER_OPTIONS,
-			description: 'Not part of `StatisticGroup`\'s own `DEFAULT_PROPS` (no registered default at the group level) — passed straight through in `values={ { order, size, unstyled } }`, which `Group` folds into each child\'s context value. Any child `Statistic` that doesn\'t set its own `order` inherits this one (`useStatisticGroupProps`\'s `Object.hasOwn` guard on the child\'s raw, pre-merge props); a child\'s own explicit `order` still wins. See the `Order` and `OrderAndSize` stories.',
+			description: 'Registered default `\'descend\'` (part of `StatisticGroup`\'s own `DEFAULT_PROPS`). Passed on in `values={ { order, size, unstyled } }`, which `Group` folds into each child\'s context value, and it drives the shared `--stat-align`/`--stat-direction` tokens on the GROUP\'S OWN root: a grouped `Statistic`\'s root gets no tokens of its own (`{}`), by design, and inherits these through CSS. Any child `Statistic` that doesn\'t set its own `order` inherits this one (`useStatisticGroupProps`\'s `Object.hasOwn` guard on the child\'s raw, pre-merge props). See the `Order` and `OrderAndSize` stories.',
 		},
 		size: {
 			control: 'select',
 			options: SIZE_OPTIONS,
-			description: 'Not part of `StatisticGroup`\'s own `DEFAULT_PROPS` (no registered default at the group level) — passed straight through in `values={ { order, size, unstyled } }`, which `Group` folds into each child\'s context value. Any child `Statistic` that doesn\'t set its own `size` inherits this one; a child\'s own explicit `size` still wins. See the `Size` and `OrderAndSize` stories.',
+			description: 'Registered default `\'lg\'` (part of `StatisticGroup`\'s own `DEFAULT_PROPS`). Passed on in `values={ { order, size, unstyled } }`, which `Group` folds into each child\'s context value, and it drives the shared size tokens (`--stat-row-gap`, `--stat-font-size`, `--stat-icon-size`, `--stat-icon-margin`, `--stat-font-caption`) on the GROUP\'S OWN root, which grouped items inherit through CSS. Any child `Statistic` that doesn\'t set its own `size` inherits this one; a child\'s own explicit `size` still wins for its size CLASS (`inkq-statistic--<size>`), though not for tokens, since the item\'s root gets none. See the `Size` and `OrderAndSize` stories.',
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `FactoryContract`), not `StatisticGroup`\'s own props. `StatisticGroup.tsx` destructures it and passes it twice: as `unstyled` on the inner `<Group>` (applying to the group root) and inside `values={ { order, size, unstyled } }`, which `Group` folds into every child\'s context value, so each child `Statistic` without its own `unstyled` inherits it — dropping that child\'s hashed module class, its config classes (`inkq-item`, `inkq-caption`, the `inkq-statistic--<size>` modifier) and its `--statistic-*` tokens. On the group root, `Group` drops its own tokens (`--group-item-count`, `--group-justify`). See the `Unstyled` story.',
+			description: 'Part of `PolymorphicProps` (via the shared `FactoryContract`), not `StatisticGroup`\'s own props. `StatisticGroup.tsx` destructures it and passes it inside `values={ { order, size, unstyled } }`, which `Group` folds into every child\'s context value, so each child `Statistic` without its own `unstyled` inherits it — dropping that child\'s hashed module class and its config classes (`inkq-item`, `inkq-caption`, the `inkq-statistic--<size>` modifier). `StatisticGroup`\'s own `useStyles` also drops the group root\'s `--stat-*` tokens. EXPECTED but not currently true: `Group`\'s own tokens (`--group-item-count`, `--group-justify`) are dropped too — `StatisticGroup.tsx` does not forward `unstyled` to the inner `<Group>`, so the `Unstyled` story\'s `--group-item-count` assertion fails (suspected component bug). See the `Unstyled` story.',
 		},
 	},
 	args: {
@@ -350,11 +353,13 @@ export const ContextPrecedence: Story = {
 	},
 }
 
-// `order`/`size` aren't part of `StatisticGroup`'s own registered defaults —
-// they're passed straight through in `values={ { order, size, unstyled } }`, which
-// `Group` folds into each child's context value. A child `Statistic` with no
-// own `order`/`size` inherits the group's; a child with its own explicit
-// value keeps it regardless of the group's setting.
+// `order`/`size` (registered defaults `'descend'`/`'lg'`) are passed on in
+// `values={ { order, size, unstyled } }`, which `Group` folds into each
+// child's context value. A child `Statistic` with no own `order`/`size`
+// inherits the group's; a child with its own explicit `size` keeps it for its
+// size CLASS. The tokens are different: they are computed once on the GROUP's
+// root, and a grouped item's root gets none (`{}`) whatever it sets itself —
+// so a child's own `order`/`size` never changes the tokens it renders with.
 export const OrderAndSize: Story = {
 	render: (args) => (
 		<Row>
@@ -376,27 +381,32 @@ export const OrderAndSize: Story = {
 		const inherited = canvas.getByText('Inherits both').closest('.inkq-statistic') as HTMLElement,
 			overridden = canvas.getByText('Own order/size').closest('.inkq-statistic') as HTMLElement
 
-		// inherited: group's `order="ascend"`/`size="sm"` took effect on a
-		// child with no own value.
-		await expect(inherited).toHaveStyle({
-			'--statistic-align': 'flex-end',
-			'--statistic-direction': 'column-reverse',
-		})
-		expect(hasStatisticModuleClass(inherited, 'inkq-statistic--sm')).toBe(true)
+		const groupOf = (item: HTMLElement) => item.closest('[role="group"]') as HTMLElement
 
-		// overridden: child's own explicit `order="descend"`/`size="lg"` wins
-		// over the group's `ascend`/`sm`.
-		await expect(overridden).toHaveStyle({
-			'--statistic-align': 'flex-start',
-			'--statistic-direction': 'column',
-		})
+		// The tokens sit on each group's root: `order="ascend"` → `start` +
+		// `column-reverse`. Neither item carries tokens of its own.
+		for (const item of [inherited, overridden]) {
+			await expect(read(groupOf(item), '--stat-align')).toBe('start')
+			await expect(read(groupOf(item), '--stat-direction')).toBe('column-reverse')
+			await expect(read(item, '--stat-align')).toBe('')
+			await expect(read(item, '--stat-direction')).toBe('')
+		}
+
+		// inherited: the group's `size="sm"` reached a child with no own value
+		// (`sm` has no hashed class, so the literal class is emitted).
+		await expect(inherited).toHaveClass('inkq-statistic--sm')
+
+		// overridden: child's own explicit `size="lg"` wins over the group's
+		// `sm` for the class.
 		expect(hasStatisticModuleClass(overridden, 'inkq-statistic--lg')).toBe(true)
+		await expect(overridden).not.toHaveClass('inkq-statistic--sm')
 	},
 }
 
 // Group-level `order`, one value per labeled group, each with a child that
-// sets none of its own: the child's `--statistic-align`/`--statistic-direction`
-// tokens must match that group's order and differ from the sibling's.
+// sets none of its own: the `--stat-align`/`--stat-direction` tokens sit on
+// the GROUP's root (not the child's) and must match that group's order and
+// differ from the sibling's.
 export const Order: Story = {
 	parameters: { controls: { exclude: ['order'] } },
 	render: (args) => (
@@ -411,25 +421,33 @@ export const Order: Story = {
 		</Row>
 	),
 	play: async ({ canvasElement }) => {
-		const items = canvasElement.querySelectorAll<HTMLElement>('.inkq-statistic')
+		const groups = canvasElement.querySelectorAll<HTMLElement>('[role="group"]'),
+			items = canvasElement.querySelectorAll<HTMLElement>('.inkq-statistic')
 
+		expect(groups).toHaveLength(ORDER_OPTIONS.length)
 		expect(items).toHaveLength(ORDER_OPTIONS.length)
 
 		// `ORDER_OPTIONS` is `['ascend', 'descend']`, mapped in order.
-		const [ascend, descend] = items,
-			read = (el: HTMLElement, token: string) => el.style.getPropertyValue(token)
+		const [ascend, descend] = groups
 
-		await expect(read(ascend, '--statistic-align')).toBe('flex-end')
-		await expect(read(ascend, '--statistic-direction')).toBe('column-reverse')
+		await expect(read(ascend, '--stat-align')).toBe('start')
+		await expect(read(ascend, '--stat-direction')).toBe('column-reverse')
 
-		await expect(read(descend, '--statistic-align')).toBe('flex-start')
-		await expect(read(descend, '--statistic-direction')).toBe('column')
+		await expect(read(descend, '--stat-align')).toBe('end')
+		await expect(read(descend, '--stat-direction')).toBe('column')
+
+		// A grouped item's root gets no tokens of its own.
+		for (const item of items) {
+			await expect(read(item, '--stat-align')).toBe('')
+			await expect(read(item, '--stat-direction')).toBe('')
+		}
 	},
 }
 
 // Group-level `size`, one value per labeled group, each with a child that
-// sets none of its own: the child gets the matching `module` size class and
-// not its sibling's, and its size tokens differ between the two groups.
+// sets none of its own: the child gets the matching size class and not its
+// sibling's (`lg` is the hashed module class, `sm` the literal one), and the
+// size tokens on the GROUP's root differ between the two groups.
 export const Size: Story = {
 	parameters: { controls: { exclude: ['size'] } },
 	render: (args) => (
@@ -444,23 +462,32 @@ export const Size: Story = {
 		</Row>
 	),
 	play: async ({ canvasElement }) => {
-		const items = canvasElement.querySelectorAll<HTMLElement>('.inkq-statistic')
+		const groups = canvasElement.querySelectorAll<HTMLElement>('[role="group"]'),
+			items = canvasElement.querySelectorAll<HTMLElement>('.inkq-statistic')
 
+		expect(groups).toHaveLength(SIZE_OPTIONS.length)
 		expect(items).toHaveLength(SIZE_OPTIONS.length)
 
 		// `SIZE_OPTIONS` is `['sm', 'lg']`, mapped in order.
-		const [sm, lg] = items,
-			read = (el: HTMLElement, token: string) => el.style.getPropertyValue(token)
+		const [smGroup, lgGroup] = groups,
+			[sm, lg] = items
 
-		expect(hasStatisticModuleClass(sm, 'inkq-statistic--sm')).toBe(true)
+		await expect(sm).toHaveClass('inkq-statistic--sm')
 		expect(hasStatisticModuleClass(sm, 'inkq-statistic--lg')).toBe(false)
 		expect(hasStatisticModuleClass(lg, 'inkq-statistic--lg')).toBe(true)
-		expect(hasStatisticModuleClass(lg, 'inkq-statistic--sm')).toBe(false)
+		await expect(lg).not.toHaveClass('inkq-statistic--sm')
 
-		for (const token of ['--statistic-font-size', '--statistic-icon-size', '--statistic-row-gap']) {
-			expect(read(sm, token)).not.toBe('')
-			expect(read(lg, token)).not.toBe('')
-			expect(read(sm, token)).not.toBe(read(lg, token))
+		// All size tokens (root, inner and caption groups) are merged onto the
+		// group's root.
+		for (const token of [
+			'--stat-row-gap', '--stat-font-size', '--stat-icon-size',
+			'--stat-icon-margin', '--stat-font-caption',
+		]) {
+			expect(read(smGroup, token)).not.toBe('')
+			expect(read(lgGroup, token)).not.toBe('')
+			expect(read(smGroup, token)).not.toBe(read(lgGroup, token))
+			expect(read(sm, token)).toBe('')
+			expect(read(lg, token)).toBe('')
 		}
 	},
 }
@@ -484,22 +511,26 @@ export const FragmentChildren: Story = {
 
 		expect(group.children).toHaveLength(3)
 
+		// The tokens sit on the group's root, shared by all three items.
+		await expect(read(group, '--stat-direction')).toBe('column-reverse')
+
 		for (const caption of ['In fragment 1', 'In fragment 2', 'Direct']) {
 			const item = canvas.getByText(caption).closest('.inkq-statistic') as HTMLElement
 
-			await expect(item.style.getPropertyValue('--statistic-direction')).toBe('column-reverse')
-			expect(hasStatisticModuleClass(item, 'inkq-statistic--sm')).toBe(true)
+			await expect(read(item, '--stat-direction')).toBe('')
+			await expect(item).toHaveClass('inkq-statistic--sm')
 		}
 	},
 }
 
-// `StatisticGroup` passes `unstyled` to the inner `Group` (the group root) and
-// in `values`, which `Group` folds into every child's context value, so each
-// `Statistic` inherits it too: the child loses its
-// hashed module class, its config classes (`inkq-item`, the size modifier) and
-// its `--statistic-*` tokens, but keeps the semantic base class. The group
-// itself loses its own `--group-item-count` token (`columns` is set so there
-// is one to drop).
+// `StatisticGroup` passes `unstyled` in `values`, which `Group` folds into
+// every child's context value, so each `Statistic` inherits it: the child
+// loses its hashed module class and its config classes (`inkq-item`, the size
+// modifier), but keeps the semantic base class. `StatisticGroup`'s own
+// `useStyles` drops the group root's `--stat-*` tokens. The group is also
+// expected to lose `Group`'s own `--group-item-count` token (`columns` is set
+// so there is one to drop); that last assertion is kept last and currently
+// fails because `StatisticGroup.tsx` does not forward `unstyled` to `<Group>`.
 export const Unstyled: Story = {
 	parameters: { controls: { exclude: ['unstyled'] } },
 	render: (args) => (
@@ -522,8 +553,9 @@ export const Unstyled: Story = {
 		// `BOOLEAN_OPTIONS` is `[true, false]`, mapped in order.
 		const [unstyledGroup, styledGroup] = groups
 
-		await expect(styledGroup.style.getPropertyValue('--group-item-count')).toBe('3')
-		await expect(unstyledGroup.style.getPropertyValue('--group-item-count')).toBe('')
+		// The group root carries the shared tokens when styled, none when not.
+		await expect(read(styledGroup, '--stat-align')).not.toBe('')
+		await expect(read(unstyledGroup, '--stat-align')).toBe('')
 
 		const styledItems = styledGroup.querySelectorAll<HTMLElement>('.inkq-statistic'),
 			unstyledItems = unstyledGroup.querySelectorAll<HTMLElement>('.inkq-statistic')
@@ -531,17 +563,21 @@ export const Unstyled: Story = {
 		expect(styledItems).toHaveLength(2)
 		expect(unstyledItems).toHaveLength(2)
 
+		// A grouped item's root never has tokens of its own, styled or not.
 		for (const item of styledItems) {
 			expect(hasStatisticModuleClass(item, 'inkq-statistic')).toBe(true)
 			await expect(item).toHaveClass('inkq-item')
-			expect(item.style.getPropertyValue('--statistic-align')).not.toBe('')
+			expect(read(item, '--stat-align')).toBe('')
 		}
 
 		for (const item of unstyledItems) {
 			await expect(item).toHaveClass('inkq-statistic')
 			expect(hasStatisticModuleClass(item, 'inkq-statistic')).toBe(false)
 			await expect(item).not.toHaveClass('inkq-item')
-			expect(item.style.getPropertyValue('--statistic-align')).toBe('')
+			expect(read(item, '--stat-align')).toBe('')
 		}
+
+		await expect(styledGroup.style.getPropertyValue('--group-item-count')).toBe('3')
+		await expect(unstyledGroup.style.getPropertyValue('--group-item-count')).toBe('')
 	},
 }

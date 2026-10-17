@@ -54,7 +54,7 @@ const USER_TRIGGER_ID = 'user-dropdown-trigger',
 	USER_MENU_ID = 'user-menu-list'
 
 // Derived from the live fixture rather than hardcoded, so these don't rot if
-// `NAVIGATION_DATA` gains/loses entries. `MenuLabel` (`MenuItem.tsx`) sets
+// `NAVIGATION_DATA` gains/loses entries. `MenuLabel` (`MenuLabel/MenuLabel.tsx`) sets
 // `role="menuitem"` UNCONDITIONALLY on its `sharedProps` — both the `route`
 // branch (`<a>`) and the no-`route` branch (`<span>`) get it — so every
 // top-level entry, including the route-less `User`, is reachable via
@@ -186,18 +186,19 @@ export const HasDropdowns: Story = {
 
 /**
  * `MenuItem.tsx` branch 1 (`if (!isDropdown)`): an item with no
- * `menu` renders a single `<li role="none">` wrapping `MenuLabel`, which is
- * `as={ route ? Link : 'span' }` — so an item WITH a `route` is
- * an `<a role="menuitem" href>`.
+ * `menu` renders a single `<li role="none">` wrapping a `<MenuLabel>` element
+ * (`MenuLabel/MenuLabel.tsx`). `MenuLabel` renders `Link` (with `href`,
+ * `scroll` and `shallow`) when the item has a `route`, and otherwise its own
+ * `as` (registered default `span`) — so an item WITH a `route` is an
+ * `<a role="menuitem" href>`.
  *
- * `MenuLabel`'s `sharedProps` sets `role: 'menuitem'` UNCONDITIONALLY, before
- * branching on `route` — so the no-`route` branch's `<span>` also carries
- * `role="menuitem"`, and all 3 of these items (2 real fixture entries + 1
- * synthetic route-less one) are reachable via `getAllByRole('menuitem')`.
+ * `MenuLabel`'s `sharedProps` sets `role: 'menuitem'` UNCONDITIONALLY, so the
+ * no-`route` branch's `<span tabIndex={-1}>` also carries `role="menuitem"`,
+ * and all 3 of these items (2 real fixture entries + 1 synthetic route-less
+ * one) are reachable via `getAllByRole('menuitem')`.
  *
- * Note `MenuLabel` is invoked as a plain function (not as a JSX element) and
- * spreads `styles('label')` into its own props — nothing here asserts on the
- * resulting label class.
+ * `scroll`/`shallow` are next/link routing options, not DOM attributes, so
+ * nothing here can assert on them.
  */
 export const LeafItems: Story = {
 	parameters: { layout: 'padded' },
@@ -255,15 +256,10 @@ export const LeafItems: Story = {
  * unconditionally before that branch, so the `<span>` still carries
  * `role="menuitem"` and is reachable via `getByRole('menuitem', { name: 'User' })`.
  *
- * Verified against the live `Icon.tsx`: `buildIcon`'s LUCIDE branch (used for
- * `caret-down`/`caret-up`, as opposed to its separate social-brand SVG branch) sets NO
- * `attributes` literal of its own — its `sharedProps` is just `{ ...others,
- * ...styles('glyph') }`, and `attributes` isn't one of `extractOthers`'s stripped
- * keys, so it passes straight through in `others`. `MenuItem`'s own
- * `attributes={ { aria: { hidden: true } } }` therefore reaches the rendered icon
- * completely unmodified — the caret genuinely IS `aria-hidden="true"`. (The social
- * icon branch is different: it always sets its OWN `attributes: { aria: { label: type
- * } }`, overwriting anything a caller passes — not relevant here.)
+ * The caret is `<Icon hidden type=... />`: `buildIcon` (`core/Icon/buildIcon.tsx`)
+ * builds its `attributes.aria` from the `hidden` prop (plus a `${type} icon`
+ * label) for both the lucide and brand branches, so the caret genuinely IS
+ * `aria-hidden="true"`.
  */
 export const DropdownItems: Story = {
 	parameters: { layout: 'padded' },
@@ -304,7 +300,8 @@ export const DropdownItems: Story = {
  * with `hasDropdowns: false`, an item that has a `menu` returns an ARRAY of
  * `<li role="none">`s — one per child — and its OWN label is never rendered.
  *
- * Note this branch maps `MenuLabel(item)` directly, so it does not recurse:
+ * Note this branch renders one `<MenuLabel item={ child } />` per child, so it
+ * does not recurse:
  * `Events`/`Feed` are rendered but their own children (`Your Lineup`,
  * `Your Circle`) are dropped.
  */

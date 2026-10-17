@@ -1,4 +1,4 @@
-// Foundation/Spacing & Layout.
+// Design Tokens/Spacing & Layout.
 //
 // Accessor surfaces used here (all from `@/lib/theme/reference`):
 //   - `alias.breakpoint` / `alias.container` / `alias.space`
@@ -75,7 +75,10 @@ const SemanticLayoutTokens = () => {
 		{ label: 'space.group', path: "alias.space('group')", value: alias.space('group'), kind: 'padding' },
 		{ label: 'space.group.lg', path: "alias.space('group', 'lg')", value: alias.space('group', 'lg'), kind: 'padding' },
 		{ label: 'space.grid', path: "alias.space('grid')", value: alias.space('grid'), kind: 'size' },
+		{ label: 'space.grid.sm', path: "alias.space('grid', 'sm')", value: alias.space('grid', 'sm'), kind: 'size' },
+		{ label: 'space.grid.md', path: "alias.space('grid', 'md')", value: alias.space('grid', 'md'), kind: 'size' },
 		{ label: 'space.grid.lg', path: "alias.space('grid', 'lg')", value: alias.space('grid', 'lg'), kind: 'size' },
+		{ label: 'space.grid.xl', path: "alias.space('grid', 'xl')", value: alias.space('grid', 'xl'), kind: 'size' },
 	]
 
 	return (
@@ -226,6 +229,10 @@ const InternalComposites = () => {
 
 	const grid = [
 		literal('gutter', '--inkq-gutter', 'size'),
+		literal('gutter.content', '--inkq-gutter-content', 'size'),
+		literal('gutter.item', '--inkq-gutter-item', 'size'),
+		literal('gutter.list', '--inkq-gutter-list', 'size'),
+		literal('indent.list', '--inkq-indent-list', 'size'),
 		literal('hero.padding', '--inkq-hero-padding', 'size'),
 		literal('section.padding', '--inkq-section-padding', 'size'),
 		literal('stack.padding', '--inkq-stack-padding', 'size'),
@@ -248,7 +255,8 @@ const InternalComposites = () => {
 				variable name. Each is built from the primitive space scale above.{ ' ' }
 				<code>src/styles/_base.scss</code> consumes <code>--inkq-gutter</code> and{ ' ' }
 				<code>--inkq-container-page</code> in <code>.inkq-wrapper</code> (max width and inline padding),
-				and uses the primitive <code>--space-*</code> variables directly in <code>.inkq-item</code>.
+				uses <code>--inkq-gutter-content</code> for the gap between consecutive paragraphs, and uses the
+					primitive <code>--space-*</code> variables directly in <code>.inkq-item</code>.
 			</p>
 
 			<h4 style={ { fontSize: 13, marginBottom: 8 } }>element.dot / element.tile</h4>
@@ -265,7 +273,7 @@ const InternalComposites = () => {
 }
 
 const meta: Meta = {
-	title: 'Foundation/Spacing',
+	title: 'Design Tokens/Spacing',
 	parameters: { layout: 'padded' },
 }
 

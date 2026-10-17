@@ -163,6 +163,59 @@ export const NestedContent: Story = {
 	parameters: { layout: 'padded' },
 }
 
+/**
+ * `Container.module.scss` zeroes `margin-block-start` on the wrapper's first
+ * child (`&__wrapper > :first-child`). The demo rule below gives every wrapper
+ * child a `24px` top margin at LOWER specificity (`:where()` adds none), so
+ * the module rule wins for the first child only when styled. `unstyled` drops
+ * the module hash, so the first child keeps the demo margin there.
+ */
+export const FirstChildSpacing: Story = {
+	args: {
+		children: (
+			<>
+				<p>First child</p>
+				<p>Second child</p>
+			</>
+		),
+	},
+	parameters: {
+		layout: 'padded',
+		controls: { exclude: ['children', 'unstyled'] },
+	},
+	render: (args) => (
+		<>
+			<style>{ '.container-spacing :where(.inkq-container__wrapper > *) { margin-block-start: 24px; }' }</style>
+			<Row>
+				{ BOOLEAN_OPTIONS.map(unstyled => (
+					<Group key={ String(unstyled) } label={ String(unstyled) }>
+						<div className="container-spacing">
+							<Container { ...args as ContainerStoryProps } unstyled={ unstyled } />
+						</div>
+					</Group>
+				)) }
+			</Row>
+		</>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			firsts = canvas.getAllByText('First child'),
+			seconds = canvas.getAllByText('Second child')
+
+		await expect(firsts).toHaveLength(2)
+		await expect(seconds).toHaveLength(2)
+
+		// `BOOLEAN_OPTIONS` is `[true, false]`: unstyled first, styled second.
+		const [unstyledFirst, styledFirst] = firsts
+
+		await expect(getComputedStyle(styledFirst).marginBlockStart).toBe('0px')
+		await expect(getComputedStyle(unstyledFirst).marginBlockStart).toBe('24px')
+
+		for (const second of seconds)
+			await expect(getComputedStyle(second).marginBlockStart).toBe('24px')
+	},
+}
+
 // `unstyled` does NOT remove the base `inkq-container`/`inkq-container__wrapper`
 // classes `useStyles`/`getClassName.tsx` applies to the root and inner
 // wrapper elements — per `getClassName.tsx`, the base class is always

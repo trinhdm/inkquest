@@ -1,4 +1,4 @@
-// Foundation/Border, Radius & Opacity.
+// Design Tokens/Border, Radius & Opacity.
 //
 // Border color and border radius have no entry in `semanticTokens`
 // (`reference/semantic.ts`), but both have typed accessors on `aliasTokens`
@@ -62,8 +62,9 @@ const InternalRadiusPresets = () => {
 				(<code>reference/semantic.ts</code>&apos;s <code>propertyTokens</code>), which is outside the{ ' ' }
 				<code>semanticTokens</code> group. <code>chip</code> aliases <code>sm</code> and{ ' ' }
 				<code>control</code> aliases <code>pill</code>. <code>src/styles/_base.scss</code> uses{ ' ' }
-				<code>chip</code> for the <code>a</code> / <code>button</code> focus ring and <code>md</code>{ ' ' }
-				(with <code>--inkq-border</code>) for <code>.inkq-item--block</code>.
+				<code>chip</code> for the <code>a</code> / <code>button</code> focus ring. The{ ' ' }
+				<code>item-block</code> and <code>blurb</code> mixins in <code>src/styles/utils/_mixins.scss</code>{ ' ' }
+				use <code>md</code> together with <code>--inkq-border</code>.
 			</p>
 			<div style={ { display: 'flex', gap: 24, flexWrap: 'wrap' } }>
 				{ radii.map(radius => <RadiusBox key={ radius.label } { ...radius } />) }
@@ -180,7 +181,7 @@ const OpacityTokens = () => (
 )
 
 const meta: Meta = {
-	title: 'Foundation/Border',
+	title: 'Design Tokens/Border',
 	parameters: { layout: 'padded' },
 }
 

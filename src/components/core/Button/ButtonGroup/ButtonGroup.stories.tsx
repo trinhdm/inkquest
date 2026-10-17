@@ -9,6 +9,13 @@ import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import moduleClasses from '../Button.module.scss'
 
+// Local, not in `options.story.ts`: only this file uses it. Typed off the
+// group's own `justify` prop (`JustifyContent`).
+const JUSTIFY_OPTIONS: readonly NonNullable<Button.Group.Props['justify']>[] = [
+	'normal', 'start', 'center', 'end',
+	'space-around', 'space-between', 'space-evenly',
+]
+
 const Row = ({ children }: { children: ReactNode }) => (
 	<div style={ { display: 'flex', gap: 24, flexWrap: 'wrap' } }>{ children }</div>
 )
@@ -102,8 +109,9 @@ const meta: Meta<ButtonGroupStoryArgs> = {
 			description: 'Fed into `revealItemFrom(index, revealFrom)` (`@/hooks/animation`, defined in `useReveal/helpers.ts`) for each surviving child, and spread onto that child\'s `ButtonGroupContext` value alongside `disabled`/`loading`/`priority`/`size`/`unstyled` (`ButtonGroupContext extends RevealItemProps`). When `revealFrom` is a number, each child\'s context carries a `data-reveal-item` value (`revealFrom + index`, stringified); when it\'s `undefined`, `revealItemFrom` returns `{}` and no such key is published at all. That context key reaches each child `Button` via `useButtonGroupProps` (own props always win, same precedence as the other cascaded fields) and, since `Button` doesn\'t destructure it, flows through `...rest`/`extractOthers` straight onto the rendered element as a literal `data-reveal-item` attribute. See the `RevealFrom` story.',
 		},
 		justify: {
-			control: 'text',
-			description: 'Destructured in `ButtonGroup`\'s render and emitted by its `tokens` function as the `--button-group-justify` custom property on the root element, which `Button.module.scss` reads on `.inkq-button-group` as `justify-content: var(--button-group-justify, start)`, or `var(--button-group-justify, space-between)` in the `[data-block]` (full-width) rule. It works independently of `size`. When unset, no token is emitted and the matching fallback applies (`start`, or `space-between` with `fullWidth`). No `justify` DOM attribute is rendered. Also skipped when `unstyled`. See the `Justify` story. See the `Justify` story.',
+			control: 'select',
+			options: JUSTIFY_OPTIONS,
+			description: 'Typed `JustifyContent` (`@/types/shared`): `normal`, `start`, `center`, `end`, `space-around`, `space-between` or `space-evenly`. Destructured in `ButtonGroup`\'s render and emitted by its `tokens` function as the `--button-group-justify` custom property on the root element, which `Button.module.scss` reads on `.inkq-button-group` as `justify-content: var(--button-group-justify, start)`, or `var(--button-group-justify, space-between)` in the `[data-block]` (full-width) rule. It works independently of `size`. When unset, no token is emitted and the matching fallback applies (`start`, or `space-between` with `fullWidth`). No `justify` DOM attribute is rendered. Also skipped when `unstyled`. See the `Justify` story.',
 		},
 		unstyled: {
 			control: 'boolean',
@@ -471,11 +479,13 @@ export const Justify: Story = {
 					{ renderGroup({ size, variant }) }
 				</Button.Group>
 			</Group>
-			<Group label="justify: center">
-				<Button.Group { ...args } justify="center">
-					{ renderGroup({ size, variant }) }
-				</Button.Group>
-			</Group>
+			{ JUSTIFY_OPTIONS.map(justify => (
+				<Group key={ justify } label={ `justify: ${justify}` }>
+					<Button.Group { ...args } justify={ justify }>
+						{ renderGroup({ size, variant }) }
+					</Button.Group>
+				</Group>
+			)) }
 			<Group label="fullWidth, justify: undefined">
 				<Button.Group { ...args } fullWidth>
 					{ renderGroup({ size, variant }) }
@@ -492,18 +502,21 @@ export const Justify: Story = {
 		const canvas = within(canvasElement),
 			groups = canvas.getAllByRole('group')
 
-		expect(groups).toHaveLength(4)
+		expect(groups).toHaveLength(JUSTIFY_OPTIONS.length + 3)
 
-		const [unset, centered, fullUnset, fullCentered] = groups
+		const [unset, ...rest] = groups,
+			justified = rest.slice(0, JUSTIFY_OPTIONS.length),
+			[fullUnset, fullCentered] = rest.slice(JUSTIFY_OPTIONS.length)
 
 		await expect(fullUnset).toHaveAttribute('data-block')
 		await expect(fullCentered).toHaveAttribute('data-block')
 		await expect(unset).not.toHaveAttribute('data-block')
-		await expect(centered).not.toHaveAttribute('data-block')
+		for (const group of justified)
+			await expect(group).not.toHaveAttribute('data-block')
 
 		const expected = [
 			[unset, '', 'start'],
-			[centered, 'center', 'center'],
+			...justified.map((group, i) => [group, JUSTIFY_OPTIONS[i], JUSTIFY_OPTIONS[i]] as const),
 			[fullUnset, '', 'space-between'],
 			[fullCentered, 'center', 'center'],
 		] as const

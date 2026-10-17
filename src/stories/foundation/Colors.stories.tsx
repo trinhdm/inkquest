@@ -1,4 +1,4 @@
-// Foundation/Colors — documents the theme's color-related token layers:
+// Design Tokens/Colors — documents the theme's color-related token layers:
 //
 //   1. Semantic tokens (`alias.color.*`, `alias.background.*`) — the
 //      `semanticTokens` group in `reference/semantic.ts`, exposed on
@@ -401,7 +401,7 @@ const ContrastChecks = () => (
 // --- stories -----------------------------------------------------------------
 
 const meta: Meta = {
-	title: 'Foundation/Colors',
+	title: 'Design Tokens/Colors',
 	parameters: { layout: 'padded' },
 }
 

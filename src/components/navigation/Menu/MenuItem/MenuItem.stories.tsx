@@ -84,7 +84,7 @@ const meta: Meta<MenuItemStoryProps> = {
 		},
 		label: {
 			control: 'text',
-			description: 'Required. Rendered via `MenuLabel` as either an `<a role="menuitem">` (when `route` is set) or a `<span role="menuitem" tabIndex={-1}>` (when it isn\'t) — `MenuLabel`\'s `sharedProps` sets `role: \'menuitem\'` unconditionally, before branching on `route`, so both forms are reachable via `getByRole(\'menuitem\')`. The `<span>` form\'s `tabIndex={-1}` keeps it out of the natural Tab order (only programmatically focusable), so it\'s still not itself a real Tab stop — but it IS reachable via `ArrowDown`/`ArrowUp` cycling when it\'s a submenu item (see `KeyboardFocusRouteless`). See also the `Leaf`/`DropdownTrigger` stories.',
+			description: 'Required. Rendered via a `<MenuLabel>` element (`MenuLabel/MenuLabel.tsx`) as either an `<a role="menuitem">` (when `route` is set) or a `<span role="menuitem" tabIndex={-1}>` (when it isn\'t) — `MenuLabel`\'s `sharedProps` sets `role: \'menuitem\'` unconditionally, before branching on `route`, so both forms are reachable via `getByRole(\'menuitem\')`. The `<span>` form\'s `tabIndex={-1}` keeps it out of the natural Tab order (only programmatically focusable), so it\'s still not itself a real Tab stop — but it IS reachable via `ArrowDown`/`ArrowUp` cycling when it\'s a submenu item (see `KeyboardFocusRouteless`). See also the `Leaf`/`DropdownTrigger` stories.',
 		},
 		menu: {
 			control: 'object',
@@ -123,9 +123,10 @@ export const Default: Story = {
 
 /**
  * `MenuItem.tsx`'s non-dropdown branch (`!isDropdown`): a
- * single `<li role="none">` wrapping `MenuLabel`, which is `as={ route ? Link
- * : 'span' }` — so an item WITH a `route` is a focusable `<a role="menuitem"
- * href>`.
+ * single `<li role="none">` wrapping a `<MenuLabel>` element
+ * (`MenuLabel/MenuLabel.tsx`), which renders `Link` when `route` is set and its
+ * own `as` (default `span`) otherwise — so an item WITH a `route` is a
+ * focusable `<a role="menuitem" href>`.
  *
  * `MenuLabel`'s `sharedProps` sets `role: 'menuitem'` unconditionally, so the
  * no-`route` branch's `<span>` ALSO carries `role="menuitem"` — reachable via
@@ -199,15 +200,10 @@ export const FlattenedDropdown: Story = {
  * the `<span>` still carries `role="menuitem"` and is reachable via
  * `getByRole('menuitem', { name: 'User' })`.
  *
- * Verified against the live `Icon.tsx`: `buildIcon`'s LUCIDE branch (used for
- * `caret-down`/`caret-up`, as opposed to its separate social-brand SVG branch) sets NO
- * `attributes` literal of its own — its `sharedProps` is just `{ ...others,
- * ...styles('glyph') }`, and `attributes` isn't one of `extractOthers`'s stripped
- * keys, so it passes straight through in `others`. `MenuItem`'s own
- * `attributes={ { aria: { hidden: true } } }` therefore reaches the rendered icon
- * completely unmodified — the caret genuinely IS `aria-hidden="true"`. (The social
- * icon branch is different: it always sets its OWN `attributes: { aria: { label: type
- * } }`, overwriting anything a caller passes — not relevant here.)
+ * The caret is `<Icon hidden type=... />`: `buildIcon` (`core/Icon/buildIcon.tsx`)
+ * builds its `attributes.aria` from the `hidden` prop (plus a `${type} icon`
+ * label) for both the lucide and brand branches, so the caret genuinely IS
+ * `aria-hidden="true"`.
  */
 export const DropdownTrigger: Story = {
 	args: {

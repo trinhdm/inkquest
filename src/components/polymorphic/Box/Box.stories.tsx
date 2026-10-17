@@ -48,7 +48,7 @@ const meta: Meta<BoxComponentProps> = {
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Declared on `Box`\'s own `BoxProps` and destructured out of `Box`\'s render, so it never lands on the DOM as a literal attribute. Its value IS read before that destructure, inside `resolveProps` -> `buildAttributes` (`Box/utils/buildAttributes.ts`): `keepStateAttrs` uses it, together with `STATE_KEYS`/`DISABLEABLE_TAGS`, to decide whether `attributes.data` entries survive — when `true`, only interaction-state keys (`busy`, `checked`, `disabled`, etc.) are kept. See the `Unstyled` and `UnstyledDisableableTag` stories. It\'s also forwarded straight through to the `as` target itself, but only when that target carries `POLYMORPHIC_MARKER` (i.e. was built via `createFactory`/`polymorphic()`, like `Badge`) — a plain tag or an unmarked component never receives it. See the `UnstyledForwarding` story.',
+			description: 'Declared on `Box`\'s own `BoxProps` and destructured out of `Box`\'s render, so it never lands on the DOM as a literal attribute. Its value IS read before that destructure, inside `resolveProps` -> `buildAttributes` (`Box/utils/buildAttributes.ts`): `keepStateAttrs` uses it, together with `STATE_KEYS`/`DISABLEABLE_TAGS`, to decide whether `attributes.data` entries survive — when `true`, only the `STATE_KEYS` survive: the interaction-state keys (`busy`, `checked`, `disabled`, etc.) plus the custom string-storing keys `keep` and `tooltip`. See the `Unstyled`, `UnstyledKeptKeys` and `UnstyledDisableableTag` stories. It\'s also forwarded straight through to the `as` target itself, but only when that target carries `POLYMORPHIC_MARKER` (i.e. was built via `createFactory`/`polymorphic()`, like `Badge`) — a plain tag or an unmarked component never receives it. See the `UnstyledForwarding` story.',
 		},
 		attributes: {
 			control: 'object',
@@ -89,9 +89,10 @@ export const Default: Story = {}
 // `attributes.data` entries survive: when `unstyled` is true, only
 // interaction-state keys (`STATE_KEYS`: `busy`, `checked`, `disabled`,
 // `expanded`, `invalid`, `loading`, `pressed`, `readonly`, `required`,
-// `selected`) are kept — any other `data-*` key (like the non-state `demo`
-// key used below) is stripped entirely. See `UnstyledDisableableTag` for the
-// `disabled`-specific carve-out within that same filter.
+// `selected`, plus the custom string-storing `keep` and `tooltip`) are kept —
+// any other `data-*` key (like the non-state `demo` key used below) is stripped
+// entirely. See `UnstyledKeptKeys` for `keep`/`tooltip` and
+// `UnstyledDisableableTag` for the `disabled`-specific carve-out.
 export const Unstyled: Story = {
 	parameters: { controls: { exclude: ['unstyled'] } },
 	render: (args) => (
@@ -120,6 +121,41 @@ export const Unstyled: Story = {
 
 		await expect(styledBox).toHaveAttribute('data-demo', 'value')
 		await expect(unstyledBox).not.toHaveAttribute('data-demo')
+	},
+}
+
+// `keep` and `tooltip` are in `STATE_KEYS` too (custom data-attrs that store
+// strings), so they survive `unstyled` while the non-state `demo` key doesn't.
+export const UnstyledKeptKeys: Story = {
+	parameters: { controls: { exclude: ['unstyled'] } },
+	render: (args) => (
+		<Row>
+			{ BOOLEAN_OPTIONS.map(unstyled => (
+				<Group key={ String(unstyled) } label={ String(unstyled) }>
+					<Box
+						{ ...args }
+						unstyled={ unstyled }
+						id={ `unstyled-kept-${ unstyled }` }
+						attributes={ { data: { demo: 'value', keep: 'kept', tooltip: 'tip' } } }
+					/>
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const unstyledBox = canvasElement.querySelector('#unstyled-kept-true'),
+			styledBox = canvasElement.querySelector('#unstyled-kept-false')
+
+		await expect(unstyledBox).toBeInTheDocument()
+		await expect(styledBox).toBeInTheDocument()
+
+		await expect(styledBox).toHaveAttribute('data-demo', 'value')
+		await expect(styledBox).toHaveAttribute('data-keep', 'kept')
+		await expect(styledBox).toHaveAttribute('data-tooltip', 'tip')
+
+		await expect(unstyledBox).not.toHaveAttribute('data-demo')
+		await expect(unstyledBox).toHaveAttribute('data-keep', 'kept')
+		await expect(unstyledBox).toHaveAttribute('data-tooltip', 'tip')
 	},
 }
 

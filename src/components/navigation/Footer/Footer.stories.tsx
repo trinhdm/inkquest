@@ -28,14 +28,14 @@ const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 // stable selector for reaching the root element regardless of state.
 const ROOT_SELECTOR = '.inkq-footer'
 
-// Real `SOCIAL_BRANDS` coverage: `Icon.tsx`'s `getBrandProps` only has a case for
-// `'instagram' | 'tiktok' | 'x'` — `'facebook'`/`'pinterest'` fall through its
-// `default: return` branch, `configSocialIcon` then returns `undefined`, and
-// `buildIcon` returns `null` for those two types. So even though `SOCIALS_NAV` (from
-// `@/utils/navigation`) lists all 5 `SOCIAL_BRANDS`, only 3 of them ever render a
-// visible icon — this is true both when `socials` explicitly lists them AND when the
-// fallback-to-ALL branch kicks in (see the `Socials` story).
-const RENDERABLE_SOCIAL_COUNT = 3
+// Real `SOCIAL_BRANDS` coverage: `SOCIAL_BRANDS` (`@/utils/constants`) lists 7 brands
+// and `SOCIALS_NAV` mirrors it. `buildIcon` (`core/Icon/buildIcon.tsx`) only renders a
+// brand it has an `ICON_MAP` entry or a `getBrandProps` case for: `apple`, `google`,
+// `instagram`, `tiktok` and `x`. `'facebook'`/`'pinterest'` hit its `default: return`
+// branch and render `null`. So the fallback-to-ALL branch (`socials: []`, see the
+// `Socials` story) shows 5 icons, and the registered default `socials` (3 explicit brands) shows 3.
+const DEFAULT_SOCIAL_COUNT = 3,
+	ALL_RENDERABLE_SOCIAL_COUNT = 5
 
 // A small custom `items` fixture, independent of `FOOTER_GLOBAL_NAV`, used to
 // demonstrate the `location: 'legal'` vs. info partition deterministically:
@@ -71,7 +71,7 @@ const meta: Meta<FooterStoryProps> = {
 		},
 		socials: {
 			control: 'object',
-			description: 'A `readonly SocialBrand[]` allow-list (defaults to `[\'instagram\', \'tiktok\', \'x\']`). Filters `SOCIALS_NAV` down to the matching entries. IMPORTANT quirk: `!socials?.length` — so an explicit empty array OR `undefined` both fall back to rendering ALL of `SOCIALS_NAV`, not none. See the `Socials` story, including the further quirk that only 3 of the 5 `SOCIAL_BRANDS` ever render a visible icon regardless.',
+			description: 'A `readonly SocialBrand[]` allow-list (defaults to `[\'instagram\', \'tiktok\', \'x\']`). Filters `SOCIALS_NAV` down to the matching entries. IMPORTANT quirk: `!socials?.length` — so an explicit empty array falls back to rendering ALL of `SOCIALS_NAV`, not none. `undefined` is different: `useProps` only overlays defined props, so it gets the registered default instead. See the `Socials` story, including the further quirk that only 5 of the 7 `SOCIAL_BRANDS` (`apple`, `google`, `instagram`, `tiktok`, `x`) ever render a visible icon — `facebook` and `pinterest` render nothing.',
 		},
 		unstyled: {
 			control: 'boolean',
@@ -99,7 +99,7 @@ export const Default: Story = {
 		// (`next/image`) also renders an `<img>` with a non-empty `alt`, which
 		// otherwise inflates a canvas-wide `getAllByRole('img')` count by one.
 		const socials = within(canvasElement.querySelector('.inkq-footer__socials') as HTMLElement)
-		await expect(socials.getAllByRole('img')).toHaveLength(RENDERABLE_SOCIAL_COUNT)
+		await expect(socials.getAllByRole('img')).toHaveLength(DEFAULT_SOCIAL_COUNT)
 		await expect(canvas.getByText('Find your artist. Own the ink.')).toBeInTheDocument()
 
 		// One `<Menu role="menubar">` per `FOOTER_GLOBAL_NAV` entry.
@@ -155,17 +155,18 @@ export const EmptyItems: Story = {
 		await expect(canvas.getByText('Find your artist. Own the ink.')).toBeInTheDocument()
 
 		const socials = within(canvasElement.querySelector('.inkq-footer__socials') as HTMLElement)
-		await expect(socials.getAllByRole('img')).toHaveLength(RENDERABLE_SOCIAL_COUNT)
+		await expect(socials.getAllByRole('img')).toHaveLength(DEFAULT_SOCIAL_COUNT)
 	},
 }
 
 /**
  * `socials` filters `SOCIALS_NAV` down to the matching entries — but `!socials?.length`
- * means an empty array OR `undefined` both fall back to ALL of `SOCIALS_NAV`, not none.
- * Regardless of how many types are listed, only `instagram`/`tiktok`/`x` ever produce a
- * visible icon (`Icon.tsx`'s `getBrandProps` has no case for `facebook`/`pinterest`, so
- * those two silently render nothing) — which is why the default (3 explicit types) and
- * both fallback-to-ALL groups all show the same 3 icons.
+ * means an empty array falls back to ALL of `SOCIALS_NAV`, not none. `undefined` never
+ * reaches that branch: `useProps` swaps in the registered default (3 brands).
+ * Only `apple`/`google`/`instagram`/`tiktok`/`x` ever produce a visible icon
+ * (`buildIcon` has no case for `facebook`/`pinterest`, so those two silently render
+ * nothing) — which is why the default and `undefined` groups show 3 icons, and the
+ * `[]` fallback-to-ALL group shows 5 of the 7 `SOCIALS_NAV` entries.
  */
 export const Socials: Story = {
 	parameters: { controls: { exclude: ['socials'] } },
@@ -180,7 +181,7 @@ export const Socials: Story = {
 			<Group label='[] (falsy length -> falls back to ALL of SOCIALS_NAV)'>
 				<Footer { ...args } socials={ [] } />
 			</Group>
-			<Group label='undefined (falls back to ALL of SOCIALS_NAV)'>
+			<Group label='undefined (falls back to the registered default socials)'>
 				<Footer { ...args } socials={ undefined } />
 			</Group>
 		</Row>
@@ -197,12 +198,12 @@ export const Socials: Story = {
 
 		const [defaultRoot, customRoot, emptyRoot, undefinedRoot] = roots
 
-		await expect(socialsOf(defaultRoot).getAllByRole('img')).toHaveLength(RENDERABLE_SOCIAL_COUNT)
+		await expect(socialsOf(defaultRoot).getAllByRole('img')).toHaveLength(DEFAULT_SOCIAL_COUNT)
 		await expect(socialsOf(customRoot).getAllByRole('img')).toHaveLength(2)
-		// Fallback to ALL of `SOCIALS_NAV` (5 brands), but only 3 render visibly.
-		await expect(socialsOf(emptyRoot).getAllByRole('img')).toHaveLength(RENDERABLE_SOCIAL_COUNT)
-		await expect(socialsOf(undefinedRoot).getAllByRole('img')).toHaveLength(RENDERABLE_SOCIAL_COUNT)
-		await expect(SOCIALS_NAV.length).toBeGreaterThan(RENDERABLE_SOCIAL_COUNT)
+		// Fallback to ALL of `SOCIALS_NAV` (7 brands), but only 5 render visibly.
+		await expect(socialsOf(emptyRoot).getAllByRole('img')).toHaveLength(ALL_RENDERABLE_SOCIAL_COUNT)
+		await expect(socialsOf(undefinedRoot).getAllByRole('img')).toHaveLength(DEFAULT_SOCIAL_COUNT)
+		await expect(SOCIALS_NAV.length).toBeGreaterThan(ALL_RENDERABLE_SOCIAL_COUNT)
 	},
 }
 

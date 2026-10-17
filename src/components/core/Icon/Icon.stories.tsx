@@ -26,7 +26,7 @@ const ARROW_NAV_TYPES: readonly LucideType[] = [
 
 const ACTION_TYPES: readonly LucideType[] = [
 	'attach', 'block', 'call', 'comment', 'copy', 'delete', 'download',
-	'drag', 'edit', 'email', 'invite', 'like', 'notify', 'paste',
+	'drag', 'edit', 'email', 'invite', 'like', 'notify', 'paste', 'print',
 	'refresh', 'report', 'save', 'send', 'share',
 ]
 
@@ -143,7 +143,7 @@ const meta: Meta<IconStoryProps> = {
 		type: {
 			control: 'select',
 			options: ALL_TYPE_OPTIONS,
-			description: '`Icon.Props` is a union discriminated on this field: a `LucideType` (keyed against `ICON_MAP` in `IconMap.tsx`, see the `AllIcons` story) or a `SocialBrand` (`@/types/shared`, routed through `getBrandProps`/`configSocialIcon` instead — see the `SocialIcons` story, including the two brands that render nothing at all). Unrecognized values render nothing either way.',
+			description: '`Icon.Props` is a union discriminated on this field: a `LucideType` (keyed against `ICON_MAP` in `IconMap.tsx`, see the `AllIcons` story) or a `SocialBrand` (`@/types/shared`, routed through `getBrandProps` in `buildIcon.tsx` instead — see the `SocialIcons` story, including the two brands, `facebook` and `pinterest`, that render nothing at all). Unrecognized values render nothing either way.',
 		},
 		href: {
 			control: 'text',
@@ -172,7 +172,11 @@ const meta: Meta<IconStoryProps> = {
 		},
 		filled: {
 			control: 'boolean',
-			description: 'Sets `fill="currentColor"` on the rendered `<svg>` when true (`Icon.tsx`: `fill={ filled ? \'currentColor\' : undefined }`). `filled` itself has no registered default (absent from `getDefaultProps<Icon.Props>(\'Icon\')`), so when false/unset, the explicit `fill: undefined` prop overrides Lucide\'s own `fill: "none"` default attribute, so NO `fill` attribute is rendered at all — not a literal `"none"`. See the `Filled` story.',
+			description: 'Lucide icons only. Sets `fill="currentColor"` on the rendered `<svg>` when true; when false/unset it sets `fill="none"` explicitly (`buildIcon.tsx`: `fill={ !!filled ? \'currentColor\' : \'none\' }`). `filled` has no registered default. See the `Filled` story.',
+		},
+		hidden: {
+			control: 'boolean',
+			description: 'Destructured in `buildIcon.tsx` and mapped to the `aria-hidden` attribute on the rendered `<svg>` (`attributes.aria.hidden`): `true` gives `aria-hidden="true"`, `false` gives `aria-hidden="false"`. Not the HTML `hidden` attribute. See the `Hidden` story.',
 		},
 	},
 	args: {
@@ -219,13 +223,13 @@ export const AllIcons: Story = {
 }
 
 // `IconProps`'s other union branch (`type: SocialBrand`), routed through
-// `getBrandProps`/`configSocialIcon` instead of `ICON_MAP` — an entirely
-// different code path from `AllIcons`, above. `getBrandProps` only has real
-// `<svg>` markup for `instagram`/`tiktok`/`x`; `facebook`/`pinterest` fall
-// through its `default` branch (`undefined`), so `configSocialIcon` also
-// returns `undefined` and `buildIcon` returns `null` entirely for those two
-// brands — no wrapping element, nothing rendered at all (verified against
-// `Icon.tsx`'s own `if (!iconEl) return null`).
+// `getBrandProps` (`buildIcon.tsx`) instead of `ICON_MAP` — an entirely
+// different code path from `AllIcons`, above. `getBrandProps` has real
+// `<svg>` markup for `apple`/`google`/`instagram`/`tiktok`/`x`;
+// `facebook`/`pinterest` fall through its `default` branch (`undefined`), so
+// `buildIcon` returns `null` for those two brands — no wrapping element,
+// nothing rendered at all (verified against `Icon.tsx`'s own
+// `if (!iconEl) return null`).
 export const SocialIcons: Story = {
 	parameters: { layout: 'padded' },
 	render: () => (
@@ -240,7 +244,7 @@ export const SocialIcons: Story = {
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement)
 
-		const renderedBrands: SocialBrand[] = ['instagram', 'tiktok', 'x']
+		const renderedBrands: SocialBrand[] = ['apple', 'google', 'instagram', 'tiktok', 'x']
 		const unrenderedBrands: SocialBrand[] = ['facebook', 'pinterest']
 
 		await expect(canvasElement.querySelectorAll('svg')).toHaveLength(renderedBrands.length)
@@ -386,12 +390,9 @@ export const StrokeLinecap: Story = {
 }
 
 // `filled` sets `fill="currentColor"` on the rendered `<svg>` when true. When
-// false/unset, `Icon.tsx` still explicitly passes `fill: undefined` (rather
-// than omitting the prop entirely), which overrides Lucide's own
-// `fill: "none"` default attribute (`defaultAttributes.mjs`, spread first,
-// with `...rest` — including this explicit `undefined` — spread last) down
-// to `undefined`, and React omits `undefined`-valued attributes from the DOM
-// entirely. So the "off" state has NO `fill` attribute at all, not `"none"`.
+// false/unset, `buildIcon.tsx` passes `fill="none"` explicitly
+// (`!!filled ? 'currentColor' : 'none'`), so the "off" state renders
+// `fill="none"` rather than omitting the attribute.
 export const Filled: Story = {
 	parameters: { controls: { exclude: ['filled'] } },
 	render: (args) => (
@@ -411,7 +412,32 @@ export const Filled: Story = {
 		const [filledSvg, unfilledSvg] = svgs
 
 		await expect(filledSvg).toHaveAttribute('fill', 'currentColor')
-		await expect(unfilledSvg).not.toHaveAttribute('fill')
+		await expect(unfilledSvg).toHaveAttribute('fill', 'none')
+	},
+}
+
+// `hidden` maps to `aria-hidden` (`attributes.aria.hidden` in `buildIcon.tsx`).
+export const Hidden: Story = {
+	parameters: { controls: { exclude: ['hidden'] } },
+	render: (args) => (
+		<Row>
+			{ BOOLEAN_OPTIONS.map(hidden => (
+				<Group key={ String(hidden) } label={ String(hidden) }>
+					<Icon { ...args as IconStoryProps } hidden={ hidden } />
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const svgs = canvasElement.querySelectorAll('svg')
+
+		await expect(svgs).toHaveLength(BOOLEAN_OPTIONS.length)
+
+		// `BOOLEAN_OPTIONS` is `[true, false]`, matching the render order above.
+		const [hiddenSvg, visibleSvg] = svgs
+
+		await expect(hiddenSvg).toHaveAttribute('aria-hidden', 'true')
+		await expect(visibleSvg).toHaveAttribute('aria-hidden', 'false')
 	},
 }
 

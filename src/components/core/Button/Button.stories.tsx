@@ -1,4 +1,4 @@
-import { expect, fn, userEvent, within } from 'storybook/test'
+import { expect, fn, spyOn, userEvent, within } from 'storybook/test'
 import { getDefaultProps } from '@/hooks/useProps'
 import { Button } from './Button'
 import { Icon } from '../Icon'
@@ -43,6 +43,19 @@ type ButtonStoryProps = Parameters<typeof Button>[0]
 // `href`-carrying (link) branch, leaving a spreadable, non-union shape.
 type NativeButtonArgs = Exclude<ButtonStoryProps, { href: string }>
 
+// The `action` branch of the union (`ActionButtonProps`): drops the native
+// members, whose `action` is `never`.
+type ActionButtonArgs = Exclude<NativeButtonArgs, { action?: never }>
+
+// Local, not in `options.story.ts`: only this file uses them.
+const ACTION_OPTIONS: readonly NonNullable<ActionButtonArgs['action']>[] = [
+	'copy', 'print',
+]
+
+const ANIMATE_OPTIONS: readonly NonNullable<Button.BaseProps['animate']>[] = [
+	'arrow-left', 'arrow-right',
+]
+
 type Story = StoryObj<ButtonStoryProps>
 
 const meta: Meta<ButtonStoryProps> = {
@@ -84,6 +97,20 @@ const meta: Meta<ButtonStoryProps> = {
 		showLabel: {
 			control: 'boolean',
 			description: 'Gates whether an `aria-label` is emitted at all: `Button.tsx` derives `ariaLabel` from `extractText(children)` (`@/lib/component/children`), then only sets `aria-label` when `!!(showLabel && ariaLabel.length)` — an undefined/falsy `showLabel` (the default; not registered via `Button.set({ defaultProps: DEFAULT_PROPS, displayName: NAME, subcomponents: SUBCOMPONENTS })`) means NO `aria-label` is ever emitted, regardless of children content. See the `ShowLabel` story, and `AriaLabel` (which sets `showLabel` explicitly to exercise the text-extraction logic itself).',
+		},
+		animate: {
+			control: 'select',
+			options: ANIMATE_OPTIONS,
+			description: 'Reflected as `data-animate`. When set, the `tokens` function in `Button.tsx` also emits `--button-icon-translate` on the root (`calc(<icon space> - <step>)`, the step depending on `size`), which `Button.module.scss` uses to slide the button\'s `svg` on hover/focus (`arrow-left` slides it the other way). Unset: no attribute and no token. See the `Animate` story.',
+		},
+		action: {
+			control: 'select',
+			options: ACTION_OPTIONS,
+			description: 'Only valid on a native `<button>` (not with `href`). Adds a leading `Button.Section` holding a Copy or Printer icon (unless `hasIcon` is false). `print` also calls `window.print()` after the `onClick` handler; `copy` does nothing beyond showing the icon (no clipboard call in `Button.tsx`). See the `Actions` and `HasIcon` stories.',
+		},
+		hasIcon: {
+			control: 'boolean',
+			description: 'Only meaningful with `action`: when true, the action icon is added; when false, it is skipped. Registered default `true` (`DEFAULT_PROPS`). Typed `never` on link and plain native buttons. See the `HasIcon` story.',
 		},
 		onClick: { action: 'clicked' },
 	},
@@ -291,6 +318,142 @@ export const FullWidth: Story = {
 
 		await expect(isNotFullWidth).not.toHaveAttribute('data-block')
 		await expect(isNotFullWidth).not.toHaveClass('inkq-block')
+	},
+}
+
+// `animate` is reflected as `data-animate`, and (only when set) the `tokens`
+// function adds `--button-icon-translate` on the root. The slide itself runs
+// on hover/focus in CSS, so this story asserts the attribute and token only.
+export const Animate: Story = {
+	parameters: { controls: { exclude: ['animate'] } },
+	render: args => {
+		const buttonProps = { variant: args.variant, size: args.size }
+
+		return (
+			<Row>
+				<Group label="undefined">
+					<Button { ...buttonProps }>
+						Next
+						<Button.Section right><Icon type="arrow-right" /></Button.Section>
+					</Button>
+				</Group>
+				<Group label="arrow-left">
+					<Button { ...buttonProps } animate="arrow-left">
+						<Button.Section left><Icon type="arrow-left" /></Button.Section>
+						Back
+					</Button>
+				</Group>
+				<Group label="arrow-right">
+					<Button { ...buttonProps } animate="arrow-right">
+						Next
+						<Button.Section right><Icon type="arrow-right" /></Button.Section>
+					</Button>
+				</Group>
+			</Row>
+		)
+	},
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			buttons = canvas.getAllByRole('button')
+
+		expect(buttons).toHaveLength(ANIMATE_OPTIONS.length + 1)
+
+		const [unset, ...animated] = buttons
+
+		await expect(unset).not.toHaveAttribute('data-animate')
+		await expect(unset.style.getPropertyValue('--button-icon-translate')).toBe('')
+
+		for (const [i, animate] of ANIMATE_OPTIONS.entries()) {
+			await expect(animated[i]).toHaveAttribute('data-animate', animate)
+			await expect(animated[i].style.getPropertyValue('--button-icon-translate')).not.toBe('')
+		}
+	},
+}
+
+// `window.print` is spied on and stubbed in `play` so no print dialog opens.
+export const Actions: Story = {
+	parameters: { controls: { exclude: ['action'] } },
+	render: args => {
+		const buttonProps = { variant: args.variant, size: args.size }
+
+		return (
+			<Row>
+				{ ACTION_OPTIONS.map(action => (
+					<Group key={ action } label={ action }>
+						<Button { ...buttonProps } action={ action }>{ action }</Button>
+					</Group>
+				)) }
+			</Row>
+		)
+	},
+	play: async ({ canvasElement }) => {
+		const printSpy = spyOn(window, 'print').mockImplementation(() => {})
+
+		const canvas = within(canvasElement),
+			buttons = canvas.getAllByRole('button')
+
+		expect(buttons).toHaveLength(ACTION_OPTIONS.length)
+
+		const [copy, print] = buttons
+
+		// Each action adds a leading section holding its icon.
+		for (const button of buttons) {
+			await expect(button.querySelectorAll('[data-side="left"]')).toHaveLength(1)
+			await expect(button.querySelectorAll('[data-side="left"] svg')).toHaveLength(1)
+		}
+
+		// `copy` only shows an icon; only `print` calls `window.print()`.
+		await userEvent.click(copy)
+		await expect(printSpy).not.toHaveBeenCalled()
+
+		await userEvent.click(print)
+		await expect(printSpy).toHaveBeenCalledTimes(1)
+	},
+}
+
+// `print` runs the consumer's `onClick` first, then `window.print()`.
+export const ActionClick: Story = {
+	render: args => <Button { ...args as ActionButtonArgs } action="print">Print</Button>,
+	play: async ({ args, canvasElement }) => {
+		const printSpy = spyOn(window, 'print').mockImplementation(() => {})
+
+		const button = within(canvasElement).getByRole('button')
+
+		await userEvent.click(button)
+		await expect(args.onClick).toHaveBeenCalledTimes(1)
+		await expect(printSpy).toHaveBeenCalledTimes(1)
+	},
+}
+
+export const HasIcon: Story = {
+	parameters: { controls: { exclude: ['hasIcon'] } },
+	render: args => {
+		const buttonProps = { variant: args.variant, size: args.size }
+
+		return (
+			<Row>
+				{ BOOLEAN_OPTIONS.map(hasIcon => (
+					<Group key={ String(hasIcon) } label={ String(hasIcon) }>
+						<Button { ...buttonProps } action="copy" hasIcon={ hasIcon }>Copy</Button>
+					</Group>
+				)) }
+			</Row>
+		)
+	},
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			buttons = canvas.getAllByRole('button')
+
+		expect(buttons).toHaveLength(2)
+
+		// `BOOLEAN_OPTIONS` is `[true, false]`, matching the render order above.
+		const [withIcon, withoutIcon] = buttons
+
+		await expect(withIcon.querySelectorAll('svg')).toHaveLength(1)
+		await expect(withIcon.querySelectorAll('.inkq-button__section')).toHaveLength(1)
+
+		await expect(withoutIcon.querySelectorAll('svg')).toHaveLength(0)
+		await expect(withoutIcon.querySelectorAll('.inkq-button__section')).toHaveLength(0)
 	},
 }
 

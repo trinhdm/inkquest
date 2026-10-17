@@ -2,7 +2,7 @@ import { expect, fn, userEvent, within } from 'storybook/test'
 import { getDefaultProps } from '@/hooks/useProps'
 import { Accordion } from './Accordion'
 import {
-	BOOLEAN_OPTIONS, INDICATOR_OPTIONS, LAYOUT_OPTIONS,
+	BOOLEAN_OPTIONS, INDICATOR_OPTIONS, INDICATOR_POSITION_OPTIONS, LAYOUT_OPTIONS,
 	MAX_TITLE_SIZE_LEVEL, ORDER_OPTIONS, SIZE_OPTIONS,
 } from './options.story'
 import type { ReactNode } from 'react'
@@ -30,7 +30,9 @@ const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 // `PolymorphicProps<AccordionProps, C>`. `Parameters<typeof Accordion>[0]`
 // reads that real, wrapped type straight off the component itself. It fills
 // `C` with its constraint (`ElementType`), not the default `'div'`, so `as`
-// is any `ElementType` here.
+// is any `ElementType` here. The type is a union: `indicator: 'none'` forbids
+// `indicatorPosition` (`never`), so stories that set both from a loop cast
+// the spread back to this type.
 type AccordionStoryProps = Parameters<typeof Accordion>[0]
 type Story = StoryObj<AccordionStoryProps>
 
@@ -75,26 +77,30 @@ const meta: Meta<AccordionStoryProps> = {
 		},
 		index: {
 			control: 'number',
-			description: 'Also inheritable from an enclosing `Accordion.Group`. Feeds `onItemToggle(index, next)` and, when `layout` is `\'steps\'`, the zero-padded `step` label. See the `StepPadding` story.',
+			description: 'Registered default `0`. Also inheritable from an enclosing `Accordion.Group` (which assigns each item its sequential index). Feeds `onItemToggle(index, next)`, the root\'s `data-index` attribute and, when `layout` is `\'steps\'`, the zero-padded step label that `Accordion.Title` works out itself from `index` + `layout` (it is no longer on the root, and is not read from context). See the `StepPadding` story.',
 		},
 		indicator: {
 			control: 'select',
 			options: INDICATOR_OPTIONS,
-			description: '`\'none\'` renders no indicator element at all; otherwise a `lucide-react` icon (`Plus` for `\'plus\'`, `ChevronDown` for `\'chevron\'`) rendered via `<Box as={...}>` inside a selector-scoped modifier class.',
+			description: 'Registered default `\'plus\'`. `\'none\'` renders no indicator element at all, and is typed to FORBID `indicatorPosition` (`indicatorPosition?: never`); otherwise a `lucide-react` icon (`Plus` for `\'plus\'`, `ChevronDown` for `\'chevron\'`) rendered via `<Box as={...}>` inside a selector-scoped modifier class.',
+		},
+		indicatorPosition: {
+			control: 'select',
+			options: INDICATOR_POSITION_OPTIONS,
+			description: 'Registered default `\'right\'`. Only valid with `indicator` `\'chevron\'` or `\'plus\'` (typed `never` with `\'none\'`). Published on `Accordion.context`; `Accordion.Title` sets its `--accordion-title-direction` token to `row-reverse` for `\'left\'` (and leaves it unset for `\'right\'`). See the `IndicatorPosition` story.',
 		},
 		layout: {
 			control: 'select',
 			options: LAYOUT_OPTIONS,
-			description: 'Also inheritable from an enclosing `Accordion.Group`. Only `\'steps\'` computes a `step` label; `\'default\'` (and unset) never does, regardless of `index`.',
+			description: 'Also inheritable from an enclosing `Accordion.Group`. Any layout other than `\'default\'` adds an `inkq-accordion--<layout>` modifier class to the root. `\'steps\'` makes `Accordion.Title` render a zero-padded step label from `index` (and `Accordion.Content` indent under the title text); `\'blockquote\'` drops the divider, zeroes the title gap/indent and uses the caption font size. `\'default\'` (and unset) never shows a step, regardless of `index`. See the `Layouts` and `Blockquote` stories.',
 		},
 		// No `action` here: an `action` argType would inject a function into
-	// `args.onItemToggle` for every story, and a function `onItemToggle` makes
-	// `Accordion.tsx`'s `tokens` function return `{}` (no `--accordion-*`
-	// custom properties). Stories that assert on it pass their own `fn()`.
-	onItemToggle: {
-		control: false,
-		description: 'Called as `onItemToggle(index, next)` on every toggle. Passing ANY function also makes `Accordion.tsx`\'s `tokens` function return `{}`, so the item computes no `--accordion-*` custom properties of its own (an enclosing `Accordion.Group` always supplies one and computes them on its own root instead).',
-	},
+		// `args.onItemToggle` for every story. Stories that assert on it pass
+		// their own `fn()`.
+		onItemToggle: {
+			control: false,
+			description: 'Called as `onItemToggle(index, next)` on every toggle. Enclosing `Accordion.Group`s supply one to track which items are open.',
+		},
 		onToggle: { action: 'toggled' },
 		open: {
 			control: 'boolean',
@@ -108,19 +114,17 @@ const meta: Meta<AccordionStoryProps> = {
 		size: {
 			control: 'select',
 			options: SIZE_OPTIONS,
-			description: 'Registered default `\'md\'`. Feeds `getSharedTokens`\' shared CSS custom properties (`--accordion-column-width`, `--accordion-gap`, `--accordion-padding`, `--accordion-indicator-size`, `--accordion-title-size`, etc.) via a per-size `step` (`{ sm: 2, md: 1, lg: 0 }`) applied on top of `order`. Those tokens are skipped whenever `onItemToggle` is a function. Also inheritable from an enclosing `Accordion.Group` (own prop always wins). Also read by `Accordion.Content` for `--accordion-content-size`. See the `Size` story.',
+			description: 'Registered default `\'md\'`. Feeds `getSharedTokens`\' shared CSS custom properties (`--accordion-column-width`, `--accordion-gap`, `--accordion-padding`, `--accordion-indicator-size`, `--accordion-title-size`, etc.) via a per-size `step` (`{ sm: 2, md: 1, lg: 0 }`) applied on top of `order`. Those tokens are only computed for a standalone `Accordion`: inside an `Accordion.Group` the item\'s root gets none (`{}`) and inherits the group root\'s through CSS. Also inheritable from an enclosing `Accordion.Group` (own prop always wins). Also read by `Accordion.Content` for `--accordion-content-size`. See the `Size` story.',
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `FactoryContract`), not `Accordion`\'s own `AccordionProps`. Also inheritable from an enclosing `Accordion.Group`. The semantic base classes (`inkq-accordion`, `inkq-accordion__wrapper`, `inkq-accordion__divider`) are ALWAYS emitted regardless of this prop. `unstyled` drops the CSS-module-hashed class normally appended alongside each, and ALSO every token `getStyle` would compute for the root (the shared `--accordion-*` custom properties). `Accordion` destructures `unstyled` out instead of forwarding it to its root `Box`, so the root\'s `data-open`/`data-step` attributes are kept. Its own `styles()` calls pass no config classes, so there are none to drop here. See the `Unstyled` story.',
+			description: 'Part of `PolymorphicProps` (via the shared `FactoryContract`), not `Accordion`\'s own `AccordionProps`. Also inheritable from an enclosing `Accordion.Group`. The semantic base classes (`inkq-accordion`, `inkq-accordion__wrapper`, `inkq-accordion__divider`) are ALWAYS emitted regardless of this prop. `unstyled` drops the CSS-module-hashed class normally appended alongside each, the layout modifier class, and ALSO every token `getStyle` would compute for the root (the shared `--accordion-*` custom properties). `Accordion` destructures `unstyled` out instead of forwarding it to its root `Box`, so the root\'s `data-index`/`data-open` attributes are kept. Its own `styles()` calls pass no config classes, so there are none to drop here. See the `Unstyled` story.',
 		},
 	},
 	args: {
 		...getDefaultProps<Accordion.Props>('Accordion'),
-		// `onItemToggle` is deliberately NOT set here: `Accordion.tsx`'s
-		// `tokens` function returns `{}` whenever it is a function, which would
-		// strip every `--accordion-*` custom property from every story. Only
-		// the stories that assert on toggling supply their own `fn()`.
+		// `onItemToggle` is left unset; only the stories that assert on it
+		// supply their own `fn()`.
 		onToggle: fn(),
 	},
 }
@@ -138,7 +142,7 @@ export const Indicators: Story = {
 		<Row>
 			{ INDICATOR_OPTIONS.map(indicator => (
 				<Group key={ indicator } label={ indicator }>
-					{ accordionTemplate({ ...args, indicator }) }
+					{ accordionTemplate({ ...args, indicator } as AccordionStoryProps) }
 				</Group>
 			)) }
 		</Row>
@@ -180,17 +184,115 @@ export const Layouts: Story = {
 	),
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement),
-			roots = canvasElement.querySelectorAll('.inkq-accordion')
+			roots = [...canvasElement.querySelectorAll<HTMLElement>('.inkq-accordion')],
+			titles = canvas.getAllByRole('button')
+
+		expect(roots).toHaveLength(3)
+		// `LAYOUT_OPTIONS` is `['default', 'blockquote', 'steps']`, mapped in
+		// order.
+		const [defaultRoot, blockquoteRoot, stepsRoot] = roots,
+			[defaultTitle, blockquoteTitle, stepsTitle] = titles
+
+		// The step label lives in the title; the root only carries
+		// `data-index` (and `data-open`), never `data-step`.
+		for (const root of roots) {
+			await expect(root).toHaveAttribute('data-index', '0')
+			await expect(root).not.toHaveAttribute('data-step')
+		}
+
+		// `default`: no layout modifier class, divider, no step label.
+		await expect(defaultRoot).not.toHaveClass('inkq-accordion--blockquote')
+		await expect(defaultRoot).not.toHaveClass('inkq-accordion--steps')
+		await expect(defaultRoot.querySelector('.inkq-accordion__divider')).toBeInTheDocument()
+		await expect(defaultTitle.querySelector('[class*="step"]')).not.toBeInTheDocument()
+
+		// `blockquote`: modifier class, NO divider, no step label.
+		await expect(blockquoteRoot).toHaveClass('inkq-accordion--blockquote')
+		await expect(blockquoteRoot.querySelector('.inkq-accordion__divider')).not.toBeInTheDocument()
+		await expect(blockquoteTitle.querySelector('[class*="step"]')).not.toBeInTheDocument()
+
+		// `steps`: modifier class, divider, step label from `index`.
+		await expect(stepsRoot).toHaveClass('inkq-accordion--steps')
+		await expect(stepsRoot.querySelector('.inkq-accordion__divider')).toBeInTheDocument()
+		await expect(stepsTitle.querySelector('[class*="step"]')).toHaveTextContent('01')
+	},
+}
+
+// `indicatorPosition` (registered default `'right'`) is only valid with a
+// visible indicator. `'left'` sets the title's `--accordion-title-direction`
+// to `row-reverse`; `'right'` leaves it unset. The `indicator: 'none'`
+// restriction is a type-level rule (`indicatorPosition?: never`), so it is
+// documented on the argType rather than rendered.
+export const IndicatorPosition: Story = {
+	parameters: {
+		layout: 'padded',
+		controls: { exclude: ['indicatorPosition'] },
+	},
+	render: args => (
+		<Row>
+			{ INDICATOR_POSITION_OPTIONS.map(indicatorPosition => (
+				<Group key={ indicatorPosition } label={ indicatorPosition }>
+					{ accordionTemplate({ ...args, indicatorPosition } as AccordionStoryProps) }
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const titles = within(canvasElement).getAllByRole('button')
+
+		expect(titles).toHaveLength(2)
+		// `INDICATOR_POSITION_OPTIONS` is `['left', 'right']`, mapped in order.
+		const [left, right] = titles
+
+		await expect(left.style.getPropertyValue('--accordion-title-direction')).toBe('row-reverse')
+		await expect(right.style.getPropertyValue('--accordion-title-direction')).toBe('')
+		await expect(left.querySelector('svg')).toBeInTheDocument()
+		await expect(right.querySelector('svg')).toBeInTheDocument()
+	},
+}
+
+// The real-world combination used by the legal changelog
+// (`indicatorPosition="left" layout="blockquote"`): no divider, a layout
+// modifier class, and zeroed title gap and indent. Compared with the default
+// layout at the same size, its column width and padding tokens differ.
+export const Blockquote: Story = {
+	parameters: { layout: 'padded' },
+	render: args => (
+		<Row>
+			<Group label="layout: default">
+				{ accordionTemplate({ ...args, layout: 'default' }) }
+			</Group>
+			<Group label="layout: blockquote, indicatorPosition: left">
+				{ accordionTemplate({ ...args, layout: 'blockquote', indicatorPosition: 'left' } as AccordionStoryProps) }
+			</Group>
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const roots = [...canvasElement.querySelectorAll<HTMLElement>('.inkq-accordion')],
+			titles = within(canvasElement).getAllByRole('button')
 
 		expect(roots).toHaveLength(2)
-		// `LAYOUT_OPTIONS` is `['default', 'steps']`, mapped in order.
-		const [defaultRoot, stepsRoot] = roots
+		const [defaultRoot, blockquoteRoot] = roots,
+			[defaultTitle, blockquoteTitle] = titles
 
-		await expect(defaultRoot).not.toHaveAttribute('data-step')
-		await expect(canvas.getAllByRole('button')[0].querySelector('[class*="step"]')).not.toBeInTheDocument()
+		const read = (el: HTMLElement, token: string) => el.style.getPropertyValue(token),
+			indentOf = (title: HTMLElement) =>
+				read(title.querySelector<HTMLElement>('.inkq-accordion-title__text')!, '--accordion-title-indent')
 
-		await expect(stepsRoot).toHaveAttribute('data-step', '01')
-		await expect(canvas.getAllByRole('button')[1].querySelector('[class*="step"]')).toHaveTextContent('01')
+		await expect(blockquoteRoot).toHaveClass('inkq-accordion--blockquote')
+		await expect(blockquoteRoot.querySelector('.inkq-accordion__divider')).not.toBeInTheDocument()
+		await expect(defaultRoot.querySelector('.inkq-accordion__divider')).toBeInTheDocument()
+
+		await expect(read(blockquoteRoot, '--accordion-title-gap')).toBe('0')
+		await expect(read(defaultRoot, '--accordion-title-gap')).not.toBe('0')
+		await expect(read(blockquoteRoot, '--accordion-column-width'))
+			.not.toBe(read(defaultRoot, '--accordion-column-width'))
+		await expect(read(blockquoteRoot, '--accordion-padding'))
+			.not.toBe(read(defaultRoot, '--accordion-padding'))
+
+		await expect(read(blockquoteTitle, '--accordion-title-direction')).toBe('row-reverse')
+		await expect(indentOf(blockquoteTitle)).toBe('0')
+		await expect(indentOf(defaultTitle)).toBe('')
 	},
 }
 
@@ -202,10 +304,8 @@ export const Layouts: Story = {
 // actually drives at the DOM level: `getSharedTokens`' `--accordion-title-size`
 // custom property (`var(--inkq-font-size-h<level>)`, `level = order + step`,
 // where `step` is `{ sm: 2, md: 1, lg: 0 }[size]`) — mirroring the `Size`
-// story's shape below.
-// `Accordion.tsx`'s `tokens` function skips computing `getSharedTokens`
-// entirely whenever `onItemToggle` is a function, which is why `meta.args`
-// leaves it unset.
+// story's shape below. A standalone `Accordion` computes these tokens on its
+// own root; inside an `Accordion.Group` it would not (see that file).
 export const Order: Story = {
 	parameters: {
 		layout: 'padded',
@@ -240,12 +340,9 @@ export const Order: Story = {
 // `step` (`{ sm: 2, md: 1, lg: 0 }`) applied on top of `order` — asserted here
 // against `--accordion-title-size` (`level = order + step`), which with the
 // registered default `order: 3` resolves to `h5`/`h4`/`h3` respectively.
-// The shared `getSharedTokens` computation is SKIPPED whenever `onItemToggle`
-// is a function (`Accordion.tsx`'s guard against double-computing tokens
-// already applied by an enclosing `Accordion.Group`'s own root) — so
-// `meta.args` leaves it unset, and only the stories that assert on toggling
-// supply their own `fn()`. A standalone `Accordion` here therefore shows its
-// real per-size token output.
+// The shared tokens are only computed for a standalone `Accordion` (inside an
+// `Accordion.Group` the item's root gets `{}` and inherits the group root's),
+// so every group here shows its real per-size token output.
 export const Size: Story = {
 	parameters: {
 		layout: 'padded',
@@ -765,11 +862,11 @@ export const ReversedOrder: Story = {
 // compiled export map (`Accordion.module.scss`), not a literal hash or an
 // "any extra class" heuristic — and, via `getStyle.tsx`, every token the
 // root would compute: the shared `--accordion-*` custom properties, which
-// are present on the styled root (no `onItemToggle` is set, so `tokens`
-// computes them) and absent on the unstyled one. `Accordion` destructures
-// `unstyled` out rather than forwarding it to its root `Box`, so the root's
-// `data-open` attribute survives; that is asserted too (`defaultOpen` is set
-// so there is one to keep).
+// are present on the styled root (a standalone item computes them) and absent
+// on the unstyled one. `Accordion` destructures `unstyled` out rather than
+// forwarding it to its root `Box`, so the root's `data-open` attribute
+// survives; that is asserted too (`defaultOpen` is set so there is one to
+// keep).
 export const Unstyled: Story = {
 	parameters: {
 		layout: 'padded',

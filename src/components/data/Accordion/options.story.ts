@@ -14,8 +14,12 @@ export const INDICATOR_OPTIONS: readonly NonNullable<Accordion.Props['indicator'
 	'chevron', 'plus', 'none',
 ]
 
+export const INDICATOR_POSITION_OPTIONS: readonly NonNullable<Accordion.Props['indicatorPosition']>[] = [
+	'left', 'right',
+]
+
 export const LAYOUT_OPTIONS: readonly NonNullable<Accordion.Props['layout']>[] = [
-	'default', 'steps',
+	'default', 'blockquote', 'steps',
 ]
 
 export const BOOLEAN_OPTIONS = [true, false] as const

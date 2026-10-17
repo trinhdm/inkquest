@@ -1,11 +1,21 @@
-import { expect, within } from 'storybook/test'
+import { expect, waitFor, within } from 'storybook/test'
 import { getDefaultProps } from '@/hooks/useProps'
 import { Logo } from './Logo'
 import type { ReactNode } from 'react'
+import type { Route } from 'next'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import moduleClasses from './Logo.module.scss'
 
 const BOOLEAN_OPTIONS = [true, false] as const
+
+// Root tags exercised by the `As` story. `div` is the registered default.
+const AS_OPTIONS = ['div', 'span'] as const
+
+// `next/image`'s `loading` values. `eager` is the registered default.
+const LOADING_OPTIONS = ['eager', 'lazy'] as const
+
+// An absolute URL on another host, so `isExternalLink` is true.
+const EXTERNAL_HREF: Route = 'https://example.com/inkquest'
 
 // `Logo`'s only enumerable prop, a plain 2-value literal union — stays local rather
 // than living in a shared `options.story.ts` (no sibling stories file in this family
@@ -43,9 +53,8 @@ const VIEWBOX = {
 // interface — it doesn't include `as`/`unstyled`/`attributes`/etc., which only exist
 // on the actual accepted prop type, `PolymorphicProps<LogoProps, C>`.
 // `Parameters<typeof Logo>[0]` reads that real, wrapped type straight off the
-// component itself. `LogoSpecs` declares no `defaults.as` (no `TAG` constant either),
-// so `Logo` isn't genuinely polymorphic — its `as` prop is typed `never`, and `Logo.tsx`
-// hardcodes `as={ Link }` on its root `<Box>`; see the `as` `argTypes` entry.
+// component itself. It fills `C` with its constraint (`ElementType`), not the
+// default `'div'` (`Logo.tsx`'s `TAG`), so `as` is any `ElementType` here.
 type LogoStoryProps = Parameters<typeof Logo>[0]
 type Story = StoryObj<LogoStoryProps>
 
@@ -58,12 +67,18 @@ const meta: Meta<LogoStoryProps> = {
 			description: 'Passed straight through to the underlying `next/image` `alt` attribute. Defaults to `` `${COMPANY_NAME} Logo` ``.',
 		},
 		as: {
-			control: false,
-			description: '`LogoSpecs` declares no `defaults.as`, so the factory types close the prop off as `as?: never` — a caller cannot pass a tag. The root `<Box>` always renders `as={ Link }` (an anchor), whatever else is passed.',
+			control: 'select',
+			options: AS_OPTIONS,
+			description: 'Registered default `div`. Only used when the logo is NOT a link: `Logo.tsx` renders `<Box as={ Link }>` whenever `href` is truthy (the `as` prop is ignored then), and `<Box as={ as }>` otherwise. See the `As` and `NoLink` stories.',
 		},
 		href: {
 			control: 'text',
-			description: 'The root `<Box as={ Link }>`\'s `href`. Defaults to `\'/\'`.',
+			description: 'Typed `Route | null`; registered default `\'/\'`. A truthy value renders the root as a `next/link` `Link`; an external URL also gets `target="_blank"` and `rel="noopener noreferrer"` (see `ExternalHref`). `null` (or any falsy value) renders no link at all, just the root tag from `as` (see `NoLink`).',
+		},
+		loading: {
+			control: 'select',
+			options: LOADING_OPTIONS,
+			description: 'From next/image\'s `ImageProps` (`LogoProps` extends it minus `alt`/`height`/`fill`/`src`) and passed to the `<Image>`. Registered default `\'eager\'`. See the `Loading` story.',
 		},
 		type: {
 			control: 'select',
@@ -72,7 +87,7 @@ const meta: Meta<LogoStoryProps> = {
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Comes from `FactoryContract` (via `_PolymorphicContract`), not `Logo`\'s own `LogoProps`. `Logo` uses no config classes (both `styles(\'root\')` and `styles(\'image\')` are plain calls), so for the root and the image the visible effect is dropping the CSS-module-hashed class normally appended alongside each semantic base class (`inkq-logo`, `inkq-logo__image`, still emitted; both have plain SCSS declarations). `unstyled` also reaches the root `<Box>` through `others`, where it would drop non-state `data-*` attributes (`Logo` sets none). See the `Unstyled` story.',
+			description: 'Comes from `FactoryContract` (via `_PolymorphicContract`), not `Logo`\'s own `LogoProps`. `Logo` uses no config classes (both `styles(\'root\')` and `styles(\'image\')` are plain calls), so for the root and the image the visible effect is dropping the CSS-module-hashed class normally appended alongside each semantic base class (`inkq-logo`, `inkq-logo__image`, still emitted; both have plain SCSS declarations). `Logo` also passes `unstyled` to the root `<Box>`, which drops non-state `data-*` attributes — here that is the root\'s `data-scheme`. See the `Unstyled` story.',
 		},
 		width: {
 			control: 'number',
@@ -100,7 +115,7 @@ export const Default: Story = {
 		await expect(link).toHaveAttribute('href', '/')
 		await expect(image).toHaveAttribute('alt', 'Inkquest Logo')
 		await expect(image).toHaveAttribute('width', '124')
-		// `Logo.tsx` passes `loading="eager"` to `next/image`.
+		// `loading` is a prop now; its registered default is `'eager'`.
 		await expect(image).toHaveAttribute('loading', 'eager')
 
 		const expectedHeight = Math.round(124 * VIEWBOX.wordmark.height / VIEWBOX.wordmark.width)
@@ -194,6 +209,125 @@ export const Href: Story = {
 }
 
 /**
+ * `loading` goes straight to the `<Image>`. These checks read the DOM directly
+ * rather than by role, so they do not depend on which scheme's logo is visible.
+ */
+export const Loading: Story = {
+	parameters: { controls: { exclude: ['loading'] } },
+	render: (args) => (
+		<Row>
+			{ LOADING_OPTIONS.map(loading => (
+				<Group key={ loading } label={ loading }>
+					<Logo { ...args } loading={ loading } />
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const images = canvasElement.querySelectorAll('.inkq-logo__image')
+
+		await expect(images).toHaveLength(LOADING_OPTIONS.length)
+
+		LOADING_OPTIONS.forEach((loading, index) => {
+			expect(images[index]).toHaveAttribute('loading', loading)
+		})
+	},
+}
+
+/**
+ * `as` only picks the root tag when the logo is not a link (`href` falsy). With a
+ * truthy `href` the root is always a `Link`, so `href` is `null` here.
+ */
+export const As: Story = {
+	parameters: { controls: { exclude: ['as', 'href'] } },
+	render: (args) => (
+		<Row>
+			{ AS_OPTIONS.map(as => (
+				<Group key={ as } label={ as }>
+					<Logo { ...args } as={ as } href={ null } />
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const roots = Array.from(canvasElement.querySelectorAll(ROOT_SELECTOR))
+
+		await expect(roots.map(root => root.tagName.toLowerCase())).toEqual([...AS_OPTIONS])
+
+		roots.forEach(root => {
+			expect(root.querySelector('a')).toBeNull()
+			expect(root.querySelector('.inkq-logo__image')).not.toBeNull()
+		})
+	},
+}
+
+/**
+ * `href: null` renders no `Link`: the root is a plain `div` (the registered `as`
+ * default) wrapping the image.
+ */
+export const NoLink: Story = {
+	args: { href: null },
+	play: async ({ canvasElement }) => {
+		const root = canvasElement.querySelector(ROOT_SELECTOR) as HTMLElement
+
+		await expect(root.tagName).toBe('DIV')
+		await expect(root).not.toHaveAttribute('href')
+		await expect(canvasElement.querySelector('a')).toBeNull()
+		await expect(root.querySelector('.inkq-logo__image')).not.toBeNull()
+	},
+}
+
+/**
+ * An external `href` makes the `Link` open in a new tab with `rel="noopener
+ * noreferrer"`; an internal one gets neither attribute.
+ */
+export const ExternalHref: Story = {
+	parameters: { controls: { exclude: ['href'] } },
+	render: (args) => (
+		<Row>
+			<Group label="internal">
+				<Logo { ...args } href="/marketplace" />
+			</Group>
+			<Group label="external">
+				<Logo { ...args } href={ EXTERNAL_HREF } />
+			</Group>
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const [internal, external] = Array.from(canvasElement.querySelectorAll(ROOT_SELECTOR))
+
+		await expect(internal.tagName).toBe('A')
+		await expect(internal).not.toHaveAttribute('target')
+		await expect(internal).not.toHaveAttribute('rel')
+
+		await expect(external.tagName).toBe('A')
+		await expect(external).toHaveAttribute('href', EXTERNAL_HREF)
+		await expect(external).toHaveAttribute('target', '_blank')
+		await expect(external).toHaveAttribute('rel', 'noopener noreferrer')
+	},
+}
+
+/**
+ * The root carries `data-scheme` set to the active color scheme (the preview
+ * toolbar sets `data-inkq-scheme` on `<html>`), and the wordmark file follows it.
+ * `_base.scss` hides `[data-scheme]` elements that disagree with the scheme.
+ */
+export const ColorScheme: Story = {
+	play: async ({ canvasElement }) => {
+		const root = canvasElement.querySelector(ROOT_SELECTOR) as HTMLElement,
+			image = canvasElement.querySelector('.inkq-logo__image') as HTMLElement
+
+		await waitFor(() => {
+			const scheme = document.documentElement.getAttribute('data-inkq-scheme') ?? ''
+
+			expect(['dark', 'light']).toContain(scheme)
+			expect(root).toHaveAttribute('data-scheme', scheme)
+			expect(image.getAttribute('src') ?? '').toMatch(new RegExp(`wordmark-${scheme}\\.svg`))
+		})
+	},
+}
+
+/**
  * `unstyled` never removes the semantic base classes (`inkq-logo`,
  * `inkq-logo__image`) — both have plain, config-less SCSS declarations, so the
  * class-level difference is their CSS-module hash.
@@ -232,5 +366,9 @@ export const Unstyled: Story = {
 		await expect(unstyledImage).toHaveClass('inkq-logo__image')
 		expect(hasModuleClass(styledImage, 'inkq-logo__image')).toBe(true)
 		expect(hasModuleClass(unstyledImage, 'inkq-logo__image')).toBe(false)
+
+		// `data-scheme` is not a state key, so `unstyled` strips it from the root.
+		await expect(styledRoot).toHaveAttribute('data-scheme')
+		await expect(unstyledRoot).not.toHaveAttribute('data-scheme')
 	},
 }

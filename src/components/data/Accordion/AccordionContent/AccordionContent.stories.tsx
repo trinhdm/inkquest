@@ -90,7 +90,7 @@ const meta: Meta<AccordionContentStoryProps> = {
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `FactoryContract`), not `AccordionContent`\'s own `AccordionContentProps`. Read purely off `AccordionContent`\'s OWN props (`useProps(_props)`) — unlike `Accordion`, it does NOT inherit `unstyled` from the wrapping `Accordion`\'s context (the context is read for `idx`/`isOpen` and, for tokens, `size`/`step`, never `unstyled`). The semantic base classes (`inkq-accordion-content`, `inkq-accordion-content__inner`, `inkq-accordion-content__wrapper`) are ALWAYS emitted regardless of this prop. `unstyled` drops the CSS-module-hashed class normally appended alongside each, plus the global `inkq-prose` config class on the root and the root\'s `--accordion-content-size`/`--accordion-content-indent` tokens. See the `Unstyled` story.',
+			description: 'Part of `PolymorphicProps` (via the shared `FactoryContract`), not `AccordionContent`\'s own `AccordionContentProps`. Read purely off `AccordionContent`\'s OWN props (`useProps(_props)`) — unlike `Accordion`, it does NOT inherit `unstyled` from the wrapping `Accordion`\'s context (the context is read for `idx`/`isOpen` and, for tokens, `layout`/`size`, never `unstyled`). The semantic base classes (`inkq-accordion-content`, `inkq-accordion-content__inner`, `inkq-accordion-content__wrapper`) are ALWAYS emitted regardless of this prop. `unstyled` drops the CSS-module-hashed class normally appended alongside each, plus the global `inkq-prose` config class on the root and the root\'s `--accordion-content-size`/`--accordion-content-indent` tokens. See the `Unstyled` story.',
 		},
 	},
 	args: {
@@ -175,12 +175,14 @@ export const Prose: Story = {
 }
 
 // `--accordion-content-size` is derived from the wrapping `Accordion`'s
-// `size`: `sm` uses the plain body size, every other size the larger body
-// size — so `md` and `lg` match each other and differ from `sm`. Compared
-// relative to each other rather than against hardcoded token strings.
-// `--accordion-content-indent` is only set for `layout="steps"`, where it
-// lines the content up under the title text (past the step column and gap);
-// otherwise it is unset and the stylesheet's own fallback applies.
+// `layout` and `size` (read off the ITEM's context, not the group's): `sm` and
+// `md` use the plain body size, `lg` the larger body size — so `sm` and `md`
+// match each other and differ from `lg` — and `blockquote` uses the caption
+// size whatever the size. Compared relative to each other rather than against
+// hardcoded token strings. `--accordion-content-indent` is only set for
+// `layout="steps"`, where it lines the content up under the title text (past
+// the step column and the title gap); otherwise it is unset and the
+// stylesheet's own fallback applies.
 export const Tokens: Story = {
 	parameters: { layout: 'padded' },
 	render: args => (
@@ -205,17 +207,26 @@ export const Tokens: Story = {
 		const read = (region: HTMLElement, token: string) => region.style.getPropertyValue(token)
 
 		// `SIZE_OPTIONS` is `['sm', 'md', 'lg']`, then `LAYOUT_OPTIONS` is
-		// `['default', 'steps']`, mapped in order.
-		const [sm, md, lg, defaultLayout, stepsLayout] = regions
+		// `['default', 'blockquote', 'steps']`, mapped in order.
+		const [sm, md, lg, defaultLayout, blockquoteLayout, stepsLayout] = regions
 
 		await expect(read(sm, '--accordion-content-size')).not.toBe('')
 		await expect(read(md, '--accordion-content-size')).not.toBe('')
-		await expect(read(sm, '--accordion-content-size')).not.toBe(read(md, '--accordion-content-size'))
-		await expect(read(lg, '--accordion-content-size')).toBe(read(md, '--accordion-content-size'))
+		await expect(read(lg, '--accordion-content-size')).not.toBe('')
+		await expect(read(sm, '--accordion-content-size')).toBe(read(md, '--accordion-content-size'))
+		await expect(read(lg, '--accordion-content-size')).not.toBe(read(md, '--accordion-content-size'))
+
+		// Default-size (`md`) groups: `default` and `steps` share the body size,
+		// `blockquote` swaps it for the caption size.
+		await expect(read(defaultLayout, '--accordion-content-size')).toBe(read(md, '--accordion-content-size'))
+		await expect(read(stepsLayout, '--accordion-content-size')).toBe(read(md, '--accordion-content-size'))
+		await expect(read(blockquoteLayout, '--accordion-content-size')).not.toBe('')
+		await expect(read(blockquoteLayout, '--accordion-content-size')).not.toBe(read(md, '--accordion-content-size'))
 
 		await expect(read(defaultLayout, '--accordion-content-indent')).toBe('')
+		await expect(read(blockquoteLayout, '--accordion-content-indent')).toBe('')
 		await expect(read(stepsLayout, '--accordion-content-indent'))
-			.toBe('calc(var(--accordion-column-width) + var(--accordion-gap))')
+			.toBe('calc(var(--accordion-column-width) + var(--accordion-title-gap))')
 	},
 }
 
@@ -265,7 +276,7 @@ export const InlineWrap: Story = {
 // `unstyled` is `AccordionContent`'s OWN prop, read straight off its own
 // `_props` via `useProps` — unlike `Accordion` (which merges an enclosing
 // `Accordion.Group`'s context), `AccordionContent` pulls `idx`/`isOpen`
-// (and, for its tokens, `size`/`step`) off `Accordion.context`
+// (and, for its tokens, `layout`/`size`) off `Accordion.context`
 // (`useAccordionCtx`), never `unstyled`. So it must be set directly on
 // `AccordionContent` itself here, NOT on the wrapping `Accordion` (which has
 // no effect on it at all).

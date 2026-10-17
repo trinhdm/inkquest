@@ -37,8 +37,9 @@ const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 // actual polymorphic root element.
 //
 // **Verified against the LIVE `Table.module.scss`**: `.inkq-table-cell` has
-// real direct declarations (`padding`, `text-align`, `white-space`), so it
-// DOES get a real CSS-module hash — see the `Unstyled` story.
+// real direct declarations (`align-items`, `column-gap`, `display`,
+// `text-align`), so it DOES get a real CSS-module hash — see the `Unstyled`
+// story.
 const ROOT_SELECTOR = '.inkq-table-cell'
 
 // `Table` attaches `Cell` (`Table.tsx`'s `SUBCOMPONENTS`) and also declares a
@@ -120,8 +121,8 @@ export const FixedTag: Story = {
  * (`inkq-table-cell`) — per `getClassName.tsx` the base class is now ALWAYS
  * emitted. It only suppresses the CSS-module-hashed class normally appended
  * alongside it. `.inkq-table-cell` has real direct declarations in
- * `Table.module.scss` (`padding`, `text-align`, `white-space`), so it DOES
- * get a real CSS-module hash to suppress.
+ * `Table.module.scss` (`align-items`, `column-gap`, `display`, `text-align`),
+ * so it DOES get a real CSS-module hash to suppress.
  */
 export const Unstyled: Story = {
 	parameters: { controls: { exclude: ['unstyled'] } },

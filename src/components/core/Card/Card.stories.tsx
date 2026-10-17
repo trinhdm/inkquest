@@ -256,7 +256,7 @@ export const AsElement: Story = {
 // suppress in the first place (verified against the live `Card.module.scss`).
 // `unstyled` ALSO suppresses config-driven global classes: `getConfigClasses`
 // (`getClassName.tsx`) returns early when `check.isUnstyled`, which drops the
-// title's `inkq-h4` and the caption's `inkq-caption` (asserted below).
+// title's `inkq-h5` and the caption's `inkq-caption` (asserted below).
 export const Unstyled: Story = {
 	parameters: {
 		layout: 'padded',
@@ -286,7 +286,7 @@ export const Unstyled: Story = {
 		// Detect the REAL compiled CSS-module hash, keyed off the actual
 		// `Card.module.scss` export map — not a naive "any extra class"
 		// heuristic (a styled element can also carry global config classes such
-		// as `inkq-h4`/`inkq-caption`, which are not the module hash).
+		// as `inkq-h5`/`inkq-caption`, which are not the module hash).
 		const hasModuleClass = (el: Element, base: string) => {
 			const moduleClass = (moduleClasses as Record<string, string>)[base]
 			return !!moduleClass && el.classList.contains(moduleClass)
@@ -321,10 +321,10 @@ export const Unstyled: Story = {
 		expect(hasModuleClass(styledTitle, 'inkq-card__title')).toBe(true)
 		expect(hasModuleClass(unstyledTitle, 'inkq-card__title')).toBe(false)
 
-		// `Card.tsx` styles the title with `styles('title', { global: { h4:
-		// true } })`, which adds the global `inkq-h4` class only when styled.
-		await expect(styledTitle).toHaveClass('inkq-h4')
-		await expect(unstyledTitle).not.toHaveClass('inkq-h4')
+		// `Card.tsx` styles the title with `styles('title', { global: { h5:
+		// true } })`, which adds the global `inkq-h5` class only when styled.
+		await expect(styledTitle).toHaveClass('inkq-h5')
+		await expect(unstyledTitle).not.toHaveClass('inkq-h5')
 
 		// The `caption` selector (`styles('caption', true)`) has NO matching
 		// rule in `Card.module.scss` (only `root`/`wrapper`/`image`/

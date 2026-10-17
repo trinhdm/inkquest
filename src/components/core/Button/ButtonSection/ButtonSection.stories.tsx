@@ -180,6 +180,36 @@ export const Sides: Story = {
 	},
 }
 
+// A section with neither `left` nor `right` is not allowed by the types (the
+// props are a `left`/`right` union), so it takes a cast here. At runtime
+// `ButtonSection.tsx` (`isRight = keyHasValue(props, { right: true })`) and
+// `buildSections` both treat it as LEFT: `data-side="left"`, placed before the
+// label.
+export const NoSide: Story = {
+	render: ({ variant, size, disabled, loading, unstyled }: ButtonSectionStoryArgs) => {
+		const buttonProps = { variant, size, disabled, loading },
+			noSide = {} as Button.Section.Props
+
+		return (
+			<Button { ...buttonProps }>
+				<Button.Section { ...noSide } unstyled={ unstyled }><Icon type="download" /></Button.Section>
+				Download
+			</Button>
+		)
+	},
+	play: async ({ canvasElement }) => {
+		const button = within(canvasElement).getByRole('button'),
+			sections = button.querySelectorAll('.inkq-button__section')
+
+		await expect(sections).toHaveLength(1)
+		await expect(sections[0]).toHaveAttribute('data-side', 'left')
+		await expect(button.querySelectorAll('[data-side="right"]')).toHaveLength(0)
+
+		// Placed before the label, like an explicit `left`.
+		await expect(sections[0].nextElementSibling).toHaveClass('inkq-button__label')
+	},
+}
+
 // `buildSections` (`Button.tsx`) only ever assigns the FIRST
 // `Button.Section[left]` (or `[right]`) it encounters to `left`/`right` —
 // every subsequent same-side section is dropped (and dev-warns) rather than

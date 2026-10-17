@@ -2,19 +2,17 @@ import { createContext, useContext } from 'react'
 import { expect, within } from 'storybook/test'
 import { getDefaultProps } from '@/hooks/useProps'
 import { Group } from './Group'
-import { ORIENTATION_OPTIONS, BOOLEAN_OPTIONS } from './options.story'
+import { BOOLEAN_OPTIONS, JUSTIFY_OPTIONS, ORIENTATION_OPTIONS } from './options.story'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import type { RootProviderFn } from '@/lib/component/context'
 import moduleClasses from './Group.module.scss'
 
 // Local to this file (`Group/options.story.ts` is shared with `Group.Item`,
-// which has neither prop). `justify` is typed `CSSProperties['justifyContent']`,
-// an open string set, so these are representative values, not an exhaustive
-// enum. `ROLE_TAGS` is the renderable subset of `Group.tsx`'s non-exported
-// `GROUP_TAGS` (`fieldset`, `hgroup`; `optgroup` can't hold `Group.Item`s),
-// which get no explicit `role`, plus `div` as the contrast case.
-const JUSTIFY_OPTIONS = ['start', 'center', 'end', 'space-between'] as const
+// which has no such prop). `ROLE_TAGS` is the renderable subset of
+// `Group.tsx`'s non-exported `GROUP_TAGS` (`fieldset`, `hgroup`, `optgroup`),
+// which get no explicit `role`, plus `div` as the contrast case. `optgroup` is
+// left out on purpose: it may only hold `<option>`s, not `Group.Item`s.
 const ROLE_TAGS = ['fieldset', 'hgroup', 'div'] as const
 
 const Row = ({ children }: { children: ReactNode }) => (
@@ -144,8 +142,9 @@ const meta: Meta<GroupStoryProps> = {
 			description: 'Feeds a `--group-item-count` CSS custom property on the root via an inline style (the `tokens` function built with `defineTokens`), NOT a class — `--group-cols` (referenced by `Group.module.scss`\'s `grid-template-columns`) is a STYLESHEET-INTERNAL value composed FROM `--group-item-count`; it is never itself set inline. When `columns` is a positive number, `--group-item-count` is set to it directly. When `columns` is unset AND `orientation` is set, `--group-item-count` is instead computed from `countChildren(children, childName)` (`count > 1 ? count - 1 : count`) — that count recurses into Fragments and includes only elements whose `displayName` matches `childName`; text and non-matching elements are not counted. See the `ChildCount` story. When both are unset, the property is absent entirely and `Group.module.scss`\'s own base rule (`--group-item-count: auto-fit`) applies. See the `Columns` and `Orientations` stories.',
 		},
 		justify: {
-			control: 'text',
-			description: 'Typed as `CSSProperties[\'justifyContent\']`. `Group.tsx` destructures it (so it never reaches `others` or the DOM as a `justify` attribute) and the `tokens` function emits it as the inline `--group-justify` custom property on the root (`justify ?? undefined`, so absent when unset); `Group.module.scss` applies it with `justify-content: var(--group-justify)`. Like the other tokens, it is dropped when `unstyled`. See the `Justify` story.',
+			control: 'select',
+			options: JUSTIFY_OPTIONS,
+			description: 'Typed as `JustifyContent` (`@/types/shared`), the CSS `justify-content` keywords `normal | start | center | end | space-around | space-between | space-evenly`.`Group.tsx` destructures it (so it never reaches `others` or the DOM as a `justify` attribute) and the `tokens` function emits it as the inline `--group-justify` custom property on the root (`justify ?? undefined`, so absent when unset); `Group.module.scss` applies it with `justify-content: var(--group-justify)`. Like the other tokens, it is dropped when `unstyled`. See the `Justify` story.',
 		},
 		header: {
 			control: false,
@@ -153,11 +152,11 @@ const meta: Meta<GroupStoryProps> = {
 		},
 		provider: {
 			control: false,
-			description: 'A `RootProviderFn<GroupContext>` that receives a per-child context value via `withProvider` (`@/lib/component/context`). The value handed to each child is `{ animated, duration, index, stagger, unstyled, withinView, ...values }` — `values` is spread LAST, so it can override any of the auto-computed fields. `provider` has a registered default (`GroupProvider`), and `useProps` ignores an incoming `undefined`, so a `Group` always has a provider — there is no reachable provider-less path through `Group` itself. See the `AnimatedState`/`values` stories.',
+			description: 'A `RootProviderFn<GroupContext>` that receives a per-child context value via `withProvider` (`@/lib/component/context`). The value handed to each child is `{ animated, duration, index, stagger, withinView, ...values, unstyled }` — `values` is spread after the animation fields, so it can override those, but `unstyled` is applied last (see `values` and `unstyled`). `provider` has a registered default (`GroupProvider`), and `useProps` ignores an incoming `undefined`, so a `Group` always has a provider — there is no reachable provider-less path through `Group` itself. See the `AnimatedState`/`values` stories.',
 		},
 		values: {
 			control: 'object',
-			description: 'Extra fields spread into every child\'s context value AFTER the auto-computed ones (`{ animated, duration, index, stagger, unstyled, withinView, ...values }`), so `values` can override any of them per-`Group`. Registered default is `{}`. Only meaningful paired with a custom `provider` — the default `GroupProvider`/`GroupContext` shape only reads the animation-related keys. See the `values` story.',
+			description: 'Extra fields spread into every child\'s context value AFTER the auto-computed animation fields (`{ animated, duration, index, stagger, withinView, ...values, unstyled }`), so `values` can override those per-`Group`. `unstyled` is the exception: `values.unstyled === true` takes precedence over the `unstyled` prop, otherwise the prop\'s value is published (see the `ValuesUnstyled` story). Registered default is `{}`. Only meaningful paired with a custom `provider` — the default `GroupProvider`/`GroupContext` shape only reads the animation-related keys. See the `values` story.',
 		},
 		amount: {
 			control: false,
@@ -185,7 +184,7 @@ const meta: Meta<GroupStoryProps> = {
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of the factory\'s `FactoryContract` (`_PolymorphicContract.unstyled`), not `Group`\'s own `GroupProps`. The semantic base class (`inkq-group`) is emitted regardless of this prop (`namespace ?? baseName`). When `unstyled` is true, `Group` loses the CSS-module-hashed class and the inline `--group-item-count` token (`getStyle` returns only inherited styles); it has no config classes. `Group` destructures `unstyled` (it is published into each child\'s context value), so it is NOT forwarded to the root `Box`, and `data-divide`/`data-block` are kept. See the `Unstyled` story.',
+			description: 'Part of the factory\'s `FactoryContract` (`_PolymorphicContract.unstyled`), not `Group`\'s own `GroupProps`. The semantic base class (`inkq-group`) is emitted regardless of this prop (`namespace ?? baseName`). When `unstyled` is true, `Group` loses the CSS-module-hashed class and the inline `--group-item-count` token (`getStyle` returns only inherited styles); it has no config classes. `Group.tsx` does not destructure `unstyled`, so it stays in `rest` and reaches the root `Box` via `others`, where `buildAttributes` drops every non-state `data-*` key — `data-divide`/`data-block` disappear when unstyled. It is also published into each child\'s context value as `unstyled: isUnstyled`, where `values.unstyled === true` takes precedence over this prop (see the `ValuesUnstyled` story). See the `Unstyled` story.',
 		},
 	},
 	args: {
@@ -499,8 +498,8 @@ export const Header: Story = {
  * tags because it relies on their built-in semantics. `optgroup` is in
  * `GROUP_TAGS` but can't be shown here: it may only contain `<option>`s, not
  * `Group.Item`s. So: `fieldset` and `hgroup`, plus `div` as the contrast. The
- * `div` carries `role="group"`, the other two have no `role` attribute, and
- * `getByRole('group')` finds the `fieldset` and the `div`.
+ * `div` carries `role="group"` and the other two have no `role` attribute.
+ * `GROUP_TAGS` is intentional, so the check is on the `role` attribute itself.
  */
 export const RoleByTag: Story = {
 	parameters: { layout: 'padded', controls: { exclude: ['as'] } },
@@ -529,11 +528,13 @@ export const RoleByTag: Story = {
 			else expect(root).not.toHaveAttribute('role')
 		})
 
-		// `getByRole('group')` finds the `div` (explicit role) and the `fieldset`
-		// (built-in role) — and only those two.
-		const found = canvas.getAllByRole('group')
-		await expect(found).toHaveLength(2)
-		await expect(found.map(el => el.tagName)).toEqual(['FIELDSET', 'DIV'])
+		// Only the `div` carries an explicit `role="group"` attribute. The `role`
+		// attribute is asserted rather than `getByRole('group')`, because whether
+		// `hgroup` maps to the `group` role depends on the accessibility tree
+		// implementation, not on `Group`.
+		const explicit = Array.from(canvasElement.querySelectorAll('[role="group"]'))
+		await expect(explicit).toHaveLength(1)
+		await expect(explicit[0].tagName).toBe('DIV')
 	},
 }
 
@@ -623,6 +624,51 @@ export const Values: Story = {
 	},
 }
 
+/**
+ * `unstyled` is published to each child's context as `isUnstyled`:
+ * `values.unstyled === true` wins over the `unstyled` prop, while any other
+ * `values.unstyled` (here `false`) lets the prop decide. The root `Group`
+ * follows its own `unstyled` prop only, so the first group's root stays
+ * styled although its child reports `unstyled`.
+ */
+export const ValuesUnstyled: Story = {
+	parameters: { layout: 'padded' },
+	render: () => (
+		<Row>
+			<Labeled label="values.unstyled: true, unstyled: undefined">
+				<Group childName="DebugItem" provider={ DebugProvider } values={ { unstyled: true } }>
+					<DebugItem label="Values true" />
+				</Group>
+			</Labeled>
+			<Labeled label="values.unstyled: false, unstyled: true">
+				<Group childName="DebugItem" provider={ DebugProvider } unstyled values={ { unstyled: false } }>
+					<DebugItem label="Values false, prop true" />
+				</Group>
+			</Labeled>
+			<Labeled label="values.unstyled: false, unstyled: undefined">
+				<Group childName="DebugItem" provider={ DebugProvider } values={ { unstyled: false } }>
+					<DebugItem label="Values false" />
+				</Group>
+			</Labeled>
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			valuesTrue = canvas.getByText('Values true'),
+			propWins = canvas.getByText('Values false, prop true'),
+			neither = canvas.getByText('Values false')
+
+		await expect(valuesTrue).toHaveAttribute('data-unstyled', 'true')
+		await expect(propWins).toHaveAttribute('data-unstyled', 'true')
+		await expect(neither).toHaveAttribute('data-unstyled', 'false')
+
+		// The root follows the `unstyled` prop alone, not `values.unstyled`.
+		expect(hasModuleClass(valuesTrue.closest('.inkq-group')!, 'inkq-group')).toBe(true)
+		expect(hasModuleClass(propWins.closest('.inkq-group')!, 'inkq-group')).toBe(false)
+		expect(hasModuleClass(neither.closest('.inkq-group')!, 'inkq-group')).toBe(true)
+	},
+}
+
 // `GroupSpecs` declares `defaults: { as: 'div' }` — `Group` genuinely IS
 // polymorphic (`Group.tsx` renders `as={ as }`), unlike `Grid.Item`/`Section`
 // where `as` is typed `never`.
@@ -660,10 +706,12 @@ export const AsElement: Story = {
  * rules (not just nested descendant selectors like `&__item`), so CSS
  * Modules generates a real hash for the base class itself — suppressed when
  * `unstyled`, present when styled, same as every other hashed selector.
- * **Re-verified against the live `Group.tsx`**: there is NO modifier class of
- * any kind (`grid`/`divider`/`horizontal`/`vertical`) to check alongside it —
- * `styles('root')` is called with no `module`/`global`/`selector` config at
- * all, so the hash (and the token above) are all `unstyled` affects here.
+ * There is NO modifier class of any kind (`grid`/`divider`/`horizontal`/
+ * `vertical`) to check alongside it — `styles('root')` is called with no
+ * `module`/`global`/`selector` config at all. `unstyled` is not destructured
+ * by `Group`, so it reaches the root `Box` through `others`, and `Box` drops
+ * non-state `data-*` keys: this story renders `divider` and `fullWidth` on
+ * both groups to show `data-divide`/`data-block` surviving only when styled.
  */
 export const Unstyled: Story = {
 	parameters: { controls: { exclude: ['unstyled'] } },
@@ -671,7 +719,7 @@ export const Unstyled: Story = {
 		<Row>
 			{ BOOLEAN_OPTIONS.map(unstyled => (
 				<Labeled key={ String(unstyled) } label={ String(unstyled) }>
-					<Group { ...args as StaticGroupArgs } unstyled={ unstyled } />
+					<Group { ...args as StaticGroupArgs } divider fullWidth unstyled={ unstyled } />
 				</Labeled>
 			)) }
 		</Row>
@@ -690,5 +738,12 @@ export const Unstyled: Story = {
 		await expect(unstyledGroup).toHaveClass('inkq-group')
 		expect(hasModuleClass(styled, 'inkq-group')).toBe(true)
 		expect(hasModuleClass(unstyledGroup, 'inkq-group')).toBe(false)
+
+		// `data-divide`/`data-block` are non-state `data-*` keys, so `Box` keeps
+		// them only on the styled group.
+		await expect(styled).toHaveAttribute('data-divide')
+		await expect(styled).toHaveAttribute('data-block')
+		await expect(unstyledGroup).not.toHaveAttribute('data-divide')
+		await expect(unstyledGroup).not.toHaveAttribute('data-block')
 	},
 }

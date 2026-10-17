@@ -68,7 +68,7 @@ const meta: Meta<AccordionGroupStoryProps> = {
 		layout: {
 			control: 'select',
 			options: LAYOUT_OPTIONS,
-			description: 'Cascades to every child `Accordion` via context (`useAccordionGroupProps`), same own-prop-wins precedence as `index`/`open`/`onItemToggle`/`unstyled`. Only `\'steps\'` produces a zero-padded `step` label on each item, keyed off that item\'s own sequential `index`. See the `Layout` story.',
+			description: 'Cascades to every child `Accordion` via context (`useAccordionGroupProps`), same own-prop-wins precedence as `index`/`open`/`onItemToggle`/`unstyled`. Also feeds the group root\'s shared tokens. `\'steps\'` makes each item\'s `Accordion.Title` render a zero-padded step label keyed off that item\'s own sequential `index` (the title works it out from `index` + `layout`); `\'blockquote\'` drops each item\'s divider and adds an `inkq-accordion--blockquote` class. See the `Layout` story.',
 		},
 		order: {
 			control: 'select',
@@ -78,11 +78,11 @@ const meta: Meta<AccordionGroupStoryProps> = {
 		size: {
 			control: 'select',
 			options: SIZE_OPTIONS,
-			description: 'Registered default `\'md\'`. Feeds `getSharedTokens`\' shared CSS custom properties on the GROUP\'S OWN root (`--accordion-column-width`, `--accordion-gap`, `--accordion-padding`, `--accordion-indicator-size`, `--accordion-title-size`, etc.) via a per-size `step` applied on top of `order`. Also passed into every child `Accordion` through context (the child\'s own `size` prop always wins) — though each child\'s OWN token computation is skipped whenever it receives a function `onItemToggle` (as every grouped item does), so the title/column CSS variables it renders with come from the group\'s root via normal CSS inheritance, not a second computation. What the cascaded `size` DOES change per item is what `Accordion.Content` reads off the item\'s context: its `--accordion-content-size` token. See the `Size` and `ItemSize` stories.',
+			description: 'Registered default `\'md\'`. Feeds `getSharedTokens`\' shared CSS custom properties on the GROUP\'S OWN root (`--accordion-column-width`, `--accordion-gap`, `--accordion-padding`, `--accordion-indicator-size`, `--accordion-title-size`, etc.) via a per-size `step` applied on top of `order`. Also passed into every child `Accordion` through context (the child\'s own `size` prop always wins) — though a grouped item\'s root gets NO shared tokens of its own (`{}`, by design), so the title/column CSS variables it renders with come from the group\'s root via normal CSS inheritance, not a second computation. What the cascaded `size` DOES change per item is what `Accordion.Content` reads off the item\'s context: its `--accordion-content-size` token. See the `Size` and `ItemSize` stories.',
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `FactoryContract`), not `AccordionGroup`\'s own `AccordionGroupProps`. The semantic base class (`inkq-accordion-group`) on the group\'s root element is ALWAYS emitted regardless of this prop. `Accordion.module.scss` has no `.inkq-accordion-group` selector at all, so the group\'s root never has a CSS-module-hashed class to suppress. What `unstyled` DOES drop from the group\'s root is every token `getStyle` computes: the shared `--accordion-*` custom properties, which grouped items rely on because each item\'s own token computation is skipped (it receives a function `onItemToggle`). `AccordionGroup` destructures `unstyled` out instead of forwarding it to its root `Box`, so `data-group` is kept. It also cascades to every child `Accordion` (which has its own, separately-styled root) via the same context precedence as `layout`/`index`/`open` — but NOT to a child `Accordion.Title`/`Accordion.Content`, which read `unstyled` purely off their own props, never off `Accordion.context`. See the `Unstyled` story.',
+			description: 'Part of `PolymorphicProps` (via the shared `FactoryContract`), not `AccordionGroup`\'s own `AccordionGroupProps`. The semantic base class (`inkq-accordion-group`) on the group\'s root element is ALWAYS emitted regardless of this prop. `Accordion.module.scss` has no `.inkq-accordion-group` selector at all, so the group\'s root never has a CSS-module-hashed class to suppress. What `unstyled` DOES drop from the group\'s root is every token `getStyle` computes: the shared `--accordion-*` custom properties, which grouped items rely on because each item\'s own root gets no shared tokens inside a group. `AccordionGroup` destructures `unstyled` out instead of forwarding it to its root `Box`, so `data-group` is kept. It also cascades to every child `Accordion` (which has its own, separately-styled root) via the same context precedence as `layout`/`index`/`open` — but NOT to a child `Accordion.Title`/`Accordion.Content`, which read `unstyled` purely off their own props, never off `Accordion.context`. See the `Unstyled` story.',
 		},
 	},
 	args: {
@@ -236,8 +236,9 @@ export const DefaultOpen: Story = {
 }
 
 // `layout` cascades to every child `Accordion` via context — each item's
-// `step` is keyed off its own sequential `index` (assigned by the group,
-// not any prop on the child itself).
+// step label (rendered by its `Accordion.Title`) is keyed off its own
+// sequential `index` (assigned by the group, not any prop on the child
+// itself), which each item root also reports as `data-index`.
 export const Layout: Story = {
 	parameters: { controls: { exclude: ['layout'] } },
 	render: args => (
@@ -255,24 +256,45 @@ export const Layout: Story = {
 		const groups = canvasElement.querySelectorAll('[data-group]')
 		expect(groups).toHaveLength(LAYOUT_OPTIONS.length)
 
-		// `LAYOUT_OPTIONS` is `['default', 'steps']`, mapped in order.
-		const [defaultGroup, stepsGroup] = groups as unknown as [HTMLElement, HTMLElement],
+		// `LAYOUT_OPTIONS` is `['default', 'blockquote', 'steps']`, mapped in
+		// order.
+		const [defaultGroup, blockquoteGroup, stepsGroup] = groups as unknown as [HTMLElement, HTMLElement, HTMLElement],
 			defaultTitles = within(defaultGroup).getAllByRole('button'),
+			blockquoteTitles = within(blockquoteGroup).getAllByRole('button'),
 			stepsTitles = within(stepsGroup).getAllByRole('button')
 
 		expect(defaultTitles).toHaveLength(3)
+		expect(blockquoteTitles).toHaveLength(3)
 		expect(stepsTitles).toHaveLength(3)
 
-		// `default`: no `step` label and no `data-step` on any item.
+		// No layout writes `data-step` anywhere; each item reports its
+		// sequential index as `data-index` instead.
+		for (const group of [defaultGroup, blockquoteGroup, stepsGroup]) {
+			await expect(group.querySelector('[data-step]')).not.toBeInTheDocument()
+
+			const items = [...group.querySelectorAll('.inkq-accordion')]
+			expect(items).toHaveLength(3)
+			for (const [i, item] of items.entries())
+				await expect(item).toHaveAttribute('data-index', String(i))
+		}
+
+		// `default`: no `step` label and no layout modifier class.
 		for (const title of defaultTitles)
 			await expect(title.querySelector('[class*="step"]')).not.toBeInTheDocument()
-		await expect(defaultGroup.querySelector('[data-step]')).not.toBeInTheDocument()
+		await expect(defaultGroup.querySelector('.inkq-accordion--blockquote')).not.toBeInTheDocument()
+		await expect(defaultGroup.querySelector('.inkq-accordion--steps')).not.toBeInTheDocument()
+
+		// `blockquote`: every item has the modifier class and no divider.
+		await expect(blockquoteGroup.querySelectorAll('.inkq-accordion--blockquote')).toHaveLength(3)
+		await expect(blockquoteGroup.querySelector('.inkq-accordion__divider')).not.toBeInTheDocument()
+		for (const title of blockquoteTitles)
+			await expect(title.querySelector('[class*="step"]')).not.toBeInTheDocument()
 
 		// `steps`: each item's label comes from its own sequential index.
+		await expect(stepsGroup.querySelectorAll('.inkq-accordion--steps')).toHaveLength(3)
 		await expect(stepsTitles[0].querySelector('[class*="step"]')).toHaveTextContent('01')
 		await expect(stepsTitles[1].querySelector('[class*="step"]')).toHaveTextContent('02')
 		await expect(stepsTitles[2].querySelector('[class*="step"]')).toHaveTextContent('03')
-		await expect(stepsGroup.querySelectorAll('[data-step]')).toHaveLength(3)
 	},
 }
 
@@ -348,11 +370,10 @@ export const Size: Story = {
 
 // The group's `size` is also passed into every item's context, and an item's
 // OWN `size` prop wins over it (own prop always wins). Title/column tokens
-// aren't a usable signal here — a grouped item receives a function
-// `onItemToggle`, so it skips its own token computation and inherits the
-// group root's. What an item DOES read its context `size` for is
-// `Accordion.Content`'s `--accordion-content-size` token, which is the same
-// for `md`/`lg` and different for `sm`. So each region's token is compared
+// aren't a usable signal here — a grouped item's root gets no shared tokens
+// (`{}`) and inherits the group root's. What an item DOES read its context
+// `size` for is `Accordion.Content`'s `--accordion-content-size` token, which
+// is the same for `sm`/`md` and different for `lg`. So each region's token is compared
 // against the token of a group whose size is that value, rather than against a
 // hardcoded string.
 export const ItemSize: Story = {
@@ -735,7 +756,7 @@ export const ContextOverrides: Story = {
 // carries just the semantic `inkq-accordion-group` class either way. What
 // `unstyled` does drop from the group's root is its tokens (`getStyle.tsx`):
 // the shared `--accordion-*` custom properties from `getSharedTokens`, which
-// grouped items rely on (their own token computation is skipped), so they are
+// grouped items rely on (a grouped item's root gets none of its own), so they are
 // asserted present when styled and absent when unstyled. `data-group` stays,
 // since the group does not forward `unstyled` to its root `Box`. `unstyled`
 // also cascades to every child `Accordion`, which DOES have a styled root, so
