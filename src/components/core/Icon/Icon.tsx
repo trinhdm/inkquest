@@ -80,7 +80,7 @@ export const Icon = polymorphic<IconSpecs>((_props, { useProps, useStyles }) => 
 		return <Box { ...linkProps } as={ Link }>{ iconEl }</Box>
 	}
 
-	return <Box { ...styles('root') } as="div">{ iconEl }</Box>
+	return <Box { ...styles('root') } as="span">{ iconEl }</Box>
 }, { name: NAME, classes })
 
 Icon.set({

@@ -9,6 +9,7 @@ import { Logo } from '../Logo'
 import { Menu } from '../Menu'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Navbar.module.scss'
+import { usePathname } from 'next/navigation'
 
 const NAME = 'Navbar' as const,
 	TAG = 'nav' as const
@@ -32,16 +33,20 @@ interface NavbarSpecs {
 
 type NavbarSelectors =
 	| 'root' | 'wrapper' | 'inner'
-	| 'col' | 'menu' | 'buttons'
+	| 'col' | 'menu' | 'buttons' | 'tip'
 
 export const Navbar = polymorphic<NavbarSpecs>((_props, { useProps, useStyles }) => {
+	const pathname = usePathname()
 	const props = useProps(_props)
 	const styles = useStyles({ props })
 
 	const { as, routes, ...rest } = props
-	const others = extractOthers(rest)
 
+	const others = extractOthers(rest)
 	const navitems = filterNavigation(routes)
+
+	const isLoginPath = pathname === '/login',
+		isSignupPath = pathname === '/signup'
 
 	return (
 		<Box
@@ -63,10 +68,27 @@ export const Navbar = polymorphic<NavbarSpecs>((_props, { useProps, useStyles })
 					) }
 
 					<div { ...styles('col') }>
-						<Button.Group { ...styles('buttons') } hasPriority={ false } size="sm">
-							<Button href="/login" variant="text">Log in</Button>
-							<Button href="/signup">Sign up</Button>
-						</Button.Group>
+						{ (isLoginPath || isSignupPath) && (
+							<>
+								<span { ...styles('tip') }>
+									{ isLoginPath ? 'New to Inkquest?' : 'Already have an account?' }
+								</span>
+								<Button
+									href={ isLoginPath ? '/signup' : '/login' }
+									size="sm"
+									variant="outline"
+								>
+									{ isLoginPath ? 'Sign up' : 'Login' }
+								</Button>
+							</>
+						) }
+
+						{ (!isLoginPath && !isSignupPath) && (
+							<Button.Group { ...styles('buttons') } hasPriority={ false } size="sm">
+								<Button href="/login" variant="text">Log in</Button>
+								<Button href="/signup">Sign up</Button>
+							</Button.Group>
+						) }
 					</div>
 				</div>
 			</div>

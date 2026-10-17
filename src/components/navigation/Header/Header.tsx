@@ -1,12 +1,17 @@
 'use client'
 
+import {
+	listRoutesWithSlug,
+	HEADER_GLOBAL_NAV,
+	type NavRoute,
+} from '@/utils/navigation'
+
 import { usePathname } from 'next/navigation'
 import { extractOthers } from '@/hooks/useProps'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import { Navbar } from '../Navbar'
 import { Subnav } from '../Subnav'
-import { HEADER_GLOBAL_NAV, listRoutesWithSlug, type NavRoute } from '@/utils/navigation'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Header.module.scss'
 

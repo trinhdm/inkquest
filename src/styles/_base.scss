@@ -147,10 +147,6 @@ ul {
 
 	&:is([data-unlist]) {
 		list-style-type: none;
-
-		li {
-			display: inline-block;
-		}
 	}
 }
 

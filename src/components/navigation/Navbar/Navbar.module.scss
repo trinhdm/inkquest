@@ -36,9 +36,20 @@
 				justify-self: end;
 			}
 		}
+
+		&:has(#{$name}__tip) {
+			align-items: center;
+			column-gap: var(--inkq-gutter-item);
+			display: flex;
+		}
 	}
 
 	&__buttons {
 		--button-gap: var(--inkq-space-menu);
+	}
+
+	&__tip {
+		color: var(--inkq-color-text-tertiary);
+		font: var(--inkq-text-body-sm);
 	}
 }

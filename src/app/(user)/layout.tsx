@@ -1,7 +1,16 @@
-// Pass-through segment layout — see src/app/(legal)/layout.tsx for the
-// rationale. Mirrors it exactly for the (user) route group.
+import { Footer } from '@/components/navigation/Footer'
+import { Header } from '@/components/navigation/Header'
+import type { ReactNode } from 'react'
+import './user-layout.scss'
+
 export default function UserLayout({
 	children,
-}: Readonly<{ children: React.ReactNode }>) {
-	return <>{ children }</>
+}: Readonly<{ children: ReactNode }>) {
+	return (
+		<>
+			<Header navbar={ { routes: [] } } subnav={ null } />
+			<main>{ children }</main>
+			<Footer />
+		</>
+	)
 }
