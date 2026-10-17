@@ -1,0 +1,31 @@
+<!--
+	Fonts for the manager (sidebar + toolbar), which `theme.ts` sets to Archivo
+	and Space Mono. The manager is a separate page from the preview iframe, so
+	it never sees the fonts `src/styles/fonts.ts` loads there. Keep the weights
+	in sync with that file.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+	rel="stylesheet"
+	href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap"
+/>
+
+<!--
+	Sidebar separators. Storybook has no built-in divider between top-level
+	categories, so this draws a rule above the 'Core', 'Design Tokens' and
+	'Document' category headings. `data-item-id` is the category's id (its
+	title, lowercased and hyphenated), so renaming any of these categories
+	means updating it here too. The colour is `appBorderColor` from `theme.ts`.
+-->
+<style>
+	.sidebar-subheading[data-nodetype='root']:is(
+		[data-item-id='core'],
+		[data-item-id='design-tokens'],
+		[data-item-id='document']
+	) {
+		border-top: 1px solid #2A2A2E;
+		margin-top: 12px;
+		padding-top: 12px;
+	}
+</style>

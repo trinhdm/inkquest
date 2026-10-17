@@ -1,8 +1,8 @@
 import { Meta } from '@storybook/addon-docs/blocks'
 
-<Meta title="Foundation/Overview" />
+<Meta title="Design Tokens/Overview" />
 
-# Foundation
+# Design Tokens
 
 This is the token layer the rest of the design system is built from — not a
 component itself, so there's no single `Meta<typeof X>` under test the way
@@ -14,35 +14,45 @@ component itself, so there's no single `Meta<typeof X>` under test the way
 
 **Primitive tokens** (`primitiveTokens`, `src/lib/theme/reference/primitive.ts`,
 exported as `base` from `reference/index.ts`) are the raw palette/scale
-steps — `ink`/`paper`/`oxblood`/`crimson`/`ghost`/`smoke`, font family/size/
-weight/line-height/letter-spacing, space, screen, radius, opacity, duration,
-easing. They are **internal** — `src/lib/theme/index.ts`, the theme's real
-public barrel, does not re-export them.
+steps — `ink`/`paper`/`oxblood`/`crimson`/`ghost`/`smoke` plus the static
+`red`/`green`/`yellow`/`blue`/`white`/`gray`/`black`, font family/size/weight/
+line-height/letter-spacing, space, icon, screen, radius, opacity, duration,
+easing. They are **internal** — `src/lib/theme/index.ts` currently exports only
+`buildSchemes`, and nothing in the theme presents primitives as a component
+surface.
 
-**Semantic tokens** (`semanticTokens`, `src/lib/theme/reference/semantic.ts`,
-re-exported as `tokens` from `@/lib/theme`) are the aliases built from
-primitives, grouped by purpose — `tokens.color.text`, `tokens.background.page`,
-`tokens.font.body`, etc. `semantic.ts` carries the repo's own instruction:
-*"limit component usage to only semantic tokens"*. Every page in this section
-documents primitives too, but strictly as **reference** — to show what a
-semantic token resolves to, not as something to import into a component.
+**Semantic tokens** (`semanticTokens`, `src/lib/theme/reference/semantic.ts`)
+are the aliases built from primitives, grouped by purpose —
+`color.text`, `background.page`, `space.chip`, `font.body`, etc. `semantic.ts`
+carries the repo's own instruction: *"limit component usage to only semantic
+tokens"*. Every page in this section documents primitives too, but strictly as
+**reference** — to show what a semantic token resolves to, not as something to
+import into a component.
 
-Both accessor families return `var(--...)` CSS references (see
-`reference/utils.ts`'s `token.path`/`token.endPath`/`baseVar`/`aliasVar`),
-never literal values — every swatch in this section is styled with the real
-accessor, not a hex value copied out of `scales.ts`.
+All accessor families return `var(--...)` CSS references (see
+`reference/utils.ts`'s `token.path`/`token.optPath`/`token.endPath`/`baseVar`/
+`aliasVar`), never literal values — every swatch in this section is styled
+with the real accessor, not a hex value copied out of `scales.ts`.
 
-## A narrower public surface than it might look
+## Three registries in `reference/`
 
-`semanticTokens` itself only covers seven categories: `background`,
-`breakpoint`, `container`, `color`, `font`, `opacity`, `motion`. Border color,
-border radius, the full typography preset set (`text.h1`/`.body`/`.label`/
-etc.), and the individual motion-transition properties all exist and are
-genuinely emitted as CSS — but only through a separate internal registry
-(`aliasTokens`, exported as `alias`) that `@/lib/theme`'s public barrel does
-**not** re-export. Where a page below documents one of those, it's labeled
-accordingly and referenced by its literal `--inkq-*` variable name (the only
-way components reach it today), not a typed `tokens.*` accessor.
+`reference/index.ts` exports three:
+
+| Export | Source | Contents |
+| --- | --- | --- |
+| `base` | `primitive.ts` | Primitive scales (`--ink-100`, `--font-size-48`, …). Internal. |
+| `alias` | `semantic.ts` (`aliasTokens`) | The `semanticTokens` group, plus theme/accent/secondary, `border`, `borderRadius`, `fontFamily`/`fontSize`/`fontWeight`/`lineHeight`/`letterSpacing` and `transition.*` property accessors. |
+| `tokens` | `api.ts` (`apiTokens`) | Shorthand layer for components: `presets.text`, `presets.motion`, `padding`, `space`, `el.icon.size`, `el.field.padding`, `fontSize`, `letterSpacing`. `api.ts` says *"limit component usage to only shorthand tokens"*. |
+
+`semanticTokens` itself covers eight categories: `background`, `breakpoint`,
+`container`, `space`, `color`, `font`, `opacity`, `motion`. Everything else
+under `alias` (border color, border radius, the font property scales, the
+transition property tokens) is real, emitted CSS, but sits outside that group —
+pages below label those sections internal. A few emitted variables have no
+accessor in any registry (`--inkq-background-surface`, `--inkq-color-control`,
+`--inkq-text-label-mono`, `--inkq-text-numeric`, `--inkq-motion-opacity`, the
+`dot`/`tile`/grid layout tokens); those pages reference them by literal
+`--inkq-*` name.
 
 ## Two real gaps found while writing this
 
@@ -50,38 +60,55 @@ Tracing `reference/semantic.ts` against the actual token-generation pipeline
 (`buildSchemes.ts` → `tokens/*.ts` → `generate/strategies.ts`) turned up two
 declared semantic accessors with no backing CSS custom property:
 
-- `tokens.font.display() / .title() / .body() / .label()` — the real,
-  composed typography presets are emitted as `--inkq-text-*` (`h1`, `h2`,
-  `h3`, `h4`, `body`, `label`, `control`, `navigation`, `prose`, `caption`,
-  `section.*`), not `--inkq-font-display` / `-title` / `-body` / `-label`.
-- `tokens.motion.interactive()` — `MotionTokens` has no `interactive` key at
+- `alias.font.display() / .title() / .body() / .label()` — the real, composed
+  typography presets are emitted as `--inkq-text-*` (`h1`–`h6`, `body`,
+  `label`, `label-mono`, `control`, `navigation`, `numeric`, `prose`,
+  `caption`, `caption-image`, `caption-item`, `section-eyebrow`), and the
+  font property scales as `--inkq-font-family-*` / `-size-*` / `-weight-*` /
+  `-leading-*` / `-tracking-*`. Nothing is emitted as `--inkq-font-display` /
+  `-title` / `-body` / `-label`.
+- `alias.motion.interactive()` — `MotionTokens` has no `interactive` key at
   all; the real transition vars are `--inkq-motion-background` / `-border` /
   `-color` / `-opacity` / `-transform` / `-box` / `-colors`.
 
-See **Foundation / Typography** and **Foundation / Motion** for both,
+See **Design Tokens / Typography** and **Design Tokens / Motion** for both,
 demonstrated live via a computed-style readback of the actual (empty)
 custom property.
+
+## Global styles
+
+`src/styles/_base.scss` (loaded in Storybook through `_global.scss`) is the
+main consumer of these tokens: body, heading, link, focus-ring, selection,
+loader and layout-wrapper styles. It mostly uses `--inkq-*` variables, but also
+reads primitives directly (`--duration-*`, `--easing-out`, `--space-*`). Its
+details are noted on the Typography, Motion, Spacing, Border and Colors pages.
+The shared text, list and layout mixins it uses live in
+`src/styles/utils/_mixins.scss`.
 
 ## Color scheme
 
 The theme has two schemes, `dark` (`ink`) and `light` (`paper`) —
-`THEME_SCHEMES` in `scales.ts`. The generated CSS only reacts to a
-`data-inkq-scheme` attribute on `:root`/`:host`
-(`src/components/document/StyleInliner/resolver.ts`), with no per-element
-scoping mechanism, so two schemes can't be painted side-by-side inside one
-story. Pages with scheme-dependent content ship one story per scheme instead,
-each setting the document-level attribute on mount via the same
-`schemeControls()` helper the global Storybook decorator uses.
+`THEME_SCHEMES` in `scales.ts`, `THEME_CONFIGS` in `themeConfig.ts`. The
+generated CSS only reacts to a `data-inkq-scheme` attribute on
+`:root`/`:host` (`src/components/document/StyleInliner/resolver.ts`), with no
+per-element scoping mechanism, so two schemes can't be painted side-by-side
+inside one story. Pages with scheme-dependent content ship one story per
+scheme instead, each setting the document-level attribute on mount via the
+same `schemeControls()` helper the global Storybook decorator uses.
 
 ## Pages
 
-- **Colors** — semantic `color`/`background` tokens (both schemes),
-  measured WCAG contrast checks, primitive color scale reference.
-- **Typography** — semantic `font.*` tokens (and the gap above), the real
+- **Colors** — semantic `color`/`background` tokens (both schemes), internal
+  background/control variables, measured WCAG contrast checks, primitive color
+  scale reference with which semantic tokens use which steps.
+- **Typography** — semantic `font.*` tokens (and the gap above), the font
+  property scales (`h1`–`h6` heading sizes in base and fluid forms), the
   `text.*` presets, primitive type-scale reference.
-- **Spacing** — semantic `breakpoint`/`container` tokens, primitive space
-  scale, a sample of internal space-scale composites.
-- **Motion** — semantic `motion.interactive` (and the gap above), real
-  transition presets with live hover demos, primitive duration/easing scale.
-- **Border** — internal border-color/radius presets (no public semantic
-  accessor exists for these yet), primitive radius scale.
+- **Spacing** — semantic `breakpoint`/`container`/`space` tokens, the typed
+  padding/icon/field accessors on `tokens`, primitive space/icon/screen
+  scales, internal `dot`/`tile`/grid composites.
+- **Motion** — semantic `motion.interactive` (and the gap above), the real
+  transition property and preset tokens with live hover demos, primitive
+  duration/easing scale.
+- **Border** — internal border-color/radius accessors, primitive radius scale,
+  `opacity.disabled` and the primitive opacity scale.

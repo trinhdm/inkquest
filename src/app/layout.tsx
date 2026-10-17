@@ -1,7 +1,7 @@
-import { Archivo, Archivo_Black, Space_Mono } from 'next/font/google'
 import { AppProvider } from '@/providers/AppProvider'
 import { ScriptInjector } from '@/components/document/ScriptInjector'
 import { COMPANY_NAME } from '@/utils/constants'
+import { fontVariables } from '@/styles/fonts'
 import type { Metadata } from 'next'
 import '@/styles/_global.scss'
 
@@ -13,26 +13,6 @@ export const metadata: Metadata = {
 	description: 'Tattoo artist platform',
 }
 
-const archivo = Archivo({
-	variable: '--font-archivo',
-	weight: ['400', '600', '700'],
-	subsets: ['latin'],
-})
-
-const archivoBlack = Archivo_Black({
-	variable: '--font-archivo-black',
-	weight: '400',
-	subsets: ['latin'],
-})
-
-const spaceMono = Space_Mono({
-	variable: '--font-space-mono',
-	weight: ['400', '700'],
-	subsets: ['latin'],
-})
-
-const fontsList = `${archivo.variable} ${archivoBlack.variable} ${spaceMono.variable}`
-
 export default function RootLayout({
 	children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -40,7 +20,7 @@ export default function RootLayout({
 		<html
 			suppressHydrationWarning
 			lang="en"
-			className={ fontsList }
+			className={ fontVariables }
 			data-scroll-behavior="smooth"
 		>
 			<head>
@@ -48,7 +28,9 @@ export default function RootLayout({
 			</head>
 			<body>
 				<AppProvider>
-					{ children }
+					<div className="page-container">
+						{ children }
+					</div>
 				</AppProvider>
 			</body>
 		</html>
