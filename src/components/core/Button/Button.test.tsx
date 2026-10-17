@@ -1,7 +1,18 @@
 import { getDefaultProps } from '@/hooks/useProps'
+import userEvent from '@testing-library/user-event'
 import { render, reset, screen } from '@/tests/test-utils'
 import { tokens } from '@/lib/theme/reference'
+import Link from 'next/link'
 import { Button } from './Button'
+
+// wraps the real `next/link` so a test can read the props Button forwards to it;
+// rendering still goes through the real component
+jest.mock('next/link', () => {
+	const React = jest.requireActual('react')
+	const { default: ActualLink } = jest.requireActual('next/link')
+	const Spy = jest.fn((props: object) => React.createElement(ActualLink, props))
+	return { __esModule: true, default: Spy }
+})
 
 describe('Button', () => {
 	// this suite also renders real `Button.Group`/`Button.Section` compound
@@ -33,6 +44,69 @@ describe('Button', () => {
 	it('renders as a link when href is provided', () => {
 		render(<Button href="/profile">Go to profile</Button>)
 		expect(screen.getByRole('link', { name: 'Go to profile' })).toHaveAttribute('href', '/profile')
+	})
+
+	describe('link path', () => {
+		const linkProps = () => jest.mocked(Link).mock.lastCall?.[0]
+
+		beforeEach(() => jest.mocked(Link).mockClear())
+
+		it('opens an external http(s) href in a new tab with a safe rel', () => {
+			render(<Button href={ 'https://example.com/docs' as Button.Props['href'] }>Docs</Button>)
+			const link = screen.getByRole('link', { name: 'Docs' })
+
+			expect(link).toHaveAttribute('href', 'https://example.com/docs')
+			expect(link).toHaveAttribute('target', '_blank')
+			expect(link).toHaveAttribute('rel', 'noopener noreferrer')
+		})
+
+		it('keeps an internal href in the same tab, with no target or rel', () => {
+			render(<Button href="/profile">Profile</Button>)
+			const link = screen.getByRole('link', { name: 'Profile' })
+
+			expect(link).toHaveAttribute('href', '/profile')
+			expect(link).not.toHaveAttribute('target')
+			expect(link).not.toHaveAttribute('rel')
+		})
+
+		it('keeps a hash href in the same tab, with no target or rel', () => {
+			render(<Button href={ '#top' as Button.Props['href'] }>Top</Button>)
+			const link = screen.getByRole('link', { name: 'Top' })
+
+			expect(link).not.toHaveAttribute('target')
+			expect(link).not.toHaveAttribute('rel')
+		})
+
+		it('does not open non-http schemes such as mailto: in a new tab', () => {
+			render(<Button href={ 'mailto:hi@example.com' as Button.Props['href'] }>Mail</Button>)
+			const link = screen.getByRole('link', { name: 'Mail' })
+
+			expect(link).toHaveAttribute('href', 'mailto:hi@example.com')
+			expect(link).not.toHaveAttribute('target')
+		})
+
+		it('forwards prefetch, replace and scroll to next/link', () => {
+			render(<Button href="/profile" prefetch={ false } replace scroll={ false }>Profile</Button>)
+
+			expect(linkProps()).toEqual(expect.objectContaining({
+				href: '/profile',
+				prefetch: false,
+				replace: true,
+				scroll: false,
+			}))
+		})
+
+		it('forwards onNavigate to next/link', () => {
+			const onNavigate = jest.fn()
+			render(<Button href="/profile" onNavigate={ onNavigate }>Profile</Button>)
+
+			expect(linkProps()?.onNavigate).toBe(onNavigate)
+		})
+
+		it('does not render a native button when href is set', () => {
+			render(<Button href="/profile">Profile</Button>)
+			expect(screen.queryByRole('button')).not.toBeInTheDocument()
+		})
 	})
 
 	// FIX: this test passed `variant="danger"`, but "danger" is a `Tone`, not a
@@ -132,6 +206,124 @@ describe('Button', () => {
 
 			rerender(<Button size="lg">Save</Button>)
 			expect(tracking(screen.getByRole('button'))).toBe(tokens.letterSpacing('stat'))
+		})
+	})
+
+	describe('animate', () => {
+		it('reflects the direction as data-animate for CSS targeting', () => {
+			render(<Button animate="arrow-right">Next</Button>)
+			expect(screen.getByRole('button')).toHaveAttribute('data-animate', 'arrow-right')
+		})
+
+		it('sets the icon-translate token only when animate is set', () => {
+			const translate = (el: HTMLElement) => el.style.getPropertyValue('--button-icon-translate')
+			const { rerender } = render(<Button animate="arrow-left">Back</Button>)
+
+			expect(translate(screen.getByRole('button'))).toMatch(/^calc\(.+ - .+\)$/)
+			expect(translate(screen.getByRole('button'))).toContain(tokens.space('icon'))
+
+			rerender(<Button>Back</Button>)
+			expect(screen.getByRole('button')).not.toHaveAttribute('data-animate')
+			expect(translate(screen.getByRole('button'))).toBe('')
+		})
+
+		it('changes the translate distance with size', () => {
+			const translate = (el: HTMLElement) => el.style.getPropertyValue('--button-icon-translate')
+			const { rerender } = render(<Button animate="arrow-right" size="sm">Next</Button>)
+			const small = translate(screen.getByRole('button'))
+
+			rerender(<Button animate="arrow-right" size="lg">Next</Button>)
+			expect(translate(screen.getByRole('button'))).not.toBe(small)
+		})
+	})
+
+	describe('action / hasIcon', () => {
+		const iconOf = (el: HTMLElement) => el.querySelector('svg')
+
+		it('defaults hasIcon to true in the registry', () => {
+			expect(getDefaultProps<Button.Props>('Button')).toMatchObject({ hasIcon: true })
+		})
+
+		it('renders no icon for a plain button, as a control for the action cases', () => {
+			render(<Button>Plain</Button>)
+			expect(iconOf(screen.getByRole('button'))).toBeNull()
+		})
+
+		it('prepends a copy icon in a left section for action="copy"', () => {
+			render(<Button action="copy">Copy link</Button>)
+			const button = screen.getByRole('button', { name: 'Copy link' })
+			const icon = iconOf(button)
+
+			expect(icon).toHaveClass('lucide-copy')
+			expect(icon?.closest('[data-side]')).toHaveAttribute('data-side', 'left')
+			expect(screen.getByText('Copy link')).toBeInTheDocument()
+		})
+
+		it('prepends a printer icon for action="print"', () => {
+			render(<Button action="print">Print</Button>)
+			expect(iconOf(screen.getByRole('button'))).toHaveClass('lucide-printer')
+		})
+
+		it('renders an action button with several children, keeping each one', () => {
+			render(<Button action="copy">Copy <b>it</b></Button>)
+			const button = screen.getByRole('button', { name: 'Copy it' })
+
+			expect(iconOf(button)).toHaveClass('lucide-copy')
+			expect(button.querySelector('b')).toHaveTextContent('it')
+		})
+
+		it('never changes the children it was given, so re-renders add no extra icons', () => {
+			const children = ['Copy ', <b key="b">it</b>]
+			const { rerender } = render(<Button action="copy">{ children }</Button>)
+			rerender(<Button action="copy">{ children }</Button>)
+
+			expect(screen.getByRole('button', { name: 'Copy it' }).querySelectorAll('svg')).toHaveLength(1)
+			expect(children).toHaveLength(2)
+		})
+
+		it('omits the action icon when hasIcon is false, keeping the label', () => {
+			render(<Button action="copy" hasIcon={ false }>Copy link</Button>)
+			const button = screen.getByRole('button', { name: 'Copy link' })
+
+			expect(iconOf(button)).toBeNull()
+		})
+
+		it('calls window.print and the consumer onClick for action="print"', async () => {
+			const user = userEvent.setup()
+			const print = jest.spyOn(window, 'print').mockImplementation(() => {})
+			const onClick = jest.fn()
+
+			try {
+				render(<Button action="print" onClick={ onClick }>Print</Button>)
+				await user.click(screen.getByRole('button', { name: 'Print' }))
+
+				expect(onClick).toHaveBeenCalledTimes(1)
+				expect(print).toHaveBeenCalledTimes(1)
+			} finally {
+				print.mockRestore()
+			}
+		})
+
+		it('does not call window.print for action="copy", nor for a plain button', async () => {
+			const user = userEvent.setup()
+			const print = jest.spyOn(window, 'print').mockImplementation(() => {})
+			const onClick = jest.fn()
+
+			try {
+				render(
+					<>
+						<Button action="copy" onClick={ onClick }>Copy</Button>
+						<Button>Plain</Button>
+					</>
+				)
+				await user.click(screen.getByRole('button', { name: 'Copy' }))
+				await user.click(screen.getByRole('button', { name: 'Plain' }))
+
+				expect(onClick).toHaveBeenCalledTimes(1)
+				expect(print).not.toHaveBeenCalled()
+			} finally {
+				print.mockRestore()
+			}
 		})
 	})
 

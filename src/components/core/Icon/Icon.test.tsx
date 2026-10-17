@@ -39,9 +39,9 @@ describe('Icon', () => {
 		expect(container.querySelector('svg')).toHaveAttribute('fill', 'currentColor')
 	})
 
-	it('does not set a fill attribute when filled is unset', () => {
+	it('sets fill to none when filled is unset', () => {
 		const { container } = render(<Icon type="like" />)
-		expect(container.querySelector('svg')).not.toHaveAttribute('fill')
+		expect(container.querySelector('svg')).toHaveAttribute('fill', 'none')
 	})
 
 	it('passes through color and strokeWidth to the underlying lucide icon', () => {
@@ -61,11 +61,11 @@ describe('Icon', () => {
 		expect(container).toBeEmptyDOMElement()
 	})
 
-	it('renders a lucide glyph as decorative, with no aria-label or img role', () => {
+	it('labels a lucide glyph with its type, without an img role', () => {
 		const { container } = render(<Icon type="close" />)
 		const svg = container.querySelector('svg')
 
-		expect(svg).not.toHaveAttribute('aria-label')
+		expect(svg).toHaveAttribute('aria-label', 'close icon')
 		expect(svg).not.toHaveAttribute('role')
 	})
 
@@ -73,7 +73,16 @@ describe('Icon', () => {
 		const { container } = render(<Icon type="instagram" />)
 		const svg = container.querySelector('svg')
 
-		expect(svg).toHaveAttribute('aria-label', 'instagram')
+		expect(svg).toHaveAttribute('aria-label', 'instagram icon')
 		expect(svg).toHaveAttribute('role', 'img')
+		expect(svg?.querySelector('title')).toHaveTextContent('instagram')
+	})
+
+	it('hides a glyph from assistive tech when hidden is set, with a visible control', () => {
+		const { container: hidden } = render(<Icon type="close" hidden />)
+		const { container: shown } = render(<Icon type="close" />)
+
+		expect(hidden.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+		expect(shown.querySelector('svg')).not.toHaveAttribute('aria-hidden')
 	})
 })

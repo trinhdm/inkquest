@@ -64,10 +64,11 @@ describe('buildSection', () => {
 			expect(screen.getByRole('heading', { level: 1, name: 'Hero title' })).toBeInTheDocument()
 		})
 
-		it('omits the eyebrow/title header entirely for layout="blocks"', () => {
+		it('omits the eyebrow/title header entirely for layout="content-blocks"', () => {
 			render(
 				<>{ buildSection({
-					props: buildProps({ eyebrow: 'New', layout: 'blocks', title: 'Headline' } as unknown as Section.Props),
+					// `content-blocks` types eyebrow/title as `never`; cast only those two so the layout name stays checked
+					props: buildProps({ eyebrow: 'New' as never, layout: 'content-blocks', title: 'Headline' as never }),
 					reveal: makeReveal(),
 					styles: makeStyles(),
 				}) }</>
@@ -269,7 +270,7 @@ describe('buildSection', () => {
 			expect(screen.getByText('Split body')).toBeInTheDocument()
 		})
 
-		it('splits layout="hero-split" into a content column (header + body) and a cta column (footer)', () => {
+		it('places the hero-split footer directly in the Grid, beside the content column', () => {
 			const { container } = render(
 				<>{ buildSection({
 					props: buildProps({
@@ -285,17 +286,23 @@ describe('buildSection', () => {
 				}) }</>
 			)
 
-			const content = container.querySelector('.style-content'),
-				cta = container.querySelector('.style-cta')
+			const inner = container.querySelector('.style-inner') as HTMLElement,
+				content = container.querySelector('.style-content') as HTMLElement,
+				button = screen.getByRole('button', { name: 'Join' })
 
 			expect(content).toContainElement(screen.getByRole('heading', { level: 1, name: 'Split title' }))
 			expect(content).toContainElement(screen.getByText('Split body'))
-			expect(content).not.toContainElement(screen.getByRole('button', { name: 'Join' }))
-			expect(cta).toContainElement(screen.getByRole('button', { name: 'Join' }))
-			expect(container.querySelector('.style-inner')).toContainElement(content as HTMLElement)
+			expect(content).not.toContainElement(button)
+			expect(inner).toContainElement(content)
+			// the footer is its own direct child of the Grid, not nested in the content column
+			const footerColumn = Array.from(inner.children).find(child => child.contains(button))
+			expect(footerColumn).toBeDefined()
+			expect(footerColumn).not.toBe(content)
+			// no cta wrapper any more
+			expect(container.querySelector('.style-cta')).not.toBeInTheDocument()
 		})
 
-		it('still renders both hero-split columns when there is no footer', () => {
+		it('renders only the content column in the hero-split Grid when there is no footer', () => {
 			const { container } = render(
 				<>{ buildSection({
 					props: buildProps({ children: 'Split body', layout: 'hero-split', title: 'Split title' }),
@@ -304,8 +311,13 @@ describe('buildSection', () => {
 				}) }</>
 			)
 
-			expect(container.querySelector('.style-cta')).toBeEmptyDOMElement()
-			expect(container.querySelector('.style-content')).not.toBeEmptyDOMElement()
+			const inner = container.querySelector('.style-inner') as HTMLElement,
+				content = container.querySelector('.style-content') as HTMLElement
+
+			expect(content).not.toBeEmptyDOMElement()
+			expect(content).toContainElement(screen.getByText('Split body'))
+			expect(Array.from(inner.children)).toEqual([content])
+			expect(screen.queryByRole('button')).not.toBeInTheDocument()
 		})
 
 		it('renders no "inner" wrapper for the default layout', () => {

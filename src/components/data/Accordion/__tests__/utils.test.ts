@@ -45,7 +45,7 @@ describe('getSharedTokens', () => {
 			// token without layout="steps".
 			expect(result.root).toEqual({
 				'--accordion-column-width': 'var(--space-5)',
-				'--accordion-gap': 'var(--space-3)',
+				'--accordion-title-gap': 'var(--space-3)',
 				'--accordion-padding': 'var(--space-4)',
 				'--accordion-indicator-size': 'var(--font-size-16)',
 				'--accordion-step-size': undefined,

@@ -205,8 +205,8 @@ describe('form/utils', () => {
 				expect(getSharedTokens()({ context: null, props: asProps(props), theme })).toEqual({})
 			})
 
-			it.each(['choice', 'textarea'] as const)('"%s" gives the same tokens as "input" for the same args', name => {
-				const result = getSharedTokens(name)({
+			it('"choice" gives the same tokens as "input" for the same args', () => {
+				const result = getSharedTokens('choice')({
 					context: context as never,
 					props: asProps(props) as never,
 					theme,
@@ -214,6 +214,22 @@ describe('form/utils', () => {
 
 				expect(result).toEqual(inputTokens(props, context))
 				expect(result.root).toBeDefined()
+			})
+
+			it('"textarea" flattens the root and icon tokens into a single root group', () => {
+				const result = getSharedTokens('textarea')({
+					context: context as never,
+					props: asProps(props) as never,
+					theme,
+				})
+				const input = inputTokens(props, context)
+
+				expect(Object.keys(result)).toEqual(['root'])
+				expect(result).toEqual({ root: { ...input.root, ...input.icon } })
+				expect(result.root).toHaveProperty('--form-control-padding')
+				expect(result.root).toHaveProperty('--form-control-icon-inset')
+				// positive control: "input" keeps the icon token in its own group
+				expect(input.icon).toHaveProperty('--form-control-icon-inset')
 			})
 		})
 	})

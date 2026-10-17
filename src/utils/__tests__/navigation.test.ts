@@ -1,5 +1,6 @@
 import { filterNavigation, listRoutesWithSlug, NAV_ROUTES, NAVIGATION_DATA, NavRoutes, SOCIALS_NAV } from '../navigation'
 import type { NavigationItem, NavRoute } from '../navigation'
+import { SOCIAL_BRANDS } from '../constants'
 
 describe('filterNavigation - short-circuit behavior', () => {
 	it('returns an empty array when routes is undefined (default isEmptyReturn)', () => {
@@ -307,7 +308,7 @@ describe('SOCIALS_NAV - getSocials URL construction', () => {
 	})
 
 	it('produces one entry per configured social brand', () => {
-		expect(SOCIALS_NAV).toHaveLength(5)
+		expect(SOCIALS_NAV.map(social => social.type)).toEqual([...SOCIAL_BRANDS])
 	})
 })
 

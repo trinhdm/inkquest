@@ -44,17 +44,17 @@ describe('getSharedTokens', () => {
 			expect(Object.keys(result.caption!)).toEqual(['--stat-font-caption'])
 		})
 
-		it('order="descend" aligns to the start in a normal column', () => {
+		it('order="descend" aligns to the end in a normal column', () => {
 			const { root } = rootTokens({ order: 'descend' })
 
-			expect(root!['--stat-align']).toBe('start')
+			expect(root!['--stat-align']).toBe('end')
 			expect(root!['--stat-direction']).toBe('column')
 		})
 
-		it('order="ascend" aligns to the end in a reversed column', () => {
+		it('order="ascend" aligns to the start in a reversed column', () => {
 			const { root } = rootTokens({ order: 'ascend' })
 
-			expect(root!['--stat-align']).toBe('end')
+			expect(root!['--stat-align']).toBe('start')
 			expect(root!['--stat-direction']).toBe('column-reverse')
 		})
 
@@ -85,7 +85,7 @@ describe('getSharedTokens', () => {
 			const result = rootTokens({ size: 'sm' })
 
 			expect(result.inner).toEqual({
-				'--stat-font-size': theme.fontSize('h4'),
+				'--stat-font-size': theme.fontSize('h5'),
 				'--stat-icon-margin': spacer,
 				'--stat-icon-size': icon,
 			})
@@ -172,7 +172,7 @@ describe('getSharedTokens', () => {
 				'--stat-icon-size',
 				'--stat-row-gap',
 			])
-			expect(result.root!['--stat-align']).toBe('end')
+			expect(result.root!['--stat-align']).toBe('start')
 		})
 
 		it('"group" returns the same tokens with or without a context', () => {

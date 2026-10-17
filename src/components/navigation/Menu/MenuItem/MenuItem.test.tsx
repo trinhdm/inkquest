@@ -39,9 +39,51 @@ describe('MenuItem', () => {
 			expect(link).toHaveAttribute('aria-current', 'page')
 			expect(link.closest('li')).toHaveAttribute('data-current')
 		})
-		it('does not mark a non-matching item current', () => { /* ... */ })
-		it('never marks a routeless item current, even if active happens to be falsy', () => { /* ... */ })
-		it('preserves a consumer-supplied attributes.data bag alongside the computed data-current', () => { /* ... */ })
+		it('does not mark a non-matching item current', () => {
+			render(<MenuItem active="/login" label="Marketplace" route="/marketplace" />)
+			const link = screen.getByRole('menuitem', { name: 'Marketplace' })
+
+			expect(link).not.toHaveAttribute('aria-current')
+			expect(link.closest('li')).not.toHaveAttribute('data-current')
+		})
+
+		it('never marks a routeless item current, even if active happens to be falsy', () => {
+			render(<MenuItem active={ undefined } label="User" />)
+			const span = screen.getByRole('menuitem', { name: 'User' })
+
+			expect(span).not.toHaveAttribute('aria-current')
+			expect(span.closest('li')).not.toHaveAttribute('data-current')
+		})
+
+		it('preserves a consumer-supplied attributes.data bag alongside the computed data-current', () => {
+			render(
+				<MenuItem
+					active="/marketplace"
+					attributes={ { data: { testid: 'item' } } }
+					label="Marketplace"
+					route="/marketplace"
+				/>
+			)
+			const li = screen.getByRole('menuitem', { name: 'Marketplace' }).closest('li')
+
+			expect(li).toHaveAttribute('data-testid', 'item')
+			expect(li).toHaveAttribute('data-current')
+		})
+
+		it('keeps a consumer-supplied data-current even when the route does not match', () => {
+			render(
+				<MenuItem
+					active="/login"
+					attributes={ { data: { current: true } } }
+					label="Marketplace"
+					route="/marketplace"
+				/>
+			)
+			const link = screen.getByRole('menuitem', { name: 'Marketplace' })
+
+			expect(link.closest('li')).toHaveAttribute('data-current')
+			expect(link).not.toHaveAttribute('aria-current')
+		})
 	})
 
 	describe('dropdown without hasDropdowns (flattened submenu)', () => {

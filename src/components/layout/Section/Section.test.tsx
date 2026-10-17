@@ -108,8 +108,8 @@ describe('Section', () => {
 		expect(within(group).getByRole('button', { name: 'View more' })).toBeInTheDocument()
 	})
 
-	// the old 2-button cap is gone — `Button.Group` already caps priorities at tertiary
-	it('keeps a third footer Button and gives it the tertiary priority', () => {
+	// `partitionFooter` keeps at most 2 Buttons (commit aca30a6); extras are dropped
+	it('keeps only the first two footer Buttons and drops the third', () => {
 		render(
 			<Section title="t">
 				<Section.Footer>
@@ -120,8 +120,39 @@ describe('Section', () => {
 			</Section>
 		)
 
-		expect(screen.getAllByRole('button')).toHaveLength(3)
-		expect(screen.getByRole('button', { name: 'Three' })).toHaveAttribute('data-priority', 'tertiary')
+		expect(screen.getAllByRole('button')).toHaveLength(2)
+		expect(screen.getByRole('button', { name: 'One' })).toBeInTheDocument()
+		expect(screen.getByRole('button', { name: 'Two' })).toBeInTheDocument()
+		expect(screen.queryByRole('button', { name: 'Three' })).not.toBeInTheDocument()
+	})
+
+	describe('alignText', () => {
+		it('publishes alignText as the --section-align custom property on the root', () => {
+			const { container } = render(<Section title="t" alignText="center">content</Section>)
+
+			expect((container.firstElementChild as HTMLElement).style.getPropertyValue('--section-align')).toBe('center')
+		})
+
+		it.each(['left', 'right'] as const)('passes "%s" through unchanged', alignText => {
+			const { container } = render(<Section title="t" alignText={ alignText }>content</Section>)
+
+			expect((container.firstElementChild as HTMLElement).style.getPropertyValue('--section-align')).toBe(alignText)
+		})
+
+		it('sets no --section-align when alignText is unset, with a styled control that sets it', () => {
+			const { container: plain } = render(<Section title="t">content</Section>)
+			const { container: aligned } = render(<Section title="t" alignText="right">content</Section>)
+
+			expect((plain.firstElementChild as HTMLElement).style.getPropertyValue('--section-align')).toBe('')
+			expect((aligned.firstElementChild as HTMLElement).style.getPropertyValue('--section-align')).toBe('right')
+		})
+
+		it('does not leak alignText onto the DOM as an attribute', () => {
+			const { container } = render(<Section title="t" alignText="center">content</Section>)
+
+			expect(container.firstElementChild).not.toHaveAttribute('aligntext')
+			expect(container.firstElementChild).not.toHaveAttribute('alignText')
+		})
 	})
 
 	it('assigns a single footer Button no priority (hasPriority requires 2+ buttons)', () => {

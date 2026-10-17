@@ -1,32 +1,127 @@
 import { expect, test } from '@playwright/test'
 
-// IMPORTANT FINDING: src/app/(user)/login/page.tsx and src/app/(user)/signup/page.tsx
-// (routes /login and /signup) currently render nothing but a bare `<main><h1>Login</h1></main>`
-// / `<main><h1>Signup</h1></main>` - there is no <form>, no inputs, no labels, and no
-// validation logic anywhere in either file. Per the anti-hallucination rules this spec
-// does not invent a form, fields, or validation behavior that doesn't exist in source.
-// It asserts only what is actually rendered today, and the absence of testable
-// form/validation behavior is called out in the Maintenance Note as a blocking gap for
-// the "render/state only" auth-pages coverage this suite was scoped to deliver.
+// /login (src/app/(user)/login/page.tsx) renders a <Section layout="banner" title="Welcome back.">
+// holding a form with required Email and Password fields. A banner Section's title is an <h2>
+// (buildSection.tsx: only `hero*` layouts get an <h1>), so /login has no <h1> at all.
+// There is no submit handler or validation logic in the page, so only the rendered form and the
+// validation the browser itself enforces (required / type="email") are asserted - never a
+// post-submit outcome. Button names are matched by suffix/prefix regex because each Icon leaks
+// its type into the accessible name (e.g. "googleLog In with Google").
 //
-// /profile and /settings (src/app/(user)/profile/page.tsx, settings/page.tsx) are the same
-// bare `<main><h1>...</h1></main>` shape. /messages (src/app/(user)/messages/page.tsx) wraps
-// its <h1>Messages</h1> in a <Container>, but is otherwise identical - no form, no inputs.
-// None of the (user) routes render a Header/Footer layout (confirmed directly, and guarded
-// by navigation.spec.ts's no-chrome sweep), so there is no banner/nav to assert here either.
+// /signup, /profile and /settings (src/app/(user)/*/page.tsx) are still a bare
+// `<main><h1>...</h1></main>`; /messages wraps its <h1>Messages</h1> in a <Container>. None has a form.
+// The (user) layout mounts Header + Footer around every one of them (guarded by navigation.spec.ts).
 
 test.describe('/login', () => {
-	test('renders the Login placeholder heading', async ({ page }) => {
+	test('renders the "Welcome back." banner heading', async ({ page }) => {
 		await page.goto('/login')
 
-		await expect(page.getByRole('heading', { level: 1, name: 'Login', exact: true })).toBeVisible()
+		await expect(page.getByRole('heading', { level: 2, name: 'Welcome back.', exact: true })).toBeVisible()
 	})
 
-	test('has no form to submit or validate yet', async ({ page }) => {
+	test('has no h1 of its own, because a banner Section titles with an h2', async ({ page }) => {
 		await page.goto('/login')
 
-		await expect(page.getByRole('form')).toHaveCount(0)
-		await expect(page.getByRole('textbox')).toHaveCount(0)
+		await expect(page.getByRole('heading', { level: 2, name: 'Welcome back.', exact: true })).toBeVisible()
+		await expect(page.getByRole('heading', { level: 1 })).toHaveCount(0)
+	})
+
+	test('offers required email and password fields', async ({ page }) => {
+		await page.goto('/login')
+
+		const email = page.getByLabel('Email'),
+			password = page.getByLabel('Password')
+
+		await expect(email).toBeVisible()
+		await expect(email).toHaveAttribute('type', 'email')
+		await expect(email).toHaveJSProperty('required', true)
+		await expect(password).toBeVisible()
+		await expect(password).toHaveAttribute('type', 'password')
+		await expect(password).toHaveJSProperty('required', true)
+	})
+
+	test('lets the reader type into the fields', async ({ page }) => {
+		await page.goto('/login')
+
+		await page.getByLabel('Email').fill('ink@example.com')
+		await page.getByLabel('Password').fill('s3cret-pass')
+
+		await expect(page.getByLabel('Email')).toHaveValue('ink@example.com')
+		await expect(page.getByLabel('Password')).toHaveValue('s3cret-pass')
+	})
+
+	test('offers Google and Apple log in buttons that do not submit the form', async ({ page }) => {
+		await page.goto('/login')
+
+		const google = page.getByRole('button', { name: /Log In with Google$/ }),
+			apple = page.getByRole('button', { name: /Log In with Apple$/ })
+
+		await expect(google).toBeVisible()
+		await expect(google).toHaveAttribute('type', 'button')
+		await expect(apple).toBeVisible()
+		await expect(apple).toHaveAttribute('type', 'button')
+	})
+
+	test('clicking a social button with an empty form neither navigates nor triggers validation', async ({ page }) => {
+		await page.goto('/login')
+
+		await page.getByRole('button', { name: /Log In with Google$/ }).click()
+		await expect(page).toHaveURL('/login')
+		// submitting would move focus to the first invalid field (see the submit tests below)
+		await expect(page.getByLabel('Email')).not.toBeFocused()
+
+		await page.getByRole('button', { name: /Log In with Apple$/ }).click()
+		await expect(page).toHaveURL('/login')
+		await expect(page.getByLabel('Email')).not.toBeFocused()
+	})
+
+	test('shows the "Forgot password?" caption under the password field', async ({ page }) => {
+		await page.goto('/login')
+
+		// Today it is a plain <span> caption: no link or button role, no href.
+		// (Reported to the user rather than pinned here, so fixing it won't break this test.)
+		await expect(page.getByText('Forgot password?', { exact: true })).toBeVisible()
+	})
+
+	test('keeps the user on /login when submitting with empty required fields', async ({ page }) => {
+		await page.goto('/login')
+
+		const email = page.getByLabel('Email'),
+			submit = page.getByRole('button', { name: /^Log In(?! with)/ })
+
+		// positive control: this really is the submit button, not a social one
+		await expect(submit).toHaveAttribute('type', 'submit')
+
+		await submit.click()
+
+		await expect(page).toHaveURL('/login')
+		await expect(email).toHaveJSProperty('validity.valueMissing', true)
+		await expect(email).toBeFocused()
+	})
+
+	test('keeps the user on /login when only the email is filled', async ({ page }) => {
+		await page.goto('/login')
+
+		await page.getByLabel('Email').fill('ink@example.com')
+		await page.getByRole('button', { name: /^Log In(?! with)/ }).click()
+
+		await expect(page).toHaveURL('/login')
+		await expect(page.getByLabel('Password')).toHaveJSProperty('validity.valueMissing', true)
+		await expect(page.getByLabel('Password')).toBeFocused()
+	})
+
+	test('rejects a malformed email address in the browser', async ({ page }) => {
+		await page.goto('/login')
+
+		const email = page.getByLabel('Email')
+
+		await email.fill('not-an-email')
+		await page.getByLabel('Password').fill('s3cret-pass')
+		await page.getByRole('button', { name: /^Log In(?! with)/ }).click()
+
+		await expect(page).toHaveURL('/login')
+		await expect(email).toHaveJSProperty('validity.typeMismatch', true)
+		await expect(email).toBeFocused()
 	})
 })
 

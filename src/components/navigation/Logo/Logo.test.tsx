@@ -12,14 +12,25 @@ describe('Logo', () => {
 		expect(screen.getByRole('link')).toHaveAttribute('href', '/about')
 	})
 
-	it('defaults alt, href, type, and width per the registered defaults', () => {
-		const defaults = getDefaultProps<Logo.Props>('Logo')
-		expect(defaults).toEqual({
+	it('registers the defaults that drive its observable behaviour', () => {
+		const defaults = getDefaultProps<Logo.Props & Pick<Logo.Specs['defaults'], 'as'>>('Logo')
+
+		// Only the contract the other tests rely on; the rest is read from the
+		// registry wherever it is asserted, so this can't drift from the source.
+		expect(defaults).toMatchObject({
 			alt: `${COMPANY_NAME} Logo`,
 			href: '/',
 			type: 'wordmark',
 			width: 124,
 		})
+	})
+
+	it('passes the registered loading default through to the image', () => {
+		const defaults = getDefaultProps<Logo.Props>('Logo') as { loading?: string }
+		render(<Logo />)
+
+		expect(defaults.loading).toBeDefined()
+		expect(screen.getByRole('img')).toHaveAttribute('loading', defaults.loading)
 	})
 
 	it('renders an image with the default alt text and href when no props are passed', () => {

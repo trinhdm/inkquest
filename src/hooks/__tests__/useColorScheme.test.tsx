@@ -1,4 +1,4 @@
-import { act, renderHook } from '@testing-library/react'
+import { act, cleanup, renderHook } from '@testing-library/react'
 import { useColorScheme } from '../useColorScheme'
 import { DEFAULT_COLOR_SCHEME, SCHEME_STORAGE_KEY } from '@/components/document/constants'
 
@@ -6,6 +6,8 @@ const attr = `data-${ SCHEME_STORAGE_KEY }`
 
 describe('useColorScheme', () => {
 	afterEach(() => {
+		//	unmount first: clearing the attribute with the hook still mounted would notify it outside act()
+		cleanup()
 		document.documentElement.removeAttribute(attr)
 		localStorage.clear()
 	})
@@ -32,25 +34,52 @@ describe('useColorScheme', () => {
 		expect(result.current.colorScheme).toBe(DEFAULT_COLOR_SCHEME)
 	})
 
-	it('setColorScheme updates local state, applies the DOM attribute, and persists to localStorage', () => {
+	//	the hook rereads the scheme from a MutationObserver on <html>, which jsdom delivers as a
+	//	microtask after the setter returns, so each change is awaited inside an async act()
+	const change = (set: () => void) => act(async () => { set() })
+	const opposite = DEFAULT_COLOR_SCHEME === 'dark' ? 'light' : 'dark'
+
+	it('setColorScheme applies the DOM attribute, persists to localStorage and updates colorScheme', async () => {
 		const { result } = renderHook(() => useColorScheme())
+		expect(result.current.colorScheme).toBe(DEFAULT_COLOR_SCHEME)
 
-		act(() => result.current.setColorScheme('light'))
+		await change(() => result.current.setColorScheme(opposite))
 
-		expect(result.current.colorScheme).toBe('light')
-		expect(document.documentElement.getAttribute(attr)).toBe('light')
-		expect(localStorage.getItem(SCHEME_STORAGE_KEY)).toBe('light')
+		expect(result.current.colorScheme).toBe(opposite)
+		expect(document.documentElement.getAttribute(attr)).toBe(opposite)
+		expect(localStorage.getItem(SCHEME_STORAGE_KEY)).toBe(opposite)
 	})
 
-	it('setColorScheme can flip the scheme back and forth across renders', () => {
+	it('setColorScheme can flip the scheme back and forth across renders', async () => {
 		const { result } = renderHook(() => useColorScheme())
 
-		act(() => result.current.setColorScheme('dark'))
-		expect(result.current.colorScheme).toBe('dark')
+		await change(() => result.current.setColorScheme(opposite))
+		expect(result.current.colorScheme).toBe(opposite)
 
-		act(() => result.current.setColorScheme('light'))
-		expect(result.current.colorScheme).toBe('light')
-		expect(document.documentElement.getAttribute(attr)).toBe('light')
+		await change(() => result.current.setColorScheme(DEFAULT_COLOR_SCHEME))
+		expect(result.current.colorScheme).toBe(DEFAULT_COLOR_SCHEME)
+		expect(document.documentElement.getAttribute(attr)).toBe(DEFAULT_COLOR_SCHEME)
+		expect(localStorage.getItem(SCHEME_STORAGE_KEY)).toBe(DEFAULT_COLOR_SCHEME)
+	})
+
+	it('follows an attribute change made outside the hook, e.g. by another tab\'s script', async () => {
+		const { result } = renderHook(() => useColorScheme())
+
+		await change(() => document.documentElement.setAttribute(attr, opposite))
+
+		expect(result.current.colorScheme).toBe(opposite)
+		expect(result.current.altScheme).toBe(DEFAULT_COLOR_SCHEME)
+	})
+
+	it('stops observing <html> on unmount', async () => {
+		const { result, unmount } = renderHook(() => useColorScheme())
+		const { setColorScheme } = result.current
+		unmount()
+
+		//	nothing to re-render, so a late mutation must not warn or throw
+		await change(() => setColorScheme(opposite))
+
+		expect(document.documentElement.getAttribute(attr)).toBe(opposite)
 	})
 
 	it('setColorScheme identity is stable across re-renders (empty dependency array)', () => {
@@ -86,15 +115,17 @@ describe('useColorScheme', () => {
 			expect(result.current.altScheme).not.toBe(result.current.colorScheme)
 		})
 
-		it('stays the opposite of colorScheme across every setColorScheme call', () => {
+		it('stays the opposite of colorScheme across every setColorScheme call', async () => {
 			document.documentElement.setAttribute(attr, 'light')
 			const { result } = renderHook(() => useColorScheme())
+			expect(result.current.colorScheme).toBe('light')
+			expect(result.current.altScheme).toBe('dark')
 
-			act(() => result.current.setColorScheme('dark'))
+			await change(() => result.current.setColorScheme('dark'))
 			expect(result.current.colorScheme).toBe('dark')
 			expect(result.current.altScheme).toBe('light')
 
-			act(() => result.current.setColorScheme('light'))
+			await change(() => result.current.setColorScheme('light'))
 			expect(result.current.colorScheme).toBe('light')
 			expect(result.current.altScheme).toBe('dark')
 		})

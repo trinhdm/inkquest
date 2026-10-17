@@ -213,7 +213,7 @@ describe('Accordion.Group', () => {
 	describe('shared inline tokens', () => {
 		const TOKENS = [
 			'--accordion-column-width',
-			'--accordion-gap',
+			'--accordion-title-gap',
 			'--accordion-indicator-size',
 			'--accordion-padding',
 			'--accordion-title-size',
@@ -236,7 +236,7 @@ describe('Accordion.Group', () => {
 			const group = container.querySelector('[data-group]') as HTMLElement
 
 			expect(group.style.getPropertyValue('--accordion-column-width')).toBe('var(--space-5)')
-			expect(group.style.getPropertyValue('--accordion-gap')).toBe('var(--space-3)')
+			expect(group.style.getPropertyValue('--accordion-title-gap')).toBe('var(--space-3)')
 			expect(group.style.getPropertyValue('--accordion-indicator-size')).toBe('var(--font-size-16)')
 			expect(group.style.getPropertyValue('--accordion-padding')).toBe('var(--space-4)')
 			expect(group.style.getPropertyValue('--accordion-title-size')).toBe('var(--inkq-font-size-h3)')
@@ -250,7 +250,7 @@ describe('Accordion.Group', () => {
 			)
 			const group = container.querySelector('[data-group]') as HTMLElement
 
-			expect(group.style.getPropertyValue('--accordion-gap')).toBe('var(--space-6)')
+			expect(group.style.getPropertyValue('--accordion-title-gap')).toBe('var(--space-6)')
 			expect(group.style.getPropertyValue('--accordion-title-size')).toBe('var(--inkq-font-size-h4)')
 		})
 
@@ -271,7 +271,7 @@ describe('Accordion.Group', () => {
 			const roots = [getRoot('one'), getRoot('two')]
 
 			// positive control: the group root has the group's (not the item's) values
-			expect(group.style.getPropertyValue('--accordion-gap')).toBe('var(--space-6)')
+			expect(group.style.getPropertyValue('--accordion-title-gap')).toBe('var(--space-6)')
 			expect(group.style.getPropertyValue('--accordion-title-size')).toBe('var(--inkq-font-size-h4)')
 
 			roots.forEach(root => {
@@ -291,7 +291,7 @@ describe('Accordion.Group', () => {
 			)
 			const [styled, bare] = Array.from(container.querySelectorAll<HTMLElement>('[data-group]'))
 
-			expect(styled.style.getPropertyValue('--accordion-gap')).not.toBe('')
+			expect(styled.style.getPropertyValue('--accordion-title-gap')).not.toBe('')
 			TOKENS.forEach(token => {
 				expect(bare.style.getPropertyValue(token)).toBe('')
 			})

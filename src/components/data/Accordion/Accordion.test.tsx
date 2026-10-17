@@ -253,7 +253,7 @@ describe('Accordion', () => {
 	describe('shared inline tokens', () => {
 		const TOKENS = [
 			'--accordion-column-width',
-			'--accordion-gap',
+			'--accordion-title-gap',
 			'--accordion-indicator-size',
 			'--accordion-padding',
 			'--accordion-title-size',
@@ -275,7 +275,7 @@ describe('Accordion', () => {
 			const root = getRoot('one')
 
 			expect(root.style.getPropertyValue('--accordion-column-width')).toBe('var(--space-8)')
-			expect(root.style.getPropertyValue('--accordion-gap')).toBe('var(--space-6)')
+			expect(root.style.getPropertyValue('--accordion-title-gap')).toBe('var(--space-6)')
 			expect(root.style.getPropertyValue('--accordion-indicator-size')).toBe('var(--font-size-20)')
 			expect(root.style.getPropertyValue('--accordion-padding')).toBe('var(--space-5)')
 			expect(root.style.getPropertyValue('--accordion-title-size')).toBe('var(--inkq-font-size-h4)')
@@ -285,7 +285,7 @@ describe('Accordion', () => {
 			render(buildAccordion({ id: 'one' }))
 			const root = getRoot('one')
 
-			expect(root.style.getPropertyValue('--accordion-gap')).not.toBe('')
+			expect(root.style.getPropertyValue('--accordion-title-gap')).not.toBe('')
 			expect(root.style.getPropertyValue('--accordion-step-size')).toBe('')
 		})
 
@@ -307,12 +307,12 @@ describe('Accordion', () => {
 			render(buildAccordion({ id: 'large', size: 'lg' }))
 			const small = getRoot('small'), large = getRoot('large')
 
-			expect(small.style.getPropertyValue('--accordion-gap')).toBe('var(--space-3)')
+			expect(small.style.getPropertyValue('--accordion-title-gap')).toBe('var(--space-3)')
 			expect(small.style.getPropertyValue('--accordion-padding')).toBe('var(--space-4)')
 			expect(small.style.getPropertyValue('--accordion-indicator-size')).toBe('var(--font-size-16)')
 			expect(small.style.getPropertyValue('--accordion-title-size')).toBe('var(--inkq-font-size-h5)')
 
-			expect(large.style.getPropertyValue('--accordion-gap')).toBe('var(--space-9)')
+			expect(large.style.getPropertyValue('--accordion-title-gap')).toBe('var(--space-9)')
 			expect(large.style.getPropertyValue('--accordion-padding')).toBe('var(--space-6)')
 			expect(large.style.getPropertyValue('--accordion-indicator-size')).toBe('var(--font-size-24)')
 			expect(large.style.getPropertyValue('--accordion-title-size')).toBe('var(--inkq-font-size-h3)')
@@ -342,7 +342,7 @@ describe('Accordion', () => {
 			)
 			const styled = getRoot('styled'), bare = getRoot('bare')
 
-			expect(styled.style.getPropertyValue('--accordion-gap')).not.toBe('')
+			expect(styled.style.getPropertyValue('--accordion-title-gap')).not.toBe('')
 			TOKENS.forEach(token => {
 				expect(bare.style.getPropertyValue(token)).toBe('')
 			})

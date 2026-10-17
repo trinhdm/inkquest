@@ -34,6 +34,7 @@ const DebugItem = ({ label }: { label: string }) => {
 			data-animated={ String(!!ctx?.animated) }
 			data-duration={ ctx?.duration }
 			data-stagger={ ctx?.stagger }
+			data-unstyled={ String(!!ctx?.unstyled) }
 		>
 			{ label }
 		</div>
@@ -212,5 +213,49 @@ describe('Group', () => {
 		expect(item1).toHaveAttribute('data-duration', '600')
 		expect(item2).toHaveAttribute('data-index', '1')
 		expect(item2).toHaveAttribute('data-stagger', '100')
+	})
+
+	describe('unstyled precedence in the published context', () => {
+		const renderWith = (groupProps: Record<string, unknown>) =>
+			render(
+				<Group childName="DebugItem" provider={ DebugProvider } { ...groupProps }>
+					<DebugItem label="Item 1" />
+					<DebugItem label="Item 2" />
+				</Group>
+			)
+
+		it('publishes unstyled=false to every child when neither the group nor values set it', () => {
+			renderWith({})
+
+			expect(screen.getByText('Item 1')).toHaveAttribute('data-unstyled', 'false')
+			expect(screen.getByText('Item 2')).toHaveAttribute('data-unstyled', 'false')
+		})
+
+		it('forwards the group\'s own unstyled prop to every child', () => {
+			renderWith({ unstyled: true })
+
+			expect(screen.getByText('Item 1')).toHaveAttribute('data-unstyled', 'true')
+			expect(screen.getByText('Item 2')).toHaveAttribute('data-unstyled', 'true')
+		})
+
+		it('publishes unstyled=true from values when the group itself is styled', () => {
+			renderWith({ values: { unstyled: true } })
+
+			expect(screen.getByText('Item 1')).toHaveAttribute('data-unstyled', 'true')
+		})
+
+		it('lets values.unstyled=true win over an explicit unstyled={ false } on the group', () => {
+			renderWith({ unstyled: false, values: { unstyled: true } })
+
+			expect(screen.getByText('Item 1')).toHaveAttribute('data-unstyled', 'true')
+			expect(screen.getByText('Item 2')).toHaveAttribute('data-unstyled', 'true')
+		})
+
+		it('still spreads the other values into the context alongside unstyled', () => {
+			renderWith({ values: { duration: 321, unstyled: true } })
+
+			expect(screen.getByText('Item 1')).toHaveAttribute('data-duration', '321')
+			expect(screen.getByText('Item 1')).toHaveAttribute('data-unstyled', 'true')
+		})
 	})
 })

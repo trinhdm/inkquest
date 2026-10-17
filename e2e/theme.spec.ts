@@ -114,8 +114,8 @@ test.describe('color scheme persistence', () => {
 
 		// '/' has no in-app links to soft-navigate from, so this reaches a page that
 		// renders a real next/link menuitem via a full load first. That full load is
-		// coupled to a Header-equipped layout - today four segment layouts
-		// mount one ((company), discover, marketplace, community - see navigation.spec.ts);
+		// coupled to a Header-equipped layout - today every segment layout
+		// except the root one mounts one (see navigation.spec.ts);
 		// /about is used here as the representative case.
 		await page.goto('/about')
 		await expect(page.locator('html')).toHaveAttribute(SCHEME_ATTR, 'light')
