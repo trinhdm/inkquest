@@ -1,19 +1,12 @@
-'use client'
+import { CookiesBase } from './_components'
+import { COOKIES_DATA } from './cookies.data'
+import type { Metadata } from 'next'
 
-import { Section } from '@/components/layout/Section'
+export const metadata: Metadata = {
+	title: COOKIES_DATA.title,
+	description: COOKIES_DATA.description,
+}
 
 export default function Cookies() {
-	const pageID = 'cookies'
-
-	return (
-		<>
-			<Section
-				id={ `${pageID}-hero` }
-				layout="hero"
-				title="Cookies"
-			>
-				content
-			</Section>
-		</>
-	)
+	return <CookiesBase />
 }
