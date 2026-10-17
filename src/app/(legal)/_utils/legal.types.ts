@@ -64,6 +64,7 @@ export interface LegalPageData
 	content: LegalSection[]
 	footer?: {
 		id: 'footer'
+		layout?: NonNullable<BasePageData['footer']>['layout']
 		heading: string
 		body: string
 		recipient: string

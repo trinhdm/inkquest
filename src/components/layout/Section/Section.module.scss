@@ -1,8 +1,14 @@
+@use '@/styles/utils' as global;
+
 .inkq-section {
 	$name: &;
 
 	padding-block: var(--inkq-section-padding);
 	position: relative;
+
+	&__inner {
+		text-align: var(--section-align);
+	}
 
 	&__eyebrow {
 		--reveal-duration-lead: .3s;
@@ -25,6 +31,10 @@
 		}
 	}
 
+	&__description:not(:last-child) {
+		margin-block-end: var(--inkq-stack-gap-lede);
+	}
+
 	&__footer {
 		display: grid;
 		gap: var(--inkq-stack-gap-lede);
@@ -42,6 +52,11 @@
 		flex-direction: column;
 	}
 
+	[data-cta],
+	[data-link] {
+		display: inline-flex;
+	}
+
 	&:not(:last-child) {
 		border-bottom: 1px solid var(--inkq-border);
 	}
@@ -57,6 +72,7 @@
 	&--hero,
 	&--hero-split,
 	&--hero-tight,
+	&--content-form,
 	&--banner {
 		#{$name}__title:has(+ div) {
 			margin-block-end: 0;
@@ -64,7 +80,9 @@
 	}
 
 	&--hero,
-	&--hero-split {
+	&--hero-split,
+	&--banner,
+	&--content-form {
 		#{$name}__eyebrow {
 			color: var(--inkq-color-action);
 		}
@@ -72,12 +90,9 @@
 
 	&--hero-split,
 	&--hero-tight {
-		#{$name} {
-			&__footer {
-				// align-self: end;
-				justify-items: end;
-				margin-block: 0;
-			}
+		#{$name}__footer {
+			justify-items: end;
+			margin-block: 0;
 		}
 	}
 
@@ -85,12 +100,13 @@
 		padding-block: var(--inkq-hero-padding);
 
 		#{$name} {
-			&__body {
+			&__body,
+			&__footer {
 				max-width: var(--inkq-container-block);
 			}
 
 			&__title {
-				max-width: var(--inkq-breakpoint-sm);
+				max-width: 15ch;
 			}
 
 			&__footer {
@@ -100,7 +116,7 @@
 	}
 
 	&--hero-split {
-		padding-block: var(--space-10);
+		padding-block: var(--inkq-gutter);
 
 		#{$name} {
 			&__eyebrow,
@@ -154,6 +170,22 @@
 		padding-block: 0;
 	}
 
+	&--content-form #{$name} {
+		&__inner {
+			margin: 0 auto;
+			max-width: var(--inkq-container-form);
+		}
+
+		&__title,
+		&__body {
+			margin-block-start: var(--inkq-gutter-item);
+		}
+
+		&__title {
+			font-size: var(--inkq-font-size-h2);
+		}
+	}
+
 	&--content-split {
 		#{$name} {
 			&__inner {
@@ -166,32 +198,61 @@
 			}
 		}
 
-		&:has([data-timeline]) #{$name} {
-			&__inner {
-				gap: 0;
-				grid-template-columns: calc(50% - (var(--space-8) / 2)) 1fr;
-			}
+		&:has([data-timeline]) #{$name}__inner {
+			gap: 0;
+			grid-template-columns: calc(50% - (var(--space-8) / 2)) 1fr;
 		}
 	}
 
-	&--banner {
+	&--banner #{$name} {
+		&__inner {
+			margin: 0 auto;
+			max-width: var(--inkq-container-block);
+		}
+
+		&__title {
+			font-size: var(--inkq-font-size-display-sm);
+		}
+
+		&__footer {
+			justify-self: center;
+		}
+	}
+
+	&--banner-note {
 		#{$name} {
 			&__inner {
-				margin: 0 auto;
-				max-width: var(--inkq-container-block);
-				text-align: center;
+				background-color: var(--inkq-background-surface);
+				border: 1px solid var(--inkq-border);
+				border-left: 3px solid var(--inkq-color-action);
+				border-radius: var(--inkq-border-radius-md);
+				display: flex;
+				flex-direction: column;
+				gap: var(--inkq-space-group);
+				padding: var(--inkq-space-grid);
 			}
 
-			&__eyebrow {
-				color: var(--inkq-color-action);
+			&__title,
+			&__body,
+			&__description {
+				margin-block: 0;
 			}
 
 			&__title {
-				font-size: var(--inkq-font-size-display-sm);
+				@include global.label('caption');
 			}
 
-			&__footer {
-				justify-self: center;
+			&__body {
+				color: var(--inkq-color-text-secondary);
+				display: flex;
+				flex-direction: column;
+				font-size: var( --inkq-font-size-body);
+				gap: var(--inkq-space-chip);
+				line-height: var(--inkq-font-leading-label);
+
+				a {
+					color: var(--inkq-color-text);
+				}
 			}
 		}
 	}

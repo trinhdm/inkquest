@@ -73,23 +73,10 @@
 	font-size: var( --inkq-font-size-body);
     gap: var(--inkq-space-group);
     margin-block-end: var(--inkq-space-grid);
+	padding: var(--inkq-space-group-lg);
 
 	&:last-child {
 		margin-block-end: 0;
-	}
-
-	@if $layout == 'note' {
-		border-left: 3px solid var(--inkq-color-action);
-		color: var(--inkq-color-text-secondary);
-		flex-direction: column;
-		line-height: var(--inkq-font-leading-label);
-		padding: var(--inkq-space-grid);
-
-		a {
-			color: var(--inkq-color-text);
-		}
-	} @else {
-		padding: var(--inkq-space-group-lg);
 	}
 }
 

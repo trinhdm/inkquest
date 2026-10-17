@@ -36,15 +36,14 @@ export const LegalFooter = ({
 		contact = [company, recipient, address]
 
 	return (
-		<Section id={ `${pageID}-${footer.id}` }>
-			<div className="footnote">
-				<h2 className="footnote__label">{ footer.heading }</h2>
-				<div className="footnote__content">
-					{ useParser(footer.body) }
-					<a href={ `mailto:${email}` }>{ email }</a>
-					<span>{ contact.join(SEPARATOR) }</span>
-				</div>
-			</div>
+		<Section
+			id={ `${pageID}-${footer.id}` }
+			layout={ footer.layout ?? 'banner-note' }
+			title={ footer.heading }
+		>
+			{ useParser(footer.body) }
+			<a href={ `mailto:${email}` }>{ email }</a>
+			<span>{ contact.join(SEPARATOR) }</span>
 		</Section>
 	)
 }

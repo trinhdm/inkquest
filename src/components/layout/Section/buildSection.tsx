@@ -84,9 +84,11 @@ const buildHeader = (
 }
 
 const sortContent = ({ id, props, reveal }: Omit<BuildSectionConfig, 'styles'>) => {
-	const { children } = props
-	const items: ReactNode[] = []
+	const { children, layout } = props
+
 	let footer: ReactElement<SectionFooter.Props> | undefined
+	const text: ReactNode[] = [],
+		items: ReactNode[] = []
 
 	Children.toArray(children).forEach((child, i) => {
 		if (isValidElement<SectionFooter.Props>(child) && child.type === SectionFooter) {
@@ -100,36 +102,42 @@ const sortContent = ({ id, props, reveal }: Omit<BuildSectionConfig, 'styles'>) 
 		const key = `${id}-desc-${i}`
 		const isText = typeof child === 'string'
 			|| (isValidElement(child) && child.type === Fragment)
+		const textClasses = layout === 'banner-note' ? {} : { className: 'inkq-prose' }
 
 		if (isText)
-			items.push(<p key={ key } className="inkq-prose" { ...reveal.next() }>{ child }</p>)
+			text.push(<p key={ key } { ...textClasses } { ...reveal.next() }>{ child }</p>)
 		else if (isValidElement(child))
 			items.push(child)
 	})
 
-	return { footer, items }
+	return { footer, items, text }
 }
 
 const buildContent = (
 	{ id, props, reveal, styles }: BuildSectionConfig
 ): Pick<SectionParts, 'body' | 'footer'> => {
-	const { footer, items } = sortContent({ id, props, reveal })
+	const { footer, items, text } = sortContent({ id, props, reveal })
 	const content: ReturnType<typeof buildContent> = {
 		body: null,
 		footer: undefined,
 	}
 
+	let blocks
 	const { eyebrow, layout, title } = props,
-		hasSiblings = !!(title || eyebrow || footer),
+		hasSiblings = !!(title || eyebrow || footer || items.length)
+
+	const isBannerNote = layout === 'banner-note',
 		isHeroTight = layout === 'hero-tight',
 		isHeroVariation = layout === 'hero-split' || isHeroTight
 
-	if (!!items?.length) {
-		const [first] = items
-		let args = { ...styles('description', { global: { prose: !isHeroTight } }) },
+	if (!!text?.length) {
+		const clsx = { global: { prose: !isHeroTight && !isBannerNote } },
+			[first] = text
+
+		let args = { ...styles('description', clsx) },
 			DescTag: ElementType | undefined
 
-		if (items.length > 1) {
+		if (text.length > 1 || !!items.length) {
 			DescTag = 'div'
 		} else if (isValidElement(first) && first.type === Fragment) {
 			args = { ...args, ...reveal.next() }
@@ -137,13 +145,21 @@ const buildContent = (
 		}
 
 		const description = !!DescTag && hasSiblings
-			? <DescTag { ...args }>{ items }</DescTag>
-			: items
+			? <DescTag { ...args }>{ text }</DescTag>
+			: text
 
-		const key = `${id}-body`,
-			body = hasSiblings && !isHeroVariation
-				? <div key={ key } { ...styles('body') }>{ description }</div>
-				: <Fragment key={ key }>{ description }</Fragment>
+		blocks = description
+	}
+
+	if (!!items.length) {
+		blocks = <>{ blocks }{ items }</>
+	}
+
+	if (blocks) {
+		const key = `${id}-body`
+		const body = hasSiblings && !isHeroVariation
+			? <div key={ key } { ...styles('body') }>{ blocks }</div>
+			: <Fragment key={ key }>{ blocks }</Fragment>
 
 		content.body = body
 	}
@@ -184,8 +200,9 @@ export const buildSection = (config: Omit<BuildSectionConfig, 'id'>) => {
 	const inner = [header, content]
 
 	switch (layout) {
-		case 'hero':
 		case 'banner':
+		case 'content-form':
+		case 'hero':
 			return <div { ...styles('inner') }>{ inner }</div>
 		case 'hero-split':
 		case 'hero-tight':
@@ -201,6 +218,10 @@ export const buildSection = (config: Omit<BuildSectionConfig, 'id'>) => {
 					</Grid.Item>
 					{ footer }
 				</Grid>
+			)
+		case 'banner-note':
+			return (
+				<div { ...styles('inner') }>{ inner }</div>
 			)
 		case 'content-split':
 			return (

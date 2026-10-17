@@ -46,19 +46,3 @@
 		scroll-margin-top: var(--inkq-stack-gap-head);
 	}
 }
-
-.footnote {
-	$name: &;
-
-	@include global.blurb('note');
-
-	&__label {
-		@include global.label('caption');
-	}
-
-	&__content {
-		display: flex;
-		flex-direction: column;
-		gap: var(--inkq-space-chip);
-	}
-}

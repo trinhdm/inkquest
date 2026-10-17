@@ -25,8 +25,10 @@ const SUBCOMPONENTS = {
 
 type SectionLayout =
 	| 'banner'
+	| 'banner-note'
 	| 'content'
 	| 'content-blocks'
+	| 'content-form'
 	| 'content-split'
 	| 'default'
 	| 'hero'
@@ -34,6 +36,7 @@ type SectionLayout =
 	| 'hero-tight'
 
 interface BaseSectionProps {
+	alignText?: 'left' | 'center' | 'right'
 	children: ReactNode
 }
 
@@ -84,15 +87,28 @@ type SectionTokens = {
 	root:
 		| '--reveal-duration'
 		| '--reveal-stagger'
+	inner:
+		| '--section-align'
 }
 
 const tokens = defineTokens<SectionSpecs>()(({ props }) => {
-	const { duration, stagger } = props
+	const { alignText, duration, layout, stagger } = props
+	let textAlign
+
+	if (!!alignText)
+		textAlign = alignText
+	else if (layout === 'content-form')
+		textAlign = 'left'
+	else if (layout === 'banner')
+		textAlign = 'center'
 
 	return {
 		root: {
 			'--reveal-duration': duration ? `${duration}ms` : undefined,
 			'--reveal-stagger': stagger ? `${stagger}ms` : undefined,
+		},
+		inner: {
+			'--section-align': textAlign,
 		},
 	}
 })
@@ -102,8 +118,8 @@ export const Section = polymorphic<SectionSpecs>((_props, { useProps, useStyles 
 	const styles = useStyles({ props, tokens })
 
 	const {
-		children, eyebrow,
-		layout, title,
+		alignText, children,
+		eyebrow, layout, title,
 		...rest
 	} = props
 

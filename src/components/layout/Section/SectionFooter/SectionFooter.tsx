@@ -59,7 +59,9 @@ export const SectionFooter = polymorphic<SectionFooterSpecs>((_props, { useProps
 
 	const { as, span } = context
 	const { children, revealFrom, size, ...rest } = props
+
 	const others = extractOthers(rest)
+	const asProps = (!!as ? { as, span } : { as: 'div' }) as Pick<Section.Context, 'as' | 'span'>
 
 	const { buttons, content } = partitionFooter(children),
 		hasContent = !!content.length
@@ -69,15 +71,11 @@ export const SectionFooter = polymorphic<SectionFooterSpecs>((_props, { useProps
 		? revealFrom + (hasContent ? 1 : 0)
 		: undefined
 
-	const itemProps = as && isValidElement(as)
-		? { as, span }
-		: { as: 'div' }
-
 	return (
 		<Box
 			{ ...styles(context.baseName) }
 			{ ...others }
-			{ ...itemProps as Pick<Section.Context, 'as' | 'span'> }
+			{ ...asProps }
 		>
 			{ hasContent && (
 				<div { ...styles('actions') } { ...revealItemFrom(0, revealFrom) }>
