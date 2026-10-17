@@ -19,7 +19,7 @@ export const LegalChangelog = ({ data }: SharedLegalProps<'changelog'>) => {
 			</Accordion.Title>
 
 			<Accordion.Content>
-				<ul className="changelog__list">
+				<ul className="changelog__list" data-unlist>
 					{ data.map(({ id, release_date, summary, version }) => {
 						const date = formatDate(release_date)
 

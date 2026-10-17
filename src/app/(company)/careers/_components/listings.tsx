@@ -3,6 +3,7 @@ import { Button } from '@/components/core/Button'
 import { Section } from '@/components/layout/Section'
 import { Table } from '@/components/data/Table'
 import type { ContentData, JobItem } from '@/types/shared'
+import type { RequireSome } from '@/types/utils'
 
 export const CareersListings = ({
 	body,
@@ -10,9 +11,7 @@ export const CareersListings = ({
 	eyebrow,
 	heading,
 	id,
-}: ContentData<JobItem[]>) => {
-	if (!body?.length) return null
-
+}: RequireSome<ContentData<JobItem[]>, 'body'>) => {
 	return (
 		<Section
 			eyebrow={ eyebrow }

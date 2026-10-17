@@ -1,5 +1,6 @@
 'use client'
 
+import { keyHasValue } from '@/utils/helpers'
 import { FaqsContent } from './content'
 import { FaqsFooter } from './footer'
 import { FaqsHero } from './hero'
@@ -17,12 +18,19 @@ const FAQ_VALUES = {
 	scroll: false,
 }
 
+const { content: CONTENT } = FAQS_PAGE_DATA
+
 export const FaqsBase = () => {
 	return (
 		<FaqsProvider value={ FAQ_VALUES }>
-			<FaqsHero />
-			<FaqsContent />
-			<FaqsFooter />
+			{ keyHasValue(FAQS_PAGE_DATA, 'hero') &&
+				<FaqsHero /> }
+
+			{ !!CONTENT.length &&
+				<FaqsContent /> }
+
+			{ keyHasValue(FAQS_PAGE_DATA, 'footer') &&
+				<FaqsFooter /> }
 		</FaqsProvider>
 	)
 }

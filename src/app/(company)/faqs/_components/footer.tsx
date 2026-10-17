@@ -1,25 +1,21 @@
-import { useFaqsCtx } from '../_utils/faqs.context'
+import { useFaqsCtx, type FaqsContext } from '../_utils/faqs.context'
 import { useParser } from '@/hooks/useParser'
 import { Button } from '@/components/core/Button'
 import { Section } from '@/components/layout/Section'
+import type { RequireSome } from '@/types/utils'
 
 export const FaqsFooter = () => {
-	const {
-		data: { footer },
-		pageID,
-	} = useFaqsCtx()
-
-	const footerBody = useParser(footer?.body)
-	if (!footer) return null
+	const { data, pageID } = useFaqsCtx()
+	const { footer } = data as RequireSome<FaqsContext['data'], 'footer'>
 
 	return (
 		<Section
 			eyebrow={ footer.eyebrow }
-			id={ `${pageID}-${footer?.id}` }
-			layout={ footer?.layout ?? 'banner' }
+			id={ `${pageID}-${footer.id}` }
+			layout={ footer.layout ?? 'banner' }
 			title={ footer.heading }
 		>
-			{ footerBody }
+			{ useParser(footer.body) }
 
 			{ footer.buttons?.length && (
 				<Section.Footer>

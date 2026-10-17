@@ -1,7 +1,7 @@
 import type { Field } from '@/components/form/Field'
 import type { BasePageData, PageDataItem } from '@/types/shared'
 
-const FAQ_ITEMS: FaqsPageData['items'] = [
+const FAQ_ITEMS: FaqsPageData['content'] = [
 	{
 		id: 'general-faqs',
 		category: 'General',
@@ -163,7 +163,7 @@ export interface FaqGroup {
 
 export interface FaqsPageData
 	extends BasePageData {
-	items: FaqGroup[]
+	content: FaqGroup[]
 	search: {
 		field: Field.Input.Props
 		empty: string
@@ -175,7 +175,7 @@ export const FAQS_PAGE_DATA: FaqsPageData = {
 	id: 'faqs',
 	title: 'FAQs',
 	description: 'Everything about bidding, booking, verification, and payouts.',
-	items: FAQ_ITEMS,
+	content: FAQ_ITEMS,
 	search: {
 		field: {
 			name: 'faq-search',

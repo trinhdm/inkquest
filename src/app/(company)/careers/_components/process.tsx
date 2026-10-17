@@ -1,15 +1,14 @@
 import { Grid } from '@/components/layout/Grid'
 import { Section } from '@/components/layout/Section'
 import type { CareersContent } from '../_utils/careers.data'
+import type { RequireSome } from '@/types/utils'
 
 export const CareersProcess = ({
 	body,
 	eyebrow,
 	heading,
 	id,
-}: CareersContent) => {
-	if (!body?.length) return null
-
+}: RequireSome<CareersContent, 'body'>) => {
 	return (
 		<Section
 			eyebrow={ eyebrow }

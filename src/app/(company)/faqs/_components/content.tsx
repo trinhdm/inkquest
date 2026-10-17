@@ -7,11 +7,11 @@ import { Section } from '@/components/layout/Section'
 
 export const FaqsContent = () => {
 	const {
-		data: { items },
+		data: { content },
 		pageID,
 	} = useFaqsCtx()
 
-	const initGroup = resolveFaqGroup(items)
+	const initGroup = resolveFaqGroup(content)
 
 	return (
 		<Section id={ `${pageID}-content` }>

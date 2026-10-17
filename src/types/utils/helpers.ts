@@ -51,15 +51,29 @@ export type UnpackArray<T> =
 
 //	objects
 
+//	isolates keys and make them required
+export type RequiredPick<T, K extends keyof T> =
+	Required<Pick<T, K>>
+
+//	forces picked keys to be required, but keep all the other keys intact
+export type RequireSome<T, K extends keyof T> =
+	Omit<T, K> & Required<Pick<T, K>>
+
+//	picks only the required keys of a type
+export type PickRequired<T, K extends keyof T> = {
+	[P in K as object extends Pick<T, P> ? never : P]: T[P]
+}
+
 //	deep
 
-export type DeepRequired<T> = T extends () => void
-	? T
-	: T extends Array<infer InferredArrayType>
-		? DeepRequired<InferredArrayType>[]
-		: T extends object
-			? { [K in keyof T]-?: DeepRequired<T[K]> }
-			: T
+export type DeepRequired<T> =
+	T extends () => void
+		? T
+		: T extends Array<infer InferredArrayType>
+			? DeepRequired<InferredArrayType>[]
+			: T extends object
+				? { [K in keyof T]-?: DeepRequired<T[K]> }
+				: T
 
 export type DeepMerge<T, U> = {
 	[K in keyof T | keyof U]: K extends keyof U

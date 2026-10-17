@@ -4,6 +4,7 @@ import { Section } from '@/components/layout/Section'
 import { SEPARATOR } from '@/utils/constants'
 import type { AddressData } from '@/types/shared'
 import type { LegalPageData } from '../_utils/legal.types'
+import type { RequireSome } from '@/types/utils'
 
 const ADDRESS_PARTS = [
 	['street_line1', 'street_line2'],
@@ -23,11 +24,11 @@ const formatAddress = (data: AddressData) =>
 		return [...lines, line]
 	}, [] as string[]).join(SEPARATOR)
 
-export const LegalFooter = ({ company_info, footer, id: pageID }: LegalPageData) => {
-	const footerBody = useParser(footer?.body)
-
-	if (!footer) return null
-
+export const LegalFooter = ({
+	company_info,
+	footer,
+	id: pageID,
+}: RequireSome<LegalPageData, 'footer'>) => {
 	const { legal_name: company } = company_info
 	const { contact_email: email, recipient } = footer
 
@@ -35,11 +36,11 @@ export const LegalFooter = ({ company_info, footer, id: pageID }: LegalPageData)
 		contact = [company, recipient, address]
 
 	return (
-		<Section id={ `${pageID}-${footer?.id}` }>
+		<Section id={ `${pageID}-${footer.id}` }>
 			<div className="footnote">
 				<h2 className="footnote__label">{ footer.heading }</h2>
 				<div className="footnote__content">
-					{ footerBody }
+					{ useParser(footer.body) }
 					<a href={ `mailto:${email}` }>{ email }</a>
 					<span>{ contact.join(SEPARATOR) }</span>
 				</div>

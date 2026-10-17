@@ -1,10 +1,9 @@
 import { Grid } from '@/components/layout/Grid'
 import { Section } from '@/components/layout/Section'
 import type { CareersContent } from '../_utils/careers.data'
+import type { RequireSome } from '@/types/utils'
 
-export const CareersCulture = ({ body, id }: CareersContent) => {
-	if (!body?.length) return null
-
+export const CareersCulture = ({ body, id }: RequireSome<CareersContent, 'body'>) => {
 	return (
 		<Section id={ id }>
 			<Grid columns={ 3 }>

@@ -4,15 +4,15 @@ import { LegalChangelog } from './_features/changelog'
 import { Section } from '@/components/layout/Section'
 import { SEPARATOR } from '@/utils/constants'
 import type { LegalPageData } from '../_utils/legal.types'
+import type { RequireSome } from '@/types/utils'
 
 export const LegalHero = ({
 	changelog,
 	effective_date,
 	hero,
 	id: pageID,
-	title,
 	updated_date,
-}: LegalPageData) => {
+}: RequireSome<LegalPageData, 'hero'>) => {
 	const dates = [],
 		effective = formatDate(effective_date),
 		updated = formatDate(updated_date)
@@ -24,9 +24,9 @@ export const LegalHero = ({
 		<Section
 			className="changelog"
 			eyebrow={ dates.join(SEPARATOR) }
-			id={ `${pageID}-${hero?.id}` }
-			layout={ hero?.layout ?? 'hero-tight' }
-			title={ hero?.heading ?? title }
+			id={ `${pageID}-${hero.id}` }
+			layout={ hero.layout ?? 'hero-tight' }
+			title={ hero.heading }
 		>
 			<LegalChangelog data={ changelog } />
 

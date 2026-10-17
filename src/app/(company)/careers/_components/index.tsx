@@ -1,5 +1,6 @@
 'use client'
 
+import { keyHasValue } from '@/utils/helpers'
 import { CareersCulture } from './culture'
 import { CareersHero } from './hero'
 import { CareersListings } from './listings'
@@ -11,9 +12,13 @@ const { content: CONTENT, id: ID } = CAREERS_PAGE_DATA
 export const CareersBase = () => {
 	return (
 		<>
-			<CareersHero { ...CAREERS_PAGE_DATA } />
+			{ keyHasValue(CAREERS_PAGE_DATA, 'hero') &&
+				<CareersHero { ...CAREERS_PAGE_DATA } /> }
 
 			{ CONTENT?.map(section => {
+				if (!keyHasValue(section, 'body') || !section.body.length)
+					return null
+
 				const id = `${ID}-${section.id}`,
 					key = `${id}-section`
 
@@ -24,6 +29,8 @@ export const CareersBase = () => {
 						return <CareersListings { ...section } id={ id } key={ key} />
 					case 'process':
 						return <CareersProcess { ...section } id={ id } key={ key } />
+					default:
+						return null
 				}
 			}) }
 		</>
