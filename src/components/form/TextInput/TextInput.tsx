@@ -19,7 +19,7 @@ interface BaseTextInputProps {
 	name: string
 	onChange?: ChangeEventHandler<HTMLInputElement>
 	placeholder?: string
-	readOnly?: boolean
+	readonly?: boolean
 	value?: string
 }
 
@@ -66,13 +66,13 @@ export const TextInput = polymorphic<TextInputSpecs>((_props, { useProps, useSty
 
 	const {
 		aria, clsx, icon,
-		idx, loader,
+		idx, layout, loader,
 	} = context
 
 	const {
 		disabled, loading, iconPosition,
 		name, onChange, onIconClick,
-		placeholder, readOnly, required,
+		placeholder, readonly, required,
 		size, type, value,
 		...rest
 	} = props
@@ -81,7 +81,7 @@ export const TextInput = polymorphic<TextInputSpecs>((_props, { useProps, useSty
 
 	return (
 		<>
-			{ icon && (
+			{ (icon && layout !== 'inline') && (
 				<span { ...styles('icon') } onClick={ onIconClick }>
 					{ type === 'password' ? <Eye aria-hidden /> : icon }
 				</span>
@@ -92,12 +92,12 @@ export const TextInput = polymorphic<TextInputSpecs>((_props, { useProps, useSty
 				{ ...others }
 				as="input"
 				attributes={ { aria } }
-				disabled={ disabled }
+				disabled={ !!disabled }
 				id={ idx.control }
 				name={ name }
 				onChange={ onChange }
 				placeholder={ placeholder }
-				readOnly={ readOnly || (value !== undefined && !onChange) }
+				readOnly={ !!readonly || (value !== undefined && !onChange) }
 				required={ required }
 				type={ type }
 				value={ value }

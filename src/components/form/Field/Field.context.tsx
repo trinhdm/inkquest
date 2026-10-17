@@ -29,6 +29,7 @@ interface FieldClsx {
 type SharedFieldProp =
 	| 'disabled'
 	| 'loading'
+	| 'readonly'
 	| 'required'
 	| 'size'
 	| 'type'
@@ -42,6 +43,7 @@ export interface FieldContext
 	aria: FieldAria
 	clsx: FieldClsx
 	hasError: boolean
+	layout?: Field.Props['layout']
 	icon?: ReactNode
 	idx: FieldIds
 	loader?: ReactNode
@@ -56,13 +58,16 @@ export const {
 const sharedFieldProps = [
 	'disabled',
 	'loading',
+	'readonly',
 	'required',
 	'size',
 	'type',
 	'unstyled',
 ] as const satisfies readonly (keyof SharedFieldProps)[]
 
-const textareaFieldProps = sharedFieldProps.filter(p => p !== 'type') as FilterTuple<typeof sharedFieldProps, 'type'>
+const textareaFieldProps = sharedFieldProps.filter(
+	p => p !== 'type'
+) as FilterTuple<typeof sharedFieldProps, 'type'>
 
 const FIELD_PROP_MAP = {
 	TextArea: textareaFieldProps,
@@ -70,14 +75,17 @@ const FIELD_PROP_MAP = {
 } as const
 
 type FieldPropMap = typeof FIELD_PROP_MAP
+type FieldNames = keyof FieldPropMap
 
 // the context keys a control inherits, narrowed by the control's name
 type ChosenFieldProp<C> =
-	(C extends keyof FieldPropMap ? FieldPropMap[C] : FieldPropMap['default'])[number]
+	(C extends FieldNames ? FieldPropMap[C] : FieldPropMap['default'])[number]
 
-export const useField = <C extends keyof FieldPropMap | (string & {}) = 'default'>(component?: C) => {
+export const useField = <C extends FieldNames | (string & {}) = 'default'>(
+	component?: C
+) => {
 	const name = component && component in FIELD_PROP_MAP
-		? component as keyof FieldPropMap
+		? component as FieldNames
 		: 'default'
 
 	// the lookup above mirrors `ChosenFieldProp<C>`, which TypeScript can't see through

@@ -221,8 +221,8 @@ describe('TextInput', () => {
 			expect(screen.getByLabelText('A')).not.toHaveAttribute('readonly')
 		})
 
-		it('honours an explicit readOnly', () => {
-			render(<Field id="a" label="A"><Field.Input name="a" readOnly /></Field>)
+		it('honours an explicit readonly', () => {
+			render(<Field id="a" label="A"><Field.Input name="a" readonly /></Field>)
 
 			expect(screen.getByLabelText('A')).toHaveAttribute('readonly')
 		})

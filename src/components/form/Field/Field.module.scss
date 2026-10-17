@@ -35,6 +35,10 @@
     position: relative;
     row-gap: var(--inkq-field-gap);
 
+    &__container {
+        position: relative;
+    }
+
     &__control {
         align-items: center;
         display: flex;
@@ -42,10 +46,25 @@
         position: relative;
     }
 
-    &__caption,
+    &__info {
+        align-items: center;
+        column-gap: var(--inkq-gutter);
+        display: flex;
+        justify-content: space-between;
+    }
+
     &__error {
-        display: block;
-        flex: 1 1 100%;
+        color: var(--inkq-color-action-error);
+        display: inline-block;
+        flex: 0 1 auto;
+        font: var(--inkq-text-error);
+        max-width: fit-content;
+        text-wrap: pretty;
+    }
+
+    &__caption {
+        display: inline-block;
+        max-width: fit-content;
         text-wrap: pretty;
     }
 
@@ -118,6 +137,62 @@
 
         &__required {
             color: global.disable(var(--inkq-color-placeholder));
+        }
+    }
+
+    &:has([readonly]) #{$name} {
+        &__choice,
+        &__control {
+            pointer-events: none;
+            user-select: none;
+        }
+    }
+
+    &:not(:has(input[type="checkbox"], input[type="radio"])) {
+        #{$name}__caption {
+            color: var(--inkq-color-text-tertiary);
+            font: var(--inkq-text-label);
+            font-size: var(--inkq-font-size-caption);
+            line-height: var(--inkq-font-leading-label);
+        }
+
+        #{$name} {
+            &__caption,
+            &__error {
+                align-self: end;
+            }
+        }
+
+        &:not([class$="inline"]) #{$name}__caption {
+            flex: 1 1 100%;
+        }
+
+        &:where([class$="inline"]) #{$name} {
+            &__label {
+                display: block;
+                font-size: var(--inkq-font-size-control);
+                inset-block: 0;
+                margin: auto 0 auto calc(var(--field-padding-inline) + var(--inkq-space-icon));
+                max-height: fit-content;
+                position: absolute;
+                z-index: 5;
+            }
+
+            &__caption,
+            &__error {
+                flex: 1 1 50%;
+            }
+
+            &__error {
+                text-align: right;
+            }
+
+            &__info:is(:last-child) #{$name} {
+                &__caption,
+                &__error {
+                    align-self: start;
+                }
+            }
         }
     }
 

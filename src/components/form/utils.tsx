@@ -10,6 +10,7 @@ import { keyHasValue } from '@/utils/helpers'
 import type { HTMLInputTypeAttribute } from 'react'
 import type { Field } from './Field'
 import type { SpecsTokenGroups } from '@/lib/component/factory/types'
+import type { SiteThemeConfig } from '@/lib/theme/types'
 
 export const getIcon = (type?: HTMLInputTypeAttribute) => {
 	switch (type) {
@@ -52,6 +53,28 @@ type FieldName =
 export type FieldPropsList<N extends FieldName = FieldName> =
 	FieldSpecsList[N]['props']
 
+export const calcFieldBox = (
+	size: Field.Props['size'],
+	theme: SiteThemeConfig,
+) => {
+	if (!size) return
+
+	const iconSize = `calc(${theme.el.icon.size(size)} - .125rem)`,
+		iconSpace = theme.space('icon')
+
+	const blockPadding = theme.el.field.padding(size),
+		inlinePadding = `calc(${iconSpace} + ${blockPadding})`
+
+	const iconMargin = `calc(2 * ${inlinePadding})`,
+		iconPadding = `calc(${iconMargin} + ${iconSize} - ${iconSpace})`
+
+	return {
+		blockPadding, inlinePadding,
+		iconMargin, iconPadding,
+		iconSize, iconSpace,
+	}
+}
+
 export const listSharedTokens = <
 	N extends FieldName = 'input',
 	S extends FieldSpecsList[N] = FieldSpecsList[N]
@@ -62,26 +85,24 @@ export const listSharedTokens = <
 	const { context, props, theme } = args
 	if (!context) return {} as SpecsTokenGroups<S>
 
-	const { icon } = context
+	const { icon, layout } = context
 	const size = props.size ?? context.size
 
-	const iconSpace = theme.space('icon'),
-		iconSize = 'var(--field-icon-size)'
+	const fieldBox = calcFieldBox(size, theme)
+	if (!fieldBox) return {} as SpecsTokenGroups<S>
+
+	const { blockPadding, inlinePadding, iconPadding } = fieldBox
 
 	const isIconLeft = !keyHasValue(props, 'iconPosition')
 		|| keyHasValue(props, { iconPosition: 'left' })
 
-	const blockPadding = !!size ? theme.el.field.padding(size) : 'var(--field-padding-block)',
-		inlinePadding = `calc(${iconSpace} + ${blockPadding})`,
+	const iconPosition = !!icon && isIconLeft ? '0 auto' : 'auto 0',
+		buffer = layout === 'inline' ? `calc(3 * ${iconPadding})` : iconPadding,
 		padding = `${blockPadding} ${inlinePadding}`
 
-	const iconMargin = `calc(2 * ${inlinePadding})`,
-		iconPadding = `calc(${iconMargin} + ${iconSize} - ${iconSpace})`,
-		iconPosition = !!icon && isIconLeft ? '0 auto' : 'auto 0'
-
 	const controlPadding = isIconLeft
-		? `${padding} ${blockPadding} ${iconPadding}`
-		: `${blockPadding} ${iconPadding} ${padding}`
+		? `${padding} ${blockPadding} ${buffer}`
+		: `${blockPadding} ${buffer} ${padding}`
 
 	const tokens: SpecsTokenGroups<FieldSpecsList['input']> = {
 		root: {

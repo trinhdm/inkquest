@@ -6,8 +6,14 @@
 
 	$name: &;
 
+	flex: 1 0 100%;
+
 	&__icon {
 		@include shared.form-control-icon;
+
+		.inkq-field:where([class$="inline"]) & {
+			display: none;
+		}
 	}
 
 	&:disabled #{$name}__icon {

@@ -22,7 +22,7 @@ interface BaseTextAreaProps {
 	name: string
 	onChange?: ChangeEventHandler<HTMLTextAreaElement>
 	placeholder?: string
-	readOnly?: boolean
+	readonly?: boolean
 	rows?: number
 	value?: string
 }
@@ -110,7 +110,7 @@ export const TextArea = polymorphic<TextAreaSpecs>((_props, { useProps, useStyle
 
 	const {
 		disabled, loading, max, min, name,
-		onChange, placeholder, readOnly,
+		onChange, placeholder, readonly,
 		required, resizable, rows, size, value,
 		...rest
 	} = props
@@ -128,7 +128,7 @@ export const TextArea = polymorphic<TextAreaSpecs>((_props, { useProps, useStyle
 			name={ name }
 			onChange={ onChange }
 			placeholder={ placeholder }
-			readOnly={ readOnly || (value !== undefined && !onChange) }
+			readOnly={ !!readonly || (value !== undefined && !onChange) }
 			required={ required }
 			rows={ rows }
 			value={ value }

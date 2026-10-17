@@ -81,7 +81,7 @@ const meta: Meta<AreaStoryProps> = {
 		},
 		value: {
 			control: 'text',
-			description: 'Makes the textarea controlled. With no `onChange` it is rendered `readOnly` automatically so React does not warn. See the `ReadOnly` and `Controlled` stories.',
+			description: 'Makes the textarea controlled. With no `onChange` it is rendered `readonly` automatically so React does not warn. See the `ReadOnly` and `Controlled` stories.',
 		},
 		onChange: {
 			control: false,
@@ -103,7 +103,7 @@ const meta: Meta<AreaStoryProps> = {
 			control: 'number',
 			description: 'Registered default `8`. Only with `resizable`. Emitted as `--textarea-max-rows` (`<n>lh`), raised to `rows` or to `min` when either is larger. See the `Rows` and `MinMax` stories.',
 		},
-		readOnly: {
+		readonly: {
 			control: 'boolean',
 			description: 'Sets `readonly` on the `<textarea>`. See the `ReadOnly` story.',
 		},
@@ -294,14 +294,14 @@ export const Required: Story = {
 	},
 }
 
-// An explicit `readOnly` is focusable and visible, but takes no typing.
+// An explicit `readonly` is focusable and visible, but takes no typing.
 export const ReadOnly: Story = {
-	parameters: { controls: { exclude: ['readOnly'] } },
+	parameters: { controls: { exclude: ['readonly'] } },
 	render: args => (
 		<Row>
-			{ BOOLEAN_OPTIONS.map(readOnly => (
-				<Group key={ String(readOnly) } label={ String(readOnly) }>
-					{ areaTemplate({ ...args, name: `readonly-${readOnly}`, readOnly }, `readonly-${readOnly}`) }
+			{ BOOLEAN_OPTIONS.map(readonly => (
+				<Group key={ String(readonly) } label={ String(readonly) }>
+					{ areaTemplate({ ...args, name: `readonly-${readonly}`, readonly }, `readonly-${readonly}`) }
 				</Group>
 			)) }
 		</Row>
@@ -322,7 +322,7 @@ export const ReadOnly: Story = {
 }
 
 // `value` with no `onChange` would make React warn about a frozen textarea, so
-// the component renders it `readOnly` for you. With an `onChange` it stays editable.
+// the component renders it `readonly` for you. With an `onChange` it stays editable.
 export const ValueWithoutOnChange: Story = {
 	parameters: { controls: { exclude: ['value', 'onChange'] } },
 	render: args => (
@@ -493,18 +493,18 @@ export const KeyboardFocus: Story = {
 		<Row>
 			{ areaTemplate({ ...args, name: 'focus-a' }, 'focus-a') }
 			{ areaTemplate({ ...args, name: 'focus-b' }, 'focus-b', { disabled: true }) }
-			{ areaTemplate({ ...args, name: 'focus-c', readOnly: true }, 'focus-c') }
+			{ areaTemplate({ ...args, name: 'focus-c', readonly: true }, 'focus-c') }
 		</Row>
 	),
 	play: async ({ canvasElement }) => {
-		const [first, skipped, readOnly] = within(canvasElement).getAllByRole('textbox')
+		const [first, skipped, readonly] = within(canvasElement).getAllByRole('textbox')
 
 		await userEvent.tab()
 		await expect(first).toHaveFocus()
 
 		await userEvent.tab()
 		await expect(skipped).not.toHaveFocus()
-		await expect(readOnly).toHaveFocus()
+		await expect(readonly).toHaveFocus()
 	},
 }
 

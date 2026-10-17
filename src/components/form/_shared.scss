@@ -80,6 +80,14 @@
 @mixin form-control-text {
 	@include form-control-content;
 
+	&:is([aria-invalid]) {
+		border-color: var(--inkq-color-action-error);
+	}
+
+	&:is([readonly]) {
+		color: var(--inkq-color-text);
+	}
+
 	&::placeholder {
 		color: var(--inkq-color-placeholder);
 	}
@@ -107,6 +115,10 @@
 	max-height: fit-content;
 	position: absolute;
 	z-index: 2;
+
+	&:has(+ [aria-invalid]) {
+		color: var(--inkq-color-action-error);
+	}
 
 	#{$name}:where([data-loading]) {
         animation: fadeOut var(--duration-default) var(--easing-out) forwards;

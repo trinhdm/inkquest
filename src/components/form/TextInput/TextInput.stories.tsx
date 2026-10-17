@@ -77,7 +77,7 @@ const meta: Meta<InputStoryProps> = {
 		},
 		value: {
 			control: 'text',
-			description: 'Makes the input controlled. With no `onChange` it is rendered `readOnly` automatically so React does not warn. See the `ReadOnly` and `Controlled` stories.',
+			description: 'Makes the input controlled. With no `onChange` it is rendered `readonly` automatically so React does not warn. See the `ReadOnly` and `Controlled` stories.',
 		},
 		onChange: {
 			control: false,
@@ -97,7 +97,7 @@ const meta: Meta<InputStoryProps> = {
 			control: false,
 			description: 'Only for icon types. Called when the icon is clicked. A `password` icon is an eye, but nothing reveals the password by itself. See the `IconClick` story.',
 		},
-		readOnly: {
+		readonly: {
 			control: 'boolean',
 			description: 'Sets `readonly` on the `<input>`. See the `ReadOnly` story.',
 		},
@@ -286,14 +286,14 @@ export const Required: Story = {
 	},
 }
 
-// An explicit `readOnly` is focusable and visible, but takes no typing.
+// An explicit `readonly` is focusable and visible, but takes no typing.
 export const ReadOnly: Story = {
-	parameters: { controls: { exclude: ['readOnly'] } },
+	parameters: { controls: { exclude: ['readonly'] } },
 	render: args => (
 		<Row>
-			{ BOOLEAN_OPTIONS.map(readOnly => (
-				<Group key={ String(readOnly) } label={ String(readOnly) }>
-					{ inputTemplate({ ...args, name: `readonly-${readOnly}`, readOnly }, `readonly-${readOnly}`) }
+			{ BOOLEAN_OPTIONS.map(readonly => (
+				<Group key={ String(readonly) } label={ String(readonly) }>
+					{ inputTemplate({ ...args, name: `readonly-${readonly}`, readonly }, `readonly-${readonly}`) }
 				</Group>
 			)) }
 		</Row>
@@ -314,7 +314,7 @@ export const ReadOnly: Story = {
 }
 
 // `value` with no `onChange` would make React warn about a frozen input, so the
-// component renders it `readOnly` for you. With an `onChange` it stays editable.
+// component renders it `readonly` for you. With an `onChange` it stays editable.
 export const ValueWithoutOnChange: Story = {
 	parameters: { controls: { exclude: ['value', 'onChange'] } },
 	render: args => (
@@ -484,18 +484,18 @@ export const KeyboardFocus: Story = {
 		<Row>
 			{ inputTemplate({ ...args, name: 'focus-a' }, 'focus-a') }
 			{ inputTemplate({ ...args, name: 'focus-b' }, 'focus-b', { disabled: true }) }
-			{ inputTemplate({ ...args, name: 'focus-c', readOnly: true }, 'focus-c') }
+			{ inputTemplate({ ...args, name: 'focus-c', readonly: true }, 'focus-c') }
 		</Row>
 	),
 	play: async ({ canvasElement }) => {
-		const [first, skipped, readOnly] = within(canvasElement).getAllByRole('textbox')
+		const [first, skipped, readonly] = within(canvasElement).getAllByRole('textbox')
 
 		await userEvent.tab()
 		await expect(first).toHaveFocus()
 
 		await userEvent.tab()
 		await expect(skipped).not.toHaveFocus()
-		await expect(readOnly).toHaveFocus()
+		await expect(readonly).toHaveFocus()
 	},
 }
 

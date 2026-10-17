@@ -12,10 +12,11 @@ import {
 
 import { LoaderCircle } from 'lucide-react'
 import { useFieldGroupProps } from './FieldGroup'
+import { useParser } from '@/hooks/useParser'
 import { defineTokens } from '@/lib/component/tokens'
 import { extractOthers } from '@/hooks/useProps'
 import { filterChildren } from '@/lib/component/children'
-import { getIcon, type FieldPropsList } from '../utils'
+import { calcFieldBox, getIcon, type FieldPropsList } from '../utils'
 import { keyHasValue, toKebabCase } from '@/utils/helpers'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
@@ -53,13 +54,22 @@ interface BaseFieldProps {
 	id: string
 	label?: string
 	loading?: boolean
+	readonly?: boolean
 	required?: boolean
 	type?: Field.Choice.Types | Field.Input.Types
 }
 
 interface FieldDefaultLayout {
+	iconPosition?: 'left' | 'right'
 	labelPosition?: 'first' | 'last'
 	layout?: 'default'
+	size?: Size
+}
+
+interface FieldInlineLayout {
+	iconPosition?: never
+	labelPosition?: 'first' | 'last'
+	layout?: 'inline'
 	size?: Size
 }
 
@@ -73,6 +83,7 @@ interface FieldButtonLayout {
 type FieldLayoutProps =
 	| FieldButtonLayout
 	| FieldDefaultLayout
+	| FieldInlineLayout
 
 type FieldProps =
 	& BaseFieldProps
@@ -91,9 +102,9 @@ interface FieldSpecs {
 }
 
 type FieldSelectors =
-	| 'root' | 'control' | 'choice'
-	| 'error' | 'caption' | 'loader'
-	| 'label' | 'required'
+	| 'root' | 'container' | 'control' | 'choice'
+	| 'error' | 'loader' | 'required'
+	| 'info' | 'label' | 'caption'
 
 type FieldTokens = {
 	root:
@@ -147,16 +158,16 @@ const buildField = (
 }
 
 const tokens = defineTokens<FieldSpecs>()(({ props, theme }) => {
-	const { size } = props
+	const fieldBox = calcFieldBox(props.size, theme)
 
-	const blockPadding = 'var(--field-padding-block)',
-		inlinePadding = `calc(${theme.space('icon')} + ${blockPadding})`
+	if (!fieldBox) return {}
+	const { blockPadding, inlinePadding, iconSize } = fieldBox
 
 	return {
 		root: {
-			'--field-icon-size': !!size ? `calc(${theme.el.icon.size(size)} - .125rem)` : undefined,
-			'--field-padding-block': !!size ? theme.el.field.padding(size) : undefined,
-			'--field-padding-inline': !!size ? inlinePadding : undefined,
+			'--field-icon-size': iconSize,
+			'--field-padding-block': blockPadding,
+			'--field-padding-inline': inlinePadding,
 		},
 	}
 })
@@ -169,8 +180,8 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 		as, caption, children,
 		disabled, error, id,
 		label, labelPosition, layout,
-		loading, required, size,
-		type, unstyled,
+		loading, readonly, required,
+		size, type, unstyled,
 		...rest
 	} = props
 
@@ -203,18 +214,20 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 
 	const clsx = useMemo(() => ({
 		selector: {
-			button: layout === 'button',
 			error: hasError,
+			[`${layout}`]: !!layout && layout !== 'default',
 		},
-	}), [hasError, layout])
+	} as FieldContext['clsx']), [
+		hasError, layout,
+	])
 
 	const ctxValues = useMemo(() => ({
 		aria, clsx, disabled, hasError,
-		icon,  idx, loader, loading,
+		icon, idx, layout, loader, loading,
 		required, size, type, unstyled,
 	}), [
 		aria, clsx, disabled, hasError,
-		icon, idx, loader, loading,
+		icon, idx, layout, loader, loading,
 		required, size, type, unstyled,
 	])
 
@@ -228,12 +241,18 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 		} },
 	}
 
-	const clsxText = { global: { caption: true } }
-	const captionEl = caption && (
-		<span { ...styles('caption', clsxText) } id={ idx.info }>
-			{ caption }
-		</span>
+	const labelEl = label && (
+		<label { ...styles('label') } htmlFor={ idx.control }>
+			{ label }
+			{ !!required && <span { ...styles('required') } aria-hidden="true">*</span> }
+		</label>
 	)
+
+	const captionEl = caption && (
+		<span { ...styles('caption') } id={ idx.info }>{ useParser(caption) }</span>
+	)
+
+	const errorEl = hasError && <span { ...styles('error') } id={ idx.error }>{ error }</span>
 
 	if (layout === 'button') {
 		return (
@@ -249,29 +268,39 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 		)
 	}
 
-	const labelEl = label && (
-		<label { ...styles('label') } htmlFor={ idx.control }>
-			{ label }
-			{ !!required && <span { ...styles('required') } aria-hidden="true">*</span> }
-		</label>
-	)
+	let infoEl = <div { ...styles('info') }>{ captionEl }{ errorEl }</div>
+	const isFirst = !labelPosition || labelPosition === 'first',
+		isLast = labelPosition === 'last'
+
+	if (layout === 'inline') {
+		return (
+			<Box { ...sharedProps } as={ as }>
+				{ isFirst && infoEl }
+
+				<div { ...styles('container') }>
+					{ labelEl }
+					<FieldProvider value={ ctxValues }>
+						{ control }
+					</FieldProvider>
+				</div>
+
+				{ isLast && infoEl }
+			</Box>
+		)
+	}
+
+	infoEl = <div { ...styles('info') }>{ labelEl }{ errorEl }</div>
 
 	return (
 		<Box { ...sharedProps } as={ as }>
-			{ (!labelPosition || labelPosition === 'first') && labelEl }
+			{ isFirst && infoEl }
 
 			<FieldProvider value={ ctxValues }>
 				{ control }
 			</FieldProvider>
 
-			{ labelPosition === 'last' && labelEl }
+			{ isLast && infoEl }
 			{ captionEl }
-
-			{ hasError && (
-				<span { ...styles('error', clsxText) } id={ idx.error }>
-					{ error }
-				</span>
-			) }
 		</Box>
 	)
 }, { name: NAME, classes })
