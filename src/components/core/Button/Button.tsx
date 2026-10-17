@@ -46,7 +46,7 @@ const SUBCOMPONENTS = {
 } as const
 
 interface BaseButtonProps {
-	animate?: 'arrow-left' | 'arrow-right'
+	animate?: 'left' | 'right'
 	children: ReactNode
 	disabled?: boolean
 	fullWidth?: boolean
@@ -128,7 +128,7 @@ const tokens = defineTokens<ButtonSpecs>()(({ props, theme }) => {
 		buttonPadding, buttonTracking,
 		iconTranslate
 
-	if (size) {
+	if (!!size) {
 		const buttonFontSizes: Record<Button.Size, string> = {
 			sm: theme.fontSize('label'),
 			md: theme.fontSize('body'),
@@ -152,14 +152,15 @@ const tokens = defineTokens<ButtonSpecs>()(({ props, theme }) => {
 		buttonTracking = buttonTrackings[size]
 
 		buttonIconSize = theme.el.icon.size(size)
-		if (loading) buttonIconSize = `calc(.125rem + ${buttonIconSize})`
+		if (!!loading) buttonIconSize = `calc(.125rem + ${buttonIconSize})`
 
-		if (animate) {
+		if (!!animate) {
 			const baseDistance = theme.space('icon'),
-				steps = { sm: 2, md: 1, lg: 0 },
-				step = rem(steps[size])
+				step = { sm: 2, md: 1, lg: 0 },
+				xPos = rem(step[size])
 
-			iconTranslate = `calc(${baseDistance} - ${step})`
+			iconTranslate = `calc(${baseDistance} - ${xPos})`
+			if (animate === 'left') iconTranslate = `calc(-1 * ${iconTranslate})`
 		}
 	}
 
@@ -183,9 +184,9 @@ export const Button = polymorphic<ButtonSpecs>((_props, { useProps, useStyles, u
 	const styles = useStyles({ props, tokens })
 
 	const {
-		action, animate, children,
-		disabled, fullWidth,
-		hasIcon, loading,
+		action, animate, as,
+		children, disabled, fullWidth,
+		hasIcon, loading, onClick,
 		prefetch, priority, replace,
 		scroll, showLabel, size,
 		tone, unstyled, variant,
@@ -193,35 +194,55 @@ export const Button = polymorphic<ButtonSpecs>((_props, { useProps, useStyles, u
 	} = props
 
 	const others = extractOthers(rest)
+	const ctxValues = useMemo(() => ({ unstyled }), [unstyled])
 
-	const ariaLabel = extractText(children),
-		aria = { label: !!(showLabel && ariaLabel.length) ? ariaLabel : undefined }
+	const handleClick = useCallback((evt: MouseEvent<HTMLButtonElement>) => {
+		if (!!loading) {
+			evt.preventDefault()
+			return
+		}
+
+		if (typeof onClick === 'function') onClick(evt)
+		if (action === 'print') window.print()
+	}, [action, loading, onClick])
+
+	const isDisabled = !!disabled || !!loading
+
+	const aria = {
+		disabled: isDisabled,
+		label: !!showLabel ? extractText(children) : undefined,
+	}
 
 	const data = {
 		variant, tone, priority, animate,
 		block: !!fullWidth || null,
-		disabled: !!disabled || null,
+		disabled: isDisabled || null,
 		loading: !!loading || null,
 	}
 
 	const sharedProps = {
 		...styles('root', { global: { block: fullWidth } }),
 		attributes: { aria, data },
+		disabled,
 		unstyled,
 	}
 
-	const ctxValues = useMemo(() => ({ unstyled }), [unstyled]),
-		childList = Array.isArray(children) ? children : [children]
+	const childList = Array.isArray(children) ? [...children] : [children]
 
 	if (!!(action && hasIcon)) {
 		const IconTag = { copy: Copy, print: Printer }[action]
-		childList.unshift(<ButtonSection><IconTag { ...styles('icon') } /></ButtonSection>)
+		const ActionSection = (
+			<ButtonSection>
+				<IconTag { ...styles('icon') } aria-hidden />
+			</ButtonSection>
+		)
+		childList.unshift(ActionSection)
 	}
 
 	const innerEl = (
 		<ButtonProvider value={ ctxValues }>
 			<Box as="span" { ...styles('inner') }>
-				{ loading && <LoaderCircle { ...styles('loader', true) } /> }
+				{ loading && <LoaderCircle { ...styles('loader', true) } aria-hidden /> }
 				{ buildSections({
 					children: [...new Set(childList)],
 					parentName: Button.displayName,
@@ -259,13 +280,6 @@ export const Button = polymorphic<ButtonSpecs>((_props, { useProps, useStyles, u
 		)
 	}
 
-	const { as, onClick } = props
-
-	const handleClick = useCallback((evt: MouseEvent<HTMLButtonElement>) => {
-		if (typeof onClick === 'function') onClick(evt)
-		if (action === 'print') window.print()
-	}, [action, onClick])
-
 	return (
 		<Box
 			{ ...sharedProps }
@@ -290,6 +304,7 @@ export declare namespace Button {
 	export type Specs = ButtonSpecs
 
 	export type BaseProps = BaseButtonProps
+		& Pick<ButtonProps, 'action' | 'hasIcon' | 'onClick'>
 
 	export type Priority = ThemePriority
 	export type Size = NonNullable<Button.Props['size']>

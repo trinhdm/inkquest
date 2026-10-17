@@ -29,7 +29,7 @@ interface ButtonGroupProps
 	extends Pick<Button.Props, 'disabled' | 'loading' | 'size'> {
 	children?: ReactNode
 	fullWidth?: boolean
-	hasPriority?: boolean
+	hasPriority?: boolean | 'reverse'
 	justify?: JustifyContent
 	orientation?: Orientation
 	revealFrom?: number
@@ -102,11 +102,17 @@ export const ButtonGroup = polymorphic<ButtonGroupSpecs>((_props, { useProps, us
 		total = items.length
 
 	const ctxValues = useMemo(
-		() => Array.from({ length: total }, (_, index): ButtonGroupContext => ({
-			disabled, loading, size, unstyled,
-			priority: hasPriority ? derivePriority(index) : undefined,
-			...revealItemFrom(index, revealFrom),
-		})),
+		() => Array.from({ length: total }, (_, index): ButtonGroupContext => {
+			const i = hasPriority === 'reverse'
+				? Math.abs(index - total)
+				: index
+
+			return {
+				disabled, loading, size, unstyled,
+				priority: !!hasPriority ? derivePriority(i) : undefined,
+				...revealItemFrom(index, revealFrom),
+			}
+		}),
 		[
 			disabled, hasPriority, loading,
 			revealFrom, size, total, unstyled,

@@ -211,13 +211,13 @@ describe('Button', () => {
 
 	describe('animate', () => {
 		it('reflects the direction as data-animate for CSS targeting', () => {
-			render(<Button animate="arrow-right">Next</Button>)
-			expect(screen.getByRole('button')).toHaveAttribute('data-animate', 'arrow-right')
+			render(<Button animate="right">Next</Button>)
+			expect(screen.getByRole('button')).toHaveAttribute('data-animate', 'right')
 		})
 
 		it('sets the icon-translate token only when animate is set', () => {
 			const translate = (el: HTMLElement) => el.style.getPropertyValue('--button-icon-translate')
-			const { rerender } = render(<Button animate="arrow-left">Back</Button>)
+			const { rerender } = render(<Button animate="left">Back</Button>)
 
 			expect(translate(screen.getByRole('button'))).toMatch(/^calc\(.+ - .+\)$/)
 			expect(translate(screen.getByRole('button'))).toContain(tokens.space('icon'))
@@ -229,10 +229,10 @@ describe('Button', () => {
 
 		it('changes the translate distance with size', () => {
 			const translate = (el: HTMLElement) => el.style.getPropertyValue('--button-icon-translate')
-			const { rerender } = render(<Button animate="arrow-right" size="sm">Next</Button>)
+			const { rerender } = render(<Button animate="right" size="sm">Next</Button>)
 			const small = translate(screen.getByRole('button'))
 
-			rerender(<Button animate="arrow-right" size="lg">Next</Button>)
+			rerender(<Button animate="right" size="lg">Next</Button>)
 			expect(translate(screen.getByRole('button'))).not.toBe(small)
 		})
 	})

@@ -53,7 +53,7 @@ const ACTION_OPTIONS: readonly NonNullable<ActionButtonArgs['action']>[] = [
 ]
 
 const ANIMATE_OPTIONS: readonly NonNullable<Button.BaseProps['animate']>[] = [
-	'arrow-left', 'arrow-right',
+	'left', 'right',
 ]
 
 type Story = StoryObj<ButtonStoryProps>
@@ -101,7 +101,7 @@ const meta: Meta<ButtonStoryProps> = {
 		animate: {
 			control: 'select',
 			options: ANIMATE_OPTIONS,
-			description: 'Reflected as `data-animate`. When set, the `tokens` function in `Button.tsx` also emits `--button-icon-translate` on the root (`calc(<icon space> - <step>)`, the step depending on `size`), which `Button.module.scss` uses to slide the button\'s `svg` on hover/focus (`arrow-left` slides it the other way). Unset: no attribute and no token. See the `Animate` story.',
+			description: 'Reflected as `data-animate`. When set, the `tokens` function in `Button.tsx` also emits `--button-icon-translate` on the root (`calc(<icon space> - <step>)`, the step depending on `size`), which `Button.module.scss` uses to slide the button\'s `svg` on hover/focus (`left` slides it the other way). Unset: no attribute and no token. See the `Animate` story.',
 		},
 		action: {
 			control: 'select',
@@ -337,14 +337,14 @@ export const Animate: Story = {
 						<Button.Section right><Icon type="arrow-right" /></Button.Section>
 					</Button>
 				</Group>
-				<Group label="arrow-left">
-					<Button { ...buttonProps } animate="arrow-left">
+				<Group label="left">
+					<Button { ...buttonProps } animate="left">
 						<Button.Section left><Icon type="arrow-left" /></Button.Section>
 						Back
 					</Button>
 				</Group>
-				<Group label="arrow-right">
-					<Button { ...buttonProps } animate="arrow-right">
+				<Group label="right">
+					<Button { ...buttonProps } animate="right">
 						Next
 						<Button.Section right><Icon type="arrow-right" /></Button.Section>
 					</Button>
