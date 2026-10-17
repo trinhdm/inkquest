@@ -19,7 +19,11 @@ class IntersectionObserverMock implements IntersectionObserver {
 	takeRecords = jest.fn((): IntersectionObserverEntry[] => [])
 }
 
-Object.defineProperty(window, 'IntersectionObserver', {
+// suites marked `@jest-environment node` (server-render tests) have no
+// `window`; the `global` definitions below still cover them
+const hasWindow = typeof window !== 'undefined'
+
+if (hasWindow) Object.defineProperty(window, 'IntersectionObserver', {
 	writable: true,
 	configurable: true,
 	value: IntersectionObserverMock,
@@ -40,7 +44,7 @@ class ResizeObserverMock implements ResizeObserver {
 	disconnect = jest.fn()
 }
 
-Object.defineProperty(window, 'ResizeObserver', {
+if (hasWindow) Object.defineProperty(window, 'ResizeObserver', {
 	writable: true,
 	configurable: true,
 	value: ResizeObserverMock,
