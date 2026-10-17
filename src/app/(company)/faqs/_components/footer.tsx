@@ -15,8 +15,8 @@ export const FaqsFooter = () => {
 	return (
 		<Section
 			eyebrow={ footer.eyebrow }
-			id={ `${pageID}-banner` }
-			layout="banner"
+			id={ `${pageID}-${footer?.id}` }
+			layout={ footer?.layout ?? 'banner' }
 			title={ footer.heading }
 		>
 			{ footerBody }

@@ -66,7 +66,7 @@ export const CareersListings = ({
 
 			{ buttons?.length && (
 				<Section.Footer>
-					{ buttons.map(({ id, label, url, ...props }) => (
+					{ buttons.map(({ id, label, url, props }) => (
 						<Button key={ id } href={ url } { ...props }>{ label }</Button>
 					)) }
 				</Section.Footer>

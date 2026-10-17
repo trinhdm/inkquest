@@ -118,7 +118,9 @@ export const CAREERS_PAGE_DATA: CareersPageData = {
 					id: 'btn_listings',
 					label: 'See all roles',
 					url: '/careers',
-					variant: 'outline',
+					props: {
+						variant: 'outline',
+					},
 				},
 			],
 		},

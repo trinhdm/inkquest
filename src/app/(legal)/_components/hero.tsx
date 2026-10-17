@@ -24,8 +24,8 @@ export const LegalHero = ({
 		<Section
 			className="changelog"
 			eyebrow={ dates.join(SEPARATOR) }
-			id={ `${pageID}-hero` }
-			layout="hero-tight"
+			id={ `${pageID}-${hero?.id}` }
+			layout={ hero?.layout ?? 'hero-tight' }
 			title={ hero?.heading ?? title }
 		>
 			<LegalChangelog data={ changelog } />

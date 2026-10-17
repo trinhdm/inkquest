@@ -4,6 +4,7 @@ import type { Badge } from '@/components/core/Badge'
 import type { Button } from '@/components/core/Button'
 import type { CalendarDate } from './datetime'
 import type { SOCIAL_BRANDS } from '@/utils/constants'
+import type { Section } from '@/components/layout/Section'
 
 //	files
 
@@ -47,20 +48,32 @@ export interface AddressData {
 
 //	nextjs page data
 
-interface ButtonData
-	extends Omit<Button.BaseProps, 'children' | 'href'> {
+interface ButtonData {
 	id: string
 	label: string
 	url: Route
+	props?: Omit<Button.BaseProps, 'children' | 'href'>
 }
+
+type _Layout =
+	Section.Props['layout']
+
+type _LayoutGroup<
+	S extends string,
+	L extends NonNullable<_Layout>,
+	T = string
+> =
+	ContentData<T, S, Extract<_Layout, `${L}${string}`>>
 
 export interface ContentData<
 	Body = unknown,
-	Id extends string = string
+	Id extends string = string,
+	L extends _Layout = _Layout,
 > {
 	id: Id
-	eyebrow?: string
-	heading?: string
+	layout?: L
+	eyebrow?: Section.Props['eyebrow']
+	heading?: Section.Props['title']
 	body?: Body
 	buttons?: ButtonData[]
 }
@@ -69,9 +82,9 @@ export interface BasePageData {
 	id: string
 	title: string
 	description: string
-	hero?: ContentData<string>
+	hero?: _LayoutGroup<'hero', 'hero'>
 	content?: ContentData[]
-	footer?: ContentData<string>
+	footer?: _LayoutGroup<'footer', 'banner'>
 }
 
 export interface PageDataItem {

@@ -134,12 +134,12 @@ export const PRIVACY_PAGE_DATA: LegalPageData = {
 	changelog: VERSION_HISTORY,
 	company_info: COMPANY_INFO,
 	hero: {
-		id: 'privacy-hero',
+		id: 'hero',
 		heading: 'Privacy Policy',
 	},
 	content: PRIVACY_SECTIONS,
 	footer: {
-		id: 'privacy-footer',
+		id: 'footer',
 		heading: 'Data Protection Officer',
 		body: 'Questions, access requests, or complaints about how we handle your personal data can be directed to our Data Protection Officer.',
 		recipient: 'Attn: DPO',

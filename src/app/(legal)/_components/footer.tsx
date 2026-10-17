@@ -35,7 +35,7 @@ export const LegalFooter = ({ company_info, footer, id: pageID }: LegalPageData)
 		contact = [company, recipient, address]
 
 	return (
-		<Section id={ `${pageID}-footer` }>
+		<Section id={ `${pageID}-${footer?.id}` }>
 			<div className="footnote">
 				<h2 className="footnote__label">{ footer.heading }</h2>
 				<div className="footnote__content">

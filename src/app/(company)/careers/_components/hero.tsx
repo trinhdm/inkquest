@@ -7,7 +7,7 @@ export const CareersHero = ({ hero, id, title }: CareersPageData) => {
 		<Section
 			eyebrow={ hero?.eyebrow }
 			id={ `${id}-${hero?.id}` }
-			layout="hero"
+			layout={ hero?.layout ?? 'hero' }
 			title={ hero?.heading ?? title }
 		>
 			{ useParser(hero?.body) }

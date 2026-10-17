@@ -10,6 +10,7 @@ export const LegalSection = ({
 	body,
 	id,
 	index,
+	layout,
 	summary,
 	title,
 }: LegalSectionProps) => {
@@ -23,7 +24,7 @@ export const LegalSection = ({
 			className={ `legality legality--${modifier}` }
 			id={ id }
 			key={ id }
-			layout="content"
+			layout={ layout ?? 'content' }
 			title={ title }
 		>
 			{ (summary && !isIntro) && (
@@ -33,21 +34,24 @@ export const LegalSection = ({
 				</aside>
 			) }
 
-			<div className="legality__body">
-				{ body.map(content => (
-					Object.entries(content).map(([key, value]) => {
-						const textKey = `${id}-${value}`
+			{ !!body?.length && (
+				<div className="legality__body">
+					{ body?.map(content => (
+						Object.entries(content).map(([key, value]) => {
+							const textKey = `${id}-${value}`
 
-						if (key === 'p') return <p key={ textKey }>{ withEmailLink(value) }</p>
+							if (key === 'p')
+								return <p key={ textKey }>{ withEmailLink(value) }</p>
 
-						return (
-							<ul className="legality__list" key={ textKey }>
-								{ (value as string[]).map(val => <li key={ val }>{ val }</li>) }
-							</ul>
-						)
-					})
-				)) }
-			</div>
+							return (
+								<ul className="legality__list" key={ textKey }>
+									{ (value as string[]).map(val => <li key={ val }>{ val }</li>) }
+								</ul>
+							)
+						})
+					)) }
+				</div>
+			) }
 		</Section>
 	)
 }

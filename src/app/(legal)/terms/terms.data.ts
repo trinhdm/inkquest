@@ -127,12 +127,12 @@ export const TERMS_PAGE_DATA: LegalPageData = {
 	changelog: VERSION_HISTORY,
 	company_info: COMPANY_INFO,
 	hero: {
-		id: 'terms-hero',
+		id: 'hero',
 		heading: 'Terms of Service',
 	},
 	content: TERMS_SECTIONS,
 	footer: {
-		id: 'terms-footer',
+		id: 'footer',
 		heading: 'Questions about these Terms',
 		body: 'Our legal team can clarify anything in this agreement before you accept it.',
 		recipient: 'Legal Department',

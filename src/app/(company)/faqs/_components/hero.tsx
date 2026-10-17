@@ -16,8 +16,8 @@ export const FaqsHero = () => {
 	return (
 		<Section
 			eyebrow={ hero?.eyebrow }
-			id={ `${pageID}-hero` }
-			layout="hero"
+			id={ `${pageID}-${hero?.id}` }
+			layout={ hero?.layout ?? 'hero' }
 			title={ hero?.heading ?? title }
 		>
 			{ useParser(hero?.body) }

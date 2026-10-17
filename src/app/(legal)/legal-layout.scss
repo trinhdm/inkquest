@@ -7,6 +7,7 @@
 		display: flex;
 		flex-direction: column;
 		line-height: var(--inkq-font-leading-prose);
+		list-style-type: none;
 		row-gap: var(--inkq-gutter-list);
 	}
 
@@ -40,10 +41,6 @@
 		#{$name}--intro & {
 			color: var(--inkq-color-text);
 		}
-	}
-
-	&__list {
-		@include global.list;
 	}
 
 	&--section {

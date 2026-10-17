@@ -185,13 +185,13 @@ export const FAQS_PAGE_DATA: FaqsPageData = {
 		error: `Try a different word, or <a href="/messages">ask us</a> directly and we'll answer.`,
 	},
 	hero: {
-		id: 'faqs-hero',
+		id: 'hero',
 		eyebrow: 'Company · FAQs',
 		heading: 'Questions, answered.',
 		body: `Everything about bidding, booking, verification, and payouts — for clients, artists, and studios. Can't find it? <a href="/messages">Message us</a>.`
 	},
 	footer: {
-		id: 'faqs-footer',
+		id: 'footer',
 		eyebrow: 'Still need help?',
 		heading: 'Ask a human.',
 		body: 'Our support team answers within a day — usually much faster. For booking disputes or safety concerns, head straight to the Support page.',

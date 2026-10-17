@@ -1,12 +1,20 @@
 import type {
 	AddressData, BasePageData, CalendarDate,
+	ContentData,
 	PageDataItem, UserData,
 } from '@/types/shared'
 
+//	legal section
+
 interface BaseLegalSection
-	extends Pick<PageDataItem, 'id'> {
-	body: LegalBodyOptions[]
-}
+	extends Pick<LegalSectionData, 'id' | 'body' | 'layout'> {}
+
+type LegalSectionData =
+	ContentData<LegalBodyOptions[], string, 'content' | 'default'>
+
+type LegalBodyOptions =
+	| { list: string[] }
+	| { p: string }
 
 interface LegalIntroSection {
 	summary?: never
@@ -22,13 +30,11 @@ type LegalSectionTypes =
 	| LegalIntroSection
 	| LegalContentSection
 
-type LegalBodyOptions =
-	| { list: string[] }
-	| { p: string }
-
 export type LegalSection =
 	& BaseLegalSection
 	& LegalSectionTypes
+
+//	changelog
 
 interface ChangelogItem {
 	id: string
@@ -44,6 +50,8 @@ export interface VersionGroup {
 	version: `${number}`
 }
 
+//	page shape
+
 export interface LegalPageData
 	extends BasePageData {
 	updated_date: CalendarDate
@@ -55,7 +63,7 @@ export interface LegalPageData
 	}
 	content: LegalSection[]
 	footer?: {
-		id: string
+		id: 'footer'
 		heading: string
 		body: string
 		recipient: string
