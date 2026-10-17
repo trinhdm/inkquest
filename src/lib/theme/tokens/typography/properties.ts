@@ -40,7 +40,7 @@ interface FontWeightTokens {
 	bold: string
 }
 interface LineHeightTokens {
-	none: string
+	exact: string
 	heading: string
 	body: string
 	label: string
@@ -118,7 +118,7 @@ export const getFontPropertyTokens = (): FontPropertyTokens => ({
 		bold:		base.fontWeight('700'),
 	},
 	leading: {
-		none:		base.lineHeight('exact'),
+		exact:		base.lineHeight('exact'),
 		heading:	base.lineHeight('tight'),
 		body:		base.lineHeight('normal'),
 		label:		base.lineHeight('snug'),

@@ -31,7 +31,7 @@ describe('apiTokens', () => {
 		)
 
 		it('resolves nested presets (section, caption) with and without a sub-path', () => {
-			expect(apiTokens.presets.text.section('eyebrow')).toBe('var(--inkq-text-section-eyebrow)')
+			expect(apiTokens.presets.text.eyebrow()).toBe('var(--inkq-text-eyebrow)')
 			expect(apiTokens.presets.text.caption()).toBe('var(--inkq-text-caption)')
 			expect(apiTokens.presets.text.caption('image')).toBe('var(--inkq-text-caption-image)')
 		})

@@ -112,27 +112,14 @@ button {
 
 a {
 	--link-color: var(--inkq-color-link);
+	--link-color-hover: var(--inkq-color-link-hover);
 
 	color: var(--link-color);
 	text-decoration: none;
 	transition: var(--inkq-motion-colors);
 
 	&:hover {
-		--link-color: var(--inkq-color-link-hover);
-
-		color: var(--link-color);
-	}
-
-	&:where(.inkq-cta, [data-cta]) {
-		--link-color: var(--inkq-color-action);
-
-		&:hover {
-			--link-color: var(--inkq-color-action-hover);
-		}
-	}
-
-	&:where([data-cta]) {
-		@include global.underline(true);
+		color: var(--link-color-hover);
 	}
 }
 
@@ -189,6 +176,28 @@ mark {
 	user-select: none;
 	-webkit-touch-callout: none;
 	-webkit-user-drag: none;
+}
+
+[data-cta] {
+	--link-color: var(--inkq-color-action);
+	--link-color-hover: var(--inkq-color-action-hover);
+
+	@include global.underline(true);
+}
+
+[data-link] {
+	--link-color: var(--inkq-border-strong);
+	--link-color-hover: var(--inkq-border);
+
+	@include global.underline('out');
+
+	font: var(--inkq-text-label);
+	font-size: var(--inkq-font-size-caption);
+
+	&,
+	&:hover {
+		color: var(--inkq-color-text-tertiary);
+	}
 }
 
 .inkq-wrapper {

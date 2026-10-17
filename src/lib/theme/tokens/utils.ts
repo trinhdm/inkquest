@@ -7,9 +7,10 @@ import type { ColorScheme, StaticColorNames, TokenStateHues } from '../types'
 const MIXMOD_DEFAULT_PERCENTS: ColorModArgs['percents'] = {
 	tint: 15,
 	shade: 30,
-	bright: 50,
+	bright: 30,
 	dim: 80,
-	muted: 85,
+	dull: 20,
+	muted: 20,
 }
 
 const getThemeMixer = () => ({
@@ -20,10 +21,13 @@ const getThemeMixer = () => ({
 const isStaticColor = (color: string): color is StaticColorNames =>
 	Object.hasOwn(base, color)
 
+type ColorMod =
+	'bright' | 'dim'  | 'dull'| 'muted' | 'shade' | 'tint'
+
 interface ColorModArgs {
 	alt: ColorScheme
 	color: string
-	percents?: Record<Extract<keyof TokenStateHues, 'bright' | 'dim' | 'muted' | 'shade' | 'tint'>, number>
+	percents?: Record<Extract<keyof TokenStateHues, ColorMod>, number>
 	scheme: ColorScheme
 }
 
@@ -48,6 +52,7 @@ const colorMod = ({ alt, color, percents, scheme }: ColorModArgs): TokenStateHue
 		tint: colorMix(mixer.tint, amount.tint, target),
 		shade: colorMix(mixer.shade, amount.shade, target),
 		bright: colorMix(mixer.tint, amount.bright, target),
+		dull: colorMix(mixer.blend, amount.dull, target),
 		dim: colorMix(mixer.shade, amount.dim, target),
 		muted: colorMix(mixer.blend, amount.muted, target),
 	}

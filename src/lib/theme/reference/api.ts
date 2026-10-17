@@ -27,7 +27,7 @@ const shorthandTokens = {
 		navigation: token.endPath(aliasVar, 'text', 'navigation'),
 		prose: token.endPath(aliasVar, 'text', 'prose'),
 
-		section: token.optPath<TextTokens['section']>(aliasVar, 'text', 'section'),
+		eyebrow: token.optPath<TextTokens['eyebrow']>(aliasVar, 'text', 'eyebrow'),
 		caption: token.optPath<TextTokens['caption']>(aliasVar, 'text', 'caption'),
 	},
 }

@@ -19,12 +19,14 @@ export const getBreakpointTokens = (): BreakpointTokens => ({
 })
 
 export interface ContainerTokens {
-	block: string
-	page: string
+	block: TokenVariableShape
+	form: TokenVariableShape
+	page: TokenVariableShape
 }
 
 export const getContainerTokens = (): ContainerTokens => ({
 	block: base.screen('600'),
+	form: base.screen('480'),
 	page: base.screen('1280'),
 })
 

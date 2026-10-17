@@ -102,7 +102,7 @@ describe('byScheme', () => {
 
 		it('uses custom percents in place of every default', () => {
 			const hues = byScheme(dark).modColor('#fff', {
-				tint: 1, shade: 2, bright: 3, dim: 4, muted: 5,
+				tint: 1, shade: 2, bright: 3, dim: 4, dull: 5, muted: 6,
 			})
 			expect(hues.tint).toContain(' 1%,')
 			expect(hues.shade).toContain(' 2%,')

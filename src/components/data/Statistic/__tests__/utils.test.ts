@@ -76,7 +76,7 @@ describe('getSharedTokens', () => {
 				'--stat-icon-size': `calc(2 * ${icon})`,
 			})
 			expect(result.root!['--stat-row-gap']).toBe(spacer)
-			expect(result.caption).toEqual({ '--stat-font-caption': theme.presets.text.caption('item') })
+			expect(result.caption).toEqual({ '--stat-font-caption': theme.presets.text.caption() })
 		})
 
 		it('derives the smaller-size tokens from the theme for a non-lg size', () => {
@@ -90,7 +90,7 @@ describe('getSharedTokens', () => {
 				'--stat-icon-size': icon,
 			})
 			expect(result.root!['--stat-row-gap']).toBe(theme.padding('menu'))
-			expect(result.caption).toEqual({ '--stat-font-caption': theme.presets.text.section('eyebrow') })
+			expect(result.caption).toEqual({ '--stat-font-caption': theme.presets.text.eyebrow() })
 		})
 
 		it('gives different values for lg than for a non-lg size', () => {

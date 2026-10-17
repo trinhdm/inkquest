@@ -21,6 +21,7 @@ type TokenItem<T extends keyof CSSProperties = 'color'> =
 export type TokenState =
 	| 'active'
 	| 'disable'
+	| 'error'
 	| 'focus'
 	| 'hover'
 	| 'pressed'
@@ -41,6 +42,7 @@ interface ColorMixtures {
 	bright: string
 	dim: string
 	muted: string
+	dull: string
 	shade: string
 	tint: string
 }

@@ -11,7 +11,7 @@
 		label: var(--inkq-font-size-label),
 	);
 
-	@if $size {
+	@if $size and meta.type-of($size) == 'string' {
 		$fontSize: map.get($fontSizes, $size);
 
 		@if $fontSize {
@@ -22,7 +22,7 @@
 
 @mixin caption($size: null) {
 	color: var(--inkq-color-text-tertiary);
-	font: var(--inkq-text-caption-item);
+	font: var(--inkq-text-caption);
 	letter-spacing: var(--inkq-font-tracking-wide);
 	text-transform: uppercase;
 	text-wrap: balance;
@@ -33,7 +33,7 @@
 @mixin eyebrow($size: null) {
 	color: var(--inkq-color-text-tertiary);
 	display: inline-block;
-	font: var(--inkq-text-section-eyebrow);
+	font: var(--inkq-text-eyebrow);
 	letter-spacing: var(--inkq-font-tracking-wide);
 	text-transform: uppercase;
 	text-wrap: pretty;
@@ -198,16 +198,35 @@
 
 //	lines
 
-@mixin underline($animated: null) {
+@mixin underline($animated: null, $colors: null) {
 	--underline-transition: var(--duration-gradual) var(--easing-out) var(--duration-fast);
 
-	display: inline-flex;
+	$line-color: var(--link-color);
+	$line-color-hover: var(--link-color-hover, var(--link-color));
+
+	@if $colors {
+		@if meta.type-of($colors) == 'map' {
+			@if map.has-key($colors, 'base') {
+				$line-color: map.get($colors, 'base');
+			}
+
+			@if map.has-key($colors, 'hover') {
+				$line-color-hover: map.get($colors, 'hover');
+			}
+		} @else if meta.type-of($colors) == 'string' {
+			$line-color: $colors;
+			$line-color-hover: $colors;
+		}
+	}
+
+	display: inline-block;
+	max-width: fit-content;
 	overflow: hidden clip;
 	position: relative;
 	text-wrap: pretty;
 
 	&::after {
-		background-color: var(--link-color);
+		background-color: $line-color;
 		content: '';
 		display: block;
 		height: 1px;
@@ -221,7 +240,12 @@
 		will-change: background-color;
 	}
 
+	&:hover::after {
+		background-color: $line-color-hover;
+	}
+
 	@if $animated {
+		cursor: pointer;
 		transition-duration: var(--duration-gradual);
 
 		&::after {

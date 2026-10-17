@@ -32,10 +32,10 @@ describe('getFontPresetTokens', () => {
 	})
 
 	it('sizes prose one step above body, with body-family content defaults', () => {
-		expect(text.body.fontSize).toBe(alias.fontSize('body'))
+		expect(text.body.base.fontSize).toBe(alias.fontSize('body'))
 		expect(text.prose.fontSize).toBe(alias.fontSize('body', 'lg'))
-		expect(text.prose.fontFamily).toBe(text.body.fontFamily)
-		expect(text.prose.fontWeight).toBe(text.body.fontWeight)
+		expect(text.prose.fontFamily).toBe(text.body.base.fontFamily)
+		expect(text.prose.fontWeight).toBe(text.body.base.fontWeight)
 	})
 
 	it('shares label properties between base and mono, differing in family and size', () => {
@@ -49,7 +49,7 @@ describe('getFontPresetTokens', () => {
 
 	it('sets caption variants in the mono family except the image caption', () => {
 		expect(text.caption.base.fontFamily).toBe(alias.fontFamily('mono'))
-		expect(text.caption.item.fontFamily).toBe(alias.fontFamily('mono'))
+		expect(text.caption.base.fontFamily).toBe(alias.fontFamily('mono'))
 		expect(text.caption.image.fontFamily).toBe(alias.fontFamily('body'))
 	})
 
@@ -57,8 +57,8 @@ describe('getFontPresetTokens', () => {
 		const presets = [
 			text.h1, text.h2, text.h3, text.h4, text.h5, text.h6,
 			text.body, text.control, text.navigation, text.numeric, text.prose,
-			text.section.eyebrow, text.label.base, text.label.mono,
-			text.caption.base, text.caption.image, text.caption.item,
+			text.eyebrow, text.label.base, text.label.mono,
+			text.caption.base, text.caption.image, text.caption,
 		]
 		for (const preset of presets) {
 			expect(Object.keys(preset).sort()).toEqual(['fontFamily', 'fontSize', 'fontWeight', 'lineHeight'])

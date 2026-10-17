@@ -7,11 +7,6 @@ interface FontProperties {
 	lineHeight: string
 }
 
-interface LayoutFontGroup {
-	// body: FontProperties
-	eyebrow: FontProperties
-}
-
 export interface FontPresetTokens {
 	h1: FontProperties
 	h2: FontProperties
@@ -20,13 +15,18 @@ export interface FontPresetTokens {
 	h5: FontProperties
 	h6: FontProperties
 
-	body: FontProperties
-	section: LayoutFontGroup
+	body: {
+		base: FontProperties
+		sm: FontProperties
+	}
+
+	eyebrow: FontProperties
 	control: FontProperties
 	navigation: FontProperties
 	numeric: FontProperties
 	prose: FontProperties
 
+	error: FontProperties
 	label: {
 		base: FontProperties
 		mono: FontProperties
@@ -34,12 +34,10 @@ export interface FontPresetTokens {
 	caption: {
 		base: FontProperties
 		image: FontProperties
-		item: FontProperties
 	}
 
 	title?: FontProperties
 	subtitle?: FontProperties
-	eyebrow?: FontProperties
 	overline?: FontProperties
 	alert?: FontProperties
 	data?: FontProperties
@@ -59,7 +57,7 @@ export const getFontPresetTokens = (): FontPresetTokens => {
 		lineHeight: alias.lineHeight('heading'),
 	}
 
-	const contentSharedProps = {
+	const textSharedProps = {
 		fontFamily: alias.fontFamily('body'),
 		fontWeight: base.fontWeight('400'),
 		lineHeight: alias.lineHeight('body'),
@@ -107,35 +105,29 @@ export const getFontPresetTokens = (): FontPresetTokens => {
 			lineHeight: alias.lineHeight('body'),
 		},
 		body: {
-			...contentSharedProps,
-			fontSize: 	alias.fontSize('body'),
-		},
-		section: {
-			// body: {
-			// 	...contentSharedProps,
-			// 	fontSize: 	alias.fontSize('body', 'lg'),
-			// },
-			eyebrow: {
-				fontFamily: alias.fontFamily('mono'),
-				fontSize: 	alias.fontSize('caption'),
-				fontWeight: base.fontWeight('400'),
-				lineHeight: alias.lineHeight('label'),
+			base: {
+				...textSharedProps,
+				fontSize: 	alias.fontSize('body'),
 			},
+			sm: {
+				...textSharedProps,
+				fontSize: 	alias.fontSize('caption'),
+			},
+		},
+		eyebrow: {
+			...captionSharedProps,
+			fontSize: 	alias.fontSize('caption'),
 		},
 		caption: {
 			base: {
 				...captionSharedProps,
-				fontSize: 	alias.fontSize('caption'),
+				fontSize: 	alias.fontSize('control'),
 			},
 			image: {
 				fontFamily: alias.fontFamily('body'),
 				fontSize: 	base.fontSize('10'),
 				fontWeight: base.fontWeight('600'),
 				lineHeight: alias.lineHeight('label'),
-			},
-			item: {
-				...captionSharedProps,
-				fontSize: 	alias.fontSize('control'),
 			},
 		},
 		label: {
@@ -148,6 +140,12 @@ export const getFontPresetTokens = (): FontPresetTokens => {
 				fontFamily: alias.fontFamily('mono'),
 				fontSize: 	alias.fontSize('label', 'sm'),
 			},
+		},
+		error: {
+			fontFamily: alias.fontFamily('body'),
+			fontSize: 	alias.fontSize('caption'),
+			fontWeight: base.fontWeight('400'),
+			lineHeight: alias.lineHeight('exact'),
 		},
 		navigation: {
 			fontFamily: alias.fontFamily('body'),
@@ -168,7 +166,7 @@ export const getFontPresetTokens = (): FontPresetTokens => {
 			lineHeight: alias.lineHeight('body'),
 		},
 		prose: {
-			...contentSharedProps,
+			...textSharedProps,
 			fontSize: 	alias.fontSize('body', 'lg'),
 		},
 	}

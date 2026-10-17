@@ -17,6 +17,7 @@ export const getSecondaryTokens = (config: ThemeConfig): SecondaryTokens => {
 		shade: 20,
 		bright: 5,
 		dim: 30,
+		dull: 15,
 		muted: 45,
 	}
 

@@ -327,14 +327,14 @@ const SemanticColorSections = () => (
 			light — see <code>tokens/accent/primary.ts</code>): <code>base</code> /{ ' ' }
 			<code>hover</code> / <code>active</code> = <code>alias.accent()</code> / <code>(&apos;hover&apos;)</code> /{ ' ' }
 			<code>(&apos;active&apos;)</code>, <code>select</code> = accent <code>tint</code>,{ ' ' }
-			<code>disable</code> = accent <code>muted</code> (<code>tokens/colors/states.ts</code>).
+			<code>error</code> = accent <code>muted</code> (<code>tokens/colors/states.ts</code>).
 		</p>
 		<div style={ rowStyle }>
 			<Swatch label="base" path="alias.color.action()" background={ alias.color.action() } />
 			<Swatch label="hover" path="alias.color.action('hover')" background={ alias.color.action('hover') } />
 			<Swatch label="active" path="alias.color.action('active')" background={ alias.color.action('active') } />
 			<Swatch label="select" path="alias.color.action('select')" background={ alias.color.action('select') } />
-			<Swatch label="disable" path="alias.color.action('disable')" background={ alias.color.action('disable') } />
+			<Swatch label="error" path="alias.color.action('error')" background={ alias.color.action('error') } />
 		</div>
 
 		{ ([

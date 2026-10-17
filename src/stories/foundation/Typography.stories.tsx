@@ -167,7 +167,7 @@ const FontPropertyTokens = () => {
 	]
 
 	const leading = [
-		{ key: 'none', path: "alias.lineHeight('none')", value: alias.lineHeight('none') },
+		{ key: 'none', path: "alias.lineHeight('none')", value: alias.lineHeight('exact') },
 		{ key: 'heading', path: "alias.lineHeight('heading')", value: alias.lineHeight('heading') },
 		{ key: 'body', path: "alias.lineHeight('body')", value: alias.lineHeight('body') },
 		{ key: 'label', path: "alias.lineHeight('label')", value: alias.lineHeight('label') },
@@ -266,8 +266,7 @@ const PresetTokens = () => {
 		{ label: 'text.numeric (no accessor)', path: 'var(--inkq-text-numeric)', varName: '--inkq-text-numeric', value: 'var(--inkq-text-numeric)', sample: '0123456789' },
 		{ label: 'text.caption', path: 'tokens.presets.text.caption()', varName: '--inkq-text-caption', value: text.caption(), sample: 'Caption text' },
 		{ label: 'text.caption.image', path: "tokens.presets.text.caption('image')", varName: '--inkq-text-caption-image', value: text.caption('image'), sample: 'Image caption' },
-		{ label: 'text.caption.item', path: "tokens.presets.text.caption('item')", varName: '--inkq-text-caption-item', value: text.caption('item'), sample: 'Item caption' },
-		{ label: 'text.section.eyebrow', path: "tokens.presets.text.section('eyebrow')", varName: '--inkq-text-section-eyebrow', value: text.section('eyebrow'), sample: 'EYEBROW' },
+		{ label: 'text.eyebrow', path: "tokens.presets.text.eyebrow()", varName: '--inkq-text-eyebrow', value: text.eyebrow(), sample: 'EYEBROW' },
 	]
 
 	return (
