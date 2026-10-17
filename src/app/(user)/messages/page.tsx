@@ -1,14 +1,19 @@
 'use client'
 
-import { Container } from '@/components/layout/Container'
+import { Section } from '@/components/layout/Section'
 
 export default function Messages() {
+	const pageID = 'messages'
+
 	return (
-		<main>
-			<Container>
-				<h1>Messages</h1>
-				{/* { children } */}
-			</Container>
-		</main>
+		<>
+			<Section
+				id={ `${pageID}-hero` }
+				layout="hero"
+				title="Messages"
+			>
+				messages
+			</Section>
+		</>
 	)
 }

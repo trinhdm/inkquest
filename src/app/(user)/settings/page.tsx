@@ -1,4 +1,19 @@
+'use client'
+
+import { Section } from '@/components/layout/Section'
 
 export default function Settings() {
-	return <main><h1>Settings</h1></main>
+	const pageID = 'settings'
+
+	return (
+		<>
+			<Section
+				id={ `${pageID}-hero` }
+				layout="hero"
+				title="Settings"
+			>
+				settings
+			</Section>
+		</>
+	)
 }
