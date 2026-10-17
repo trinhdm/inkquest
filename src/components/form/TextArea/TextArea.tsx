@@ -44,7 +44,7 @@ type SizableTextAreaProps =
 	| StaticTextAreaProps
 
 type TextAreaProps =
-	& Field.SharedProps
+	& Omit<Field.SharedProps, 'type'>
 	& BaseTextAreaProps
 	& SizableTextAreaProps
 
@@ -100,7 +100,7 @@ const tokens = defineTokens<TextAreaSpecs>()(args => {
 })
 
 export const TextArea = polymorphic<TextAreaSpecs>((_props, { useProps, useStyles }) => {
-	const { useChosenFieldProps, useFieldCtx } = useField()
+	const { useChosenFieldProps, useFieldCtx } = useField(NAME)
 
 	const context = useFieldCtx(NAME)
 	const props = useProps(useChosenFieldProps(_props))

@@ -125,17 +125,21 @@ const buildField = (
 	}
 
 	if (isValidElement<FieldPropsList>(control)) {
-		const { props: childProps } = control,
+		const { props: controlProps } = control,
 			clsxControl = layout === 'button' ? { global: { 'sr': true } } : {}
 
 		parts.control = <div { ...styles('control', clsxControl) }>{ control }</div>
 
-		if (keyHasValue(childProps, 'type') && control.type === TextInput) {
-			const icon = getIcon((childProps as TextInput.Props).type)
-			if (icon) parts.icon = icon
+		if (control.type === TextInput) {
+			const type = (controlProps as FieldPropsList<'input'>).type ?? props.type
+
+			if (!!type) {
+				const icon = getIcon(type)
+				if (icon) parts.icon = icon
+			}
 		}
 
-		if (!!loading || keyHasValue(childProps, { loading: true }))
+		if (!!loading || keyHasValue(controlProps, { loading: true }))
 			parts.loader = <LoaderCircle { ...styles('loader', true) } />
 	}
 
@@ -178,20 +182,29 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 	const uid = useId()
 	const idx = useMemo(() => {
 		const root = toKebabCase(id ?? uid)
-		return { control: `${root}-control`, error: `${root}-error` }
+		return { control: `${root}-control`, error: `${root}-error`, info: `${root}-info` }
 	}, [id, uid])
 
-	const aria = useMemo(() => ({
-		busy: !!loading || undefined,
-		describedby: hasError ? idx.error : undefined,
-		invalid: hasError || undefined,
-		required: !!required || undefined,
-	}), [hasError, idx, loading, required])
+	const aria = useMemo(() => {
+		const describedby = []
+		if (caption) describedby.push(idx.info)
+		if (hasError) describedby.push(idx.error)
+
+		return {
+			busy: !!loading || undefined,
+			describedby: describedby.join(' '),
+			invalid: hasError || undefined,
+			required: !!required || undefined,
+		}
+	}, [
+		caption, hasError, idx,
+		loading, required,
+	])
 
 	const clsx = useMemo(() => ({
 		selector: {
+			button: layout === 'button',
 			error: hasError,
-			[`${layout}`]: layout,
 		},
 	}), [hasError, layout])
 
@@ -201,7 +214,7 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 		required, size, type, unstyled,
 	}), [
 		aria, clsx, disabled, hasError,
-		icon,  idx, loader, loading,
+		icon, idx, loader, loading,
 		required, size, type, unstyled,
 	])
 
@@ -216,7 +229,11 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 	}
 
 	const clsxText = { global: { caption: true } }
-	const captionEl = caption && <span { ...styles('caption', clsxText) }>{ caption }</span>
+	const captionEl = caption && (
+		<span { ...styles('caption', clsxText) } id={ idx.info }>
+			{ caption }
+		</span>
+	)
 
 	if (layout === 'button') {
 		return (

@@ -83,7 +83,7 @@ export const TextInput = polymorphic<TextInputSpecs>((_props, { useProps, useSty
 		<>
 			{ icon && (
 				<span { ...styles('icon') } onClick={ onIconClick }>
-					{ type === 'password' ? <Eye /> : icon }
+					{ type === 'password' ? <Eye aria-hidden /> : icon }
 				</span>
 			) }
 

@@ -2,10 +2,12 @@ import { createCompoundCtx } from '@/lib/component/context'
 import type { ReactNode } from 'react'
 import type { AnimationOptions } from '@/hooks/animation'
 import type { Field } from './Field'
+import type { FilterTuple } from '@/types/utils'
 
 interface FieldIds {
 	control: string
 	error: string
+	info: string
 }
 
 interface FieldAria {
@@ -15,8 +17,11 @@ interface FieldAria {
 	required: boolean | undefined
 }
 
+type FieldClsxLayout =
+	Exclude<Field.Props['layout'], 'default' | undefined>
+
 interface FieldClsx {
-	selector: Pick<Field.Props, 'layout'> & {
+	selector: Record<FieldClsxLayout, boolean> & {
 		error: boolean
 	}
 }
@@ -57,7 +62,29 @@ const sharedFieldProps = [
 	'unstyled',
 ] as const satisfies readonly (keyof SharedFieldProps)[]
 
-export const useChosenFieldProps = <P extends object>(_props: P) =>
-	useFieldProps(_props, ...sharedFieldProps)
+const textareaFieldProps = sharedFieldProps.filter(p => p !== 'type') as FilterTuple<typeof sharedFieldProps, 'type'>
 
-export const useField = () => ({ useChosenFieldProps, useFieldCtx, useFieldProps })
+const FIELD_PROP_MAP = {
+	TextArea: textareaFieldProps,
+	default: sharedFieldProps,
+} as const
+
+type FieldPropMap = typeof FIELD_PROP_MAP
+
+// the context keys a control inherits, narrowed by the control's name
+type ChosenFieldProp<C> =
+	(C extends keyof FieldPropMap ? FieldPropMap[C] : FieldPropMap['default'])[number]
+
+export const useField = <C extends keyof FieldPropMap | (string & {}) = 'default'>(component?: C) => {
+	const name = component && component in FIELD_PROP_MAP
+		? component as keyof FieldPropMap
+		: 'default'
+
+	// the lookup above mirrors `ChosenFieldProp<C>`, which TypeScript can't see through
+	const selected = FIELD_PROP_MAP[name] as readonly ChosenFieldProp<C>[]
+
+	const useChosenFieldProps = <P extends object>(_props: P) =>
+		useFieldProps<P, ChosenFieldProp<C>>(_props, ...selected)
+
+	return { useChosenFieldProps, useFieldCtx, useFieldProps }
+}

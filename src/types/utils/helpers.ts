@@ -4,14 +4,6 @@
 
 import type { PrimitiveName } from '../shared'
 
-export type DeepRequired<T> = T extends () => void
-	? T
-	: T extends Array<infer InferredArrayType>
-		? DeepRequired<InferredArrayType>[]
-		: T extends object
-			? { [K in keyof T]-?: DeepRequired<T[K]> }
-			: T
-
 
 //	strings
 
@@ -24,6 +16,16 @@ type RemoveSubstr<S extends string, Sub extends string> =
 	S extends `${infer Before}${Sub}${infer After}`
 		? `${Before}${After}`
 		: S
+
+
+//	tuples
+
+export type FilterTuple<T extends readonly unknown[], Exclude> =
+	T extends readonly [infer Head, ...infer Tail]
+		? Head extends Exclude
+			? FilterTuple<Tail, Exclude>					//	skip it
+			: [Head, ...FilterTuple<Tail, Exclude>]			//	keep it
+		: []
 
 
 //	unions
@@ -51,6 +53,14 @@ export type UnpackArray<T> =
 
 //	deep
 
+export type DeepRequired<T> = T extends () => void
+	? T
+	: T extends Array<infer InferredArrayType>
+		? DeepRequired<InferredArrayType>[]
+		: T extends object
+			? { [K in keyof T]-?: DeepRequired<T[K]> }
+			: T
+
 export type DeepMerge<T, U> = {
 	[K in keyof T | keyof U]: K extends keyof U
 		? K extends keyof T
@@ -74,8 +84,23 @@ export type AtLeastOneKeyOf<Keys extends PropertyKey, V> = {
 	[K in Keys]: Partial<Record<Keys, V>> & Record<K, V>
 }[Keys]
 
-export type NoExcessKeys<T, V> =
-	Record<Exclude<keyof V, keyof T>, never>
+//	a value whose own keys are worth checking: an object, but not a function or array
+type IsRecordLike<T> =
+	[T] extends [(...args: any[]) => any] ? false
+		: [T] extends [readonly unknown[]] ? false
+			: [T] extends [object] ? true
+				: false
+
+//	every key of V must exist in T, checked into nested plain objects too
+export type NoExcessKeys<T, V> = {
+	[K in keyof V]: K extends keyof T
+		? IsRecordLike<NonNullable<T[K]>> extends true
+			? IsRecordLike<NonNullable<V[K]>> extends true
+				? NoExcessKeys<NonNullable<T[K]>, NonNullable<V[K]>>
+				: unknown
+			: unknown
+		: never
+}
 
 //	renaming keys
 
