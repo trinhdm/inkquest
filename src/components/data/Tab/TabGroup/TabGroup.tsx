@@ -5,16 +5,16 @@ import {
 } from 'react'
 
 import { extractOthers } from '@/hooks/useProps'
-import { getTabIds, TabPanelProvider } from '../TabPanel/TabPanel.context'
+import { getTabIds } from '../utils'
 import { polymorphic } from '@/lib/component/factory'
 import { toKebabCase } from '@/utils/helpers'
 import { Box } from '@/components/polymorphic/Box'
 import { TabGroupProvider, type TabGroupContext } from './TabGroup.context'
-import { TabPanel } from '../TabPanel'
+import { TabPanel, TabPanelProvider } from '../TabPanel'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from '../Tab.module.scss'
 
-const NAME = 'Tab.Panel' as const
+const NAME = 'Tab.Group' as const
 const DEFAULT_PROPS = {
 	defaultActive: 0,
 } as const
@@ -69,6 +69,7 @@ export const TabGroup = polymorphic<TabGroupSpecs>((_props, { useProps, useStyle
 			{ ...styles('root') }
 			{ ...others }
 			as="div"
+			id={ uid }
 		>
 			<TabGroupProvider value={ ctxValues }>
 				{ content }

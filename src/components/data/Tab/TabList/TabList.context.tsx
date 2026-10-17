@@ -16,4 +16,4 @@ export const {
 	RootProvider: TabListProvider,
 	useRootCtx: useTabListCtx,
 	useRootProps: useTabListProps,
-} = createCompoundCtx<TabListContext>('Tab.Group')
+} = createCompoundCtx<TabListContext>('Tab.List')

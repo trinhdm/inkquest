@@ -3,7 +3,7 @@ import {
 	useState, type CSSProperties,
 } from 'react'
 
-import { useTabGroupCtx } from '../TabGroup/TabGroup.context'
+import { useTabGroupCtx, type TabGroupContext } from '../TabGroup'
 import { extractOthers } from '@/hooks/useProps'
 import { filterChildren } from '@/lib/component/children'
 import { polymorphic } from '@/lib/component/factory'
@@ -23,6 +23,7 @@ interface TabListProps {
 }
 
 type TabListSpecs = {
+	context: TabGroupContext
 	isCompound: true
 	props: TabListProps
 	selectors: TabListSelectors
@@ -39,10 +40,10 @@ interface TabListRail {
 export const TabList = polymorphic<TabListSpecs>((_props, { useProps, useStyles }) => {
 	const context = useTabGroupCtx(NAME)
 	const props = useProps(_props)
-	const styles = useStyles({ props })
+	const styles = useStyles({ context, props })
 
 	const { active, onSelect } = context
-	const { children, disabled, unstyled,...rest } = props
+	const { children, disabled, unstyled, ...rest } = props
 	const others = extractOthers(rest)
 
 	const [rail, setRail] = useState<TabListRail | null>(null)
@@ -120,9 +121,7 @@ export const TabList = polymorphic<TabListSpecs>((_props, { useProps, useStyles 
 	)
 }, { name: NAME, classes })
 
-TabList.set({
-	displayName: NAME,
-})
+TabList.set({ displayName: NAME })
 
 export declare namespace TabList {
 	export type Context = TabListContext

@@ -1,10 +1,9 @@
 import { useCallback, useMemo, type ReactNode } from 'react'
-import { useTabGroupCtx } from './TabGroup/TabGroup.context'
 import { extractOthers } from '@/hooks/useProps'
-import { getTabIds } from './TabPanel/TabPanel.context'
+import { getTabIds } from './utils'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
-import { TabGroup } from './TabGroup'
+import { TabGroup, useTabGroupCtx } from './TabGroup'
 import { TabList, useTabListProps } from './TabList'
 import { TabPanel } from './TabPanel'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
@@ -54,31 +53,38 @@ export const Tab = polymorphic<TabSpecs>((_props, { useProps, useStyles }) => {
 
 	const {
 		active, as, children,
-		disabled, id, index,
-		onSelect, unstyled,
+		disabled, index, onSelect,
 		...rest
 	} = props
 
 	const others = extractOthers(rest)
-
 	const idx = useMemo(() => getTabIds(uid, index), [uid, index])
-
 
 	const handleSelect = useCallback(() => {
 		if (!disabled) onSelect?.(index)
 	}, [disabled, index, onSelect])
-
-	const aria = { controls: idx.panel, selected: !!active },
-		data = { active: active || null, tab: true }
 
 	return (
 		<Box
 			{ ...styles('root') }
 			{ ...others }
 			as={ as }
-			attributes={ { aria, data } }
+			attributes={ {
+				aria: {
+					controls: idx.panel,
+					disabled: disabled || undefined,
+					selected: !!active,
+				},
+				data: {
+					active: active || null,
+					disabled: disabled || null,
+					tab: true,
+				},
+			} }
+			id={ idx.control }
 			onClick={ handleSelect }
 			role="tab"
+			tabIndex={ active ? 0 : -1 }
 		>
 			<span { ...styles('label') }>
 				{ children }
@@ -110,6 +116,7 @@ export declare namespace Tab {
 	}
 
 	export namespace Panel {
+		export type Context = TabPanel.Context
 		export type Props = TabPanel.Props
 		export type Specs = TabPanel.Specs
 	}

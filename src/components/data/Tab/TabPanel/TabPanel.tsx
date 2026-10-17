@@ -43,6 +43,7 @@ export const TabPanel = polymorphic<TabPanelSpecs>((_props, { useProps, useStyle
 			hidden={ !isActive }
 			id={ idx.panel }
 			role="tabpanel"
+			tabIndex={ 0 }
 		>
 			{ withInlineWrap(children) }
 		</Box>
