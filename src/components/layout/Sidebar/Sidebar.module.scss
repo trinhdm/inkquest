@@ -40,7 +40,6 @@
 	}
 
 	&__button {
-		display: block;
 		position: relative;
 		text-align: left;
 		width: 100%;
@@ -98,7 +97,7 @@
 		}
 
 		&__button {
-			--sidebar-fade: .05s;
+			--sidebar-fade: .025s;
 
 			display: grid;
 			padding: var(--inkq-gutter-item) var(--inkq-gutter-item);

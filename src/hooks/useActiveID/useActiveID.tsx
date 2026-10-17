@@ -16,9 +16,8 @@ const SPY_MARGIN = '-20% 0px -79% 0px'
 export const useActiveID = (ids: string[]) => {
 	const [activeID, setActiveID] = useState(ids[0])
 
-	//	set while the page scrolls to a destination: `{ id }` when it's known, `{}` when it isn't;
-	//	the spy is ignored until the page arrives or comes to rest
-	const travel = useRef<{ id?: string } | null>(null)
+	//	the id the page is scrolling to after a click; the spy is ignored until the page arrives or comes to rest
+	const travel = useRef<string | null>(null)
 
 	const findCurrent = useCallback(() => {
 		const line = window.innerHeight * SPY_LINE
@@ -30,12 +29,12 @@ export const useActiveID = (ids: string[]) => {
 		return current ?? ids[0]
 	}, [ids])
 
-	const travelTo = useCallback((id?: string) => {
-		if (id) setActiveID(id)
+	const travelTo = useCallback((id: string) => {
+		setActiveID(id)
 
 		//	without `scrollend` (Safari before 26.2) nothing would end the hold, so the spy keeps running
 		const canHold = 'onscrollend' in window && id !== findCurrent()
-		travel.current = canHold ? { id } : null
+		travel.current = canHold ? id : null
 	}, [findCurrent])
 
 	useEffect(() => {
@@ -47,7 +46,7 @@ export const useActiveID = (ids: string[]) => {
 
 		const observer = new IntersectionObserver(() => {
 			const current = findCurrent()
-			if (travel.current && travel.current.id !== current) return
+			if (travel.current && travel.current !== current) return
 
 			travel.current = null
 			setActiveID(current)
@@ -67,28 +66,29 @@ export const useActiveID = (ids: string[]) => {
 			return !!el && atBottom && el.getBoundingClientRect().top > window.innerHeight * SPY_LINE
 		}
 
-		//	the page came to rest without reaching the line at `id`: it fell short, or the reader took over
+		//	the page came to rest without reaching the line at the target: it fell short, or the reader took over
 		const onScrollEnd = () => {
-			const hold = travel.current
-			if (!hold) return
+			const target = travel.current
+			if (!target) return
 
-			//	a scroll that ended before Next moved to `id` (e.g. a wheel still settling) isn't the glide
-			if (hold.id && window.location.hash.slice(1) !== hold.id) return
+			//	a scroll that ended before Next moved to the target (e.g. a wheel still settling) isn't the glide
+			if (window.location.hash.slice(1) !== target) return
 
 			//	Chrome also fires `scrollend` when a wheel gesture ends mid-glide, so check the page has stopped
 			const y = window.scrollY
 			requestAnimationFrame(() => requestAnimationFrame(() => {
-				if (travel.current !== hold || window.scrollY !== y) return
+				if (travel.current !== target || window.scrollY !== y) return
 
 				travel.current = null
-				setActiveID(hold.id && isOutOfReach(hold.id) ? hold.id : findCurrent())
+				setActiveID(isOutOfReach(target) ? target : findCurrent())
 			}))
 		}
 
-		//	Back/Forward: `popstate` fires before the browser scrolls, and the URL already names the destination
+		//	Back/Forward: the browser scrolls back to where the reader was on that entry, not to the hash's
+		//	section, so the hash can't say where the page will land; drop any hold and let the spy follow the page
 		const onPopState = () => {
-			const id = window.location.hash.slice(1)
-			travelTo(ids.includes(id) ? id : undefined)
+			travel.current = null
+			setActiveID(findCurrent())
 		}
 
 		window.addEventListener('scrollend', onScrollEnd)
@@ -98,7 +98,7 @@ export const useActiveID = (ids: string[]) => {
 			window.removeEventListener('scrollend', onScrollEnd)
 			window.removeEventListener('popstate', onPopState)
 		}
-	}, [ids, findCurrent, travelTo])
+	}, [findCurrent])
 
 	return [activeID, travelTo] as const
 }

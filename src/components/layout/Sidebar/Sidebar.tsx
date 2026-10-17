@@ -171,7 +171,7 @@ export const Sidebar = polymorphic<SidebarSpecs>((_props, { useProps, useStyles 
 					/>
 
 					<SidebarProvider value={ ctxValues }>
-						<ul { ...styles('inner') } ref={ listRef }>
+						<ul { ...styles('inner') } data-unlist ref={ listRef }>
 							{ items.map(item => <SidebarItem key={ item.id } { ...item } />) }
 						</ul>
 					</SidebarProvider>

@@ -9,7 +9,7 @@ import type { Route } from 'next'
 import type { Sidebar } from '../Sidebar'
 import classes from '../Sidebar.module.scss'
 
-const NAME = 'SidebarItem' as const
+const NAME = 'Sidebar.Item' as const
 
 interface SidebarActionItem {
 	id: string

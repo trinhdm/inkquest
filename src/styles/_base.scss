@@ -154,7 +154,17 @@ svg {
 
 ol,
 ul {
-	@include global.list;
+	&:not([data-unlist], [role]) {
+		@include global.list;
+	}
+
+	&:is([data-unlist]) {
+		list-style-type: none;
+
+		li {
+			display: inline-block;
+		}
+	}
 }
 
 mark,
