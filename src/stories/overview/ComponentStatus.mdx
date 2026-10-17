@@ -1,0 +1,191 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title="Overview/Component Status" />
+
+# Component Status
+
+How ready each component is. The work left on each one is listed in
+`TODO.md` at the repo root.
+
+## Status key
+
+| Status | Meaning |
+| --- | --- |
+| **Planned** | An idea or an empty folder. No working code yet. |
+| **In progress** | Code exists, but it's a stub or its props and behavior aren't settled. It may not have a story or tests yet. |
+| **Stable** | Has a story and tests, and its props are settled. It can still have known bugs, which are listed in `TODO.md`. |
+
+When a component changes status, update its row here. Subcomponents are
+listed in brackets after their parent.
+
+- `Avatar`
+- `Chip`, `Chip.Group`
+- `ColorSwatch`
+- `IconButton`
+- `ToggleButton`
+
+- `Banner`
+- `Dialog`
+- `Drawer`
+- `Gallery`, `Gallery.Item`
+- `Modal`
+- `Popover`
+- `Portal`
+- `Slider`
+
+- `Alert`
+- `Marquee`
+- `Notification`
+- `Skeleton`
+- `Toast`
+- `Tooltip`
+
+- `NumberInput`
+- `Select`
+- `MultiSelect`
+- `Combobox`
+- `FileUpload`, `Dropzone`
+- `Range`
+- `Rating`
+- `Switch`
+- `ColorPicker`
+- `DatePicker`
+- `DateTimePicker`
+- `TimePicker`
+- `Calendar`
+- `DraggableList`
+
+- `Breadcrumb`
+- `Dropdown`
+- `Pagination`
+- `Stepper`
+
+- `Timeline`
+	- `orientation="horizontal"` styling
+- collections (content?) group (Grid, Group, Menu, Table)
+
+---
+
+## Core
+
+core components
+
+---
+<br />
+
+### `Button`
+
+Status: `stable`
+
+#### Todos
+
+- `action="copy"`
+
+---
+
+### `Button`.`Group`
+
+Status: `stable`
+
+---
+
+### `Button`.`Section`
+
+Status: `stable`
+
+---
+
+### `Card`
+
+Status: `stable`
+
+---
+
+### `Chip`
+
+Status: `planned`
+
+---
+
+### `Icon`
+
+Status: `stable`
+
+---
+
+### `IconButton`
+
+Status: `planned`
+
+---
+
+| Component | Status | Notes |
+| --- | --- | --- |
+| Badge | Stable | |
+| `Button` (`Group`, `Section`) | Stable | 1 known bug |
+| Card | Stable | |
+| Chip | In progress | Stub. Props copied from FilterBar. No story. |
+| CopyButton | Planned | Empty folder |
+| Icon | Stable | |
+
+---
+
+## Data
+
+| Component | Status | Notes |
+| --- | --- | --- |
+| Accordion (Group, Title, Content) | Stable | |
+| Progress | Stable | |
+| Statistic (Group) | Stable | |
+| Tab (Group, List, Panel) | In progress | Arrow, Home and End keys not built yet |
+| Table (Row, Cell) | Stable | |
+| Timeline (Item) | Stable | |
+
+## Form
+
+| Component | Status | Notes |
+| --- | --- | --- |
+| Choice | Stable | |
+| Field (Choice, Group, Input, Textarea) | Stable | `Field.Upload` waits on FileUpload. 1 known bug. |
+| FileUpload | In progress | Stub. Not attached to Field yet. No story. |
+| Switch | Planned | Empty folder |
+| TextArea | Stable | |
+| TextInput | Stable | |
+
+## Layout
+
+| Component | Status | Notes |
+| --- | --- | --- |
+| Container | Stable | |
+| FilterBar | In progress | Stub. Ignores its own props. No story. |
+| Grid (Item) | In progress | `columns` refactor not finished. 1 failing test. |
+| Group (Item) | Stable | 1 known bug |
+| Section (Footer) | Stable | |
+| Sidebar (Item) | Stable | Sidebar.Area planned (empty folder) |
+
+## Navigation
+
+| Component | Status | Notes |
+| --- | --- | --- |
+| Footer (Area) | Stable | |
+| Header | Stable | |
+| Logo | Stable | |
+| Menu (MenuItem, MenuLabel) | Stable | |
+| Navbar | Stable | |
+| Subnav | Stable | |
+
+## Document
+
+Internal pieces that put the theme's CSS and scripts on the page.
+
+| Component | Status | Notes |
+| --- | --- | --- |
+| ScriptInjector | Stable | |
+| StyleInliner | Stable | |
+| VariantStyleInliner | Stable | |
+
+## Polymorphic
+
+| Component | Status | Notes |
+| --- | --- | --- |
+| Box | Stable | |
