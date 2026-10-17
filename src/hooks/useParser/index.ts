@@ -1,1 +1,2 @@
-export { useParser, withEmailLink } from './useParser'
+export { useParser } from './useParser'
+export { withEmailLink } from './withEmailLink'

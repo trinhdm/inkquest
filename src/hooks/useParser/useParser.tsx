@@ -1,31 +1,33 @@
+import parse, {
+	attributesToProps, domToReact,
+	DOMNode, Element, Text,
+	type HTMLReactParserOptions,
+} from 'html-react-parser'
+
 import Link from 'next/link'
-import parse, { domToReact, DOMNode, Element } from 'html-react-parser'
 import { useMemo } from 'react'
 import { isExternalLink } from '@/utils/helpers'
+import { withEmailLink } from './withEmailLink'
 import type { Route } from 'next'
-
-export const withEmailLink = (text: string) => {
-	const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g,
-		parts = text.split(emailRegex)
-
-	return parts.map((part, index) => {
-		if (emailRegex.test(part))
-			return <a key={index} href={ `mailto:${part}` } data-cta>{part}</a>
-
-		return part
-	})
-}
 
 export const useParser = (htmlContent?: string) => {
 	const parsedContent = useMemo(() => {
 		if (!htmlContent) return null
 
 		const replace = (domNode: DOMNode) => {
+			if (domNode instanceof Text) {
+				const inLink = domNode.parent instanceof Element && domNode.parent.name === 'a'
+				if (inLink || !domNode.data.includes('@')) return
+				return <>{ withEmailLink(domNode.data) }</>
+			}
+
 			if (!(domNode instanceof Element) || domNode.name !== 'a') return
 
-			const { attribs: { href, ...domAttrs } } = domNode,
-				content = domToReact(domNode.children as DOMNode[], options),
-				sharedProps = { ...domAttrs, ['data-cta']: '' }
+			const { href, ...linkProps } = attributesToProps(domNode.attribs)
+			if (typeof href !== 'string') return
+
+			const content = domToReact(domNode.children as DOMNode[], options),
+				sharedProps = { ...linkProps, 'data-cta': '' }
 
 			if (isExternalLink(href)) {
 				return (
@@ -42,10 +44,8 @@ export const useParser = (htmlContent?: string) => {
 			)
 		}
 
-		const content = withEmailLink(htmlContent),
-			options = { replace }
-
-		return <>{parse(`${content}`, options)}</>
+		const options: HTMLReactParserOptions = { replace }
+		return <>{ parse(htmlContent, options) }</>
 	}, [htmlContent])
 
 	return parsedContent
