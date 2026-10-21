@@ -12,19 +12,39 @@ const NAME = 'Progress' as const,
 	TAG = 'progress' as const
 
 const DEFAULT_PROPS = {
+	anchor: 'top',
 	as: TAG,
 	height: '3px',
+	layout: 'fixed',
 	max: 100,
 	width: '100%',
 } as const
 
-interface ProgressProps {
+interface BaseProgressProps {
 	height?: CSSUnit | number
 	id?: string
 	label: string
 	max?: number
 	width?: CSSUnit | number
 }
+
+interface FixedProgressProps {
+	anchor?: 'top' | 'right' | 'bottom' | 'left'
+	layout: 'fixed'
+}
+
+interface InlinedProgressProps {
+	anchor?: never
+	layout?: 'inline'
+}
+
+type ProgressBarProps =
+	| FixedProgressProps
+	| InlinedProgressProps
+
+type ProgressProps =
+	& BaseProgressProps
+	& ProgressBarProps
 
 interface ProgressSpecs {
 	defaults: {
@@ -42,19 +62,41 @@ type ProgressSelectors =
 type ProgressTokens = {
 	root:
 		| '--progress-bar-height'
+		| '--progress-bar-inset'
+		| '--progress-bar-rotate'
 		| '--progress-bar-width'
 }
 
 const tokens = defineTokens<ProgressSpecs>()(({ props }) => {
-	const { height, width } = props
-	let barHeight, barWidth
+	const { anchor, height, width } = props
+	let anchorInset, anchorRotate,
+		barHeight, barWidth
 
 	if (height) barHeight = typeof height === 'number' ? rem(height) : height
 	if (width) barWidth = typeof width === 'number' ? rem(width) : width
 
+	switch (anchor) {
+		case 'top':
+			anchorInset = '0 0 auto 0'
+			break
+		case 'right':
+			anchorRotate = 'rotate(90deg)'
+			anchorInset = '50% auto 50% 50%'
+			break
+		case 'bottom':
+			anchorInset = 'auto 0 0 0'
+			break
+		case 'left':
+			anchorRotate = 'rotate(90deg)'
+			anchorInset = '50% 50% 50% auto'
+			break
+	}
+
 	return {
 		root: {
 			'--progress-bar-height': barHeight,
+			'--progress-bar-inset': anchorInset,
+			'--progress-bar-rotate': anchorRotate,
 			'--progress-bar-width': barWidth,
 		},
 	}
@@ -65,8 +107,9 @@ export const Progress = polymorphic<ProgressSpecs>((_props, { useProps, useStyle
 	const styles = useStyles({ props, tokens })
 
 	const {
-		as, height, id,
-		label, max, width,
+		anchor, as, height, id,
+		label, layout,
+		max, width,
 		...rest
 	} = props
 
@@ -104,6 +147,10 @@ export const Progress = polymorphic<ProgressSpecs>((_props, { useProps, useStyle
 	const uid = useId(),
 		barID = id ?? uid
 
+	const clsx = {
+		selector: { [`${layout}`]: !!layout },
+	}
+
 	return (
 		<>
 			<label { ...styles('sr', true) } htmlFor={ barID }>
@@ -111,7 +158,7 @@ export const Progress = polymorphic<ProgressSpecs>((_props, { useProps, useStyle
 			</label>
 
 			<Box
-				{ ...styles('root') }
+				{ ...styles('root', clsx) }
 				{ ...others }
 				as={ as }
 				id={ barID }
@@ -131,4 +178,6 @@ Progress.set({
 export declare namespace Progress {
 	export type Props = ProgressProps
 	export type Specs = ProgressSpecs
+
+	export type Anchor = 'top' | 'right' | 'bottom' | 'left'
 }

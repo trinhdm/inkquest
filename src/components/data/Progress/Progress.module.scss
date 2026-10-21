@@ -3,12 +3,14 @@
 
 	appearance: none;
     height: var(--progress-bar-height, 1px);
-    left: 0;
-	position: fixed;
-    right: 0;
-    top: 0;
 	width: var(--progress-bar-width);
-    z-index: 200;
+
+	&--fixed {
+		position: fixed;
+		inset: var(--progress-bar-inset);
+		transform: var(--progress-bar-rotate);
+		z-index: 200;
+	}
 
 	//	background track
 	&::-webkit-progress-bar {
