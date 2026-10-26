@@ -7,9 +7,9 @@ import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import type { ChangeEventHandler } from 'react'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
-import classes from './TextArea.module.scss'
+import classes from './Textarea.module.scss'
 
-const NAME = 'TextArea' as const,
+const NAME = 'Textarea' as const,
 	TAG = 'textarea' as const
 
 const DEFAULT_PROPS = {
@@ -20,7 +20,7 @@ const DEFAULT_PROPS = {
 	min: 3,
 } as const
 
-interface BaseTextAreaProps {
+interface BaseTextareaProps {
 	name: string
 	onChange?: ChangeEventHandler<HTMLTextAreaElement>
 	placeholder?: string
@@ -29,42 +29,42 @@ interface BaseTextAreaProps {
 	value?: string
 }
 
-interface StaticTextAreaProps {
+interface StaticTextareaProps {
 	max?: never
 	min?: never
 	resizable?: false | never
 }
 
-interface DynamicTextAreaProps {
+interface DynamicTextareaProps {
 	max?: number
 	min?: number
 	resizable: true
 }
 
-type SizableTextAreaProps =
-	| DynamicTextAreaProps
-	| StaticTextAreaProps
+type SizableTextareaProps =
+	| DynamicTextareaProps
+	| StaticTextareaProps
 
-type TextAreaProps =
+type TextareaProps =
 	& Omit<Field.SharedProps, 'type'>
-	& BaseTextAreaProps
-	& SizableTextAreaProps
+	& BaseTextareaProps
+	& SizableTextareaProps
 
-interface TextAreaSpecs {
+interface TextareaSpecs {
 	context: Field.Context
 	defaults: {
 		as: typeof TAG
 		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
-	props: TextAreaProps
-	selectors: TextAreaSelectors
-	tokens: TextAreaTokens
+	props: TextareaProps
+	selectors: TextareaSelectors
+	tokens: TextareaTokens
 }
 
-type TextAreaSelectors =
+type TextareaSelectors =
 	| 'root' | 'icon'
 
-type TextAreaTokens = {
+type TextareaTokens = {
 	root:
 		| FlattenFieldTokens
 		| '--textarea-max-rows'
@@ -72,7 +72,7 @@ type TextAreaTokens = {
 		| '--textarea-resize'
 }
 
-const tokens = defineTokens<TextAreaSpecs>()(args => {
+const tokens = defineTokens<TextareaSpecs>()(args => {
 	const { props: { max, min, resizable, rows } } = args
 	const sharedTokens = listSharedTokens(args, 'textarea')
 
@@ -104,7 +104,7 @@ const tokens = defineTokens<TextAreaSpecs>()(args => {
 	return deepMerge(sharedTokens, textareaTokens)
 })
 
-export const TextArea = polymorphic<TextAreaSpecs>((_props, { useProps, useStyles }) => {
+export const Textarea = polymorphic<TextareaSpecs>((_props, { useProps, useStyles }) => {
 	const { useChosenFieldProps, useFieldCtx } = useField(NAME)
 
 	const context = useFieldCtx(NAME)
@@ -141,12 +141,12 @@ export const TextArea = polymorphic<TextAreaSpecs>((_props, { useProps, useStyle
 	)
 }, { name: NAME, classes })
 
-TextArea.set({
+Textarea.set({
 	defaultProps: DEFAULT_PROPS,
 	displayName: NAME,
 })
 
-export declare namespace TextArea {
-	export type Props = TextAreaProps
-	export type Specs = TextAreaSpecs
+export declare namespace Textarea {
+	export type Props = TextareaProps
+	export type Specs = TextareaSpecs
 }

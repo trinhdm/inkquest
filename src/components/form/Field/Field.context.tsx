@@ -70,7 +70,7 @@ const textareaFieldProps = sharedFieldProps.filter(
 ) as FilterTuple<typeof sharedFieldProps, 'type'>
 
 const FIELD_PROP_MAP = {
-	TextArea: textareaFieldProps,
+	Textarea: textareaFieldProps,
 	default: sharedFieldProps,
 } as const
 

@@ -1,12 +1,11 @@
 @use '../shared' as shared;
 
-.inkq-text-area {
+.inkq-textarea {
     @include shared.form-control-text;
 
 	$name: &;
 
 	flex: 1 0 100%;
-
 	max-height: var(--textarea-max-rows, 'none');
 	min-height: var(--textarea-min-rows, 1lh);
 	resize: var(--textarea-resize);

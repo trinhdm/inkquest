@@ -29,7 +29,7 @@ interface ErrorBoundaryState {
 	message?: string
 }
 
-// A `TextArea` outside a `Field` throws. A raw, uncaught throw would take the
+// A `Textarea` outside a `Field` throws. A raw, uncaught throw would take the
 // whole canvas down, so the misuse story wraps it in this local boundary.
 class RenderErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryState> {
 	state: ErrorBoundaryState = {}
@@ -40,7 +40,7 @@ class RenderErrorBoundary extends Component<{ children: ReactNode }, ErrorBounda
 
 	render() {
 		if (this.state.message)
-			return <span data-testid="text-area-error">{ this.state.message }</span>
+			return <span data-testid="textarea-error">{ this.state.message }</span>
 		return this.props.children
 	}
 }
@@ -56,7 +56,7 @@ type FieldWrap = Partial<Pick<Field.Props, 'caption' | 'disabled' | 'error' | 'l
 const read = (el: Element, token: string) =>
 	(el as HTMLElement).style.getPropertyValue(token)
 
-// A `TextArea` is always rendered inside a `Field`, which supplies the id, the
+// A `Textarea` is always rendered inside a `Field`, which supplies the id, the
 // label and the shared state.
 const areaTemplate = (args: AreaStoryProps, id: string, field: FieldWrap = {}) => (
 	<Field id={ id } label="Bio" { ...field }>
@@ -64,8 +64,8 @@ const areaTemplate = (args: AreaStoryProps, id: string, field: FieldWrap = {}) =
 	</Field>
 )
 
-// `NAME` is the undotted `'TextArea'` (it feeds the class names).
-const areaDefaults = getDefaultProps<Field.Textarea.Props>('TextArea')
+// `NAME` is the undotted `'Textarea'` (it feeds the class names).
+const areaDefaults = getDefaultProps<Field.Textarea.Props>('Textarea')
 
 const meta: Meta<AreaStoryProps> = {
 	component: Field.Textarea,
@@ -117,7 +117,7 @@ const meta: Meta<AreaStoryProps> = {
 		},
 		loading: {
 			control: 'boolean',
-			description: 'Accepted but has no effect on a TextArea: it is never rendered with the Field\'s spinner. A Field with `loading` still sets `aria-busy` on it.',
+			description: 'Accepted but has no effect on a Textarea: it is never rendered with the Field\'s spinner. A Field with `loading` still sets `aria-busy` on it.',
 		},
 		size: {
 			control: 'select',
@@ -508,7 +508,7 @@ export const KeyboardFocus: Story = {
 	},
 }
 
-// A `TextArea` reads its Field from context, so on its own it throws.
+// A `Textarea` reads its Field from context, so on its own it throws.
 export const RequiresFieldParent: Story = {
 	parameters: { layout: 'padded' },
 	render: args => (
@@ -528,7 +528,7 @@ export const RequiresFieldParent: Story = {
 
 		await expect(canvas.getByRole('textbox', { name: 'Bio' })).toBeInTheDocument()
 
-		const fallback = await canvas.findByTestId('text-area-error')
-		await expect(fallback).toHaveTextContent('<TextArea /> must be a direct child of <Field>')
+		const fallback = await canvas.findByTestId('textarea-error')
+		await expect(fallback).toHaveTextContent('<Textarea /> must be a direct child of <Field>')
 	},
 }

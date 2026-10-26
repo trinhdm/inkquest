@@ -2,22 +2,22 @@ import userEvent from '@testing-library/user-event'
 import { getDefaultProps } from '@/hooks/useProps'
 import { render, reset, screen } from '@/tests/test-utils'
 import { Field } from '../Field'
-import type { TextArea } from './TextArea'
+import type { Textarea } from './Textarea'
 
 const token = (el: HTMLElement, name: string) => el.style.getPropertyValue(name)
 
-const renderArea = (props: Partial<TextArea.Props> = {}, field: Partial<Field.Props> = {}) =>
+const renderArea = (props: Partial<Textarea.Props> = {}, field: Partial<Field.Props> = {}) =>
 	render(
 		<Field id="bio" label="Bio" { ...field as object }>
 			<Field.Textarea name="bio" { ...props as object } />
 		</Field>
 	)
 
-describe('TextArea', () => {
-	reset('Field', 'TextArea')
+describe('Textarea', () => {
+	reset('Field', 'Textarea')
 
 	it('registers resizable, 4 rows, between 3 and 8 rows', () => {
-		expect(getDefaultProps('TextArea')).toEqual({ resizable: true, rows: 4, max: 8, min: 3 })
+		expect(getDefaultProps('Textarea')).toEqual({ resizable: true, rows: 4, max: 8, min: 3 })
 	})
 
 	it('renders a textbox labelled by its Field', () => {
@@ -105,7 +105,7 @@ describe('TextArea', () => {
 			const area = screen.getByLabelText('Bio')
 			expect(area).toHaveAttribute('aria-invalid', 'true')
 			expect(area).toHaveAccessibleDescription('Too short')
-			expect(area).toHaveClass('text-area--error')
+			expect(area).toHaveClass('textarea--error')
 		})
 
 		it('has no invalid state without an error', () => {
@@ -113,7 +113,7 @@ describe('TextArea', () => {
 
 			const area = screen.getByLabelText('Bio')
 			expect(area).not.toHaveAttribute('aria-invalid')
-			expect(area).not.toHaveClass('text-area--error')
+			expect(area).not.toHaveClass('textarea--error')
 		})
 	})
 

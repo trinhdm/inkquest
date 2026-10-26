@@ -21,7 +21,7 @@ import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import { Choice as ChoiceInput } from '../Choice'
 import { FieldGroup } from './FieldGroup'
-import { TextArea } from '../TextArea'
+import { Textarea as TextareaInput } from '../Textarea'
 import { TextInput } from '../TextInput'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import type { Size } from '@/types/shared'
@@ -41,7 +41,7 @@ export const SUBCOMPONENTS = {
 	Choice: ChoiceInput,
 	Group: FieldGroup,
 	Input: TextInput,
-	Textarea: TextArea,
+	Textarea: TextareaInput,
 	// Upload: FileUpload,
 } as const
 
@@ -337,7 +337,7 @@ export declare namespace Field {
 	}
 
 	export namespace Textarea {
-		export type Props = TextArea.Props
-		export type Specs = TextArea.Specs
+		export type Props = TextareaInput.Props
+		export type Specs = TextareaInput.Specs
 	}
 }

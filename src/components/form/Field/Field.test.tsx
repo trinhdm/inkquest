@@ -4,7 +4,7 @@ import { render, reset, screen } from '@/tests/test-utils'
 import { Field } from './Field'
 
 describe('Field', () => {
-	reset('Field', 'Field.Group', 'TextInput', 'TextArea', 'Choice')
+	reset('Field', 'Field.Group', 'TextInput', 'Textarea', 'Choice')
 
 	let warn: jest.SpyInstance
 
@@ -25,7 +25,7 @@ describe('Field', () => {
 
 		it('exposes its parts through the parent', () => {
 			expect(Field.Input.displayName).toBe('TextInput')
-			expect(Field.Textarea.displayName).toBe('TextArea')
+			expect(Field.Textarea.displayName).toBe('Textarea')
 			expect(Field.Choice.displayName).toBe('Choice')
 			expect(Field.Group.displayName).toBe('Field.Group')
 		})
