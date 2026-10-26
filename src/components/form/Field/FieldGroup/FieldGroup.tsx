@@ -40,7 +40,6 @@ export const FieldGroup = polymorphic<FieldGroupSpecs>((_props, { useProps, useS
 	} = props
 
 	const others = extractOthers(rest, GROUP_CASCADE_PROPS)
-	const clsx = { global: { eyebrow: true } }
 
 	const header = (
 		<legend { ...styles('label') }>
@@ -51,7 +50,7 @@ export const FieldGroup = polymorphic<FieldGroupSpecs>((_props, { useProps, useS
 
 	return (
 		<Group
-			{ ...styles('root', clsx) }
+			{ ...styles('root') }
 			{ ...others }
 			as="fieldset"
 			childName="Field"

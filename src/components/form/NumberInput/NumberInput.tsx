@@ -3,7 +3,7 @@ import { extractOthers } from '@/hooks/useProps'
 import { getSharedTokens, type FieldTokens as NumberInputTokens } from '../utils'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
-import type { ChangeEventHandler, HTMLInputTypeAttribute, MouseEventHandler } from 'react'
+import type { ChangeEventHandler, HTMLInputTypeAttribute } from 'react'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './NumberInput.module.scss'
 
@@ -27,7 +27,6 @@ interface InputDigitProps {
 	iconPosition?: never
 	inputmode: 'numeric' | 'tel'
 	maxLength?: number
-	onIconClick?: never
 	type: Extract<HTMLInputTypeAttribute, 'text'>
 }
 
@@ -35,7 +34,6 @@ interface InputTypeOthersProps {
 	iconPosition?: 'left' | 'right'
 	inputmode?: never
 	maxLength?: never
-	onIconClick?: MouseEventHandler<HTMLSpanElement>
 	type: Extract<HTMLInputTypeAttribute, 'number' | 'tel'>
 }
 
@@ -76,7 +74,7 @@ export const NumberInput = polymorphic<NumberInputSpecs>((_props, { useProps, us
 	const {
 		disabled, loading, iconPosition,
 		inputmode, maxLength,
-		name, onChange, onIconClick,
+		name, onChange,
 		placeholder, readonly, required,
 		size, type, value,
 		...rest
@@ -87,7 +85,7 @@ export const NumberInput = polymorphic<NumberInputSpecs>((_props, { useProps, us
 	return (
 		<>
 			{ (icon && !!inputmode && layout !== 'inline') && (
-				<span { ...styles('icon') } onClick={ onIconClick }>
+				<span { ...styles('icon') }>
 					{ icon }
 				</span>
 			) }

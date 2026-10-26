@@ -9,9 +9,11 @@ import type { ChangeEventHandler } from 'react'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './TextArea.module.scss'
 
-const NAME = 'TextArea' as const
+const NAME = 'TextArea' as const,
+	TAG = 'textarea' as const
 
 const DEFAULT_PROPS = {
+	as: TAG,
 	resizable: true,
 	rows: 4,
 	max: 8,
@@ -50,7 +52,10 @@ type TextAreaProps =
 
 interface TextAreaSpecs {
 	context: Field.Context
-	defaults: { props: PropsDefaultList<typeof DEFAULT_PROPS> }
+	defaults: {
+		as: typeof TAG
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
+	}
 	props: TextAreaProps
 	selectors: TextAreaSelectors
 	tokens: TextAreaTokens
@@ -121,7 +126,7 @@ export const TextArea = polymorphic<TextAreaSpecs>((_props, { useProps, useStyle
 		<Box
 			{ ...styles('root', clsx) }
 			{ ...others }
-			as="textarea"
+			as={ TAG }
 			attributes={ { aria } }
 			disabled={ disabled }
 			id={ idx.control }

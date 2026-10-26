@@ -95,19 +95,6 @@ describe('TextInput', () => {
 			expect(container.querySelector('.text-input__icon svg')).toBeInTheDocument()
 		})
 
-		it('calls onIconClick when the icon is clicked', async () => {
-			const user = userEvent.setup()
-			const onIconClick = jest.fn()
-			const { container } = render(
-				<Field id="a" label="A">
-					<Field.Input name="a" onIconClick={ onIconClick } type="password" />
-				</Field>
-			)
-
-			await user.click(container.querySelector('.text-input__icon') as HTMLElement)
-			expect(onIconClick).toHaveBeenCalledTimes(1)
-		})
-
 		it('puts the icon on the left by default and the right when asked', () => {
 			render(
 				<>

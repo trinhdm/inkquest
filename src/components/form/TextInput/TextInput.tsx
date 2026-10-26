@@ -8,9 +8,11 @@ import type { ChangeEventHandler, HTMLInputTypeAttribute, MouseEventHandler } fr
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './TextInput.module.scss'
 
-const NAME = 'TextInput' as const
+const NAME = 'TextInput' as const,
+	TAG = 'input' as const
 
 const DEFAULT_PROPS = {
+	as: TAG,
 	required: false,
 	type: 'text',
 } as const
@@ -25,13 +27,11 @@ interface BaseTextInputProps {
 
 interface InputTypeTextProps {
 	iconPosition?: never
-	onIconClick?: never
 	type?: Extract<Extract<HTMLInputTypeAttribute, TextInput.Types>, 'text'>
 }
 
 interface InputTypeOthersProps {
 	iconPosition?: 'left' | 'right'
-	onIconClick?: MouseEventHandler<HTMLSpanElement>
 	type: Exclude<Extract<HTMLInputTypeAttribute, TextInput.Types>, 'text'>
 }
 
@@ -46,7 +46,10 @@ type TextInputProps =
 
 interface TextInputSpecs {
 	context: Field.Context
-	defaults: { props: PropsDefaultList<typeof DEFAULT_PROPS> }
+	defaults: {
+		as: typeof TAG
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
+	}
 	props: TextInputProps
 	selectors: TextInputSelectors
 	tokens: TextInputTokens
@@ -71,7 +74,7 @@ export const TextInput = polymorphic<TextInputSpecs>((_props, { useProps, useSty
 
 	const {
 		disabled, loading, iconPosition,
-		name, onChange, onIconClick,
+		name, onChange,
 		placeholder, readonly, required,
 		size, type, value,
 		...rest
@@ -82,7 +85,7 @@ export const TextInput = polymorphic<TextInputSpecs>((_props, { useProps, useSty
 	return (
 		<>
 			{ (icon && layout !== 'inline') && (
-				<span { ...styles('icon') } onClick={ onIconClick }>
+				<span { ...styles('icon') }>
 					{ type === 'password' ? <Eye aria-hidden /> : icon }
 				</span>
 			) }
@@ -90,7 +93,7 @@ export const TextInput = polymorphic<TextInputSpecs>((_props, { useProps, useSty
 			<Box
 				{ ...styles('root', clsx) }
 				{ ...others }
-				as="input"
+				as={ TAG }
 				attributes={ { aria } }
 				disabled={ !!disabled }
 				id={ idx.control }

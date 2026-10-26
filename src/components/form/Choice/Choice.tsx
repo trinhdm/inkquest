@@ -7,9 +7,11 @@ import type { ChangeEventHandler, HTMLInputTypeAttribute, MouseEventHandler } fr
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Choice.module.scss'
 
-const NAME = 'Choice' as const
+const NAME = 'Choice' as const,
+	TAG = 'input' as const
 
 const DEFAULT_PROPS = {
+	as: TAG,
 	type: 'radio',
 } as const
 
@@ -41,7 +43,10 @@ type ChoiceProps =
 
 interface ChoiceSpecs {
 	context: Field.Context
-	defaults: { props: PropsDefaultList<typeof DEFAULT_PROPS> }
+	defaults: {
+		as: typeof TAG
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
+	}
 	props: ChoiceProps
 	selectors: ChoiceSelectors
 	tokens: ChoiceTokens
@@ -74,7 +79,7 @@ export const Choice = polymorphic<ChoiceSpecs>((_props, { useProps, useStyles })
 		<Box
 			{ ...styles('root', clsx) }
 			{ ...others }
-			as="input"
+			as={ TAG }
 			attributes={ { aria } }
 			disabled={ disabled }
 			id={ idx.control }

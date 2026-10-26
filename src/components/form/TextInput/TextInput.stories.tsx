@@ -86,16 +86,12 @@ const meta: Meta<InputStoryProps> = {
 		type: {
 			control: 'select',
 			options: INPUT_TYPE_OPTIONS,
-			description: 'Registered default `\'text\'`. A Field (or Field.Group) `type` is used when the input sets none. Every type except `text` gets a leading icon and accepts `iconPosition`/`onIconClick`. See the `Types` story.',
+			description: 'Registered default `\'text\'`. A Field (or Field.Group) `type` is used when the input sets none. Every type except `text` gets a leading icon and accepts `iconPosition`. See the `Types` story.',
 		},
 		iconPosition: {
 			control: 'select',
 			options: ICON_POSITION_OPTIONS,
 			description: 'Only for icon types (anything but `text`). Sets `--form-control-icon-inset` on the icon (`0 auto` left, the default; `auto 0` right). See the `IconPosition` story.',
-		},
-		onIconClick: {
-			control: false,
-			description: 'Only for icon types. Called when the icon is clicked. A `password` icon is an eye, but nothing reveals the password by itself. See the `IconClick` story.',
 		},
 		readonly: {
 			control: 'boolean',
@@ -214,23 +210,6 @@ export const IconPosition: Story = {
 		await expect(read(defaultInput.previousElementSibling as Element, '--form-control-icon-inset')).toBe('0 auto')
 		await expect(read(leftInput.previousElementSibling as Element, '--form-control-icon-inset')).toBe('0 auto')
 		await expect(read(rightInput.previousElementSibling as Element, '--form-control-icon-inset')).toBe('auto 0')
-	},
-}
-
-export const IconClick: Story = {
-	args: {
-		type: 'password',
-		onIconClick: fn(),
-	},
-	play: async ({ args, canvasElement }) => {
-		const input = within(canvasElement).getByLabelText('Name'),
-			icon = input.previousElementSibling as HTMLElement
-
-		await userEvent.click(icon)
-		await expect(args.onIconClick).toHaveBeenCalledTimes(1)
-
-		// the icon alone does not change the input
-		await expect(input).toHaveAttribute('type', 'password')
 	},
 }
 
