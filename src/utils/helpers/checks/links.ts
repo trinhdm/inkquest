@@ -6,16 +6,13 @@ const URL_SCHEME = /^[a-z][a-z0-9+.-]*:/i,
 export const isExternalLink = (href?: string) => {
 	if (!href) return false
 
-	const isInternal = href.startsWith('/') || href.startsWith('#')
-	if (isInternal) return false
-
 	const isHttp = HTTP_SCHEME.test(href),
 		isUrlScheme = URL_SCHEME.test(href),
 		sameProtocol = href.startsWith('//')
 
-	if (!isUrlScheme && !sameProtocol) return false		//	same-origin relative paths, hashes, etc.
-	if (isUrlScheme && !isHttp) return false			//	external schemes - e.g. mailto:, tel:
-	if (!SITE_URL) return true							//	fallback
+	if (!isUrlScheme && !sameProtocol) return false		//	relative paths, hashes, queries
+	if (!isHttp && !sameProtocol) return false			//	other schemes - e.g. mailto:, tel:
+	if (!SITE_URL) return true							//	fallback - nothing to compare against
 
 	try {
 		const url = new URL(href, SITE_URL).hostname

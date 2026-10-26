@@ -1,39 +1,26 @@
-import type { CalendarDate } from '@/types/shared'
+import type { CalendarDate, DatePart } from '@/types/shared'
+
+const isAbbrev = (key: DatePart, withAbbr: DatePart[] | true) =>
+	withAbbr === true || withAbbr.includes(key)
+
+const readDate = (key: DatePart, date: CalendarDate) =>
+	String(date[key] ?? '').trim()
 
 export const formatDate = (
 	date?: CalendarDate,
-	withAbbr: (keyof CalendarDate)[] | true = [],
+	withAbbr: DatePart[] | true = [],
 ): string => {
 	if (!date) return ''
 
-	const calendar: string[] = [],
-		parts = Object.keys(date) as (keyof CalendarDate)[]
+	const month = readDate('month', date),
+		day = readDate('day', date),
+		year = readDate('year', date)
 
-	for (const key of parts) {
-		const value = String(date[key]) as Extract<CalendarDate[typeof key], string>
+	const parts = [
+		month && (isAbbrev('month', withAbbr) ? month.slice(0, 3) : month),
+		day && (year ? `${day},` : day),
+		year && (isAbbrev('year', withAbbr) ? `'${year.slice(-2)}` : year),
+	]
 
-		if (!!value.length) {
-			const isAbbrev = Array.isArray(withAbbr) ? withAbbr.includes(key) : true
-			let index, output: string = value
-
-			switch (key) {
-				case 'month':
-					if (isAbbrev) output = value.slice(0, 3)
-					index = 0
-					break
-				case 'day':
-					if (parts.includes('year')) output += `,`
-					index = 1
-					break
-				case 'year':
-					if (isAbbrev) output = value.slice(-2)
-					index = 2
-					break
-			}
-
-			calendar.splice(index, 0, output)
-		}
-	}
-
-	return calendar.join(' ')
+	return parts.filter(Boolean).join(' ')
 }

@@ -15,7 +15,7 @@ type CalendarDay =
 
 type CalendarYear =
 	| `19${DayNum}`
-	| `20${DayNum<'1'>}`
+	| `20${DayNum<'0' | '1'>}`
 	| `20${DayNum<'2', Exclude<Digit, '7' | '8' | '9'>>}`
 
 export interface CalendarDate {
@@ -23,3 +23,6 @@ export interface CalendarDate {
 	day?: CalendarDay | StrToNum<CalendarDay>
 	year: CalendarYear | StrToNum<CalendarYear>
 }
+
+export type DatePart =
+	keyof CalendarDate
