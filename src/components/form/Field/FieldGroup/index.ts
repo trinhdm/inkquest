@@ -1,2 +1,2 @@
 export { FieldGroup } from './FieldGroup'
-export { useFieldGroupProps } from './FieldGroup.context'
+export { useFieldGroup } from './FieldGroup.context'

@@ -9,8 +9,10 @@ import { defineSharedTokens, type TokensParams } from '@/lib/component/tokens'
 import { keyHasValue } from '@/utils/helpers'
 import type { HTMLInputTypeAttribute } from 'react'
 import type { Field } from './Field'
-import type { SpecsTokenGroups } from '@/lib/component/factory/types'
+import type { Form } from './Form'
+import type { SafeRootCtxValue } from '@/lib/component/context'
 import type { SiteThemeConfig } from '@/lib/theme/types'
+import type { SpecsTokenGroups } from '@/lib/component/factory/types'
 
 export const getIcon = (type?: HTMLInputTypeAttribute) => {
 	switch (type) {
@@ -30,30 +32,71 @@ export const getIcon = (type?: HTMLInputTypeAttribute) => {
 	}
 }
 
-export type FieldTokens = {
+
+type FieldSpecsList = {
+	group: Field.Group.Specs
+	root: Field.Specs
+}
+
+type FieldName =
+	keyof FieldSpecsList
+
+interface FormErrorsArgs<N extends FieldName> {
+	context?: {
+		form?: SafeRootCtxValue<Form.Context, 'Form'>
+		group?: SafeRootCtxValue<Field.Group.Context, 'Field.Group'>
+	}
+	name: string | undefined
+	props: FieldSpecsList[N]['props']
+}
+
+export const getFormErrors = <N extends FieldName>({
+	context = {},
+	name,
+	props,
+}: FormErrorsArgs<N>) => {
+	const { form, group } = context ?? { form: undefined, group: undefined }
+
+	const formError = name && !group ? form?.errors[name] : undefined,
+		propError = keyHasValue(props, 'error') && typeof props.error === 'string'
+			? props.error
+			: undefined
+
+	const error = propError ?? formError,
+		invalid = keyHasValue(props, 'invalid') ? props.invalid : undefined
+
+	const hasError = !!error?.trim(),
+		isInvalid = hasError || !!invalid
+
+	return { error, hasError, isInvalid }
+}
+
+
+export type InputTokens = {
 	root:
 		| '--form-control-padding'
 	icon:
 		| '--form-control-icon-inset'
 }
 
-export type FlattenFieldTokens =
-	FieldTokens[keyof FieldTokens]
+export type FlattenInputTokens =
+	InputTokens[keyof InputTokens]
 
-type FieldSpecsList = {
+type InputSpecsList = {
 	choice: Field.Choice.Specs
 	input: Field.Input.Specs
+	number: Field.Number.Specs
 	textarea: Field.Textarea.Specs
-		& { tokens: { root: FlattenFieldTokens } }
+		& { tokens: { root: FlattenInputTokens } }
 }
 
-type FieldName =
-	keyof FieldSpecsList
+type InputName =
+	keyof InputSpecsList
 
-export type FieldPropsList<N extends FieldName = FieldName> =
-	FieldSpecsList[N]['props']
+export type InputPropsList<N extends InputName = InputName> =
+	InputSpecsList[N]['props']
 
-export const calcFieldBox = (
+export const calcInputBox = (
 	size: Field.Props['size'],
 	theme: SiteThemeConfig,
 ) => {
@@ -75,50 +118,71 @@ export const calcFieldBox = (
 	}
 }
 
+const determineInputTokens = <
+	N extends InputName,
+	S extends InputSpecsList[N]
+>({
+	context,
+	props,
+	theme,
+}: TokensParams<S>) => {
+	if (!context) return
+
+	const { icon, layout } = context
+	const size = props.size ?? context.size,
+		fieldBox = calcInputBox(size, theme)
+
+	if (!fieldBox) return
+
+	const { blockPadding, inlinePadding, iconPadding } = fieldBox
+	const buffer = layout === 'inline' ? `calc(3 * ${iconPadding})` : iconPadding,
+		padding = `${blockPadding} ${inlinePadding}`
+
+	let iconPosition
+	const isPassword = keyHasValue(props, { type: 'password' })
+	const isIconLeft = !keyHasValue(props, 'iconPosition')
+		|| keyHasValue(props, { iconPosition: 'left' })
+
+	if (isPassword) iconPosition = 'auto 0'
+	else if (!!icon) iconPosition = isIconLeft ? '0 auto' : 'auto 0'
+
+	const controlPadding = isIconLeft && !isPassword
+		? `${padding} ${blockPadding} ${buffer}`
+		: `${blockPadding} ${buffer} ${padding}`
+
+	return {
+		fieldPadding: !!icon ? controlPadding : padding,
+		iconPosition,
+	}
+}
+
 export const listSharedTokens = <
-	N extends FieldName = 'input',
-	S extends FieldSpecsList[N] = FieldSpecsList[N]
+	N extends InputName = 'input',
+	S extends InputSpecsList[N] = InputSpecsList[N]
 >(
 	args: TokensParams<S>,
 	name: N = 'input' as N,
 ): SpecsTokenGroups<S> => {
-	const { context, props, theme } = args
-	if (!context) return {} as SpecsTokenGroups<S>
+	const sharedTokens = determineInputTokens<N, S>(args)
 
-	const { icon, layout } = context
-	const size = props.size ?? context.size
+	if (!sharedTokens) return {} as SpecsTokenGroups<S>
+	const { fieldPadding, iconPosition } = sharedTokens
 
-	const fieldBox = calcFieldBox(size, theme)
-	if (!fieldBox) return {} as SpecsTokenGroups<S>
-
-	const { blockPadding, inlinePadding, iconPadding } = fieldBox
-
-	const isIconLeft = !keyHasValue(props, 'iconPosition')
-		|| keyHasValue(props, { iconPosition: 'left' })
-
-	const iconPosition = !!icon && isIconLeft ? '0 auto' : 'auto 0',
-		buffer = layout === 'inline' ? `calc(3 * ${iconPadding})` : iconPadding,
-		padding = `${blockPadding} ${inlinePadding}`
-
-	const controlPadding = isIconLeft
-		? `${padding} ${blockPadding} ${buffer}`
-		: `${blockPadding} ${buffer} ${padding}`
-
-	const tokens: SpecsTokenGroups<FieldSpecsList['input']> = {
+	const tokens: SpecsTokenGroups<InputSpecsList['input']> = {
 		root: {
-			'--form-control-padding': !!icon ? controlPadding : padding,
+			'--form-control-padding': fieldPadding,
 		},
 		icon: {
 			'--form-control-icon-inset': iconPosition,
 		},
 	}
 
-	const textarea: SpecsTokenGroups<FieldSpecsList['textarea']> = {
+	const textarea: SpecsTokenGroups<InputSpecsList['textarea']> = {
 		root: { ...tokens.root, ...tokens.icon },
 	}
 
 	return (name === 'textarea' ? textarea : tokens) as SpecsTokenGroups<S>
 }
 
-export const getSharedTokens = <N extends FieldName = 'input'>(name: N = 'input' as N) =>
-	defineSharedTokens<FieldSpecsList, N>(listSharedTokens, name)
+export const getSharedTokens = <N extends InputName = 'input'>(name: N = 'input' as N) =>
+	defineSharedTokens<InputSpecsList, N>(listSharedTokens, name)

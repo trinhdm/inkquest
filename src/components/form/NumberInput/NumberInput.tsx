@@ -1,6 +1,6 @@
 import { useField, type Field } from '../Field'
 import { extractOthers } from '@/hooks/useProps'
-import { getSharedTokens, type FieldTokens as NumberInputTokens } from '../utils'
+import { getSharedTokens, type InputTokens as NumberInputTokens } from '../utils'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import type { ChangeEventHandler, HTMLInputTypeAttribute } from 'react'

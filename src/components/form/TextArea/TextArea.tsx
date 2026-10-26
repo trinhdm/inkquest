@@ -2,7 +2,7 @@ import { useField, type Field } from '../Field'
 import { deepMerge } from '@/utils/helpers'
 import { defineTokens } from '@/lib/component/tokens'
 import { extractOthers } from '@/hooks/useProps'
-import { listSharedTokens, type FlattenFieldTokens } from '../utils'
+import { listSharedTokens, type FlattenInputTokens } from '../utils'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import type { ChangeEventHandler } from 'react'
@@ -66,7 +66,7 @@ type TextareaSelectors =
 
 type TextareaTokens = {
 	root:
-		| FlattenFieldTokens
+		| FlattenInputTokens
 		| '--textarea-max-rows'
 		| '--textarea-min-rows'
 		| '--textarea-resize'

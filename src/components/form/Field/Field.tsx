@@ -11,11 +11,12 @@ import {
 } from './Field.context'
 
 import { LoaderCircle } from 'lucide-react'
-import { useFieldGroupProps } from './FieldGroup'
+import { useFieldGroup } from './FieldGroup'
+import { useFormCtx, type Form } from '../Form'
 import { defineTokens } from '@/lib/component/tokens'
 import { extractOthers } from '@/hooks/useProps'
 import { filterChildren } from '@/lib/component/children'
-import { calcFieldBox, getIcon, type FieldPropsList } from '../utils'
+import { calcInputBox, getFormErrors, getIcon, type InputPropsList } from '../utils'
 import { keyHasValue, toKebabCase } from '@/utils/helpers'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
@@ -51,6 +52,7 @@ interface BaseFieldProps {
 	disabled?: boolean
 	error?: string
 	id: string
+	invalid?: boolean
 	label?: string
 	loading?: boolean
 	readonly?: boolean
@@ -89,7 +91,7 @@ type FieldProps =
 	& FieldLayoutProps
 
 interface FieldSpecs {
-	context: FieldGroup.Context
+	context: Form.Context | FieldGroup.Context
 	defaults: {
 		as: typeof TAG
 		props: PropsDefaultList<typeof DEFAULT_PROPS>
@@ -116,6 +118,7 @@ interface FieldParts {
 	control: ReactNode
 	icon: ReactNode
 	loader: ReactNode
+	name: string | undefined
 }
 
 const buildField = (
@@ -132,16 +135,18 @@ const buildField = (
 		control: null,
 		icon: null,
 		loader: null,
+		name: undefined,
 	}
 
-	if (isValidElement<FieldPropsList>(control)) {
+	if (isValidElement<InputPropsList>(control)) {
 		const { props: controlProps } = control,
 			clsxControl = layout === 'button' ? { global: { 'sr': true } } : {}
 
 		parts.control = <div { ...styles('control', clsxControl) }>{ control }</div>
+		parts.name = controlProps.name
 
 		if (control.type === TextInput) {
-			const type = (controlProps as FieldPropsList<'input'>).type ?? props.type
+			const type = (controlProps as InputPropsList<'input'>).type ?? props.type
 
 			if (!!type) {
 				const icon = getIcon(type)
@@ -157,7 +162,7 @@ const buildField = (
 }
 
 const tokens = defineTokens<FieldSpecs>()(({ props, theme }) => {
-	const fieldBox = calcFieldBox(props.size, theme)
+	const fieldBox = calcInputBox(props.size, theme)
 
 	if (!fieldBox) return {}
 	const { blockPadding, inlinePadding, iconSize } = fieldBox
@@ -172,22 +177,34 @@ const tokens = defineTokens<FieldSpecs>()(({ props, theme }) => {
 })
 
 export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) => {
+	const { useFieldGroupCtx, useFieldGroupProps } = useFieldGroup()
+
+	const context = {
+		form: useFormCtx(),
+		group: useFieldGroupCtx(),
+	}
+
 	const props = useProps(useFieldGroupProps(_props))
 	const styles = useStyles({ props, tokens })
 
 	const {
 		as, caption, children,
-		disabled, error, id,
-		label, labelPosition, layout,
+		disabled, error: propError,
+		id, invalid, label,
+		labelPosition, layout,
 		loading, readonly, required,
 		size, type, unstyled,
 		...rest
 	} = props
 
-	const { control, icon, loader } = buildField(props, styles)
-
 	const others = extractOthers(rest)
-	const hasError = !!error?.trim()
+
+	const {
+		control, icon,
+		loader, name,
+	} = buildField(props, styles)
+
+	const { error, hasError, isInvalid } = getFormErrors({ context, name, props })
 
 	const uid = useId()
 	const idx = useMemo(() => {
@@ -203,12 +220,12 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 		return {
 			busy: !!loading || undefined,
 			describedby: describedby.join(' '),
-			invalid: hasError || undefined,
+			invalid: isInvalid || undefined,
 			required: !!required || undefined,
 		}
 	}, [
 		caption, hasError, idx,
-		loading, required,
+		isInvalid, loading, required,
 	])
 
 	const clsx = useMemo(() => ({

@@ -2,7 +2,7 @@ import { useState, type ChangeEventHandler, type HTMLInputTypeAttribute } from '
 import { Eye, EyeClosed } from 'lucide-react'
 import { useField, type Field } from '../Field'
 import { extractOthers } from '@/hooks/useProps'
-import { getSharedTokens, type FieldTokens as TextInputTokens } from '../utils'
+import { getSharedTokens, type InputTokens as TextInputTokens } from '../utils'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import { Button } from '@/components/core/Button'
@@ -77,8 +77,8 @@ export const TextInput = polymorphic<TextInputSpecs>((_props, { useProps, useSty
 	} = context
 
 	const {
-		disabled, loading, iconPosition,
-		name, onChange,
+		disabled, iconPosition,
+		loading, name, onChange,
 		placeholder, readonly, required,
 		size, type, value,
 		...rest
@@ -87,14 +87,14 @@ export const TextInput = polymorphic<TextInputSpecs>((_props, { useProps, useSty
 	const others = extractOthers(rest)
 
 	const isPassword = type === 'password',
-		hasIcon = !!(icon || isPassword),
+		hasIcon = !!(icon || isPassword) && layout !== 'inline',
 		inputType = isPassword && shown ? 'text' : type
 
 	const handleShown = () => { setShown(prev => !prev) }
 
 	return (
 		<>
-			{ (hasIcon && layout !== 'inline') && (
+			{ hasIcon && (
 				<span { ...styles('icon') }>
 					{ isPassword ? (
 						<Button

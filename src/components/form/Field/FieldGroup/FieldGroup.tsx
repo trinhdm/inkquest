@@ -1,5 +1,9 @@
+import { useId } from 'react'
+import { useFormCtx, type Form } from '../../Form'
 import { extractOthers } from '@/hooks/useProps'
+import { getFormErrors } from '../../utils'
 import { polymorphic } from '@/lib/component/factory'
+import { toKebabCase } from '@/utils/helpers'
 import { FieldGroupProvider, type FieldGroupContext } from './FieldGroup.context'
 import { Group, GROUP_CASCADE_PROPS } from '@/components/layout/Group'
 import type { Field } from '../Field'
@@ -10,6 +14,7 @@ const NAME = 'Field.Group' as const
 interface BaseFieldGroupProps {
 	disabled?: Field.Props['disabled']
 	legend: string
+	name?: string
 	required?: Field.Props['required']
 	type?: Field.Props['type']
 }
@@ -20,28 +25,37 @@ type FieldGroupProps =
 	& Field.LayoutProps
 
 interface FieldGroupSpecs {
+	context: Form.Context
 	isCompound: true
 	props: FieldGroupProps
 	selectors: FieldGroupSelectors
 }
 
 type FieldGroupSelectors =
-	| 'root' | 'label' | 'required'
+	| 'root' | 'label'
+	| 'required' | 'error'
 
 export const FieldGroup = polymorphic<FieldGroupSpecs>((_props, { useProps, useStyles }) => {
+	const context = { form: useFormCtx() }
 	const props = useProps(_props)
 	const styles = useStyles({ props })
 
 	const {
 		children, disabled, labelPosition,
-		layout, legend, required,
-		type, unstyled,
+		layout, legend, name,
+		required, type, unstyled,
 		...rest
 	} = props
 
 	const others = extractOthers(rest, GROUP_CASCADE_PROPS)
 
-	const header = (
+	const uid = useId(),
+		errorID = `${toKebabCase(uid)}-error`
+
+	const { error, hasError, isInvalid } = getFormErrors({ context, name, props })
+
+	const errorEl = hasError && <span { ...styles('error') } id={ errorID }>{ error }</span>
+	const labelEl = (
 		<legend { ...styles('label') }>
 			{ legend }
 			{ !!required && <span { ...styles('required') } aria-hidden="true">*</span> }
@@ -53,12 +67,16 @@ export const FieldGroup = polymorphic<FieldGroupSpecs>((_props, { useProps, useS
 			{ ...styles('root') }
 			{ ...others }
 			as="fieldset"
+			attributes={ { aria: {
+				describedby: hasError ? errorID : undefined,
+			} } }
 			childName="Field"
-			header={ header }
+			header={ <>{ labelEl }{ errorEl }</> }
 			provider={ FieldGroupProvider }
 			values={ {
-				disabled, labelPosition,
-				layout, type, unstyled,
+				disabled, invalid: isInvalid,
+				labelPosition, layout,
+				required, type, unstyled,
 			} }
 		>
 			{ children }
