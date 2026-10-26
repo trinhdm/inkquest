@@ -1,9 +1,11 @@
 import {
-	useMemo, useRef,
+	useEffect, useMemo,
+	useRef, useState,
 	type ReactNode,
 	type SubmitEvent, type SubmitEventHandler,
 } from 'react'
 
+import { CircleAlert, CircleCheck } from 'lucide-react'
 import { extractOthers } from '@/hooks/useProps'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
@@ -19,15 +21,20 @@ const DEFAULT_PROPS = {
 	as: TAG,
 	columns: 1,
 	errors: {},
+	pendingMessage: 'Sending...',
+	shiftFocus: true,
 } as const
 
 interface FormProps {
 	children: ReactNode
 	columns?: Grid.Props['columns']
 	errors?: FormContext['errors']
+	formError?: string
 	message?: string
 	onSubmit?: SubmitEventHandler<HTMLFormElement>
 	pending?: boolean
+	pendingMessage?: string
+	shiftFocus?: boolean
 }
 
 interface FormSpecs {
@@ -43,6 +50,7 @@ type FormSelectors =
 	| 'root' | 'status' | 'message'
 
 export const Form = polymorphic<FormSpecs>((_props, { useProps, useStyles }) => {
+	const [attempt, setAttempt] = useState(0)
 	const ref = useRef<HTMLFormElement>(null)
 
 	const props = useProps(_props)
@@ -50,8 +58,8 @@ export const Form = polymorphic<FormSpecs>((_props, { useProps, useStyles }) => 
 
 	const {
 		children, columns,
-		errors, message,
-		onSubmit, pending,
+		errors, formError, message, onSubmit,
+		pending, pendingMessage, shiftFocus,
 		...rest
 	} = props
 
@@ -62,14 +70,29 @@ export const Form = polymorphic<FormSpecs>((_props, { useProps, useStyles }) => 
 		pending: !!pending,
 	}), [errors, pending])
 
+	useEffect(() => {		//	moves focus to the first invalid control whenever errors change
+		const form = ref.current
+		if (!shiftFocus || !errors || !form) return
+
+		form.querySelector<HTMLInputElement>('[aria-invalid="true"]')?.focus()
+	}, [errors, shiftFocus])
+
 	const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
 		if (pending) {
 			event.preventDefault()
 			return
 		}
 
+		setAttempt(count => count + 1)
 		onSubmit?.(event)
 	}
+
+	const text = pending ? pendingMessage
+		: formError ?? message
+	const kind = pending ? undefined
+		: formError ? 'error'
+			: message ? 'success'
+				: undefined
 
 	return (
 		<Box
@@ -88,7 +111,13 @@ export const Form = polymorphic<FormSpecs>((_props, { useProps, useStyles }) => 
 			</FormProvider>
 
 			<p { ...styles('status') } role="status">
-				{ message }
+				{ !!text && (
+					<span key={ attempt } { ...styles('message') } data-kind={ kind }>
+						{ kind === 'error' && <CircleAlert aria-hidden /> }
+						{ kind === 'success' && <CircleCheck aria-hidden /> }
+						{ text }
+					</span>
+				) }
 			</p>
 		</Box>
 	)
