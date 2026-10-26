@@ -25,26 +25,36 @@ interface _BaseSpecs<P extends object = object> {
 }
 
 interface _CompoundSpecs {
-	defaults?: {
+	defaults?: SpecsContract['defaults'] & {
 		as?: never
-		props?: PropertyKey
 	}
 	isCompound: true
+	isGroup?: false
+	subcomponents?: never
+}
+
+interface _GroupSpecs {
+	defaults?: SpecsContract['defaults'] & {
+		as?: any
+	}
+	isCompound?: false
+	isGroup: true
 	subcomponents?: never
 }
 
 interface _RootSpecs {
-	defaults?: {
+	defaults?: SpecsContract['defaults'] & {
 		as?: any
-		props?: PropertyKey
 	}
 	isCompound?: false
+	isGroup?: false
 	subcomponents?: SpecsContract['subcomponents']
 }
 
 type _ComponentSpecs =
 	| _RootSpecs
 	| _CompoundSpecs
+	| _GroupSpecs
 
 export type Specs<P extends object = object> =
 	& _BaseSpecs<P>

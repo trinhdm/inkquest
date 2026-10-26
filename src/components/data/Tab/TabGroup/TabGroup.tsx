@@ -14,8 +14,11 @@ import { TabPanel, TabPanelProvider } from '../TabPanel'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from '../Tab.module.scss'
 
-const NAME = 'Tab.Group' as const
+const NAME = 'Tab.Group' as const,
+	TAG = 'div' as const
+
 const DEFAULT_PROPS = {
+	as: TAG,
 	defaultActive: 0,
 } as const
 
@@ -25,8 +28,11 @@ interface TabGroupProps {
 }
 
 interface TabGroupSpecs {
-	defaults: { props: PropsDefaultList<typeof DEFAULT_PROPS> }
-	isCompound: true
+	defaults: {
+		as: typeof TAG
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
+	}
+	isGroup: true
 	props: TabGroupProps
 	selectors: TabGroupSelectors
 }
@@ -41,7 +47,13 @@ export const TabGroup = polymorphic<TabGroupSpecs>((_props, { useProps, useStyle
 	const props = useProps(_props)
 	const styles = useStyles({ props })
 
-	const { children, defaultActive, id, unstyled, ...rest } = props
+	const {
+		as, children,
+		defaultActive,
+		id, unstyled,
+		...rest
+	} = props
+
 	const others = extractOthers(rest)
 
 	const [active, setActive] = useState(() => defaultActive)
@@ -68,7 +80,7 @@ export const TabGroup = polymorphic<TabGroupSpecs>((_props, { useProps, useStyle
 		<Box
 			{ ...styles('root') }
 			{ ...others }
-			as="div"
+			as={ as }
 			id={ uid }
 		>
 			<TabGroupProvider value={ ctxValues }>

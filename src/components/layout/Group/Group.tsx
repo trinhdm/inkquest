@@ -72,11 +72,12 @@ type GroupProps<Ctx extends GroupContext = GroupContext> =
 	& NestedGroupProps<Ctx>
 	& MaybeAnimationProps
 
-type GroupSpecs = {
+interface GroupSpecs {
 	defaults: {
 		as: typeof TAG
 		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
+	// isGroup: true
 	props: GroupProps<GroupContext>
 	selectors: GroupSelectors
 	subcomponents: typeof SUBCOMPONENTS
@@ -141,7 +142,7 @@ export const GroupBase = polymorphic<GroupSpecs>((_props, { useProps, useStyles 
 		total = items.length
 
 	const isUnstyled = useMemo(
-		() => (keyHasValue(values, { unstyled: true }) ? values.unstyled : props.unstyled),
+		() => (!!(keyHasValue(values, { unstyled: true }) ? values.unstyled : props.unstyled)),
 		[props.unstyled, values]
 	)
 
@@ -173,6 +174,7 @@ export const GroupBase = polymorphic<GroupSpecs>((_props, { useProps, useStyles 
 			} }
 			ref={ ref }
 			role={ !!as && GROUP_TAGS.includes(as) ? undefined : 'group' }
+			unstyled={ isUnstyled }
 		>
 			{ header }
 			{ withProvider(items, Provider, ctxValues) }

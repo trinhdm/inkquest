@@ -7,10 +7,12 @@ import type { PropsDefaultList } from '@/lib/component/factory/types'
 import type { Statistic } from '../Statistic'
 import classes from '../Statistic.module.scss'
 
-const NAME = 'Statistic.Group' as const
+const NAME = 'Statistic.Group' as const,
+	TAG = 'div' as const
 
 const DEFAULT_PROPS = {
 	animated: true,
+	as: TAG,
 	columns: 4,
 	divider: true,
 	duration: 3000,
@@ -26,9 +28,12 @@ interface StatisticGroupProps
 	size?: Statistic.Props['size']
 }
 
-type StatisticGroupSpecs = {
-	defaults: { props: PropsDefaultList<typeof DEFAULT_PROPS> }
-	isCompound: true
+interface StatisticGroupSpecs {
+	defaults: {
+		as: typeof TAG
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
+	}
+	isGroup: true
 	props: StatisticGroupProps
 	selectors: StatisticGroupSelectors
 	tokens: StatisticGroupTokens
@@ -48,7 +53,7 @@ export const StatisticGroup = polymorphic<StatisticGroupSpecs>((_props, { usePro
 	const styles = useStyles({ props, tokens })
 
 	const {
-		children, order,
+		as, children, order,
 		size, unstyled,
 		...rest
 	} = props
@@ -59,6 +64,7 @@ export const StatisticGroup = polymorphic<StatisticGroupSpecs>((_props, { usePro
 		<Group
 			{ ...styles('root') }
 			{ ...others }
+			as={ as }
 			childName="Statistic"
 			provider={ StatisticGroupProvider }
 			values={ { order, size, unstyled } }

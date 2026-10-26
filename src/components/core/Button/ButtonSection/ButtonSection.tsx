@@ -22,7 +22,7 @@ type ButtonSectionProps = (
 	| RightSectionProps
 )
 
-type ButtonSectionSpecs = {
+interface ButtonSectionSpecs {
 	context: Button.Context
 	isCompound: true
 	props: ButtonSectionProps

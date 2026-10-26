@@ -12,9 +12,11 @@ import type { AccordionGroupContext, AccordionGroupType } from './AccordionGroup
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from '../Accordion.module.scss'
 
-const NAME = 'Accordion.Group' as const
+const NAME = 'Accordion.Group' as const,
+	TAG = 'div' as const
 
 const DEFAULT_PROPS = {
+	as: TAG,
 	collapsible: 'single',
 	defaultOpen: 0,
 	order: 3,
@@ -30,9 +32,12 @@ interface AccordionGroupProps {
 	size?: Accordion.Props['size']
 }
 
-type AccordionGroupSpecs = {
-	defaults: { props: PropsDefaultList<typeof DEFAULT_PROPS> }
-	isCompound: true
+interface AccordionGroupSpecs {
+	defaults: {
+		as: typeof TAG
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
+	}
+	isGroup: true
 	props: AccordionGroupProps
 	selectors: AccordionGroupSelectors
 	tokens: AccordionGroupTokens
@@ -54,9 +59,9 @@ export const AccordionGroup = polymorphic<AccordionGroupSpecs>((_props, { usePro
 	const styles = useStyles({ props, tokens })
 
 	const {
-		children, collapsible, defaultOpen,
-		disabled, layout, order,
-		size, unstyled,
+		as, children, collapsible,
+		defaultOpen, disabled, layout,
+		order, size, unstyled,
 		...rest
 	} = props
 
@@ -103,7 +108,7 @@ export const AccordionGroup = polymorphic<AccordionGroupSpecs>((_props, { usePro
 		<Box
 			{ ...styles('root') }
 			{ ...others }
-			as="div"
+			as={ as }
 			attributes={ { data: { group: true } } }
 			ref={ root }
 		>

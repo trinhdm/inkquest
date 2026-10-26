@@ -12,9 +12,11 @@ import type { JustifyContent, Orientation } from '@/types/shared'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from '../Button.module.scss'
 
-const NAME = 'Button.Group' as const
+const NAME = 'Button.Group' as const,
+	TAG = 'div' as const
 
 const DEFAULT_PROPS = {
+	as: TAG,
 	hasPriority: true,
 	orientation: 'horizontal',
 } as const
@@ -35,9 +37,12 @@ interface ButtonGroupProps
 	revealFrom?: number
 }
 
-type ButtonGroupSpecs = {
-	defaults: { props: PropsDefaultList<typeof DEFAULT_PROPS> }
-	isCompound: true
+interface ButtonGroupSpecs {
+	defaults: {
+		as: typeof TAG
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
+	}
+	isGroup: true
 	props: ButtonGroupProps
 	selectors: ButtonGroupSelectors
 	tokens: ButtonGroupTokens

@@ -22,7 +22,7 @@ interface TabListProps {
 	disabled?: Tab.Props['disabled']
 }
 
-type TabListSpecs = {
+interface TabListSpecs {
 	context: TabGroupContext
 	isCompound: true
 	props: TabListProps
