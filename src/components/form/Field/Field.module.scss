@@ -5,14 +5,25 @@
 .inkq-field-group {
     $name: &;
 
-    &__label {
-        color: var(--inkq-color-text-tertiary);
+    &__label,
+    &__error {
         column-gap: var(--space-1);
         display: flex;
+        max-width: fit-content;
+        text-wrap: pretty;
+    }
+
+    &__label {
+        color: var(--inkq-color-text-tertiary);
         font: var(--inkq-text-label-mono);
         letter-spacing: var(--inkq-font-tracking-wide);
-        max-width: fit-content;
         text-transform: uppercase;
+    }
+
+    &__error {
+        align-items: flex-start;
+        color: var(--inkq-color-danger);
+        font: var(--inkq-text-error);
     }
 
     &__required {
@@ -54,12 +65,7 @@
     }
 
     &__error {
-        color: var(--inkq-color-action-error);
-        display: inline-block;
         flex: 0 1 auto;
-        font: var(--inkq-text-error);
-        max-width: fit-content;
-        text-wrap: pretty;
     }
 
     &__caption {
@@ -271,7 +277,7 @@
     border: none;
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-5);
+    gap: var(--inkq-stack-gap-kicker);
     margin-inline: 0;
     padding-block: 0;
     padding-inline: 0;
@@ -279,6 +285,10 @@
     &__label {
         margin-block-end: var(--inkq-field-gap);
         padding-inline: 0;
+    }
+
+    &__error {
+        flex: 1 1 100%;
     }
 
     &:has(:disabled) #{$name} {

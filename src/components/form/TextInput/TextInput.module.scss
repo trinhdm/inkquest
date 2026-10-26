@@ -1,6 +1,16 @@
 @use '@/styles/utils' as global;
 @use '../shared' as shared;
 
+@mixin hidden {
+	opacity: 0;
+	transform: scale(0.6) rotate(-18deg);
+}
+
+@mixin visible {
+	opacity: 1;
+	transform: scale(1) rotate(0deg);
+}
+
 .inkq-text-input {
     @include shared.form-control-text;
 
@@ -13,6 +23,47 @@
 
 		.inkq-field:where([class$="inline"]) & {
 			display: none;
+		}
+	}
+
+	&__toggle {
+		height: var(--icon-size);
+		position: relative;
+		width: var(--icon-size);
+
+		&:not(:disabled):hover {
+			color: var(--inkq-color-action);
+			cursor: pointer;
+		}
+
+		&:disabled {
+			color: global.disable(var(--inkq-color-text-tertiary));
+			cursor: not-allowed;
+		}
+	}
+
+	&__glyph {
+		display: block;
+		inset: 0;
+		position: absolute;
+		transition: color var(--duration-default) var(--easing, ease),
+			opacity var(--duration-instant) var(--easing, ease),
+			transform var(--duration-fast) var(--easing, ease);
+
+		&--closed {
+			@include hidden;
+
+			#{$name}__toggle:where([class$="shown"]) & {
+				@include visible;
+			}
+		}
+
+		&--open {
+			@include visible;
+
+			#{$name}__toggle:where([class$="shown"]) & {
+				@include hidden;
+			}
 		}
 	}
 

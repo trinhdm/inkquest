@@ -66,6 +66,10 @@
 		border-color: var(--form-control-border-disabled);
 		cursor: not-allowed;
 	}
+
+	&:is([aria-invalid="true"]) {
+		border-color: var(--inkq-color-danger);
+	}
 }
 
 @mixin form-control-content {
@@ -79,10 +83,6 @@
 
 @mixin form-control-text {
 	@include form-control-content;
-
-	&:is([aria-invalid]) {
-		border-color: var(--inkq-color-action-error);
-	}
 
 	&:is([readonly]) {
 		color: var(--inkq-color-text);
@@ -107,17 +107,19 @@
 
 	--icon-size: var(--field-icon-size);
 
+	align-items: center;
 	color: var(--inkq-color-placeholder);
-	display: block;
+	display: flex;
 	inset-block: 0;
 	inset-inline: var(--form-control-icon-inset);
+	justify-content: center;
 	margin: auto var(--field-padding-inline);
 	max-height: fit-content;
 	position: absolute;
 	z-index: 2;
 
-	&:has(+ [aria-invalid]) {
-		color: var(--inkq-color-action-error);
+	&:has(+ [aria-invalid="true"]) {
+		color: var(--inkq-color-danger);
 	}
 
 	#{$name}:where([data-loading]) {

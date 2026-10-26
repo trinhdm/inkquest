@@ -12,7 +12,6 @@ import {
 
 import { LoaderCircle } from 'lucide-react'
 import { useFieldGroupProps } from './FieldGroup'
-import { useParser } from '@/hooks/useParser'
 import { defineTokens } from '@/lib/component/tokens'
 import { extractOthers } from '@/hooks/useProps'
 import { filterChildren } from '@/lib/component/children'
@@ -47,7 +46,7 @@ export const SUBCOMPONENTS = {
 } as const
 
 interface BaseFieldProps {
-	caption?: string
+	caption?: ReactNode
 	children: ReactNode
 	disabled?: boolean
 	error?: string
@@ -69,7 +68,7 @@ interface FieldDefaultLayout {
 interface FieldInlineLayout {
 	iconPosition?: never
 	labelPosition?: 'first' | 'last'
-	layout?: 'inline'
+	layout: 'inline'
 	size?: Size
 }
 
@@ -249,7 +248,7 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 	)
 
 	const captionEl = caption && (
-		<span { ...styles('caption') } id={ idx.info }>{ useParser(caption) }</span>
+		<span { ...styles('caption') } id={ idx.info }>{ caption }</span>
 	)
 
 	const errorEl = hasError && <span { ...styles('error') } id={ idx.error }>{ error }</span>

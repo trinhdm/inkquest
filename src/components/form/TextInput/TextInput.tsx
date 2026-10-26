@@ -1,10 +1,11 @@
-import { Eye } from 'lucide-react'
+import { useState, type ChangeEventHandler, type HTMLInputTypeAttribute } from 'react'
+import { Eye, EyeClosed } from 'lucide-react'
 import { useField, type Field } from '../Field'
 import { extractOthers } from '@/hooks/useProps'
 import { getSharedTokens, type FieldTokens as TextInputTokens } from '../utils'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
-import type { ChangeEventHandler, HTMLInputTypeAttribute, MouseEventHandler } from 'react'
+import { Button } from '@/components/core/Button'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './TextInput.module.scss'
 
@@ -57,10 +58,13 @@ interface TextInputSpecs {
 
 type TextInputSelectors =
 	| 'root' | 'icon'
+	| 'toggle' | 'glyph'
 
 const tokens = getSharedTokens('input')
 
 export const TextInput = polymorphic<TextInputSpecs>((_props, { useProps, useStyles }) => {
+	const [shown, setShown] = useState(false)
+
 	const { useChosenFieldProps, useFieldCtx } = useField()
 
 	const context = useFieldCtx(NAME)
@@ -82,11 +86,31 @@ export const TextInput = polymorphic<TextInputSpecs>((_props, { useProps, useSty
 
 	const others = extractOthers(rest)
 
+	const isPassword = type === 'password',
+		hasIcon = !!(icon || isPassword),
+		inputType = isPassword && shown ? 'text' : type
+
+	const handleShown = () => { setShown(prev => !prev) }
+
 	return (
 		<>
-			{ (icon && layout !== 'inline') && (
+			{ (hasIcon && layout !== 'inline') && (
 				<span { ...styles('icon') }>
-					{ type === 'password' ? <Eye aria-hidden /> : icon }
+					{ isPassword ? (
+						<Button
+							{ ...styles('toggle', { selector: { shown } }) }
+							unstyled
+							attributes={ { aria: {
+								label: `${shown ? 'Hide' : 'Show'} Password`,
+								pressed: shown,
+							} } }
+							disabled={ !!disabled }
+							onClick={ handleShown }
+						>
+							<Eye { ...styles('glyph', { selector: 'open' }) } />
+							<EyeClosed { ...styles('glyph', { selector: 'closed' }) } />
+						</Button>
+					) : icon }
 				</span>
 			) }
 
@@ -102,7 +126,7 @@ export const TextInput = polymorphic<TextInputSpecs>((_props, { useProps, useSty
 				placeholder={ placeholder }
 				readOnly={ !!readonly || (value !== undefined && !onChange) }
 				required={ required }
-				type={ type }
+				type={ inputType }
 				value={ value }
 			/>
 
