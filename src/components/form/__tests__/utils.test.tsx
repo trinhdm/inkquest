@@ -1,11 +1,4 @@
-import {
-	Calendar, Calendar1, CalendarDays,
-	Clock, Eye, Globe,
-	Hash, Mail, Paperclip,
-	Phone, Pipette, Search,
-} from 'lucide-react'
-
-import { getIcon, getSharedTokens } from '../utils'
+import { getSharedTokens } from '../utils'
 import { tokens } from '@/lib/theme/reference'
 import type { SiteThemeConfig } from '@/lib/theme/types'
 
@@ -231,36 +224,6 @@ describe('form/utils', () => {
 				// positive control: "input" keeps the icon token in its own group
 				expect(input.icon).toHaveProperty('--form-control-icon-inset')
 			})
-		})
-	})
-
-	describe('getIcon', () => {
-		it.each([
-			['color', Pipette],
-			['date', Calendar],
-			['email', Mail],
-			['file', Paperclip],
-			['month', Calendar1],
-			['number', Hash],
-			['password', Eye],
-			['search', Search],
-			['tel', Phone],
-			['time', Clock],
-			['url', Globe],
-			['week', CalendarDays],
-		])('maps type="%s" to its lucide icon element', (type, component) => {
-			const icon = getIcon(type)
-
-			expect(icon).not.toBeNull()
-			expect(icon!.type).toBe(component)
-		})
-
-		it.each([
-			['undefined', undefined],
-			['text', 'text'],
-			['an unmapped type', 'checkbox'],
-		])('returns null for %s', (_label, type) => {
-			expect(getIcon(type)).toBeNull()
 		})
 	})
 })

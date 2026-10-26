@@ -1,7 +1,7 @@
 import { useId } from 'react'
 import { useFormCtx, type Form } from '../../Form'
 import { extractOthers } from '@/hooks/useProps'
-import { getFormErrors } from '../../utils'
+import { getFormErrors } from '../utils'
 import { polymorphic } from '@/lib/component/factory'
 import { toKebabCase } from '@/utils/helpers'
 import { FieldGroupProvider, type FieldGroupContext } from './FieldGroup.context'
