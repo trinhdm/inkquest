@@ -2,9 +2,10 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/core/Button'
-import { Icon } from '@/components/core/Icon'
 import { Field } from '@/components/form/Field'
+import { Form } from '@/components/form/Form'
 import { Grid } from '@/components/layout/Grid'
+import { Icon } from '@/components/core/Icon'
 import { Section } from '@/components/layout/Section'
 
 type LoginStage =
@@ -38,12 +39,12 @@ export default function Login() {
 
 				<Grid as="form" columns={ 1 } id={ formID }>
 					<Field
-						readonly
 						id={ `${fieldID}-email-login` }
 						label="Email"
 						layout="inline"
 					>
 						<Field.Input
+							readonly
 							name={ `${formID}-email-login` }
 							type="email"
 							value="you@example.com"
@@ -74,7 +75,6 @@ export default function Login() {
 
 				<Grid as="form" columns={ 1 } id={ formID }>
 					<Field
-						readonly
 						id={ `${fieldID}-magic-link` }
 						label="Email"
 						labelPosition="last"
@@ -82,6 +82,7 @@ export default function Login() {
 						caption="Didn’t arrive? Check spam, or resend below."
 					>
 						<Field.Input
+							readonly
 							name={ `${formID}-magic-link` }
 							type="email"
 							value="you@example.com"
@@ -116,8 +117,7 @@ export default function Login() {
 				If an account exists for scout.finch@gmail.com, a link to reset your password is on its way. It expires in 30 minutes.
 
 				<Grid as="form" columns={ 1 } id={ formID }>
-				<Field
-						readonly
+					<Field
 						id={ `${fieldID}-email-reset` }
 						label="Email"
 						labelPosition="last"
@@ -125,6 +125,7 @@ export default function Login() {
 						caption="Didn’t arrive? Check spam, or resend below."
 					>
 						<Field.Input
+							readonly
 							name={ `${formID}-email-reset` }
 							type="email"
 							value="you@example.com"
@@ -173,6 +174,7 @@ export default function Login() {
 						label="Email"
 					>
 						<Field.Input
+							autoComplete="email"
 							name={ `${formID}-reset-password` }
 							placeholder="you@example.com"
 							type="email"
@@ -210,13 +212,14 @@ export default function Login() {
 		>
 			Pick up where you left off.
 
-			<Grid as="form" columns={ 1 } id={ formID }>
+			<Form id={ formID }>
 				<Field
 					required
 					id={ `${fieldID}-email` }
 					label="Email"
 				>
 					<Field.Input
+						autoComplete="email"
 						name={ `${formID}-email` }
 						placeholder="you@example.com"
 						type="email"
@@ -227,9 +230,10 @@ export default function Login() {
 					required
 					id={ `${fieldID}-password` }
 					label="Password"
-					caption="<a data-link>Forgot password?</a>"
+					caption={ <button onClick={ () => handleLoginFlow('forgot') } type="button" data-link>Forgot password?</button> }
 				>
 					<Field.Input
+						autoComplete="current-password"
 						name={ `${formID}-password` }
 						placeholder="Your password"
 						type="password"
@@ -281,7 +285,7 @@ export default function Login() {
 						</Button>
 					</div>
 				</div>
-			</Grid>
+			</Form>
 		</Section>
 	)
 }

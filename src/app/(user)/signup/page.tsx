@@ -2,9 +2,10 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/core/Button'
-import { Icon } from '@/components/core/Icon'
 import { Field } from '@/components/form/Field'
+import { Form } from '@/components/form/Form'
 import { Grid } from '@/components/layout/Grid'
+import { Icon } from '@/components/core/Icon'
 import { Section } from '@/components/layout/Section'
 import Link from 'next/link'
 
@@ -37,12 +38,12 @@ export default function Signup() {
 
 				<Grid as="form" columns={ 1 } id={ formID }>
 					<Field
-						readonly
 						id={ `${fieldID}-email-signup` }
 						label="Email"
 						layout="inline"
 					>
 						<Field.Input
+							readonly
 							name={ `${formID}-email-signup` }
 							type="email"
 							value="you@example.com"
@@ -129,7 +130,7 @@ export default function Signup() {
 		>
 			One account for finding artists, bidding on flash, and booking.
 
-			<Grid as="form" columns={ 1 } id={ formID }>
+			<Form id={ formID }>
 				<Field
 					required
 					id={ `${fieldID}-email` }
@@ -148,6 +149,7 @@ export default function Signup() {
 					label="Password"
 				>
 					<Field.Input
+						autoComplete="new-password"
 						name={ `${formID}-password` }
 						placeholder="Your password"
 						type="password"
@@ -220,7 +222,7 @@ export default function Signup() {
 						<p>By creating an account, you confirm you&apos;re 18+ and agree to the <Link href="/terms" data-link>Terms</Link> and <Link href="/privacy-policy" data-link>Privacy Policy</Link>.</p>
 					</div>
 				</div>
-			</Grid>
+			</Form>
 		</Section>
 	)
 }

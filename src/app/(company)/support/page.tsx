@@ -33,9 +33,13 @@ const EMAIL_GROUPS = [
 ]
 
 export default function Support() {
-	const pageID = 'support',
-		formID = `form-${pageID}`,
-		fieldID = `${formID}-field`
+	const pageID = 'support'
+
+	const clientForm = `client-form`,
+		clientID = `${clientForm}-field`
+
+	const artistForm = `artist-form`,
+		artistID = `${artistForm}-field`
 
 	return (
 		<>
@@ -53,98 +57,215 @@ export default function Support() {
 			<Section id={ `${pageID}-contact` }>
 				<Grid layout="sidebar">
 					<Grid.Item id={ `${pageID}-contact-form` }>
-						<Tab.List>
-							<Tab id="client-tab">Client</Tab>
-							<Tab id="artist-tab">Artist</Tab>
-							<Tab id="studio-tab">Studio</Tab>
-						</Tab.List>
+						<Tab.Group id={ `${pageID}-tabs` }>
+							<Tab.List>
+								<Tab>Client</Tab>
+								<Tab>Artist</Tab>
+								<Tab>Studio</Tab>
+							</Tab.List>
 
-						{/* <Tab.Panel>client test</Tab.Panel>
-						<Tab.Panel>artist test</Tab.Panel>
-						<Tab.Panel>studio test</Tab.Panel> */}
+							<Tab.Panel>
+								<Grid as="form" columns={ 2 } id={ clientForm }>
+									<Grid.Item
+										required
+										as={ Field.Group }
+										className="form-choices"
+										id={ `${clientForm}-choices` }
+										labelPosition="last"
+										layout="button"
+										legend="What's it about?"
+										span={ 2 }
+									>
+										<Field
+											label="General Support"
+											caption="Account, app issues, anything else."
+											id={ `${clientID}-choice-general` }
+										>
+											<Field.Choice
+												defaultChecked
+												name={ `${clientForm}-topic` }
+												value="general"
+											/>
+										</Field>
+										<Field
+											label="Booking"
+											caption="A bid, deposit, or session that needs a human."
+											id={ `${clientID}-choice-booking` }
+										>
+											<Field.Choice name={ `${clientForm}-topic` } value="booking" />
+										</Field>
+										<Field
+											label="Payments"
+											caption="Deposits, escrow, payout timing."
+											id={ `${clientID}-choice-payments` }
+										>
+											<Field.Choice name={ `${clientForm}-topic` } value="payments" />
+										</Field>
+									</Grid.Item>
+									<Grid.Item
+										required
+										as={ Field }
+										id={ `${clientID}-name` }
+										label="Name"
+										span={ 1 }
+									>
+										<Field.Input
+											name={ `${clientForm}-name` }
+											placeholder="John Doe"
+										/>
+									</Grid.Item>
+									<Grid.Item
+										required
+										as={ Field }
+										span={ 1 }
+										id={ `${clientID}-email` }
+										label="Email"
+									>
+										<Field.Input
+											name={ `${clientForm}-email` }
+											placeholder="you@example.com"
+											type="email"
+										/>
+									</Grid.Item>
+									<Grid.Item
+										required
+										as={ Field }
+										id={ `${clientID}-message` }
+										label="Message"
+										span={ 2 }
+									>
+										<Field.Textarea
+											name={ `${clientForm}-message` }
+											placeholder="What's going on?"
+										/>
+									</Grid.Item>
+									<Grid.Item
+										as={ Field }
+										id={ `${clientID}-screenshots` }
+										label="Screenshots"
+										span={ 2 }
+									>
+										<Field.Textarea name={ `${clientForm}-screenshots` } />
+									</Grid.Item>
+									<Button type="submit">Send Message</Button>
+								</Grid>
+							</Tab.Panel>
 
-						<Grid as="form" columns={ 2 } id={ formID }>
-							<Grid.Item
-								required
-								as={ Field.Group }
-								labelPosition="last"
-								layout="button"
-								legend="What's it about?"
-								span={ 2 }
-							>
-								<Field
-									label="General Support"
-									caption="Account, app issues, anything else."
-									id={ `${fieldID}-choice-general` }
-								>
-									<Field.Choice
-										defaultChecked
-										name={ `${formID}-topic` }
-										value="general"
-									/>
-								</Field>
-								<Field
-									label="Booking"
-									caption="A bid, deposit, or session that needs a human."
-									id={ `${fieldID}-choice-booking` }
-								>
-									<Field.Choice name={ `${formID}-topic` } value="booking" />
-								</Field>
-								<Field
-									label="Payments"
-									caption="Deposits, escrow, payout timing."
-									id={ `${fieldID}-choice-payments` }
-								>
-									<Field.Choice name={ `${formID}-topic` } value="payments" />
-								</Field>
-							</Grid.Item>
-							<Grid.Item
-								required
-								as={ Field }
-								id={ `${fieldID}-name` }
-								label="Name"
-								span={ 1 }
-							>
-								<Field.Input
-									name={ `${formID}-name` }
-									placeholder="John Doe"
-								/>
-							</Grid.Item>
-							<Grid.Item
-								required
-								as={ Field }
-								span={ 1 }
-								id={ `${fieldID}-email` }
-								label="Email"
-							>
-								<Field.Input
-									name={ `${formID}-email` }
-									placeholder="you@example.com"
-									type="email"
-								/>
-							</Grid.Item>
-							<Grid.Item
-								required
-								as={ Field }
-								id={ `${fieldID}-message` }
-								label="Message"
-								span={ 2 }
-							>
-								<Field.Textarea
-									name={ `${formID}-message` }
-									placeholder="What's going on?"
-								/>
-							</Grid.Item>
-							<Grid.Item
-								as={ Field }
-								id={ `${fieldID}-screenshots` }
-								label="Screenshots"
-								span={ 2 }
-							>
-								<Field.Textarea name={ `${formID}-screenshots` } />
-							</Grid.Item>
-							<Button type="submit">Send Message</Button>
-						</Grid>
+							<Tab.Panel>
+								<Grid as="form" columns={ 2 } id={ artistForm }>
+									<Grid.Item
+										required
+										as={ Field.Group }
+										className="form-choices"
+										id={ `${artistForm}-choices` }
+										labelPosition="last"
+										layout="button"
+										legend="What's it about?"
+										span={ 2 }
+									>
+										<Field
+											label="General Support"
+											caption="Account, app issues, anything else."
+											id={ `${artistID}-choice-general` }
+										>
+											<Field.Choice
+												defaultChecked
+												name={ `${artistForm}-topic` }
+												value="general"
+											/>
+										</Field>
+										<Field
+											label="Payments & payouts"
+											caption="Deposits, escrow, payout timing."
+											id={ `${artistID}-choice-payments` }
+										>
+											<Field.Choice name={ `${artistForm}-topic` } value="payments" />
+										</Field>
+										<Field
+											label="Verification"
+											caption="Getting or keeping the VERIFIED badge."
+											id={ `${artistID}-choice-verification` }
+										>
+											<Field.Choice name={ `${artistForm}-topic` } value="verification" />
+										</Field>
+										<Field
+											label="Press & media"
+											caption="Interviews, assets, embargoed things."
+											id={ `${artistID}-choice-press` }
+										>
+											<Field.Choice name={ `${artistForm}-topic` } value="press" />
+										</Field>
+										<Field
+											label="Trust & Safety"
+											caption="Report a session, artist, or listing. Read by a human, fast."
+											id={ `${artistID}-choice-safety` }
+										>
+											<Field.Choice name={ `${artistForm}-topic` } value="safety" />
+										</Field>
+										<Field
+											label="Partnerships"
+											caption="Conventions, suppliers, integrations."
+											id={ `${artistID}-choice-partnerships` }
+										>
+											<Field.Choice name={ `${artistForm}-topic` } value="partnerships" />
+										</Field>
+									</Grid.Item>
+
+									<Grid.Item
+										required
+										as={ Field }
+										id={ `${artistID}-name` }
+										label="Name"
+										span={ 1 }
+									>
+										<Field.Input
+											name={ `${artistForm}-name` }
+											placeholder="John Doe"
+										/>
+									</Grid.Item>
+									<Grid.Item
+										required
+										as={ Field }
+										span={ 1 }
+										id={ `${artistID}-email` }
+										label="Email"
+									>
+										<Field.Input
+											name={ `${artistForm}-email` }
+											placeholder="you@example.com"
+											type="email"
+										/>
+									</Grid.Item>
+									<Grid.Item
+										required
+										as={ Field }
+										id={ `${artistID}-message` }
+										label="Message"
+										span={ 2 }
+									>
+										<Field.Textarea
+											name={ `${artistForm}-message` }
+											placeholder="What's going on?"
+										/>
+									</Grid.Item>
+									<Grid.Item
+										as={ Field }
+										id={ `${artistID}-screenshots` }
+										label="Screenshots"
+										span={ 2 }
+									>
+										<Field.Textarea name={ `${artistForm}-screenshots` } />
+									</Grid.Item>
+									<Button type="submit">Send Message</Button>
+								</Grid>
+							</Tab.Panel>
+
+							<Tab.Panel>
+								studio form coming soon
+							</Tab.Panel>
+						</Tab.Group>
+
+
 					</Grid.Item>
 
 					<Sidebar label="Prefer Email?" id={ `${pageID}-emails` }>

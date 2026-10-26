@@ -1,0 +1,57 @@
+@use '@/styles/utils' as global;
+
+#artist-form,
+#client-form {
+	.form-choices .inkq-field {
+		flex: 1 1 30%;
+	}
+}
+
+#support-emails {
+	.recipients {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3);
+
+		&__list {
+			display: grid;
+			grid-template-columns: 1fr;
+			gap: var(--space-5);
+			padding-top: var(--space-1);
+		}
+	}
+
+	.recipient {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-1);
+
+		&__name,
+		&__note {
+			align-items: baseline;
+			color: var(--inkq-color-text-tertiary);
+			display: flex;
+			font: var(--inkq-text-body);
+			font-size: var(--inkq-font-size-caption);
+			gap: var(--space-2);
+		}
+
+		&__email {
+			align-items: center;
+			color: var(--inkq-color-text);
+			display: inline-block;
+			font: var(--inkq-text-eyebrow);
+			gap: var(--space-2);
+			line-height: var(--inkq-font-leading-body);
+			width: fit-content;
+
+			&:where([data-cta]) {
+				--link-color: var(--inkq-border-strong);
+			}
+
+			&:hover {
+				color: var(--inkq-color-action);
+			}
+		}
+	}
+}
