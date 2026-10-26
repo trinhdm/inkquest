@@ -20,7 +20,7 @@ const VARIANTS: Record<Variant, true> = {
 }
 
 const TONES: Record<Tone, true> = {
-	neutral: true, action: true,
+	neutral: true, accent: true, cta: true,
 	danger: true, warning: true, success: true, info: true,
 }
 
@@ -46,10 +46,10 @@ describe('enumerateVariantPalettes', () => {
 
 	const allTones = Object.keys(TONES) as Tone[]
 	const nonNeutralTones = allTones.filter(tone => tone !== 'neutral')
-	// "action" is the brand tone, not a status colour — the remaining 4 are
+	// "accent" is the brand tone, not a status colour — the remaining 4 are
 	// the semantic/status tones the old (pre-cc32b37) test called out by name.
 	// Widened back to `Tone[]` for the same reason as `lightDarkVariants` above.
-	const semanticTones: Tone[] = allTones.filter(tone => tone !== 'neutral' && tone !== 'action')
+	const semanticTones: Tone[] = allTones.filter(tone => tone !== 'neutral' && tone !== 'accent')
 	const priorities = Object.values(VARIANT_ORDER) // ['primary', 'secondary', 'tertiary']
 
 	it('produces one entry per structural variant (solid/outline/ghost) with no explicit priority or tone', () => {

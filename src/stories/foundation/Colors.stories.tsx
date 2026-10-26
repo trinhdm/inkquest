@@ -334,7 +334,6 @@ const SemanticColorSections = () => (
 			<Swatch label="hover" path="alias.color.action('hover')" background={ alias.color.action('hover') } />
 			<Swatch label="active" path="alias.color.action('active')" background={ alias.color.action('active') } />
 			<Swatch label="select" path="alias.color.action('select')" background={ alias.color.action('select') } />
-			<Swatch label="error" path="alias.color.action('error')" background={ alias.color.action('error') } />
 		</div>
 
 		{ ([

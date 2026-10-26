@@ -17,7 +17,7 @@ export const VARIANT_OPTIONS: readonly Button.Variant[] = [
 ]
 
 export const TONE_OPTIONS: readonly Button.Tone[] = [
-	'neutral', 'action',
+	'neutral', 'accent', 'cta',
 	'success', 'warning', 'danger', 'info',
 ]
 

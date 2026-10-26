@@ -10,7 +10,7 @@ export type Priority =
 	| 'primary' | 'secondary' | 'tertiary'
 
 export type Tone =
-	| 'neutral' | 'action'
+	| 'cta' | 'neutral' | 'accent'
 	| 'danger' | 'warning' | 'success' | 'info'
 
 export interface VariantProps {

@@ -4,7 +4,7 @@ import type { TokenStateHues } from '../../types'
 
 export interface StateHueTokens {
 	action: Pick<TokenStateHues,
-		'base' | 'hover' | 'active' | 'select' | 'error'>
+		'base' | 'hover' | 'active' | 'select'>
 	control: {
 		base: string
 		hover: string
@@ -26,7 +26,6 @@ export const getStateHueTokens = (
 			hover: alias.accent('hover'),
 			active: alias.accent('active'),
 			select: alias.accent('tint'),
-			error: alias.accent('muted'),
 		},
 		control: {
 			base: alias.color.text('tertiary'),

@@ -37,14 +37,18 @@ export const VARIANT_ORDER: Record<
 }
 
 const TONE_ACCESSORS: Record<Tone, ToneAccessor> = {
-	neutral: {
+	cta: {
 		base: () => alias.color.text(),
 		strong: () => alias.border('strong'),
 		emphasis: () => alias.color.action(),
 		subtle: () => alias.background.card(),
 		dim: () => alias.border(),
 	},
-	action: fromMixture(alias.accent),
+	neutral: {
+		...fromMixture(alias.secondary),
+		dim: () => alias.border(),
+	},
+	accent: fromMixture(alias.accent),
 	danger: fromMixture(alias.color.danger),
 	warning: fromMixture(alias.color.warning),
 	success: fromMixture(alias.color.success),
@@ -94,8 +98,8 @@ const SPECIAL_VARIANTS: Record<
 		background:	tone.subtle(),
 		border:		'currentColor',
 		color: {
-			base:	tone.base(),
-			hover:	alias.color.text(),
+			base:	tone.dim(),
+			hover:	tone.strong(),
 		},
 	}),
 	dark: tone => ({
@@ -120,7 +124,7 @@ const mergePalette = (palette: Partial<VariantTokens>): VariantTokens =>
 	deepMerge(DEFAULT_PALETTE, palette)
 
 const resolveVariants = ({ priority, tone, variant }: Omit<VariantPalette, 'palette'>) => {
-	let color: Tone = tone ?? 'action',
+	let color: Tone = tone ?? 'accent',
 		role: Priority = priority ?? 'primary'
 
 	const isOrdered = variant in VARIANT_ORDER,
@@ -136,7 +140,7 @@ const resolveVariants = ({ priority, tone, variant }: Omit<VariantPalette, 'pale
 			.find(key => VARIANT_ORDER[key] === priority)
 
 		role = VARIANT_ORDER[target ?? variant as keyof typeof VARIANT_ORDER]
-		color = tone ?? (role === 'primary' ? 'action' : 'neutral')
+		color = tone ?? (role === 'primary' ? 'accent' : 'cta')
 	}
 
 	return PRIORITY_SHAPES[role](TONE_ACCESSORS[color])
@@ -168,20 +172,28 @@ export const enumerateVariantPalettes = (): VariantPalette[] => {
 		palette: resolvePalette({ variant }),
 	}))
 
-	const specialized = tones.flatMap(tone =>
-		specialty
-			.filter(variant => variant === 'text' ? tone === 'neutral' : tone !== 'neutral')
+	const specialized = tones.flatMap(tone => {
+		const isCTA = tone === 'cta',
+			isNeutral = tone === 'neutral'
+
+		return specialty
+			.filter(variant => {
+				switch (variant) {
+					case 'light':	return !isCTA
+					case 'text':	return isNeutral
+					default:		return !isCTA && !isNeutral
+				}
+			})
 			.map(variant => ({
 				tone,
 				variant,
 				palette: resolvePalette({ tone, variant }),
 			}))
-	)
+	})
 
 	const ordered = tones.flatMap(tone =>
 		priorities.map(priority => {
-			const variant = foundation.
-				find(key => VARIANT_ORDER[key] === priority) ?? 'solid'
+			const variant = foundation.find(key => VARIANT_ORDER[key] === priority) ?? 'solid'
 			return {
 				tone,
 				variant,

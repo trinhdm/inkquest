@@ -28,7 +28,7 @@ const VARIANT_OPTIONS: readonly Badge.Variant[] = [
 ]
 
 const TONE_OPTIONS: readonly Badge.Tone[] = [
-	'neutral', 'action',
+	'neutral', 'accent',
 	'success', 'warning', 'danger', 'info',
 ]
 

@@ -206,10 +206,11 @@ export const Button = polymorphic<ButtonSpecs>((_props, { useProps, useStyles, u
 		if (action === 'print') window.print()
 	}, [action, loading, onClick])
 
-	const isDisabled = !!disabled || !!loading
+	const isDisabled = !!disabled,
+		isInert = isDisabled || !!loading
 
 	const aria = {
-		disabled: isDisabled,
+		disabled: isInert,
 		label: !!showLabel ? extractText(children) : undefined,
 	}
 
