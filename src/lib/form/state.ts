@@ -1,5 +1,8 @@
 import { z } from 'zod'
 
+export type FormSSO =
+	| 'Apple' | 'Google'
+
 export type FormErrors =
 	Record<string, string | undefined>
 
@@ -11,10 +14,10 @@ export interface FormState {
 	values: Record<string, string>
 }
 
-export interface FormActionProps {
+export interface FormResults<T = FormState> {
 	action: (data: FormData) => void
 	pending: boolean
-	state: FormState
+	state: T
 }
 
 export const initFormState: FormState = {
@@ -34,6 +37,9 @@ export const showMessage = (error: z.ZodError): FormState['errors'] => {
 
 	return messages
 }
+
+export const pause = (ms: number) =>
+	new Promise(resolve => setTimeout(resolve, ms))
 
 export const pickValues = (data: FormData, names: readonly string[]): FormState['values'] =>
 	Object.fromEntries(names.map(name => [name, String(data.get(name) ?? '')]))
