@@ -1,0 +1,8 @@
+.inkq-countdown {
+	$name: &;
+
+	color: var(--inkq-color-text-secondary);
+	font: var(--inkq-text-control);
+	font-size: var(--inkq-font-size-caption);
+	line-height: var(--inkq-font-leading-exact);
+}
