@@ -4,19 +4,19 @@ import { useEffect, useRef, type ComponentType } from 'react'
 import { useLoginFlow } from '../_utils/useLoginFlow'
 import { LoginForgot } from './forgot'
 import { LoginMagic } from './magic'
-import { LoginProvider, type LoginStage } from '../_utils/login.context'
+import { LoginProvider, type LoginScreen } from '../_utils/login.context'
 import { LoginReset } from './reset'
 import { LoginRoot } from './root'
 import { LoginSuccess } from './success'
 import { LOGIN_PAGE_DATA } from '../_utils/login.data'
 
 const SCREENS = {
+	email:		LoginRoot,
 	forgot:		LoginForgot,
-	login:		LoginRoot,
 	magic:		LoginMagic,
 	reset:		LoginReset,
 	success:	LoginSuccess,
-} satisfies Record<LoginStage, ComponentType>
+} satisfies Record<LoginScreen, ComponentType>
 
 export const LoginBase = () => {
 	const { screen, ...flow } = useLoginFlow()

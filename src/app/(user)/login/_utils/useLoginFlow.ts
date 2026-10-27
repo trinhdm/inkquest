@@ -1,59 +1,59 @@
-import { useActionState, useState } from 'react'
-import { initFormState, type FormState } from '@/lib/form'
+import { useState} from 'react'
+import { useForm, useOnReply } from '@/hooks/form'
+import { initFormState } from '@/lib/form'
 import { login, requestMagicLink, requestReset } from '../_utils/actions'
-import type { LoginFlow, LoginStage } from './login.context'
 
-const useOnReply = (state: FormState, onReply: (state: FormState) => void) => {
-	const [last, setLast] = useState(state)
-
-	if (state !== last) {
-		setLast(state)
-		onReply(state)
-	}
-}
+import type {
+	LoginFlow, LoginScreen,
+	ReplyFromScreen, SendLinkScreen,
+} from './login.context'
 
 export const useLoginFlow = (): LoginFlow => {
-	const [loginState, loginAction, loginPending] = useActionState(login, initFormState)
-	const [magicState, magicAction, magicPending] = useActionState(requestMagicLink, initFormState)
-	const [resetState, resetAction, resetPending] = useActionState(requestReset, initFormState)
+	const [screen, setScreen] = useState<LoginScreen>('email')
+	const [replyFrom, setReplyFrom] = useState<ReplyFromScreen>('email')
+	const [resent, setResent] = useState<boolean>(false)
+	const [waiting, setWaiting] = useState(false)
 
-	const [replyFrom, setReplyFrom] = useState<'email' | 'magic'>('email')
-	const [resent, setResent] = useState(false)
-	const [stage, setStage] = useState<LoginStage>('login')
+	const loginForm = useForm(login, initFormState)
+	const magicForm = useForm(requestMagicLink, initFormState)
+	const resetForm = useForm(requestReset, initFormState)
 
-	useOnReply(loginState, () => setReplyFrom('email'))
-
-	useOnReply(magicState, state => {
-		setReplyFrom('magic')
-		if (!state.success) return
-
-		setResent(stage === 'magic')
-		setStage('magic')
-	})
-
-	useOnReply(resetState, state => {
-		if (!state.success) return
-
-		setResent(stage === 'reset')
-		setStage('reset')
-	})
-
-	const handleLoginFlow = (next: LoginStage) => { setStage(next) }
-
-	const sendResetLink = () => {
-		setResent(true)
-		setTimeout(() => setResent(false), 30000)
+	const waitUntilExpiry: LoginFlow['waitUntilExpiry'] = event => {
+		if (waiting || screen === 'success')
+			event.preventDefault()
 	}
 
-	return {
-		handleLoginFlow,
-		sendResetLink,
-		login: { action: loginAction, pending: loginPending, state: loginState },
-		magic: { action: magicAction, pending: magicPending, state: magicState },
-		reset: { action: resetAction, pending: resetPending, state: resetState },
+	const handleScreen = (next: SendLinkScreen) => {
+		setWaiting(true)
+		setResent(screen === next)
+		setScreen(next)
+	}
 
-		formReply: replyFrom === 'magic' ? magicState : loginState,
+	useOnReply(loginForm.state, () => setReplyFrom('email'))
+
+	useOnReply(magicForm.state, state => {
+		setReplyFrom('magic')
+		if (!state.success) return
+		handleScreen('magic')
+	})
+
+	useOnReply(resetForm.state, state => {
+		if (!state.success) return
+		handleScreen('reset')
+	})
+
+	return {
+		endWait: () => setWaiting(false),
+		handleLoginFlow: setScreen,
+		waitUntilExpiry,
+
+		login: loginForm,
+		magic: magicForm,
+		reset: resetForm,
+
+		formReply: replyFrom === 'magic' ? magicForm : loginForm,
+		screen: loginForm.state.success ? 'success' : screen,
 		resent,
-		screen: loginState.success ? 'success' : stage,
+		waiting,
 	}
 }

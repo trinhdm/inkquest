@@ -22,6 +22,7 @@ const NAME = 'Form' as const,
 const DEFAULT_PROPS = {
 	as: TAG,
 	columns: 1,
+	mountFocus: true,
 	shiftFocus: true,
 	state: {
 		errors: {},
@@ -30,11 +31,20 @@ const DEFAULT_PROPS = {
 	},
 } as const
 
+const FIRST_CONTROL = [
+	'input:not(:disabled, [readonly], [type="hidden"])',
+	'select:not(:disabled)',
+	'textarea:not(:disabled, [readonly])',
+].join(', ')
+
+const INVALID_CONTROL = '[aria-invalid="true"]'
+
 const NO_ERRORS: FormContext['errors'] = {}
 
 interface FormProps {
 	children: ReactNode
 	columns?: Grid.Props['columns']
+	mountFocus?: boolean
 	onChange?: ChangeEventHandler<HTMLFormElement>
 	onSubmit?: SubmitEventHandler<HTMLFormElement>
 	pending?: boolean
@@ -85,9 +95,9 @@ export const Form = polymorphic<FormSpecs>((_props, { useProps, useStyles }) => 
 
 	const {
 		children, columns,
+		mountFocus, shiftFocus,
 		onChange, onSubmit,
 		pending, pendingMessage,
-		shiftFocus,
 		state: { errors, formError, message },
 		validate,
 		...rest
@@ -102,45 +112,58 @@ export const Form = polymorphic<FormSpecs>((_props, { useProps, useStyles }) => 
 		pending: !!pending,
 	}), [pending, shown])
 
-	useEffect(() => {		//	moves focus to the first invalid control whenever errors change
-		const form = ref.current
-		if (!shiftFocus || !form) return
+	useEffect(() => {
+		//	focuses the first control every time this form mounts
+		if (!mountFocus || !ref.current) return
+		ref.current.querySelector<HTMLElement>(FIRST_CONTROL)?.focus()
+	}, [mountFocus])
 
-		form.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus()
+	useEffect(() => {
+		//	moves focus to the first invalid control whenever errors change
+		if (!shiftFocus || !ref.current) return
+		ref.current.querySelector<HTMLElement>(INVALID_CONTROL)?.focus()
 	}, [attempt, errors, shiftFocus])
 
-	const handleChange = (evt: ChangeEvent<HTMLFormElement>) => {
-		onChange?.(evt)
+	const handleChange = (event: ChangeEvent<HTMLFormElement>) => {
+		onChange?.(event)
 
-		const field: EventTarget = evt.target,
+		const data = new FormData(event.currentTarget),
+			field: EventTarget = event.target,
 			name = isField(field) ? field.name : undefined,
 			current = name ? shown[name] : undefined
 
-		if (!validate || !name || !current) return
-		if (validate(new FormData(evt.currentTarget))[name] === current) return
+		if (!name || !current || !validate) return
+		if (validate(data)[name] === current) return
 
 		setLocal({ errors: { ...shown, [name]: undefined }, from: errors })
 	}
 
-	const handleSubmit = (evt: SubmitEvent<HTMLFormElement>) => {
+	const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
 		if (pending) {
-			evt.preventDefault()
+			event.preventDefault()
 			return
 		}
 
 		setAttempt(count => count + 1)
 
 		if (validate) {
-			const found = validate(new FormData(evt.currentTarget))
+			const data = new FormData(event.currentTarget),
+				{ submitter } = event.nativeEvent
+
+			//	data-attrs can be used to name a check to run on submit
+			if (submitter?.dataset.intent)
+				data.set('intent', submitter.dataset.intent)
+
+			const found = validate(data)
 			setLocal({ errors: found, from: errors })
 
 			if (hasErrors(found)) {
-				evt.preventDefault()
+				event.preventDefault()
 				return
 			}
 		}
 
-		onSubmit?.(evt)
+		onSubmit?.(event)
 	}
 
 	const reply = isLocal ? {} : { formError, message }
@@ -170,7 +193,7 @@ export const Form = polymorphic<FormSpecs>((_props, { useProps, useStyles }) => 
 
 			<p { ...styles('status') } role="status">
 				{ !!text && (
-					<span key={ attempt } { ...styles('message') } data-kind={ kind }>
+					<span { ...styles('message') } data-kind={ kind } key={ attempt }>
 						{ kind === 'error' && <CircleAlert aria-hidden /> }
 						{ kind === 'success' && <CircleCheck aria-hidden /> }
 						{ text }

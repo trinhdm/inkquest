@@ -12,7 +12,7 @@ export const loginSchema = z.object({
 	password: z.string().min(1, 'Enter your password.'),
 })
 
-export const validateLogin = validateWith(loginSchema)
+const validateLogin = validateWith(loginSchema)
 
 
 //	LoginReset
@@ -35,5 +35,5 @@ const validateMagic = validateWith(magicSchema)
 
 //	general
 
-export const validateEmailLogin = (data: FormData) =>
+export const validateLoginForm = (data: FormData) =>
 	data.get('intent') === 'magic' ? validateMagic(data) : validateLogin(data)

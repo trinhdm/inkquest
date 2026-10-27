@@ -15,7 +15,6 @@ export const LoginForgot = () => {
 		handleLoginFlow,
 		pageID, screen,
 		reset: { action, pending, state },
-		sendResetLink,
 	} = useLoginCtx()
 
 	return (
@@ -31,7 +30,6 @@ export const LoginForgot = () => {
 			<Form
 				action={ action }
 				id={ FORM_ID }
-				onSubmit={ sendResetLink }
 				pending={ pending }
 				state={ state }
 				validate={ validateReset }
@@ -53,7 +51,7 @@ export const LoginForgot = () => {
 				<Button.Group hasPriority={ false }>
 					<Button
 						animate="left"
-						onClick={ () => handleLoginFlow('login') }
+						onClick={ () => handleLoginFlow('email') }
 						variant="ghost"
 					>
 						Back

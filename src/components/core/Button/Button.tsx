@@ -120,10 +120,12 @@ type ButtonTokens = {
 	inner:
 		| '--button-gap'
 		| '--button-padding'
+	loader:
+		| '--button-icon-size'
 }
 
 const tokens = defineTokens<ButtonSpecs>()(({ props, theme }) => {
-	const { animate, loading, size } = props
+	const { animate, size } = props
 	let buttonFontSize, buttonIconSize,
 		buttonPadding, buttonTracking,
 		iconTranslate
@@ -147,12 +149,10 @@ const tokens = defineTokens<ButtonSpecs>()(({ props, theme }) => {
 			lg: theme.letterSpacing('stat'),
 		}
 
+		buttonIconSize = theme.el.icon.size(size)
 		buttonFontSize = buttonFontSizes[size]
 		buttonPadding = buttonPaddings[size]
 		buttonTracking = buttonTrackings[size]
-
-		buttonIconSize = theme.el.icon.size(size)
-		if (!!loading) buttonIconSize = `calc(.125rem + ${buttonIconSize})`
 
 		if (!!animate) {
 			const baseDistance = theme.space('icon'),
@@ -175,6 +175,9 @@ const tokens = defineTokens<ButtonSpecs>()(({ props, theme }) => {
 			'--button-gap': theme.space('chip'),
 			'--button-padding': buttonPadding,
 		},
+		loader: {
+			'--button-icon-size': `calc(.125rem + ${buttonIconSize})`,
+		},
 	}
 })
 
@@ -196,18 +199,19 @@ export const Button = polymorphic<ButtonSpecs>((_props, { useProps, useStyles, u
 	const others = extractOthers(rest)
 	const ctxValues = useMemo(() => ({ unstyled }), [unstyled])
 
+	const isDisabled = !!disabled,
+		isLoading = !!loading,
+		isInert = isDisabled || isLoading
+
 	const handleClick = useCallback((evt: MouseEvent<HTMLButtonElement>) => {
-		if (!!loading) {
+		if (isLoading) {
 			evt.preventDefault()
 			return
 		}
 
 		if (typeof onClick === 'function') onClick(evt)
 		if (action === 'print') window.print()
-	}, [action, loading, onClick])
-
-	const isDisabled = !!disabled,
-		isInert = isDisabled || !!loading
+	}, [action, isLoading, onClick])
 
 	const aria = {
 		disabled: isInert,
@@ -218,7 +222,7 @@ export const Button = polymorphic<ButtonSpecs>((_props, { useProps, useStyles, u
 		variant, tone, priority, animate,
 		block: !!fullWidth || null,
 		disabled: isDisabled || null,
-		loading: !!loading || null,
+		loading: isLoading || null,
 	}
 
 	const sharedProps = {
@@ -234,7 +238,7 @@ export const Button = polymorphic<ButtonSpecs>((_props, { useProps, useStyles, u
 		const IconTag = { copy: Copy, print: Printer }[action]
 		const ActionSection = (
 			<ButtonSection>
-				<IconTag { ...styles('icon') } aria-hidden />
+				<IconTag { ...styles('icon') } />
 			</ButtonSection>
 		)
 		childList.unshift(ActionSection)
@@ -242,8 +246,9 @@ export const Button = polymorphic<ButtonSpecs>((_props, { useProps, useStyles, u
 
 	const innerEl = (
 		<ButtonProvider value={ ctxValues }>
+			{ (isLoading && !unstyled) && <LoaderCircle { ...styles('loader', true) } /> }
+
 			<Box as="span" { ...styles('inner') }>
-				{ loading && <LoaderCircle { ...styles('loader', true) } aria-hidden /> }
 				{ buildSections({
 					children: [...new Set(childList)],
 					parentName: Button.displayName,

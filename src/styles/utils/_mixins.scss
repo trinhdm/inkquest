@@ -232,30 +232,37 @@
 	}
 
 	@if $animated {
-		cursor: pointer;
-		transition-duration: var(--duration-gradual);
-
 		&::after {
 			transition: background-color var(--underline-transition),
 				transform var(--underline-transition);
 			will-change: background-color, transform;
 		}
 
-		@if $animated == 'in' or $animated == true {
-			&::after {
-				transform: translateX(-101%);
-			}
+		&:disabled::after {
+			background-color: transparent;
+			transform: translateX(-101%);
+		}
 
-			&:hover::after {
-				transform: translateX(0);
-			}
-		} @else if $animated == 'out' {
-			&::after {
-				transform: translateX(0);
-			}
+		&:enabled:not([data-loading]) {
+			cursor: pointer;
+			// transition-duration: var(--duration-gradual);
 
-			&:hover::after {
-				transform: translateX(-101%);
+			@if $animated == 'in' or $animated == true {
+				&::after {
+					transform: translateX(-101%);
+				}
+
+				&:hover::after {
+					transform: translateX(0);
+				}
+			} @else if $animated == 'out' {
+				&::after {
+					transform: translateX(0);
+				}
+
+				&:hover::after {
+					transform: translateX(-101%);
+				}
 			}
 		}
 	}

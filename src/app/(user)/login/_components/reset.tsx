@@ -1,5 +1,6 @@
 import { useLoginCtx } from '../_utils/login.context'
 import { Button } from '@/components/core/Button'
+import { Countdown } from '@/components/data/Countdown'
 import { Field } from '@/components/form/Field'
 import { Form } from '@/components/form/Form'
 import { Icon } from '@/components/core/Icon'
@@ -10,10 +11,11 @@ const FORM_ID = 'reset',
 
 export const LoginReset = () => {
 	const {
+		endWait,
 		handleLoginFlow,
-		pageID, resent, screen,
+		pageID, resent, screen, waiting,
 		reset: { action, pending, state },
-		sendResetLink,
+		waitUntilExpiry,
 	} = useLoginCtx()
 
 	const { email } = state.values
@@ -33,7 +35,7 @@ export const LoginReset = () => {
 			<Form
 				action={ action }
 				id={ FORM_ID }
-				onSubmit={ sendResetLink }
+				onSubmit={ waitUntilExpiry }
 				pending={ pending }
 				state={ {
 					errors: state.errors,
@@ -58,22 +60,34 @@ export const LoginReset = () => {
 
 				<Button
 					animate="left"
-					onClick={ () => handleLoginFlow('login') }
+					onClick={ () => handleLoginFlow('email') }
+					// variant="ghost"
 				>
 					Back to log in
 					<Button.Section left><Icon type="arrow-left" /></Button.Section>
 				</Button>
 
 				<div className="authentication__note">
-					{ resent ? (
-						<span>Resend available in</span>
-					) : (
-						<Button unstyled data-link loading={ pending } type="submit">
-							Resend link
+					<span>
+						<Button
+							unstyled data-link
+							className="authentication__resend"
+							disabled={ waiting }
+							loading={ pending }
+							type="submit"
+						>
+							{ waiting ? 'Resend available in' : 'Resend link' }
 						</Button>
-					) }
+
+						{ waiting && <Countdown from={ 30 } onComplete={ endWait } /> }
+					</span>
+
 					<span>·</span>
-					<Button unstyled data-link onClick={ () => handleLoginFlow('forgot') }>
+
+					<Button
+						unstyled data-link
+						onClick={ () => handleLoginFlow('forgot') }
+					>
 						Wrong email?
 					</Button>
 				</div>

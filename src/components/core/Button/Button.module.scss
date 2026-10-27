@@ -4,7 +4,6 @@
 	$name: &;
 
 	--button-background: var(--variant-background, transparent);
-	--icon-size: var(--button-icon-size, var(--inkq-icon-md));
 
 	background-color: var(--button-background);
 	border-radius: var(--inkq-border-radius-chip);
@@ -20,6 +19,16 @@
 	touch-action: manipulation;
 	transition: var(--inkq-motion-colors);
 	vertical-align: middle;
+
+	&,
+	&__loader {
+		--icon-size: var(--button-icon-size, var(--inkq-icon-md));
+	}
+
+	&__label,
+	&__section {
+		transition: opacity var(--duration-gradual) var(--easing);
+	}
 
 	&__inner {
 		align-items: center;
@@ -50,7 +59,8 @@
 		opacity: 0;
 		pointer-events: none;
 		position: absolute;
-		transition: var(--inkq-motion-colors), var(--inkq-motion-opacity);
+		transition: opacity var(--duration-fast) var(--easing);
+		will-change: opacity;
 		width: 100%;
 		z-index: 1;
 	}
@@ -82,17 +92,15 @@
 	}
 
 	&:where([data-loading]) {
+		align-items: center;
 		cursor: progress;
+		display: inline-flex;
+		justify-content: center;
 
-		#{$name} {
-			&__label,
-			&__section {
-				opacity: 0;
-			}
-
-			&__inner {
-				pointer-events: none;
-			}
+		#{$name}__inner {
+			opacity: 0;
+			pointer-events: none;
+			will-change: opacity;
 		}
 
 		&::after {
@@ -100,10 +108,8 @@
 		}
 	}
 
-	&:where([data-variant="text"]) #{$name} {
-		&__inner {
-			padding-inline: 0;
-		}
+	&:where([data-variant="text"]) #{$name}__inner {
+		padding-inline: 0;
 	}
 }
 

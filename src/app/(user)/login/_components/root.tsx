@@ -1,5 +1,5 @@
 import { useLoginCtx } from '../_utils/login.context'
-import { validateLogin } from '../_utils/schema'
+import { validateLoginForm } from '../_utils/schema'
 import { Button } from '@/components/core/Button'
 import { Field } from '@/components/form/Field'
 import { Form } from '@/components/form/Form'
@@ -13,14 +13,18 @@ const FORM_ID = 'login',
 export const LoginRoot = () => {
 	const {
 		handleLoginFlow,
-		login: { action, pending, state },
+		formReply: { pending, state },
+		login, magic,
 		pageID, screen,
 	} = useLoginCtx()
 
 	const forgotPW = (
-		<button onClick={ () => handleLoginFlow('forgot') } type="button" data-link>
+		<Button
+			unstyled data-link
+			onClick={ () => handleLoginFlow('forgot') }
+		>
 			Forgot password?
-		</button>
+		</Button>
 	)
 
 	return (
@@ -34,11 +38,11 @@ export const LoginRoot = () => {
 			Pick up where you left off.
 
 			<Form
-				action={ action }
+				action={ login.action }
 				id={ FORM_ID }
 				pending={ pending }
 				state={ state }
-				validate={ validateLogin }
+				validate={ validateLoginForm }
 			>
 				<Field
 					required
@@ -73,7 +77,7 @@ export const LoginRoot = () => {
 						fullWidth
 						animate="right"
 						className="authentication__email"
-						loading={ pending }
+						loading={ login.pending }
 						type="submit"
 					>
 						Log In
@@ -109,9 +113,11 @@ export const LoginRoot = () => {
 
 					<div className="authentication__magic">
 						<Button
-							unstyled
-							data-link
-							onClick={ () => handleLoginFlow('magic') }
+							unstyled data-link
+							data-intent="magic"
+							formAction={ magic.action }
+							loading={ magic.pending }
+							type="submit"
 						>
 							Email me a magic link instead
 						</Button>

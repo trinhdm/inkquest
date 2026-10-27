@@ -10,11 +10,10 @@ const FORM_ID = 'login-success',
 
 export const LoginSuccess = () => {
 	const {
-		login: { state },
+		formReply: { state },
 		pageID, screen,
+		waitUntilExpiry,
 	} = useLoginCtx()
-
-	const { email } = state.values
 
 	return (
 		<Section
@@ -26,7 +25,7 @@ export const LoginSuccess = () => {
 		>
 			Welcome back — your feed is where you left it.
 
-			<Form id={ FORM_ID }>
+			<Form onSubmit={ waitUntilExpiry } id={ FORM_ID }>
 				<Field
 					readonly
 					id={ `${FIELD_ID}-email` }
@@ -34,7 +33,7 @@ export const LoginSuccess = () => {
 					layout="inline"
 				>
 					<Field.Input
-						defaultValue={ email }
+						defaultValue={ state.values.email }
 						name="email"
 						type="email"
 					/>

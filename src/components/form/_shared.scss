@@ -85,7 +85,11 @@
 	@include form-control-content;
 
 	&:is([readonly]) {
+		--form-control-background: #{global.disable(var(--inkq-background-card-hover))};
+		--form-control-border-focus: #{global.disable(var(--inkq-border-strong))};
+
 		color: var(--inkq-color-text);
+		cursor: auto;
 	}
 
 	&::placeholder {
