@@ -7,7 +7,8 @@ import { Icon } from '@/components/core/Icon'
 import { Section } from '@/components/layout/Section'
 
 const FORM_ID = 'reset',
-	FIELD_ID = `${FORM_ID}-field`
+	FIELD_ID = `${FORM_ID}-field`,
+	TIMER_ID = `${FORM_ID}-timer`
 
 export const LoginReset = () => {
 	const {
@@ -40,7 +41,7 @@ export const LoginReset = () => {
 				state={ {
 					errors: state.errors,
 					formError: state.formError,
-					message: resent ? `We sent another link to ${email}.` : undefined,
+					message: resent && waiting ? `We sent another link to ${email}.` : undefined,
 				} }
 			>
 				<Field
@@ -61,26 +62,31 @@ export const LoginReset = () => {
 				<Button
 					animate="left"
 					onClick={ () => handleLoginFlow('email') }
-					// variant="ghost"
 				>
 					Back to log in
 					<Button.Section left><Icon type="arrow-left" /></Button.Section>
 				</Button>
 
 				<div className="authentication__note">
-					<span>
-						<Button
-							unstyled data-link
-							className="authentication__resend"
-							disabled={ waiting }
-							loading={ pending }
-							type="submit"
-						>
-							{ waiting ? 'Resend available in' : 'Resend link' }
-						</Button>
-
-						{ waiting && <Countdown from={ 30 } onComplete={ endWait } /> }
-					</span>
+					<Button
+						unstyled data-link
+						attributes={ { aria: {
+							describedby: waiting ? `${TIMER_ID}-text` : undefined
+						} } }
+						className="authentication__resend"
+						disabled={ waiting }
+						loading={ pending }
+						type="submit"
+					>
+						{ waiting ? 'Resend available in' : 'Resend link' }
+						{ waiting && (
+							<Countdown
+								from={ 30 }
+								id={ TIMER_ID }
+								onComplete={ endWait }
+							/>
+						) }
+					</Button>
 
 					<span>·</span>
 

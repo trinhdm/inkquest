@@ -17,6 +17,7 @@ const DEFAULT_PROPS = {
 interface CountdownProps {
 	from: number
 	format?: TimeFormat
+	id: string
 	onComplete?: () => void
 }
 
@@ -38,7 +39,8 @@ export const Countdown = polymorphic<CountdownSpecs>((_props, { useProps, useSty
 
 	const {
 		as, format,
-		from, onComplete,
+		from, id,
+		onComplete,
 		...rest
 	} = props
 
@@ -46,6 +48,8 @@ export const Countdown = polymorphic<CountdownSpecs>((_props, { useProps, useSty
 
 	const [timestamp, _setTimestamp] = useState(() => (Date.now() + from * 1000))
 	const { isExpired, isoDuration, timeLeft } = useCountdown({ format, onComplete, timestamp })
+
+	const textID = !!id ? `${id}-text` : undefined
 
 	if (isExpired) return null
 
@@ -55,8 +59,11 @@ export const Countdown = polymorphic<CountdownSpecs>((_props, { useProps, useSty
 			{ ...others }
 			as={ as }
 			dateTime={ isoDuration }
+			id={ id }
 		>
-			{ timeLeft }
+			<span id={ textID }>
+				{ timeLeft }
+			</span>
 		</Box>
 	)
 }, { name: NAME, classes })

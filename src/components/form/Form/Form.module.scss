@@ -7,13 +7,15 @@
 	&__status {
 		color: var(--inkq-color-text-secondary);
 		font: var(--inkq-text-body);
+		text-wrap: pretty;
 	}
 
 	&__message {
-		align-items: flex-start;
-		column-gap: var(--space-2);
+		align-items: center;
+		animation: fadeInUp var(--duration-fast) var(--easing) forwards;
+		column-gap: var(--inkq-gutter-item);
 		display: flex;
-		margin-block-start: var(--space-4);
-		text-wrap: pretty;
+		margin-block-start: var(--inkq-gutter-content);
+        opacity: 0;
 	}
 }

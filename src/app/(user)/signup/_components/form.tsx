@@ -4,14 +4,14 @@ import { Button } from '@/components/core/Button'
 import { Field } from '@/components/form/Field'
 import { Form } from '@/components/form/Form'
 import { Icon } from '@/components/core/Icon'
-import { PLACEHOLDER_EMAIL, type FormActionProps } from '@/lib/form'
+import { PLACEHOLDER_EMAIL, type FormResults, type FormSSO } from '@/lib/form'
 
 const FORM_ID = 'signup',
 	FIELD_ID = `${FORM_ID}-field`
 
 interface SignupFormProps
-	extends FormActionProps {
-	onSSO: (idp: 'Apple' | 'Google') => void
+	extends FormResults {
+	onSSO: (idp: FormSSO) => void
 }
 
 export const SignupForm = ({
@@ -32,6 +32,18 @@ export const SignupForm = ({
 				required
 				id={ `${FIELD_ID}-email` }
 				label="Email"
+				caption={
+					<>
+						<Button unstyled className="authentication__option">
+							<Button.Section><Icon size="14" type="phone" /></Button.Section>
+							<span data-link>Use phone number instead</span>
+						</Button>
+						<Button unstyled className="authentication__option">
+							<Button.Section><Icon size="14" type="wand-sparkles" /></Button.Section>
+							<span data-link>Email me a magic link</span>
+						</Button>
+					</>
+				}
 			>
 				<Field.Input
 					autoComplete="email"
@@ -46,6 +58,30 @@ export const SignupForm = ({
 				required
 				id={ `${FIELD_ID}-password` }
 				label="Password"
+				caption={
+					<div className="password">
+						<div className="password__strength">
+							<ul className="password__requirements" data-unlist>
+								<li className="password__check">
+									<span className="password__status" />
+									<span>8+ characters</span>
+								</li>
+								<li className="password__check">
+									<span className="password__status" />
+									<span>Upper & lower case</span>
+								</li>
+								<li className="password__check">
+									<span className="password__status" />
+									<span>A number</span>
+								</li>
+								<li className="password__check">
+									<span className="password__status" />
+									<span>A symbol</span>
+								</li>
+							</ul>
+						</div>
+					</div>
+				}
 			>
 				<Field.Input
 					autoComplete="new-password"
@@ -55,28 +91,7 @@ export const SignupForm = ({
 				/>
 			</Field>
 
-			<div className="password">
-				<div className="password__strength">
-					<ul className="password__requirements" data-unlist>
-						<li className="password__check">
-							<span className="password__status" />
-							<span>8+ characters</span>
-						</li>
-						<li className="password__check">
-							<span className="password__status" />
-							<span>Upper & lower case</span>
-						</li>
-						<li className="password__check">
-							<span className="password__status" />
-							<span>A number</span>
-						</li>
-						<li className="password__check">
-							<span className="password__status" />
-							<span>A symbol</span>
-						</li>
-					</ul>
-				</div>
-			</div>
+
 
 			<div className="form__ctas authentication">
 				<Button

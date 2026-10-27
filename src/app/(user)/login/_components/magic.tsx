@@ -1,5 +1,4 @@
 import { useLoginCtx } from '../_utils/login.context'
-import { validateReset } from '../_utils/schema'
 import { Button } from '@/components/core/Button'
 import { Countdown } from '@/components/data/Countdown'
 import { Field } from '@/components/form/Field'
@@ -7,15 +6,16 @@ import { Form } from '@/components/form/Form'
 import { Icon } from '@/components/core/Icon'
 import { Section } from '@/components/layout/Section'
 
-const FORM_ID = 'forgot-pw',
-	FIELD_ID = `${FORM_ID}-field`
+const FORM_ID = 'magic',
+	FIELD_ID = `${FORM_ID}-field`,
+	TIMER_ID = `${FORM_ID}-timer`
 
 export const LoginMagic = () => {
 	const {
 		endWait,
 		handleLoginFlow,
 		magic: { action, pending, state },
-		pageID, screen, waiting,
+		pageID, resent, screen, waiting,
 		waitUntilExpiry,
 	} = useLoginCtx()
 
@@ -38,8 +38,11 @@ export const LoginMagic = () => {
 				id={ FORM_ID }
 				onSubmit={ waitUntilExpiry }
 				pending={ pending }
-				state={ state }
-				validate={ validateReset }
+				state={ {
+					errors: state.errors,
+					formError: state.formError,
+					message: resent && waiting ? `We sent another link to ${email}.` : undefined,
+				} }
 			>
 				<Field
 					readonly
@@ -68,13 +71,22 @@ export const LoginMagic = () => {
 
 					<Button
 						unstyled data-link
+						attributes={ { aria: {
+							describedby: waiting ? `${TIMER_ID}-text` : undefined
+						} } }
 						className="authentication__resend"
 						disabled={ waiting }
 						loading={ pending }
 						type="submit"
 					>
 						{ waiting ? 'Resend available in' : 'Resend link' }
-						{ waiting && <Countdown from={ 30 } onComplete={ endWait } /> }
+						{ waiting && (
+							<Countdown
+								from={ 30 }
+								id={ TIMER_ID }
+								onComplete={ endWait }
+							/>
+						) }
 					</Button>
 				</Button.Group>
 			</Form>

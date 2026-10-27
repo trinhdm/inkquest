@@ -1,7 +1,7 @@
 import { useState} from 'react'
 import { useForm, useOnReply } from '@/hooks/form'
 import { initFormState } from '@/lib/form'
-import { login, requestMagicLink, requestReset } from '../_utils/actions'
+import { login, magicLogin, requestReset } from '../_utils/actions'
 
 import type {
 	LoginFlow, LoginScreen,
@@ -15,7 +15,7 @@ export const useLoginFlow = (): LoginFlow => {
 	const [waiting, setWaiting] = useState(false)
 
 	const loginForm = useForm(login, initFormState)
-	const magicForm = useForm(requestMagicLink, initFormState)
+	const magicForm = useForm(magicLogin, initFormState)
 	const resetForm = useForm(requestReset, initFormState)
 
 	const waitUntilExpiry: LoginFlow['waitUntilExpiry'] = event => {
