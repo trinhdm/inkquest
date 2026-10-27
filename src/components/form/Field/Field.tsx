@@ -23,6 +23,7 @@ import { toKebabCase } from '@/utils/helpers'
 import { Box } from '@/components/polymorphic/Box'
 import { Choice as ChoiceInput } from '../Choice'
 import { FieldGroup } from './FieldGroup'
+import { NumberInput } from '../NumberInput'
 import { Textarea as TextareaInput } from '../Textarea'
 import { TextInput } from '../TextInput'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
@@ -42,6 +43,7 @@ export const SUBCOMPONENTS = {
 	Choice: ChoiceInput,
 	Group: FieldGroup,
 	Input: TextInput,
+	Number: NumberInput,
 	Textarea: TextareaInput,
 	// Upload: FileUpload,
 } as const
@@ -81,10 +83,19 @@ interface FieldButtonLayout {
 	size?: never
 }
 
+interface FieldKeypadLayout {
+	caption?: never
+	iconPosition?: never
+	labelPosition?: never
+	layout: 'keypad'
+	size?: Size
+}
+
 type FieldLayoutProps =
 	| FieldButtonLayout
 	| FieldDefaultLayout
 	| FieldInlineLayout
+	| FieldKeypadLayout
 
 type FieldProps =
 	& BaseFieldProps
@@ -260,10 +271,13 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 		} },
 	}
 
+	const clsxKeypad = layout === 'keypad' ? { global: { 'sr': true } } : {}
 	const labelEl = label && (
-		<label { ...styles('label') } htmlFor={ idx.control }>
+		<label { ...styles('label', clsxKeypad) } htmlFor={ idx.control }>
 			{ label }
-			{ !!required && <span { ...styles('required') } aria-hidden="true">*</span> }
+			{ (isRequired && !context.group) && (
+				<span { ...styles('required') } aria-hidden="true">*</span>
+			) }
 		</label>
 	)
 
@@ -359,6 +373,11 @@ export declare namespace Field {
 		export type Props = TextInput.Props
 		export type Specs = TextInput.Specs
 		export type Types = TextInput.Types
+	}
+
+	export namespace Number {
+		export type Props = NumberInput.Props
+		export type Specs = NumberInput.Specs
 	}
 
 	export namespace Textarea {

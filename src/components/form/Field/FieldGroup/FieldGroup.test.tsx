@@ -3,7 +3,7 @@ import { render, reset, screen, within } from '@/tests/test-utils'
 import { Field } from '../Field'
 
 describe('Field.Group', () => {
-	reset('Field', 'Field.Group', 'Group', 'TextInput', 'Choice')
+	reset('Field', 'Field.Group', 'Group', 'TextInput', 'NumberInput', 'Textarea', 'Choice')
 
 	let warn: jest.SpyInstance
 
@@ -61,7 +61,56 @@ describe('Field.Group', () => {
 		expect(screen.queryByText('*')).not.toBeInTheDocument()
 	})
 
+	describe('required group', () => {
+		it('makes every control required, shows the asterisk on the legend only, and not on any label', () => {
+			render(
+				<Field.Group legend="Contact" required>
+					<Field id="a" label="First"><Field.Input name="a" /></Field>
+					<Field id="b" label="Count"><Field.Number name="b" type="number" /></Field>
+					<Field id="c" label="Notes"><Field.Textarea name="c" /></Field>
+					<Field id="d" label="Agree"><Field.Choice name="d" type="checkbox" value="1" /></Field>
+				</Field.Group>
+			)
+
+			for (const label of ['First', 'Count', 'Notes', 'Agree']) {
+				const control = screen.getByLabelText(label)
+				expect(control).toBeRequired()
+				expect(control).toHaveAttribute('aria-required', 'true')
+				expect(screen.getByText(label).querySelector('[aria-hidden]')).toBeNull()
+			}
+
+			const asterisks = screen.getAllByText('*')
+			expect(asterisks).toHaveLength(1)
+			expect(screen.getByText('Contact')).toContainElement(asterisks[0])
+		})
+
+		it('leaves controls optional when the group is not required (positive control)', () => {
+			render(
+				<Field.Group legend="Contact">
+					<Field id="a" label="First"><Field.Input name="a" /></Field>
+				</Field.Group>
+			)
+
+			expect(screen.getByLabelText('First')).not.toBeRequired()
+			expect(screen.getByLabelText('First')).not.toHaveAttribute('aria-required')
+		})
+	})
+
 	describe('context propagation', () => {
+		it('disables a textarea and a choice as well as a text input', () => {
+			render(
+				<Field.Group legend="G" disabled>
+					<Field id="a" label="A"><Field.Input name="a" /></Field>
+					<Field id="b" label="B"><Field.Textarea name="b" /></Field>
+					<Field id="c" label="C"><Field.Choice name="c" type="checkbox" value="1" /></Field>
+				</Field.Group>
+			)
+
+			expect(screen.getByLabelText('A')).toBeDisabled()
+			expect(screen.getByLabelText('B')).toBeDisabled()
+			expect(screen.getByLabelText('C')).toBeDisabled()
+		})
+
 		it('disables every Field in the group', () => {
 			render(
 				<Field.Group legend="G" disabled>

@@ -13,8 +13,6 @@ const theme = {
 } as unknown as SiteThemeConfig
 
 const iconSpace = theme.space('icon')
-const iconSize = 'var(--field-icon-size)'
-const fallbackBlock = 'var(--field-padding-block)'
 
 // `icon` is a ReactNode, so any element works.
 const iconNode = <svg data-testid="icon" />
@@ -55,8 +53,9 @@ const padding = (result: ReturnType<typeof inputTokens>) => String(result.root![
 const inset = (result: ReturnType<typeof inputTokens>) => result.icon!['--form-control-icon-inset']
 
 // Expected values, derived exactly as the source derives them.
-const expectedFor = (size?: Parameters<typeof theme.el.field.padding>[0]) => {
-	const block = size ? theme.el.field.padding(size) : fallbackBlock
+const expectedFor = (size: Parameters<typeof theme.el.field.padding>[0]) => {
+	const block = theme.el.field.padding(size)
+	const iconSize = `calc(${theme.el.icon.size(size)} - .125rem)`
 	const inline = `calc(${iconSpace} + ${block})`
 	const iconPadding = `calc(calc(2 * ${inline}) + ${iconSize} - ${iconSpace})`
 	return { block, inline, iconPadding }
@@ -115,21 +114,22 @@ describe('form/utils', () => {
 				expect(padding(result)).toBe(`${expectedFor('sm').block} ${expectedFor('sm').inline}`)
 			})
 
-			it('uses var(--field-padding-block) when neither sets a size', () => {
-				const result = inputTokens({}, asContext({}))
-
-				expect(padding(result)).toBe(`${fallbackBlock} calc(${iconSpace} + ${fallbackBlock})`)
-				expect(padding(result)).not.toBe(padding(inputTokens({ size: 'sm' }, asContext({}))))
+			it('returns no tokens when neither the control nor the Field sets a size', () => {
+				expect(inputTokens({}, asContext({}))).toEqual({})
+				// positive control: the same call with a size does produce tokens
+				expect(inputTokens({ size: 'sm' }, asContext({})).root).toBeDefined()
 			})
 		})
 
 		describe('icon position and padding', () => {
-			it('without an icon, padding is the two-value `block inline` form and the inset is `auto 0`', () => {
+			it('without an icon, padding is the two-value `block inline` form and there is no inset', () => {
 				const { block, inline } = expectedFor('lg')
 				const result = inputTokens({}, asContext({ size: 'lg' }))
 
 				expect(splitShorthand(padding(result))).toEqual([block, inline])
-				expect(inset(result)).toBe('auto 0')
+				expect(inset(result)).toBeUndefined()
+				// positive control: an icon does produce an inset
+				expect(inset(inputTokens({}, asContext({ icon: iconNode, size: 'lg' })))).toBe('0 auto')
 			})
 
 			it('without an icon, iconPosition does not change the padding or the inset', () => {

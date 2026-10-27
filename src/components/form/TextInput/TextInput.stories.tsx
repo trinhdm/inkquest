@@ -47,7 +47,7 @@ type InputStoryProps = Parameters<typeof Field.Input>[0]
 
 type Story = StoryObj<InputStoryProps>
 
-type FieldWrap = Partial<Pick<Field.Props, 'caption' | 'disabled' | 'error' | 'loading' | 'required' | 'size'>>
+type FieldWrap = Partial<Pick<Field.Props, 'caption' | 'disabled' | 'error' | 'loading' | 'readonly' | 'required' | 'size'>>
 
 const read = (el: Element, token: string) =>
 	(el as HTMLElement).style.getPropertyValue(token)
@@ -75,6 +75,10 @@ const meta: Meta<InputStoryProps> = {
 			control: 'text',
 			description: 'Forwarded to the `<input>`.',
 		},
+		autoComplete: {
+			control: 'text',
+			description: 'Forwarded to the `<input>`. Use `current-password` on sign-in and `new-password` on sign-up so password managers fill the right value.',
+		},
 		value: {
 			control: 'text',
 			description: 'Makes the input controlled. With no `onChange` it is rendered `readonly` automatically so React does not warn. See the `ReadOnly` and `Controlled` stories.',
@@ -86,7 +90,7 @@ const meta: Meta<InputStoryProps> = {
 		type: {
 			control: 'select',
 			options: INPUT_TYPE_OPTIONS,
-			description: 'Registered default `\'text\'`. A Field (or Field.Group) `type` is used when the input sets none. Every type except `text` gets a leading icon and accepts `iconPosition`. See the `Types` story.',
+			description: 'Registered default `\'text\'`. A Field (or Field.Group) `type` is used when the input sets none. Every type except `text` gets an icon; for `password` it is a show/hide button. See the `Types` and `PasswordToggle` stories.',
 		},
 		iconPosition: {
 			control: 'select',
@@ -94,20 +98,20 @@ const meta: Meta<InputStoryProps> = {
 			description: 'Only for icon types (anything but `text`). Sets `--form-control-icon-inset` on the icon (`0 auto` left, the default; `auto 0` right). See the `IconPosition` story.',
 		},
 		readonly: {
-			control: 'boolean',
-			description: 'Sets `readonly` on the `<input>`. See the `ReadOnly` story.',
+			control: false,
+			description: 'Not accepted on a TextInput (`never`). Set `readonly` on the Field only; the `<input>` reads it from context. See the `ReadOnly` story.',
 		},
 		disabled: {
-			control: 'boolean',
-			description: 'Disables the input. Takes the Field\'s value when not set; its own value (even `false`) wins. See the `Disabled` story.',
+			control: false,
+			description: 'Not accepted on a TextInput (`never`). Set `disabled` on the Field only; the input reads it from context. See the `Disabled` story.',
 		},
 		required: {
-			control: 'boolean',
-			description: 'Registered default `false`; the Field\'s value is used when not set. Sets the native `required` attribute. `aria-required` comes from the Field\'s own `required` only. See the `Required` story.',
+			control: false,
+			description: 'Not accepted on a TextInput (`never`). Set `required` on the Field only; it gives the input the native `required` attribute and `aria-required`. See the `Required` story.',
 		},
 		loading: {
-			control: 'boolean',
-			description: 'Shows the Field\'s spinner beside the input. Unlike `loading` on the Field, it does not set `aria-busy`. See the `Loading` story.',
+			control: false,
+			description: 'Not accepted on a TextInput (`never`). Set `loading` on the Field only; it shows the spinner beside the input and sets `aria-busy`. See the `Loading` story.',
 		},
 		size: {
 			control: 'select',
@@ -150,8 +154,8 @@ export const Default: Story = {
 }
 
 // Each type is set explicitly, so the minimal props are spelled out rather
-// than spreading `args`. Every type but `text` renders an icon span just before
-// the input.
+// than spreading `args`. Every type but `text` renders an icon: a span just
+// before the input, or for `password` a toggle button just after it.
 export const Types: Story = {
 	parameters: {
 		layout: 'padded',
@@ -174,8 +178,12 @@ export const Types: Story = {
 		expect(inputs).toHaveLength(INPUT_TYPE_OPTIONS.length)
 
 		for (const [index, type] of INPUT_TYPE_OPTIONS.entries()) {
+			const sibling = type === 'password'
+				? 'nextElementSibling'
+				: 'previousElementSibling'
+
 			const input = inputs[index],
-				icon = input.previousElementSibling
+				icon = input[sibling]
 
 			await expect(input).toHaveAttribute('type', type)
 
@@ -213,13 +221,47 @@ export const IconPosition: Story = {
 	},
 }
 
+// The password icon is a real button after the input: Tab reaches it, and a
+// click, Enter or Space shows or hides the password. It is disabled with its
+// input.
+export const PasswordToggle: Story = {
+	args: { type: 'password' },
+	parameters: { controls: { exclude: ['disabled', 'type'] } },
+	render: args => (
+		<Row>
+			{ BOOLEAN_OPTIONS.map(disabled => (
+				<Group key={ String(disabled) } label={ String(disabled) }>
+					{ inputTemplate({ ...args, name: `password-${disabled}` }, `password-${disabled}`, { disabled }) }
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement)
+		// `BOOLEAN_OPTIONS` is `[true, false]`, mapped in order.
+		const [, input] = canvas.getAllByLabelText('Name'),
+			[locked, toggle] = canvas.getAllByRole('button', { name: 'Show password' })
+		await expect(locked).toBeDisabled()
+		await expect(input.nextElementSibling).toBe(toggle)
+		await userEvent.click(toggle)
+		await expect(input).toHaveAttribute('type', 'text')
+		await expect(toggle).toHaveAttribute('aria-pressed', 'true')
+		await userEvent.click(input)
+		await userEvent.tab()
+		await expect(toggle).toHaveFocus()
+		await userEvent.keyboard('{Enter}')
+		await expect(input).toHaveAttribute('type', 'password')
+		await expect(toggle).toHaveAttribute('aria-pressed', 'false')
+	},
+}
+
 export const Disabled: Story = {
 	parameters: { controls: { exclude: ['disabled'] } },
 	render: args => (
 		<Row>
 			{ BOOLEAN_OPTIONS.map(disabled => (
 				<Group key={ String(disabled) } label={ String(disabled) }>
-					{ inputTemplate({ ...args, name: `disabled-${disabled}`, disabled }, `disabled-${disabled}`) }
+					{ inputTemplate({ ...args, name: `disabled-${disabled}` }, `disabled-${disabled}`, { disabled }) }
 				</Group>
 			)) }
 		</Row>
@@ -243,15 +285,15 @@ export const Disabled: Story = {
 	},
 }
 
-// Own `required` sets the native attribute. `aria-required` is added from the
-// Field's `required` only (see the `Field` stories).
+// `required`, `disabled` and `readonly` are set on the Field only. A required
+// Field gives the input both the native attribute and `aria-required`.
 export const Required: Story = {
 	parameters: { controls: { exclude: ['required'] } },
 	render: args => (
 		<Row>
 			{ BOOLEAN_OPTIONS.map(required => (
 				<Group key={ String(required) } label={ String(required) }>
-					{ inputTemplate({ ...args, name: `required-${required}`, required }, `required-${required}`) }
+					{ inputTemplate({ ...args, name: `required-${required}` }, `required-${required}`, { required }) }
 				</Group>
 			)) }
 		</Row>
@@ -265,14 +307,14 @@ export const Required: Story = {
 	},
 }
 
-// An explicit `readonly` is focusable and visible, but takes no typing.
+// A `readonly` Field (set on the Field, not the input) is focusable and visible, but takes no typing.
 export const ReadOnly: Story = {
 	parameters: { controls: { exclude: ['readonly'] } },
 	render: args => (
 		<Row>
 			{ BOOLEAN_OPTIONS.map(readonly => (
 				<Group key={ String(readonly) } label={ String(readonly) }>
-					{ inputTemplate({ ...args, name: `readonly-${readonly}`, readonly }, `readonly-${readonly}`) }
+					{ inputTemplate({ ...args, name: `readonly-${readonly}` }, `readonly-${readonly}`, { readonly }) }
 				</Group>
 			)) }
 		</Row>
@@ -369,7 +411,7 @@ export const Loading: Story = {
 		<Row>
 			{ BOOLEAN_OPTIONS.map(loading => (
 				<Group key={ String(loading) } label={ String(loading) }>
-					{ inputTemplate({ ...args, name: `loading-${loading}`, loading }, `loading-${loading}`) }
+					{ inputTemplate({ ...args, name: `loading-${loading}` }, `loading-${loading}`, { loading }) }
 				</Group>
 			)) }
 		</Row>
@@ -463,7 +505,7 @@ export const KeyboardFocus: Story = {
 		<Row>
 			{ inputTemplate({ ...args, name: 'focus-a' }, 'focus-a') }
 			{ inputTemplate({ ...args, name: 'focus-b' }, 'focus-b', { disabled: true }) }
-			{ inputTemplate({ ...args, name: 'focus-c', readonly: true }, 'focus-c') }
+			{ inputTemplate({ ...args, name: 'focus-c' }, 'focus-c', { readonly: true }) }
 		</Row>
 	),
 	play: async ({ canvasElement }) => {

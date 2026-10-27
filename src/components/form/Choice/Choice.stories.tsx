@@ -92,12 +92,12 @@ const meta: Meta<ChoiceStoryProps> = {
 			description: 'Called on every click of the input, including a click on its label. See the `Clickable` story.',
 		},
 		disabled: {
-			control: 'boolean',
-			description: 'Disables the input. Takes the Field\'s value when not set; its own value (even `false`) wins. See the `Disabled` story.',
+			control: false,
+			description: 'Not accepted on a Choice (`never`). Set `disabled` on the Field only; the Choice reads it from context. See the `Disabled` story.',
 		},
 		required: {
-			control: 'boolean',
-			description: 'Sets the native `required` attribute. Takes the Field\'s value when not set. `aria-required` comes from the Field\'s own `required` only. See the `Required` story.',
+			control: false,
+			description: 'Not accepted on a Choice (`never`). Set `required` on the Field only; it gives the input the native `required` attribute and `aria-required`. See the `Required` story.',
 		},
 		size: {
 			control: 'select',
@@ -105,8 +105,8 @@ const meta: Meta<ChoiceStoryProps> = {
 			description: 'Sizes `--form-control-padding`. Its own `size` beats its Field\'s. See the `Sizes` and `InheritsFromField` stories.',
 		},
 		loading: {
-			control: 'boolean',
-			description: 'Accepted but has no effect on a Choice: it is never rendered with the Field\'s spinner. A Field with `loading` still sets `aria-busy` on it (see `InheritsFromField`).',
+			control: false,
+			description: 'Not accepted on a Choice (`never`). Set `loading` on the Field only. A Field with `loading` still sets `aria-busy` on the Choice (see `InheritsFromField`).',
 		},
 		unstyled: {
 			control: 'boolean',
@@ -170,8 +170,9 @@ export const Disabled: Story = {
 			{ BOOLEAN_OPTIONS.map(disabled => (
 				<Group key={ String(disabled) } label={ String(disabled) }>
 					{ choiceTemplate(
-						{ ...args, name: `disabled-${disabled}`, type: 'checkbox', disabled },
-						`disabled-${disabled}`
+						{ ...args, name: `disabled-${disabled}`, type: 'checkbox' },
+						`disabled-${disabled}`,
+						{ disabled }
 					) }
 				</Group>
 			)) }
@@ -202,8 +203,8 @@ export const Disabled: Story = {
 	},
 }
 
-// Own `required` sets the native attribute. `aria-required` is added from the
-// Field's `required` only (see `InheritsFromField`).
+// `required` is set on the Field only. It gives the input both the native
+// `required` attribute and `aria-required` (see `InheritsFromField`).
 export const Required: Story = {
 	parameters: { controls: { exclude: ['required'] } },
 	render: args => (
@@ -211,8 +212,9 @@ export const Required: Story = {
 			{ BOOLEAN_OPTIONS.map(required => (
 				<Group key={ String(required) } label={ String(required) }>
 					{ choiceTemplate(
-						{ ...args, name: `required-${required}`, type: 'checkbox', required },
-						`required-${required}`
+						{ ...args, name: `required-${required}`, type: 'checkbox' },
+						`required-${required}`,
+						{ required }
 					) }
 				</Group>
 			)) }
@@ -261,7 +263,8 @@ export const Sizes: Story = {
 }
 
 // A Choice with none of its own props takes the Field's `size`, `required`,
-// `disabled`, `type` and `loading`; its own value (even `false`) wins.
+// `disabled`, `type` and `loading`. Only `size` and `type` can be overridden on
+// the Choice itself; state is set on the Field only.
 export const InheritsFromField: Story = {
 	parameters: {
 		layout: 'padded',
@@ -277,11 +280,6 @@ export const InheritsFromField: Story = {
 			<Group label="Field disabled">
 				<Field disabled id="inherit-b" label="Disabled by Field">
 					<Field.Choice name="inherit-b" value="b" />
-				</Field>
-			</Group>
-			<Group label="Field disabled, Choice disabled=false">
-				<Field disabled id="inherit-c" label="Own value wins">
-					<Field.Choice disabled={ false } name="inherit-c" value="c" />
 				</Field>
 			</Group>
 			<Group label="Field loading">
@@ -300,7 +298,6 @@ export const InheritsFromField: Story = {
 		await expect(read(inherited, '--form-control-padding')).toContain('var(--inkq-field-padding-lg)')
 
 		await expect(canvas.getByRole('radio', { name: 'Disabled by Field' })).toBeDisabled()
-		await expect(canvas.getByRole('radio', { name: 'Own value wins' })).toBeEnabled()
 		await expect(canvas.getByRole('radio', { name: 'Busy' })).toHaveAttribute('aria-busy', 'true')
 	},
 }

@@ -1,6 +1,6 @@
 import userEvent from '@testing-library/user-event'
 import { getDefaultProps } from '@/hooks/useProps'
-import { render, reset, screen } from '@/tests/test-utils'
+import { cleanup, render, reset, screen } from '@/tests/test-utils'
 import { Field } from '../Field'
 import type { Textarea } from './Textarea'
 
@@ -16,8 +16,8 @@ const renderArea = (props: Partial<Textarea.Props> = {}, field: Partial<Field.Pr
 describe('Textarea', () => {
 	reset('Field', 'Textarea')
 
-	it('registers resizable, 4 rows, between 3 and 8 rows', () => {
-		expect(getDefaultProps('Textarea')).toEqual({ resizable: true, rows: 4, max: 8, min: 3 })
+	it('registers a textarea that is resizable, 4 rows, between 3 and 8 rows', () => {
+		expect(getDefaultProps('Textarea')).toEqual({ as: 'textarea', resizable: true, rows: 4, max: 8, min: 3 })
 	})
 
 	it('renders a textbox labelled by its Field', () => {
@@ -86,11 +86,6 @@ describe('Textarea', () => {
 			expect(screen.getByLabelText('Bio')).toBeDisabled()
 		})
 
-		it('is disabled through its own prop', () => {
-			renderArea({ disabled: true })
-			expect(screen.getByLabelText('Bio')).toBeDisabled()
-		})
-
 		it('is required through the Field with aria-required', () => {
 			renderArea({}, { required: true })
 
@@ -99,12 +94,35 @@ describe('Textarea', () => {
 			expect(area).toHaveAttribute('aria-required', 'true')
 		})
 
+		it('is read only through the Field, and a positive control stays editable', async () => {
+			const user = userEvent.setup()
+			renderArea({}, { readonly: true })
+
+			const area = screen.getByLabelText('Bio')
+			expect(area).toHaveAttribute('readonly')
+			await user.type(area, 'x')
+			expect(area).toHaveValue('')
+
+			cleanup()
+			renderArea()
+			expect(screen.getByLabelText('Bio')).not.toHaveAttribute('readonly')
+		})
+
+		it('reaches required, disabled and aria-required from a required, disabled Field', () => {
+			renderArea({}, { required: true, disabled: true })
+
+			const area = screen.getByLabelText(/Bio/)
+			expect(area).toBeRequired()
+			expect(area).toBeDisabled()
+			expect(area).toHaveAttribute('aria-required', 'true')
+		})
+
 		it('describes the error and flags invalid', () => {
 			renderArea({}, { error: 'Too short' })
 
 			const area = screen.getByLabelText('Bio')
 			expect(area).toHaveAttribute('aria-invalid', 'true')
-			expect(area).toHaveAccessibleDescription('Too short')
+			expect(area).toHaveAccessibleDescription('Error: Too short')
 			expect(area).toHaveClass('textarea--error')
 		})
 

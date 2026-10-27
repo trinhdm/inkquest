@@ -4,7 +4,7 @@ import { render, reset, screen } from '@/tests/test-utils'
 import { Field } from './Field'
 
 describe('Field', () => {
-	reset('Field', 'Field.Group', 'TextInput', 'Textarea', 'Choice')
+	reset('Field', 'Field.Group', 'TextInput', 'NumberInput', 'Textarea', 'Choice')
 
 	let warn: jest.SpyInstance
 
@@ -17,10 +17,11 @@ describe('Field', () => {
 	})
 
 	describe('defaults', () => {
-		it('registers a div root, not required, medium size', () => {
+		it('registers a div root and medium size, with no state defaults', () => {
 			expect(getDefaultProps('Field')).toEqual(expect.objectContaining({
-				as: 'div', required: false, size: 'md',
+				as: 'div', size: 'md',
 			}))
+			expect(getDefaultProps('Field')).not.toHaveProperty('required')
 		})
 
 		it('exposes its parts through the parent', () => {
@@ -161,6 +162,93 @@ describe('Field', () => {
 		})
 	})
 
+	describe('state shared with the control', () => {
+		it('puts no required attribute on its own root element', () => {
+			const { container } = render(
+				<Field id="a" label="A" required>
+					<Field.Input name="a" />
+				</Field>
+			)
+
+			expect(container.firstElementChild).not.toHaveAttribute('required')
+			// positive control: the control inside does carry it
+			expect(screen.getByLabelText(/A/)).toBeRequired()
+		})
+
+		it('shows no asterisk, aria-required or native required when required and read only', () => {
+			render(
+				<>
+					<Field id="a" label="Locked" required readonly>
+						<Field.Input name="a" />
+					</Field>
+					<Field id="b" label="Open" required>
+						<Field.Input name="b" />
+					</Field>
+				</>
+			)
+
+			const locked = screen.getByLabelText('Locked')
+			expect(locked).toHaveAttribute('readonly')
+			expect(locked).not.toBeRequired()
+			expect(locked).not.toHaveAttribute('aria-required')
+			expect(screen.getAllByText('*')).toHaveLength(1)
+
+			// positive control: the same Field without readonly has all three
+			const open = screen.getByLabelText(/Open/)
+			expect(open).not.toHaveAttribute('readonly')
+			expect(open).toBeRequired()
+			expect(open).toHaveAttribute('aria-required', 'true')
+			expect(screen.getByText('Open').querySelector('[aria-hidden="true"]')).toHaveTextContent('*')
+		})
+
+		it('reaches a number input, a textarea and a choice with required and disabled', () => {
+			render(
+				<>
+					<Field id="n" label="Num" required disabled><Field.Number name="n" type="number" /></Field>
+					<Field id="t" label="Text" required disabled><Field.Textarea name="t" /></Field>
+					<Field id="c" label="Check" required disabled><Field.Choice name="c" type="checkbox" value="1" /></Field>
+				</>
+			)
+
+			for (const label of [/Num/, /Text/, /Check/]) {
+				const control = screen.getByLabelText(label)
+				expect(control).toBeRequired()
+				expect(control).toBeDisabled()
+				expect(control).toHaveAttribute('aria-required', 'true')
+			}
+		})
+
+		it('makes a number input and a textarea read only', () => {
+			render(
+				<>
+					<Field id="n" label="Num" readonly><Field.Number name="n" type="number" /></Field>
+					<Field id="t" label="Text" readonly><Field.Textarea name="t" /></Field>
+				</>
+			)
+
+			expect(screen.getByLabelText('Num')).toHaveAttribute('readonly')
+			expect(screen.getByLabelText('Text')).toHaveAttribute('readonly')
+		})
+
+		it('logs no invalid-DOM-property warning for readonly around a choice', () => {
+			const error = jest.spyOn(console, 'error').mockImplementation(() => {})
+
+			try {
+				render(
+					<Field id="c" label="Check" readonly>
+						<Field.Choice name="c" type="checkbox" value="1" />
+					</Field>
+				)
+
+				const input = screen.getByLabelText('Check')
+				expect(input).not.toHaveAttribute('readonly')
+				expect(error).not.toHaveBeenCalled()
+			} finally {
+				error.mockRestore()
+			}
+		})
+	})
+
 	describe('error', () => {
 		it('links the error message to the control and flags it invalid', () => {
 			render(
@@ -173,7 +261,7 @@ describe('Field', () => {
 				message = screen.getByText('Enter a valid email')
 
 			expect(input).toHaveAttribute('aria-invalid', 'true')
-			expect(input).toHaveAccessibleDescription('Enter a valid email')
+			expect(input).toHaveAccessibleDescription('Error: Enter a valid email')
 			expect(input).toHaveAttribute('aria-describedby', message.id)
 			expect(message.id).toBe('email-error')
 		})
@@ -214,7 +302,7 @@ describe('Field', () => {
 				</>
 			)
 
-			expect(screen.getByLabelText('Text')).toHaveAccessibleDescription('Too short')
+			expect(screen.getByLabelText('Text')).toHaveAccessibleDescription('Error: Too short')
 			expect(screen.getByLabelText('Check')).toHaveAttribute('aria-invalid', 'true')
 		})
 	})
@@ -266,14 +354,15 @@ describe('Field', () => {
 			expect(container.querySelector('svg.field__loader')).toBeInTheDocument()
 		})
 
-		it('shows the loader when the control itself is loading', () => {
+		it('places the loader immediately after a text input', () => {
 			const { container } = render(
-				<Field id="a" label="A">
-					<Field.Input name="a" loading />
+				<Field id="a" label="A" loading>
+					<Field.Input name="a" />
 				</Field>
 			)
 
-			expect(container.querySelector('svg.field__loader')).toBeInTheDocument()
+			expect(screen.getByLabelText('A').nextElementSibling)
+				.toBe(container.querySelector('svg.field__loader'))
 		})
 
 		it('has no loader or data-loading when idle', () => {

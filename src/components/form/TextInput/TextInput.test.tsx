@@ -24,8 +24,8 @@ const Controlled = ({ onChange }: { onChange?: (value: string) => void }) => {
 describe('TextInput', () => {
 	reset('Field', 'TextInput')
 
-	it('defaults to type text and not required', () => {
-		expect(getDefaultProps('TextInput')).toEqual({ required: false, type: 'text' })
+	it('defaults to an input element of type text, and not required', () => {
+		expect(getDefaultProps('TextInput')).toEqual({ as: 'input', type: 'text' })
 
 		render(<Field id="a" label="A"><Field.Input name="a" /></Field>)
 		const input = screen.getByRole('textbox', { name: 'A' })
@@ -39,6 +39,11 @@ describe('TextInput', () => {
 		const input = screen.getByPlaceholderText('you@example.com')
 		expect(input).toHaveAttribute('name', 'email')
 		expect(input).toBe(screen.getByLabelText('A'))
+	})
+
+	it('forwards autoComplete to the input', () => {
+		render(<Field id="a" label="A"><Field.Input autoComplete="current-password" name="a" type="password" /></Field>)
+		expect(screen.getByLabelText('A')).toHaveAttribute('autocomplete', 'current-password')
 	})
 
 	it('takes its id from the surrounding Field so the label can find it', () => {
@@ -111,13 +116,65 @@ describe('TextInput', () => {
 		})
 	})
 
-	describe('state attributes', () => {
-		it('is disabled through its own prop', () => {
-			render(<Field id="a" label="A"><Field.Input name="a" disabled /></Field>)
-
-			expect(screen.getByLabelText('A')).toBeDisabled()
+	describe('password toggle', () => {
+		it('renders a labelled, non-submitting toggle button', () => {
+			render(<Field id="a" label="A"><Field.Input name="a" type="password" /></Field>)
+			const toggle = screen.getByRole('button', { name: 'Show password' })
+			expect(toggle).toHaveAttribute('type', 'button')
+			expect(toggle).toHaveAttribute('aria-pressed', 'false')
 		})
+		it('sits just after the input', () => {
+			render(<Field id="a" label="A"><Field.Input name="a" type="password" /></Field>)
+			const toggle = screen.getByRole('button', { name: 'Show password' })
+			expect(screen.getByLabelText('A').nextElementSibling).toBe(toggle)
+		})
+		it('points aria-controls at the input', () => {
+			render(<Field id="a" label="A"><Field.Input name="a" type="password" /></Field>)
+			expect(screen.getByRole('button', { name: 'Show password' })).toHaveAttribute('aria-controls', 'a-control')
+		})
+		it('shows and hides the password on click', async () => {
+			const user = userEvent.setup()
+			render(<Field id="a" label="A"><Field.Input name="a" type="password" /></Field>)
+			const input = screen.getByLabelText('A'),
+				toggle = screen.getByRole('button', { name: 'Show password' })
+			await user.click(toggle)
+			expect(input).toHaveAttribute('type', 'text')
+			expect(toggle).toHaveAttribute('aria-pressed', 'true')
+			await user.click(toggle)
+			expect(input).toHaveAttribute('type', 'password')
+			expect(toggle).toHaveAttribute('aria-pressed', 'false')
+		})
+		it('comes after the input in tab order and toggles with Enter and Space', async () => {
+			const user = userEvent.setup()
+			render(<Field id="a" label="A"><Field.Input name="a" type="password" /></Field>)
+			const input = screen.getByLabelText('A'),
+				toggle = screen.getByRole('button', { name: 'Show password' })
+			await user.tab()
+			expect(input).toHaveFocus()
+			await user.tab()
+			expect(toggle).toHaveFocus()
+			await user.keyboard('{Enter}')
+			expect(input).toHaveAttribute('type', 'text')
+			await user.keyboard(' ')
+			expect(input).toHaveAttribute('type', 'password')
+		})
+		it('works when the password type comes from the Field', async () => {
+			const user = userEvent.setup()
+			render(<Field id="a" label="A" type="password"><Field.Input name="a" /></Field>)
+			await user.click(screen.getByRole('button', { name: 'Show password' }))
+			expect(screen.getByLabelText('A')).toHaveAttribute('type', 'text')
+		})
+		it('is disabled with its Field', () => {
+			render(<Field id="a" label="A" disabled><Field.Input name="a" type="password" /></Field>)
+			expect(screen.getByRole('button', { name: 'Show password' })).toBeDisabled()
+		})
+		it('leaves the icon of other types as decoration', () => {
+			render(<Field id="a" label="A"><Field.Input name="a" type="email" /></Field>)
+			expect(screen.queryByRole('button')).toBeNull()
+		})
+	})
 
+	describe('state attributes', () => {
 		it('is disabled through the Field', () => {
 			render(<Field id="a" label="A" disabled><Field.Input name="a" /></Field>)
 
@@ -132,10 +189,46 @@ describe('TextInput', () => {
 			expect(input).toHaveAttribute('aria-required', 'true')
 		})
 
-		it('is required through its own prop', () => {
-			render(<Field id="a" label="A"><Field.Input name="a" required /></Field>)
+		it('is read only through the Field, and a positive control stays editable', () => {
+			render(
+				<>
+					<Field id="a" label="A" readonly><Field.Input name="a" /></Field>
+					<Field id="b" label="B"><Field.Input name="b" /></Field>
+				</>
+			)
 
-			expect(screen.getByLabelText('A')).toBeRequired()
+			expect(screen.getByLabelText('A')).toHaveAttribute('readonly')
+			expect(screen.getByLabelText('B')).not.toHaveAttribute('readonly')
+		})
+
+		it('does not accept typing when read only through the Field', async () => {
+			const user = userEvent.setup()
+			render(<Field id="a" label="A" readonly><Field.Input name="a" /></Field>)
+
+			await user.type(screen.getByLabelText('A'), 'x')
+			expect(screen.getByLabelText('A')).toHaveValue('')
+		})
+
+		it('drops required, aria-required and the asterisk when the Field is required and read only', () => {
+			render(
+				<>
+					<Field id="a" label="A" required readonly><Field.Input name="a" /></Field>
+					<Field id="b" label="B" required><Field.Input name="b" /></Field>
+				</>
+			)
+
+			const readonly = screen.getByLabelText('A'),
+				editable = screen.getByLabelText(/B/)
+
+			expect(readonly).toHaveAttribute('readonly')
+			expect(readonly).not.toBeRequired()
+			expect(readonly).not.toHaveAttribute('aria-required')
+			expect(screen.getByText('A').querySelector('[aria-hidden]')).toBeNull()
+
+			// positive control: without readonly all three are present
+			expect(editable).toBeRequired()
+			expect(editable).toHaveAttribute('aria-required', 'true')
+			expect(screen.getByText('B').querySelector('[aria-hidden="true"]')).toHaveTextContent('*')
 		})
 
 		it('applies the error modifier class and invalid aria from the Field error', () => {
@@ -152,6 +245,24 @@ describe('TextInput', () => {
 			const input = screen.getByLabelText('A')
 			expect(input).not.toHaveClass('text-input--error')
 			expect(input).not.toHaveAttribute('aria-invalid')
+		})
+	})
+
+	describe('loading', () => {
+		it('shows the loader right after the input and marks it busy when the Field is loading', () => {
+			const { container } = render(<Field id="a" label="A" loading><Field.Input name="a" /></Field>)
+
+			const input = screen.getByLabelText('A')
+			expect(input).toHaveAttribute('aria-busy', 'true')
+			expect(input.nextElementSibling).toBe(container.querySelector('svg.field__loader'))
+			expect(container.firstElementChild).toHaveAttribute('data-loading')
+		})
+
+		it('has no loader or aria-busy when the Field is idle', () => {
+			const { container } = render(<Field id="a" label="A"><Field.Input name="a" /></Field>)
+
+			expect(screen.getByLabelText('A')).not.toHaveAttribute('aria-busy')
+			expect(container.querySelector('svg.field__loader')).toBeNull()
 		})
 	})
 
@@ -206,12 +317,6 @@ describe('TextInput', () => {
 			render(<Field id="a" label="A"><Field.Input name="a" value="v" onChange={ () => {} } /></Field>)
 
 			expect(screen.getByLabelText('A')).not.toHaveAttribute('readonly')
-		})
-
-		it('honours an explicit readonly', () => {
-			render(<Field id="a" label="A"><Field.Input name="a" readonly /></Field>)
-
-			expect(screen.getByLabelText('A')).toHaveAttribute('readonly')
 		})
 	})
 })

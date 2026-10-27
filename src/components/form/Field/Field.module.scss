@@ -159,6 +159,15 @@
         }
     }
 
+    &:where([class$="keypad"]) {
+        flex: 0;
+        flex-wrap: nowrap;
+
+        #{$name}__control {
+            max-width: fit-content;
+        }
+    }
+
     &:not(:has(input[type="checkbox"], input[type="radio"])) {
         #{$name}__caption {
             color: var(--inkq-color-text-tertiary);
@@ -305,6 +314,14 @@
 
         &__required {
             color: global.disable(var(--inkq-color-placeholder));
+        }
+    }
+
+    &:has(#{$name}--keypad) {
+        gap: var(--inkq-gutter-list);
+
+        #{$name} {
+            column-gap: var(--inkq-space-icon);
         }
     }
 }

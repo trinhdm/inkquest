@@ -8,7 +8,7 @@ describe('Choice', () => {
 	reset('Field', 'Choice')
 
 	it('defaults to a radio', () => {
-		expect(getDefaultProps('Choice')).toEqual({ type: 'radio' })
+		expect(getDefaultProps('Choice')).toEqual({ as: 'input', type: 'radio' })
 
 		render(<Field id="a" label="A"><Field.Choice name="a" value="1" /></Field>)
 		expect(screen.getByRole('radio', { name: 'A' })).toBeInTheDocument()
@@ -43,10 +43,57 @@ describe('Choice', () => {
 			expect(screen.getByLabelText('A')).toBeDisabled()
 		})
 
-		it('is disabled through its own prop', () => {
-			render(<Field id="a" label="A"><Field.Choice name="a" value="1" disabled /></Field>)
+		it('puts no readonly attribute on the input, and React logs no invalid-DOM-property warning', () => {
+			const error = jest.spyOn(console, 'error').mockImplementation(() => {})
 
-			expect(screen.getByLabelText('A')).toBeDisabled()
+			try {
+				render(
+					<>
+						<Field id="a" label="A" readonly><Field.Choice name="a" value="1" /></Field>
+						<Field id="b" label="B" readonly><Field.Choice name="b" type="checkbox" value="1" /></Field>
+					</>
+				)
+
+				for (const label of ['A', 'B']) {
+					const input = screen.getByLabelText(label)
+					expect(input).not.toHaveAttribute('readonly')
+					expect(input).not.toHaveAttribute('readOnly')
+				}
+				expect(error).not.toHaveBeenCalled()
+			} finally {
+				error.mockRestore()
+			}
+		})
+
+		it('stays interactive inside a read-only Field, since HTML ignores readonly on choices', async () => {
+			const user = userEvent.setup()
+			render(<Field id="a" label="A" readonly><Field.Choice name="a" type="checkbox" value="1" /></Field>)
+
+			await user.click(screen.getByLabelText('A'))
+			expect(screen.getByLabelText('A')).toBeChecked()
+		})
+
+		it('keeps required, aria-required and the asterisk off a required, read-only Field', () => {
+			render(
+				<>
+					<Field id="a" label="A" required readonly><Field.Choice name="a" type="checkbox" value="1" /></Field>
+					<Field id="b" label="B" required><Field.Choice name="b" type="checkbox" value="1" /></Field>
+				</>
+			)
+
+			const readonly = screen.getByLabelText('A')
+			expect(readonly).not.toBeRequired()
+			expect(readonly).not.toHaveAttribute('aria-required')
+			expect(screen.getByLabelText(/B/)).toBeRequired()
+		})
+
+		it('reaches required, disabled and aria-required from a required, disabled Field', () => {
+			render(<Field id="a" label="A" required disabled><Field.Choice name="a" type="checkbox" value="1" /></Field>)
+
+			const box = screen.getByLabelText(/A/)
+			expect(box).toBeRequired()
+			expect(box).toBeDisabled()
+			expect(box).toHaveAttribute('aria-required', 'true')
 		})
 
 		it('is enabled by default', () => {
@@ -68,7 +115,7 @@ describe('Choice', () => {
 
 			const input = screen.getByLabelText('A')
 			expect(input).toHaveAttribute('aria-invalid', 'true')
-			expect(input).toHaveAccessibleDescription('Pick one')
+			expect(input).toHaveAccessibleDescription('Error: Pick one')
 		})
 
 		it('has no invalid state without an error', () => {

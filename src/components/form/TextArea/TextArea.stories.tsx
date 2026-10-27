@@ -51,7 +51,7 @@ type AreaStoryProps = Parameters<typeof Field.Textarea>[0]
 
 type Story = StoryObj<AreaStoryProps>
 
-type FieldWrap = Partial<Pick<Field.Props, 'caption' | 'disabled' | 'error' | 'loading' | 'required' | 'size'>>
+type FieldWrap = Partial<Pick<Field.Props, 'caption' | 'disabled' | 'error' | 'loading' | 'readonly' | 'required' | 'size'>>
 
 const read = (el: Element, token: string) =>
 	(el as HTMLElement).style.getPropertyValue(token)
@@ -104,20 +104,20 @@ const meta: Meta<AreaStoryProps> = {
 			description: 'Registered default `8`. Only with `resizable`. Emitted as `--textarea-max-rows` (`<n>lh`), raised to `rows` or to `min` when either is larger. See the `Rows` and `MinMax` stories.',
 		},
 		readonly: {
-			control: 'boolean',
-			description: 'Sets `readonly` on the `<textarea>`. See the `ReadOnly` story.',
+			control: false,
+			description: 'Not accepted on a Textarea (`never`). Set `readonly` on the Field only; the `<textarea>` reads it from context. See the `ReadOnly` story.',
 		},
 		disabled: {
-			control: 'boolean',
-			description: 'Disables the textarea. Takes the Field\'s value when not set; its own value (even `false`) wins. See the `Disabled` story.',
+			control: false,
+			description: 'Not accepted on a Textarea (`never`). Set `disabled` on the Field only; the Textarea reads it from context. See the `Disabled` story.',
 		},
 		required: {
-			control: 'boolean',
-			description: 'Takes the Field\'s value when not set. Sets the native `required` attribute. `aria-required` comes from the Field\'s own `required` only. See the `Required` story.',
+			control: false,
+			description: 'Not accepted on a Textarea (`never`). Set `required` on the Field only; it gives the textarea the native `required` attribute and `aria-required`. See the `Required` story.',
 		},
 		loading: {
-			control: 'boolean',
-			description: 'Accepted but has no effect on a Textarea: it is never rendered with the Field\'s spinner. A Field with `loading` still sets `aria-busy` on it.',
+			control: false,
+			description: 'Not accepted on a Textarea (`never`). Set `loading` on the Field only. A Field with `loading` still sets `aria-busy` on the Textarea.',
 		},
 		size: {
 			control: 'select',
@@ -248,7 +248,7 @@ export const Disabled: Story = {
 		<Row>
 			{ BOOLEAN_OPTIONS.map(disabled => (
 				<Group key={ String(disabled) } label={ String(disabled) }>
-					{ areaTemplate({ ...args, name: `disabled-${disabled}`, disabled }, `disabled-${disabled}`) }
+					{ areaTemplate({ ...args, name: `disabled-${disabled}` }, `disabled-${disabled}`, { disabled }) }
 				</Group>
 			)) }
 		</Row>
@@ -272,15 +272,15 @@ export const Disabled: Story = {
 	},
 }
 
-// Own `required` sets the native attribute. `aria-required` is added from the
-// Field's `required` only (see the `Field` stories).
+// `required`, `disabled` and `readonly` are set on the Field only. A required
+// Field gives the textarea both the native attribute and `aria-required`.
 export const Required: Story = {
 	parameters: { controls: { exclude: ['required'] } },
 	render: args => (
 		<Row>
 			{ BOOLEAN_OPTIONS.map(required => (
 				<Group key={ String(required) } label={ String(required) }>
-					{ areaTemplate({ ...args, name: `required-${required}`, required }, `required-${required}`) }
+					{ areaTemplate({ ...args, name: `required-${required}` }, `required-${required}`, { required }) }
 				</Group>
 			)) }
 		</Row>
@@ -294,14 +294,14 @@ export const Required: Story = {
 	},
 }
 
-// An explicit `readonly` is focusable and visible, but takes no typing.
+// A `readonly` Field (set on the Field, not the Textarea) is focusable and visible, but takes no typing.
 export const ReadOnly: Story = {
 	parameters: { controls: { exclude: ['readonly'] } },
 	render: args => (
 		<Row>
 			{ BOOLEAN_OPTIONS.map(readonly => (
 				<Group key={ String(readonly) } label={ String(readonly) }>
-					{ areaTemplate({ ...args, name: `readonly-${readonly}`, readonly }, `readonly-${readonly}`) }
+					{ areaTemplate({ ...args, name: `readonly-${readonly}` }, `readonly-${readonly}`, { readonly }) }
 				</Group>
 			)) }
 		</Row>
@@ -493,7 +493,7 @@ export const KeyboardFocus: Story = {
 		<Row>
 			{ areaTemplate({ ...args, name: 'focus-a' }, 'focus-a') }
 			{ areaTemplate({ ...args, name: 'focus-b' }, 'focus-b', { disabled: true }) }
-			{ areaTemplate({ ...args, name: 'focus-c', readonly: true }, 'focus-c') }
+			{ areaTemplate({ ...args, name: 'focus-c' }, 'focus-c', { readonly: true }) }
 		</Row>
 	),
 	play: async ({ canvasElement }) => {

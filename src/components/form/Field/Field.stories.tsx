@@ -83,15 +83,15 @@ const meta: Meta<FieldStoryProps> = {
 		},
 		disabled: {
 			control: 'boolean',
-			description: 'Disables the control (through context) and sets `data-disabled` on the root. A control\'s own `disabled` wins over this. See the `Disabled` story.',
+			description: 'Disables the control (through context) and sets `data-disabled` on the root. Controls cannot take `disabled` themselves; it is set on the Field only. See the `Disabled` story.',
 		},
 		required: {
 			control: 'boolean',
-			description: 'Registered default `false`. Sets `required` and `aria-required` on the control and appends an `aria-hidden` asterisk to the label. See the `Required` story.',
+			description: 'Registered default `false`. Sets `required` and `aria-required` on the control and appends an `aria-hidden` asterisk to the label. A `readonly` Field is never required, so it gets neither. Controls cannot take `required` themselves. See the `Required` story.',
 		},
 		loading: {
 			control: 'boolean',
-			description: 'Sets `data-loading` on the root and `aria-busy` on the control, and shows a spinner beside the control. A control with its own `loading` also shows the spinner (but gets no `aria-busy`). See the `Loading` story.',
+			description: 'Sets `data-loading` on the root and `aria-busy` on the control, and shows a spinner beside the control. Controls cannot take `loading` themselves. See the `Loading` story.',
 		},
 		size: {
 			control: 'select',

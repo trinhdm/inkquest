@@ -102,7 +102,7 @@ const meta: Meta<GroupStoryProps> = {
 		},
 		required: {
 			control: 'boolean',
-			description: 'Appends an `aria-hidden` asterisk to the legend ONLY. It is not in the `values` the group shares with its Fields, so it does not make them `required`. See the `Required` story.',
+			description: 'Appends an `aria-hidden` asterisk to the legend and is shared with every Field (and so every control) inside, which makes them `required`. The Fields themselves show no asterisk; only the legend does. See the `Required` story.',
 		},
 		disabled: {
 			control: 'boolean',
@@ -238,7 +238,8 @@ export const DisabledOverride: Story = {
 	},
 }
 
-// `required` only decorates the legend; it is not shared with the Fields.
+// `required` shows the asterisk on the legend and is shared with every Field,
+// so each control inside is required. The Fields show no asterisk of their own.
 export const Required: Story = {
 	parameters: { controls: { exclude: ['required'] } },
 	render: args => (
@@ -258,6 +259,17 @@ export const Required: Story = {
 		await expect(asterisk).toHaveTextContent('*')
 
 		await expect(optionalGroup.querySelector('legend [aria-hidden="true"]')).toBeNull()
+
+		// the group's `required` reaches each control, but not the Fields' labels
+		for (const input of within(requiredGroup).getAllByRole('textbox')) {
+			await expect(input).toBeRequired()
+			await expect(input).toHaveAttribute('aria-required', 'true')
+		}
+
+		for (const input of within(optionalGroup).getAllByRole('textbox'))
+			await expect(input).not.toBeRequired()
+
+		await expect(requiredGroup.querySelector('label [aria-hidden="true"]')).toBeNull()
 	},
 }
 
