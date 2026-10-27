@@ -26,15 +26,22 @@ interface FieldClsx {
 	}
 }
 
-type SharedFieldProp =
+type FieldStateProp =
 	| 'disabled'
+	| 'invalid'
 	| 'loading'
 	| 'readonly'
 	| 'required'
+
+export type ControlFieldProps =
+	& SharedFieldProps
+	& { [K in FieldStateProp]?: never }
+
+type SharedFieldProp =
 	| 'size'
 	| 'type'
 
-export interface SharedFieldProps
+interface SharedFieldProps
 	extends Pick<Field.Props, SharedFieldProp>,
 		Pick<AnimationOptions, 'unstyled'> {}
 
@@ -42,11 +49,14 @@ export interface FieldContext
 	extends SharedFieldProps {
 	aria: FieldAria
 	clsx: FieldClsx
+	disabled?: Field.Props['disabled']
 	hasError: boolean
 	layout?: Field.Props['layout']
 	icon?: ReactNode
 	idx: FieldIds
 	loader?: ReactNode
+	readonly?: Field.Props['readonly']
+	required?: Field.Props['required']
 }
 
 export const {
@@ -56,10 +66,6 @@ export const {
 } = createCompoundCtx<FieldContext, 'Field'>('Field')
 
 const sharedFieldProps = [
-	'disabled',
-	'loading',
-	'readonly',
-	'required',
 	'size',
 	'type',
 	'unstyled',

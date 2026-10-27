@@ -22,8 +22,10 @@
 
     &__error {
         align-items: flex-start;
+        animation: fadeInUp var(--duration-fast) var(--easing) forwards;
         color: var(--inkq-color-danger);
         font: var(--inkq-text-error);
+        opacity: 0;
     }
 
     &__required {
@@ -149,8 +151,11 @@
     &:has([readonly]) #{$name} {
         &__choice,
         &__control {
-            pointer-events: none;
             user-select: none;
+        }
+
+        &__choice {
+            pointer-events: none;
         }
     }
 
@@ -274,13 +279,15 @@
 .inkq-field-group {
     $name: &;
 
-    border: none;
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--inkq-stack-gap-kicker);
-    margin-inline: 0;
-    padding-block: 0;
-    padding-inline: 0;
+    &__set {
+        border: none;
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--inkq-stack-gap-kicker);
+        margin-inline: 0;
+        padding-block: 0;
+        padding-inline: 0;
+    }
 
     &__label {
         margin-block-end: var(--inkq-field-gap);

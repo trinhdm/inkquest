@@ -24,7 +24,6 @@ interface BaseTextareaProps {
 	name: string
 	onChange?: ChangeEventHandler<HTMLTextAreaElement>
 	placeholder?: string
-	readonly?: boolean
 	rows?: number
 	value?: string
 }
@@ -46,7 +45,7 @@ type SizableTextareaProps =
 	| StaticTextareaProps
 
 type TextareaProps =
-	& Omit<Field.SharedProps, 'type'>
+	& Omit<Field.ControlProps, 'type'>
 	& BaseTextareaProps
 	& SizableTextareaProps
 
@@ -111,12 +110,15 @@ export const Textarea = polymorphic<TextareaSpecs>((_props, { useProps, useStyle
 	const props = useProps(useChosenFieldProps(_props))
 	const styles = useStyles({ context, props, tokens })
 
-	const { aria, clsx, idx } = context
+	const {
+		aria, clsx, disabled,
+		idx, readonly, required,
+	} = context
 
 	const {
-		disabled, loading, max, min, name,
-		onChange, placeholder, readonly,
-		required, resizable, rows, size, value,
+		max, min, name, onChange,
+		placeholder, resizable,
+		rows, size, value,
 		...rest
 	} = props
 

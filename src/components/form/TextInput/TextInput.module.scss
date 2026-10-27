@@ -21,6 +21,16 @@
 	&__icon {
 		@include shared.form-control-icon;
 
+		:where([data-loading]) & {
+			animation: fadeOut var(--duration-default) var(--easing-out) forwards;
+			pointer-events: none;
+		}
+
+		:disabled + & {
+			color: global.disable(var(--inkq-color-text-tertiary));
+			pointer-events: none;
+		}
+
 		.inkq-field:where([class$="inline"]) & {
 			display: none;
 		}
@@ -65,10 +75,5 @@
 				@include hidden;
 			}
 		}
-	}
-
-	&:disabled #{$name}__icon {
-		color: global.disable(var(--inkq-color-text-tertiary));
-		pointer-events: none;
 	}
 }

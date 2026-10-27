@@ -6,8 +6,8 @@ import {
 
 import {
 	FieldProvider,
+	type ControlFieldProps,
 	type FieldContext,
-	type SharedFieldProps,
 } from './Field.context'
 
 import { LoaderCircle } from 'lucide-react'
@@ -18,8 +18,8 @@ import { defineTokens } from '@/lib/component/tokens'
 import { extractOthers } from '@/hooks/useProps'
 import { filterChildren } from '@/lib/component/children'
 import { getFormErrors, getIcon } from './utils'
-import { keyHasValue, toKebabCase } from '@/utils/helpers'
 import { polymorphic } from '@/lib/component/factory'
+import { toKebabCase } from '@/utils/helpers'
 import { Box } from '@/components/polymorphic/Box'
 import { Choice as ChoiceInput } from '../Choice'
 import { FieldGroup } from './FieldGroup'
@@ -35,7 +35,6 @@ const NAME = 'Field' as const,
 
 const DEFAULT_PROPS = {
 	as: TAG,
-	required: false,
 	size: 'md',
 } as const
 
@@ -106,7 +105,7 @@ interface FieldSpecs {
 type FieldSelectors =
 	| 'root' | 'container' | 'control' | 'choice'
 	| 'error' | 'loader' | 'required'
-	| 'info' | 'label' | 'caption'
+	| 'info' | 'label' | 'caption' | 'prefix'
 
 type FieldTokens = {
 	root:
@@ -122,7 +121,7 @@ interface FieldParts {
 	name: string | undefined
 }
 
-const buildField = (
+const buildControl = (
 	props: FieldProps,
 	styles: StyleFn<FieldSpecs>,
 ): FieldParts => {
@@ -155,8 +154,7 @@ const buildField = (
 			}
 		}
 
-		if (!!loading || keyHasValue(controlProps, { loading: true }))
-			parts.loader = <LoaderCircle { ...styles('loader', true) } />
+		if (!!loading) parts.loader = <LoaderCircle { ...styles('loader', true) } />
 	}
 
 	return parts
@@ -203,9 +201,10 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 	const {
 		control, icon,
 		loader, name,
-	} = buildField(props, styles)
+	} = buildControl(props, styles)
 
 	const { error, hasError, isInvalid } = getFormErrors({ context, name, props })
+	const isRequired = !!(required && !readonly)
 
 	const uid = useId()
 	const idx = useMemo(() => {
@@ -219,14 +218,14 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 		if (hasError) describedby.push(idx.error)
 
 		return {
-			busy: !!loading || undefined,
+			busy: !!loader || undefined,
 			describedby: describedby.join(' '),
 			invalid: isInvalid || undefined,
-			required: !!required || undefined,
+			required: isRequired || undefined,
 		}
 	}, [
 		caption, hasError, idx,
-		isInvalid, loading, required,
+		isInvalid, isRequired, loader,
 	])
 
 	const clsx = useMemo(() => ({
@@ -239,13 +238,16 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 	])
 
 	const ctxValues = useMemo(() => ({
-		aria, clsx, disabled, hasError,
-		icon, idx, layout, loader, loading,
-		required, size, type, unstyled,
+		aria, clsx, disabled,
+		hasError, icon, idx,
+		layout, loader, readonly,
+		required: isRequired,
+		size, type, unstyled,
 	}), [
-		aria, clsx, disabled, hasError,
-		icon, idx, layout, loader, loading,
-		required, size, type, unstyled,
+		aria, clsx, disabled,
+		hasError, icon, idx,
+		isRequired, layout, loader,
+		readonly, size, type, unstyled,
 	])
 
 	const sharedProps = {
@@ -254,7 +256,7 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 		attributes: { data: {
 			disabled: !!disabled || null,
 			invalid: hasError || null,
-			loading: !!loading || null,
+			loading: !!loader || null,
 		} },
 	}
 
@@ -269,7 +271,12 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 		<span { ...styles('caption') } id={ idx.info }>{ caption }</span>
 	)
 
-	const errorEl = hasError && <span { ...styles('error') } id={ idx.error }>{ error }</span>
+	const errorEl = hasError && (
+		<span { ...styles('error') } id={ idx.error }>
+			<span { ...styles('prefix', { global: { sr: true } }) }>Error:&nbsp;</span>
+			{ error }
+		</span>
+	)
 
 	if (layout === 'button') {
 		return (
@@ -333,8 +340,8 @@ export declare namespace Field {
 	export type Props = FieldProps
 	export type Specs = FieldSpecs
 
+	export type ControlProps = ControlFieldProps
 	export type LayoutProps = FieldLayoutProps
-	export type SharedProps = SharedFieldProps
 
 	export namespace Group {
 		export type Context = FieldGroup.Context

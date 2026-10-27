@@ -14,7 +14,6 @@ const NAME = 'TextInput' as const,
 
 const DEFAULT_PROPS = {
 	as: TAG,
-	required: false,
 	type: 'text',
 } as const
 
@@ -22,7 +21,6 @@ interface BaseTextInputProps {
 	name: string
 	onChange?: ChangeEventHandler<HTMLInputElement>
 	placeholder?: string
-	readonly?: boolean
 	value?: string
 }
 
@@ -41,8 +39,8 @@ type TextInputTypeProps =
 	| InputTypeTextProps
 
 type TextInputProps =
+	& Field.ControlProps
 	& BaseTextInputProps
-	& Field.SharedProps
 	& TextInputTypeProps
 
 interface TextInputSpecs {
@@ -72,14 +70,14 @@ export const TextInput = polymorphic<TextInputSpecs>((_props, { useProps, useSty
 	const styles = useStyles({ context, props, tokens })
 
 	const {
-		aria, clsx, icon,
-		idx, layout, loader,
+		aria, clsx, disabled,
+		icon, idx, layout,
+		loader, readonly, required,
 	} = context
 
 	const {
-		disabled, iconPosition,
-		loading, name, onChange,
-		placeholder, readonly, required,
+		iconPosition, name,
+		onChange, placeholder,
 		size, type, value,
 		...rest
 	} = props
@@ -94,26 +92,6 @@ export const TextInput = polymorphic<TextInputSpecs>((_props, { useProps, useSty
 
 	return (
 		<>
-			{ hasIcon && (
-				<span { ...styles('icon') }>
-					{ isPassword ? (
-						<Button
-							{ ...styles('toggle', { selector: { shown } }) }
-							unstyled
-							attributes={ { aria: {
-								label: `${shown ? 'Hide' : 'Show'} Password`,
-								pressed: shown,
-							} } }
-							disabled={ !!disabled }
-							onClick={ handleShown }
-						>
-							<Eye { ...styles('glyph', { selector: 'open' }) } />
-							<EyeClosed { ...styles('glyph', { selector: 'closed' }) } />
-						</Button>
-					) : icon }
-				</span>
-			) }
-
 			<Box
 				{ ...styles('root', clsx) }
 				{ ...others }
@@ -129,6 +107,27 @@ export const TextInput = polymorphic<TextInputSpecs>((_props, { useProps, useSty
 				type={ inputType }
 				value={ value }
 			/>
+
+			{ hasIcon && (
+				<span { ...styles('icon') }>
+					{ isPassword ? (
+						<Button
+							{ ...styles('toggle', { selector: { shown } }) }
+							unstyled
+							attributes={ { aria: {
+								controls: idx.control,
+								label: `${shown ? 'Hide' : 'Show'} password`,
+								pressed: shown,
+							} } }
+							disabled={ !!disabled }
+							onClick={ handleShown }
+						>
+							<Eye { ...styles('glyph', { selector: 'open' }) } />
+							<EyeClosed { ...styles('glyph', { selector: 'closed' }) } />
+						</Button>
+					) : icon }
+				</span>
+			) }
 
 			{ loader }
 		</>

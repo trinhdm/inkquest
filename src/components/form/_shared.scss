@@ -93,9 +93,11 @@
 	}
 
 	&:-webkit-autofill {
+		&,
 		&:is(:active, :focus, :hover) {
 			background-clip: content-box;
-			box-shadow: 0 0 0 1000px transparent inset;
+			box-shadow: 0 0 0 1000px var(--form-control-background-active) inset;
+			font-weight: var(--inkq-font-weight-semibold);
 			transition: background-color 5000s ease-in-out 0s;
 			-webkit-text-fill-color: var(--form-control-color);
 		}
@@ -118,17 +120,28 @@
 	position: absolute;
 	z-index: 2;
 
-	&:has(+ [aria-invalid="true"]) {
-		color: var(--inkq-color-danger);
-	}
-
-	#{$name}:where([data-loading]) {
-        animation: fadeOut var(--duration-default) var(--easing-out) forwards;
-		pointer-events: none;
-    }
+	// &:has(+ [aria-invalid="true"]) {
+	// 	color: var(--inkq-color-danger);
+	// }
 }
 
 @keyframes fadeOut {
 	from { opacity: 1; }
 	to { opacity: 0; }
+}
+
+@keyframes fadeInUp {
+	0% {
+        opacity: 0;
+        transform: translateY(var(--inkq-gutter-item));
+    }
+
+    50% {
+        opacity: 0;
+    }
+
+	100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

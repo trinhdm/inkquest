@@ -7,11 +7,12 @@ import type { ChangeEventHandler, HTMLInputTypeAttribute } from 'react'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './NumberInput.module.scss'
 
-const NAME = 'NumberInput' as const
+const NAME = 'NumberInput' as const,
+	TAG = 'input' as const
 
 const DEFAULT_PROPS = {
+	as: TAG,
 	maxLength: 1,
-	required: false,
 	type: 'text',
 } as const
 
@@ -19,7 +20,6 @@ interface BaseNumberInputProps {
 	name: string
 	onChange?: ChangeEventHandler<HTMLInputElement>
 	placeholder?: string
-	readonly?: boolean
 	value?: string
 }
 
@@ -42,13 +42,16 @@ type NumberInputTypeProps =
 	| InputDigitProps
 
 type NumberInputProps =
+	& Field.ControlProps
 	& BaseNumberInputProps
-	& Field.SharedProps
 	& NumberInputTypeProps
 
 interface NumberInputSpecs {
 	context: Field.Context
-	defaults: { props: PropsDefaultList<typeof DEFAULT_PROPS> }
+	defaults: {
+		as: typeof TAG
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
+	}
 	props: NumberInputProps
 	selectors: NumberInputSelectors
 	tokens: NumberInputTokens
@@ -67,15 +70,14 @@ export const NumberInput = polymorphic<NumberInputSpecs>((_props, { useProps, us
 	const styles = useStyles({ context, props, tokens })
 
 	const {
-		aria, clsx, icon,
-		idx, layout, loader,
+		aria, clsx, disabled,
+		icon, idx, layout,
+		loader, readonly, required,
 	} = context
 
 	const {
-		disabled, loading, iconPosition,
-		inputmode, maxLength,
-		name, onChange,
-		placeholder, readonly, required,
+		iconPosition, inputmode, maxLength,
+		name, onChange, placeholder,
 		size, type, value,
 		...rest
 	} = props

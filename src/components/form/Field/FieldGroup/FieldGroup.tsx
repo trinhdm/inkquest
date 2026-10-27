@@ -27,8 +27,8 @@ interface BaseFieldGroupProps {
 }
 
 type FieldGroupProps =
-	& BaseFieldGroupProps
 	& Group.CompoundProps
+	& BaseFieldGroupProps
 	& Field.LayoutProps
 
 interface FieldGroupSpecs {
@@ -52,13 +52,20 @@ export const FieldGroup = polymorphic<FieldGroupSpecs>((_props, { useProps, useS
 	const styles = useStyles({ props })
 
 	const {
-		as, children, disabled,
-		labelPosition, layout, legend,
-		name, required, type, unstyled,
+		as, children, columns,
+		disabled, divider, fullWidth,
+		justify, labelPosition, layout,
+		legend, name, orientation,
+		required, type, unstyled,
 		...rest
 	} = props
 
 	const others = extractOthers(rest, GROUP_CASCADE_PROPS)
+
+	const groupProps = {
+		columns, divider, fullWidth,
+		justify, orientation, unstyled,
+	}
 
 	const uid = useId(),
 		errorID = `${toKebabCase(uid)}-error`
@@ -87,6 +94,7 @@ export const FieldGroup = polymorphic<FieldGroupSpecs>((_props, { useProps, useS
 		>
 			<Group
 				{ ...styles('set') }
+				{ ...groupProps }
 				as="fieldset"
 				attributes={ { aria: {
 					describedby: hasError ? errorID : undefined,

@@ -15,8 +15,7 @@ const DEFAULT_PROPS = {
 	type: 'radio',
 } as const
 
-interface BaseChoiceProps
-	extends Field.SharedProps {
+interface BaseChoiceProps {
 	name: string
 	onClick?: MouseEventHandler<HTMLInputElement>
 	type?: Extract<HTMLInputTypeAttribute, Choice.Types>
@@ -38,6 +37,7 @@ type ChoiceControlProps =
 	| UncontrolledChoiceProps
 
 type ChoiceProps =
+	& Field.ControlProps
 	& BaseChoiceProps
 	& ChoiceControlProps
 
@@ -64,12 +64,14 @@ export const Choice = polymorphic<ChoiceSpecs>((_props, { useProps, useStyles })
 	const props = useProps(useChosenFieldProps(_props))
 	const styles = useStyles({ context, props, tokens })
 
-	const { aria, clsx, idx } = context
+	const {
+		aria, clsx, disabled,
+		idx, required,
+	} = context
 
 	const {
-		disabled, loading, name,
-		onChange, required, size,
-		type, value,
+		name, onChange,
+		size, type, value,
 		...rest
 	} = props
 
