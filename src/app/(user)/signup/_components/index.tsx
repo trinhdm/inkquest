@@ -47,12 +47,12 @@ export const SignupBase = () => {
 
 				<Grid as="form" columns={ 1 } id={ formID }>
 					<Field
+						readonly
 						id={ `${fieldID}-email-signup` }
 						label="Email"
 						layout="inline"
 					>
 						<Field.Input
-							readonly
 							name={ `${formID}-email-signup` }
 							type="email"
 							value="you@example.com"
