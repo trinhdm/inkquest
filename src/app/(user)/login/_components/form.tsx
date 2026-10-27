@@ -1,57 +1,39 @@
-import {
-	useActionState, useState,
-	type SubmitEvent,
-} from 'react'
-
-import {
-	initFormState, showMessage,
-	PLACEHOLDER_EMAIL, type FormState,
-} from '@/lib/form'
-
-import { login } from '../_utils/actions'
-import { loginSchema } from '../_utils/schema'
+import { validateLogin } from '../_utils/schema'
 import { Button } from '@/components/core/Button'
 import { Field } from '@/components/form/Field'
 import { Form } from '@/components/form/Form'
 import { Icon } from '@/components/core/Icon'
+import { PLACEHOLDER_EMAIL, type FormActionProps } from '@/lib/form'
 
 const FORM_ID = 'login',
 	FIELD_ID = `${FORM_ID}-field`
 
-interface LoginFormProps {
+interface LoginFormProps
+	extends FormActionProps {
 	onForgotPass: () => void
 	onMagicLink: () => void
 	onSSO: (idp: 'Apple' | 'Google') => void
 }
 
 export const LoginForm = ({
+	action,
 	onForgotPass,
 	onMagicLink,
 	onSSO,
+	pending,
+	state,
 }: LoginFormProps) => {
-	const [state, formAction, pending] = useActionState(login, initFormState)
-	const [clientErrors, setClientErrors] = useState<FormState['errors'] | null>(null)
-
-	const checkForm = (event: SubmitEvent<HTMLFormElement>) => {
-		const result = loginSchema.safeParse(Object.fromEntries(new FormData(event.currentTarget)))
-		if (result.success) return setClientErrors(null)
-
-		event.preventDefault()
-		setClientErrors(showMessage(result.error))
-	}
-
-	const failedCheck = clientErrors !== null
+	const forgotPW = (
+		<button onClick={ onForgotPass } type="button" data-link>Forgot password?</button>
+	)
 
 	return (
 		<Form
-			action={ formAction }
-			errors={ clientErrors ?? state.errors }
-			formError={ failedCheck ? undefined : state.formError }
+			action={ action }
 			id={ FORM_ID }
-			message={ failedCheck ? undefined : state.message }
-			onSubmit={ checkForm }
 			pending={ pending }
-			pendingMessage="Logging in..."
+			state={ state }
+			validate={ validateLogin }
 		>
 			<Field
 				required
@@ -71,7 +53,7 @@ export const LoginForm = ({
 				required
 				id={ `${FIELD_ID}-password` }
 				label="Password"
-				caption={ <button onClick={ onForgotPass } type="button" data-link>Forgot password?</button> }
+				caption={ forgotPW }
 			>
 				<Field.Input
 					autoComplete="current-password"

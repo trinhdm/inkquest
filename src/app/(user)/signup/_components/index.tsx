@@ -1,6 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useActionState, useEffect, useRef, useState } from 'react'
+import { initFormState } from '@/lib/form'
+import { signup } from '../_utils/actions'
 import { Button } from '@/components/core/Button'
 import { Field } from '@/components/form/Field'
 import { Grid } from '@/components/layout/Grid'
@@ -12,17 +14,25 @@ type SignupStage =
 	| 'join' | 'verify' | 'sso' | 'success'
 
 export const SignupBase = () => {
+	const [signupState, signupAction, signupPending] = useActionState(signup, initFormState)
 	const [stage, setStage] = useState<SignupStage>('join')
+
+	const screen: SignupStage = signupState.success ? 'success' : stage
+	const lastScreen = useRef(screen)
 
 	const pageID = 'signup'
 	let formID = `form-${pageID}`,
 		fieldID = `${formID}-field`
 
-	const handleSignupFlow = (next: SignupStage) => {
-		setStage(next)
-	}
+	useEffect(() => {
+		if (lastScreen.current === screen) return
+		lastScreen.current = screen
+		document.getElementById(`${pageID}-${screen}`)?.focus()
+	}, [screen])
 
-	if (stage === 'success') {
+	const handleSignupFlow = (next: SignupStage) => { setStage(next) }
+
+	if (screen === 'success') {
 		formID = `form-${pageID}-${stage}`
 		fieldID = `${formID}-field`
 
@@ -33,7 +43,7 @@ export const SignupBase = () => {
 				layout="content-form"
 				title="Account created."
 			>
-				You’re in. A two-minute setup tunes your feed, search, and profile.
+				You&apos;re in. A two-minute setup tunes your feed, search, and profile.
 
 				<Grid as="form" columns={ 1 } id={ formID }>
 					<Field
@@ -62,7 +72,7 @@ export const SignupBase = () => {
 		)
 	}
 
-	if (stage === 'verify') {
+	if (screen === 'verify') {
 		formID = `form-${pageID}-${stage}`
 		fieldID = `${formID}-field`
 
@@ -193,7 +203,10 @@ export const SignupBase = () => {
 			One account for finding artists, bidding on flash, and booking.
 
 			<SignupForm
+				action={ signupAction }
 				onSSO={ () => handleSignupFlow('success') }
+				pending={ signupPending }
+				state={ signupState }
 			/>
 		</Section>
 	)

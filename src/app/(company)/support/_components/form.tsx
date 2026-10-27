@@ -39,7 +39,6 @@ export const SupportForm = ({
 		setClientErrors(showMessage(result.error))
 	}
 
-	const failedCheck = clientErrors !== null
 	const fieldID = `${id}-field`,
 		topic = state.values.topic ?? topics[0].value
 
@@ -47,13 +46,10 @@ export const SupportForm = ({
 		<Form
 			action={ formAction }
 			columns={ 2 }
-			errors={ clientErrors ?? state.errors }
-			formError={ failedCheck ? undefined : state.formError }
 			id={ id }
-			message={ failedCheck ? undefined : state.message }
 			onSubmit={ checkForm }
 			pending={ pending }
-			pendingMessage="Sending..."
+			state={ state }
 		>
 			<Field.Group
 				required

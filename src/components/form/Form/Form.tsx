@@ -1,6 +1,7 @@
 import {
 	useEffect, useMemo,
 	useRef, useState,
+	type ChangeEvent, type ChangeEventHandler,
 	type ReactNode,
 	type SubmitEvent, type SubmitEventHandler,
 } from 'react'
@@ -11,6 +12,7 @@ import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import { FormProvider, type FormContext } from './Form.context'
 import { Grid } from '@/components/layout/Grid'
+import type { FormState } from '@/lib/form'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Form.module.scss'
 
@@ -20,21 +22,26 @@ const NAME = 'Form' as const,
 const DEFAULT_PROPS = {
 	as: TAG,
 	columns: 1,
-	errors: {},
-	pendingMessage: 'Sending...',
 	shiftFocus: true,
+	state: {
+		errors: {},
+		formError: undefined,
+		message: undefined,
+	},
 } as const
+
+const NO_ERRORS: FormContext['errors'] = {}
 
 interface FormProps {
 	children: ReactNode
 	columns?: Grid.Props['columns']
-	errors?: FormContext['errors']
-	formError?: string
-	message?: string
+	onChange?: ChangeEventHandler<HTMLFormElement>
 	onSubmit?: SubmitEventHandler<HTMLFormElement>
 	pending?: boolean
 	pendingMessage?: string
 	shiftFocus?: boolean
+	state?: Pick<FormState, 'errors' | 'formError' | 'message'>
+	validate?: (data: FormData) => FormContext['errors']
 }
 
 interface FormSpecs {
@@ -49,8 +56,28 @@ interface FormSpecs {
 type FormSelectors =
 	| 'root' | 'status' | 'message'
 
+type FieldElement =
+	| HTMLInputElement
+	| HTMLSelectElement
+	| HTMLTextAreaElement
+
+interface LocalErrors {
+	errors: FormContext['errors']
+	from: FormContext['errors'] | undefined
+}
+
+const hasErrors = (errors: FormContext['errors']) =>
+	Object.values(errors).some(Boolean)
+
+const isField = (target: EventTarget): target is FieldElement =>
+	target instanceof HTMLInputElement
+	|| target instanceof HTMLSelectElement
+	|| target instanceof HTMLTextAreaElement
+
 export const Form = polymorphic<FormSpecs>((_props, { useProps, useStyles }) => {
 	const [attempt, setAttempt] = useState(0)
+	const [local, setLocal] = useState<LocalErrors | null>(null)
+
 	const ref = useRef<HTMLFormElement>(null)
 
 	const props = useProps(_props)
@@ -58,40 +85,70 @@ export const Form = polymorphic<FormSpecs>((_props, { useProps, useStyles }) => 
 
 	const {
 		children, columns,
-		errors, formError, message, onSubmit,
-		pending, pendingMessage, shiftFocus,
+		onChange, onSubmit,
+		pending, pendingMessage,
+		shiftFocus,
+		state: { errors, formError, message },
+		validate,
 		...rest
 	} = props
 
 	const others = extractOthers(rest)
+	const isLocal = local !== null && local.from === errors,
+		shown = (isLocal ? local.errors : errors) ?? NO_ERRORS
 
 	const ctxValues = useMemo(() => ({
-		errors,
+		errors: shown,
 		pending: !!pending,
-	}), [errors, pending])
+	}), [pending, shown])
 
 	useEffect(() => {		//	moves focus to the first invalid control whenever errors change
 		const form = ref.current
-		if (!shiftFocus || !errors || !form) return
+		if (!shiftFocus || !form) return
 
-		form.querySelector<HTMLInputElement>('[aria-invalid="true"]')?.focus()
-	}, [errors, shiftFocus])
+		form.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus()
+	}, [attempt, errors, shiftFocus])
 
-	const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
+	const handleChange = (evt: ChangeEvent<HTMLFormElement>) => {
+		onChange?.(evt)
+
+		const field: EventTarget = evt.target,
+			name = isField(field) ? field.name : undefined,
+			current = name ? shown[name] : undefined
+
+		if (!validate || !name || !current) return
+		if (validate(new FormData(evt.currentTarget))[name] === current) return
+
+		setLocal({ errors: { ...shown, [name]: undefined }, from: errors })
+	}
+
+	const handleSubmit = (evt: SubmitEvent<HTMLFormElement>) => {
 		if (pending) {
-			event.preventDefault()
+			evt.preventDefault()
 			return
 		}
 
 		setAttempt(count => count + 1)
-		onSubmit?.(event)
+
+		if (validate) {
+			const found = validate(new FormData(evt.currentTarget))
+			setLocal({ errors: found, from: errors })
+
+			if (hasErrors(found)) {
+				evt.preventDefault()
+				return
+			}
+		}
+
+		onSubmit?.(evt)
 	}
 
+	const reply = isLocal ? {} : { formError, message }
 	const text = pending ? pendingMessage
-		: formError ?? message
+		: reply.formError ?? reply.message
 	const kind = pending ? undefined
-		: formError ? 'error'
-			: message ? 'success'
+		: reply.formError ? 'error'
+			: reply.message ? 'success'
 				: undefined
 
 	return (
@@ -103,6 +160,7 @@ export const Form = polymorphic<FormSpecs>((_props, { useProps, useStyles }) => 
 			attributes={ { aria: {
 				busy: !!pending || undefined,
 			} } }
+			onChange={ handleChange }
 			onSubmit={ handleSubmit }
 			ref={ ref }
 		>

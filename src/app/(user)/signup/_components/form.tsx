@@ -1,54 +1,32 @@
-import {
-	useActionState, useState,
-	type SubmitEvent,
-} from 'react'
-
-import {
-	initFormState, showMessage,
-	PLACEHOLDER_EMAIL, type FormState,
-} from '@/lib/form'
-
 import Link from 'next/link'
-import { signup } from '../_utils/actions'
-import { signupSchema } from '../_utils/schema'
+import { validateSignup } from '../_utils/schema'
 import { Button } from '@/components/core/Button'
 import { Field } from '@/components/form/Field'
 import { Form } from '@/components/form/Form'
 import { Icon } from '@/components/core/Icon'
+import { PLACEHOLDER_EMAIL, type FormActionProps } from '@/lib/form'
 
 const FORM_ID = 'signup',
 	FIELD_ID = `${FORM_ID}-field`
 
-interface SignupFormProps {
+interface SignupFormProps
+	extends FormActionProps {
 	onSSO: (idp: 'Apple' | 'Google') => void
 }
 
 export const SignupForm = ({
+	action,
 	onSSO,
+	pending,
+	state,
 }: SignupFormProps) => {
-	const [state, formAction, pending] = useActionState(signup, initFormState)
-	const [clientErrors, setClientErrors] = useState<FormState['errors'] | null>(null)
-
-	const checkForm = (event: SubmitEvent<HTMLFormElement>) => {
-		const result = signupSchema.safeParse(Object.fromEntries(new FormData(event.currentTarget)))
-		if (result.success) return setClientErrors(null)
-
-		event.preventDefault()
-		setClientErrors(showMessage(result.error))
-	}
-
-	const failedCheck = clientErrors !== null
-
 	return (
 		<Form
-			action={ formAction }
-			errors={ clientErrors ?? state.errors }
-			formError={ failedCheck ? undefined : state.formError }
+			action={ action }
 			id={ FORM_ID }
-			message={ failedCheck ? undefined : state.message }
-			onSubmit={ checkForm }
 			pending={ pending }
-			pendingMessage="Signing up..."
+			state={ state }
+			validate={ validateSignup }
 		>
 			<Field
 				required
