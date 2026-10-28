@@ -3,7 +3,7 @@ import type { BasePageData } from '@/types/shared'
 export interface SignupPageData
 	extends BasePageData {}
 
-export const SIGNUP_PAGE_DATA = {
+export const SIGNUP_PAGE_DATA: SignupPageData = {
 	id: 'signup',
 	title: 'Signup',
 	description: 'Signup for your own Inkquest account.',

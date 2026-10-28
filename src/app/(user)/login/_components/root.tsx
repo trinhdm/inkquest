@@ -18,7 +18,7 @@ export const LoginRoot = () => {
 		pageID, screen,
 	} = useLoginCtx()
 
-	const forgotPW = (
+	const ForgotPass = (
 		<Button
 			unstyled data-link
 			onClick={ () => handleLoginFlow('forgot') }
@@ -62,7 +62,7 @@ export const LoginRoot = () => {
 					required
 					id={ `${FIELD_ID}-password` }
 					label="Password"
-					caption={ forgotPW }
+					caption={ ForgotPass }
 				>
 					<Field.Input
 						autoComplete="current-password"

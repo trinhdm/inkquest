@@ -1,0 +1,165 @@
+import Link from 'next/link'
+import { useSignupCtx } from '../_utils/signup.context'
+import { validateSignupForm } from '../_utils/schema'
+import { Button } from '@/components/core/Button'
+import { Field } from '@/components/form/Field'
+import { Form } from '@/components/form/Form'
+import { Icon } from '@/components/core/Icon'
+import { Section } from '@/components/layout/Section'
+import { PLACEHOLDER_EMAIL } from '@/lib/form'
+
+const FORM_ID = 'signup',
+	FIELD_ID = `${FORM_ID}-field`
+
+export const SignupRoot = () => {
+	const {
+		handleSignupFlow,
+		formReply: { pending, state },
+		magic, signup,
+		pageID, screen,
+	} = useSignupCtx()
+
+	const AuthChoices = (
+		<>
+			<Button unstyled className="authentication__option">
+				<Button.Section><Icon size="14" type="phone" /></Button.Section>
+				<span data-link>Use phone number instead</span>
+			</Button>
+			{/* <Button unstyled className="authentication__option">
+				<Button.Section><Icon size="14" type="wand-sparkles" /></Button.Section>
+				<span data-link>Email me a magic link</span>
+			</Button> */}
+			<Button
+				unstyled
+				className="authentication__option"
+				data-intent="magic"
+				formAction={ magic.action }
+				loading={ magic.pending }
+				type="submit"
+			>
+				<Button.Section><Icon size="14" type="wand-sparkles" /></Button.Section>
+				<span data-link>Email me a magic link</span>
+			</Button>
+		</>
+	)
+
+	const PasswordCriteria = (
+		<div className="password">
+			<div className="password__strength">
+				<ul className="password__requirements" data-unlist>
+					<li className="password__check">
+						<span className="password__status" />
+						<span>8+ characters</span>
+					</li>
+					<li className="password__check">
+						<span className="password__status" />
+						<span>Upper & lower case</span>
+					</li>
+					<li className="password__check">
+						<span className="password__status" />
+						<span>A number</span>
+					</li>
+					<li className="password__check">
+						<span className="password__status" />
+						<span>A symbol</span>
+					</li>
+				</ul>
+			</div>
+		</div>
+	)
+
+	return (
+		<Section
+			eyebrow="Create Account"
+			id={ `${pageID}-${screen}` }
+			layout="content-form"
+			tabIndex={ -1 }
+			title="Join Inkquest."
+		>
+			One account for finding artists, bidding on flash, and booking.
+
+			<Form
+				action={ signup.action }
+				id={ FORM_ID }
+				pending={ pending }
+				state={ state }
+				validate={ validateSignupForm }
+			>
+				<Field
+					required
+					id={ `${FIELD_ID}-email` }
+					label="Email"
+					caption={ AuthChoices }
+				>
+					<Field.Input
+						autoComplete="email"
+						defaultValue={ state.values.email }
+						name="email"
+						placeholder={ PLACEHOLDER_EMAIL }
+						type="email"
+					/>
+				</Field>
+
+				<Field
+					required
+					id={ `${FIELD_ID}-password` }
+					label="Password"
+					caption={ PasswordCriteria }
+				>
+					<Field.Input
+						autoComplete="new-password"
+						name="password"
+						placeholder="Your password"
+						type="password"
+					/>
+				</Field>
+
+				<div className="form__ctas authentication">
+					<Button
+						fullWidth
+						animate="right"
+						className="authentication__email"
+						loading={ signup.pending }
+						type="submit"
+					>
+						Create account
+						<Button.Section right><Icon type="arrow-right" /></Button.Section>
+					</Button>
+
+					<div className="authentication__label" role="presentation">
+						<span>or</span>
+					</div>
+
+					<Button.Group
+						fullWidth
+						className="authentication__sso"
+						hasPriority={ false }
+					>
+						<Button
+							fullWidth
+							onClick={ () => handleSignupFlow('success') }
+							variant="outline"
+						>
+							<Button.Section><Icon type="google" /></Button.Section>
+							Continue with Google
+						</Button>
+						<Button
+							fullWidth
+							onClick={ () => handleSignupFlow('success') }
+							variant="outline"
+						>
+							<Button.Section><Icon type="apple" /></Button.Section>
+							Continue with Apple
+						</Button>
+					</Button.Group>
+
+					<div className="authentication__note">
+						<p>By creating an account, you confirm you&apos;re 18+ and agree to the <Link href="/terms" data-link>Terms</Link> and <Link href="/privacy-policy" data-link>Privacy Policy</Link>.</p>
+					</div>
+				</div>
+			</Form>
+		</Section>
+	)
+}
+
+SignupRoot.displayName = 'SignupRoot'

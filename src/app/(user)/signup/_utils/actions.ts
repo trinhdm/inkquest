@@ -1,7 +1,12 @@
 'use server'
 
-import { signupSchema } from './schema'
-import { pause, pickValues, showMessage, type FormState } from '@/lib/form'
+import {
+	actionable, pause,
+	pickValues, showMessage,
+	type FormState,
+} from '@/lib/form'
+
+import { magicSchema, signupSchema, verifySchema } from './schema'
 
 export const signup = async (_prev: FormState, data: FormData): Promise<FormState> => {
 	const values = pickValues(data, ['email']),
@@ -18,8 +23,12 @@ export const signup = async (_prev: FormState, data: FormData): Promise<FormStat
 		if (result.data.password === 'wrong')
 			return { ...base, formError: 'Email or password is incorrect' }
 
-		return { ...base, message: 'Signed up', success: true }
+		return { ...base, success: true }
 	} catch {
 		return { ...base, formError: 'Something went wrong. Try again.' }
 	}
 }
+
+export const magicSignup = actionable(magicSchema)
+
+export const verify = actionable(verifySchema)
