@@ -6,7 +6,7 @@ import {
 	type FormState,
 } from '@/lib/form'
 
-import { magicSchema, signupSchema, verifySchema } from './schema'
+import { magicSchema, resendSchema, signupSchema, verifySchema } from './schema'
 
 export const signup = async (_prev: FormState, data: FormData): Promise<FormState> => {
 	const values = pickValues(data, ['email']),
@@ -30,5 +30,6 @@ export const signup = async (_prev: FormState, data: FormData): Promise<FormStat
 }
 
 export const magicSignup = actionable(magicSchema)
+export const resendSignup = actionable(resendSchema)
 
 export const verify = actionable(verifySchema)

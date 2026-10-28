@@ -2,19 +2,19 @@
 
 import { useEffect, useRef, type ComponentType } from 'react'
 import { useSignupFlow } from '../_utils/useSignupFlow'
-import { SignupOTP } from './otp'
-import { SignupMagic } from './magic'
+import { SignupMagic } from '../_form/magic'
 import { SignupProvider, type SignupScreen } from '../_utils/signup.context'
-import { SignupRoot } from './root'
-import { SignupSuccess } from './success'
+import { SignupRoot } from '../_form/root'
+import { SignupSuccess } from '../_form/success'
+import { SignupVerify } from '../_form/verify'
 import { SIGNUP_PAGE_DATA } from '../_utils/signup.data'
 
 const SCREENS = {
 	join:		SignupRoot,
-	verify:		SignupOTP,
 	magic:		SignupMagic,
-	phone:		SignupOTP,
+	phone:		SignupVerify,
 	success:	SignupSuccess,
+	verify:		SignupVerify,
 } satisfies Record<SignupScreen, ComponentType>
 
 export const SignupBase = () => {

@@ -10,7 +10,7 @@ const FORM_ID = 'signup-success',
 
 export const SignupSuccess = () => {
 	const {
-		formReply: { state },
+		verifyReply: { state },
 		pageID, screen,
 		waitUntilExpiry,
 	} = useSignupCtx()

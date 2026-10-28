@@ -9,10 +9,10 @@ export type SignupScreen =
 	// | 'otp-email' | 'otp-phone'
 
 export type ReplyFromScreen =
-	Extract<SignupScreen, 'join' | 'magic'>
+	Extract<SignupScreen, 'join' | 'verify'>
 
 export type SendLinkScreen =
-	Extract<SignupScreen, 'magic'>
+	Extract<SignupScreen, 'magic' | 'verify'>
 
 export interface SignupFlow {
 	endWait: () => void
@@ -21,9 +21,10 @@ export interface SignupFlow {
 
 	signup: FormResults
 	magic: FormResults
+	resend: FormResults
 	verify: FormResults
 
-	formReply: FormResults
+	verifyReply: FormResults
 	screen: SignupScreen
 	resent: boolean
 	waiting: boolean

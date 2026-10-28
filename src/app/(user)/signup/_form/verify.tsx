@@ -7,20 +7,21 @@ import { Icon } from '@/components/core/Icon'
 import { Form } from '@/components/form/Form'
 import { Section } from '@/components/layout/Section'
 
-const FORM_ID = 'signup-otp',
+const FORM_ID = 'verify',
 	FIELD_ID = `${FORM_ID}-field`,
 	TIMER_ID = `${FORM_ID}-timer`
 
-export const SignupOTP = () => {
+export const SignupVerify = () => {
 	const {
 		endWait,
 		handleSignupFlow,
 		pageID, resent, screen, waiting,
+		resend, signup,
 		verify: { action, pending, state },
 		waitUntilExpiry,
 	} = useSignupCtx()
 
-	const { email } = state.values
+	const { email } = signup.state.values
 
 	return (
 		<Section
@@ -30,7 +31,9 @@ export const SignupOTP = () => {
 			tabIndex={ -1 }
 			title="Check your email"
 		>
-			We sent a 6-digit code to scout.finch@gmail.com. Enter it below.
+			<>
+				We sent a 6-digit code to { email }. Enter it below.
+			</>
 
 			<Form
 				action={ action }
@@ -141,8 +144,10 @@ export const SignupOTP = () => {
 							describedby: waiting ? `${TIMER_ID}-text` : undefined
 						} } }
 						className="authentication__resend"
+						data-intent="resend"
 						disabled={ waiting }
-						loading={ pending }
+						formAction={ resend.action }
+						loading={ resend.pending }
 						type="submit"
 					>
 						{ waiting ? 'Resend available in' : 'Resend link' }
@@ -169,4 +174,4 @@ export const SignupOTP = () => {
 	)
 }
 
-SignupOTP.displayName = 'SignupOTP'
+SignupVerify.displayName = 'SignupVerify'

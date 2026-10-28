@@ -2,12 +2,12 @@
 
 import { useEffect, useRef, type ComponentType } from 'react'
 import { useLoginFlow } from '../_utils/useLoginFlow'
-import { LoginForgot } from './forgot'
-import { LoginMagic } from './magic'
+import { LoginForgot } from '../_form/forgot'
+import { LoginMagic } from '../_form/magic'
 import { LoginProvider, type LoginScreen } from '../_utils/login.context'
-import { LoginReset } from './reset'
-import { LoginRoot } from './root'
-import { LoginSuccess } from './success'
+import { LoginReset } from '../_form/reset'
+import { LoginRoot } from '../_form/root'
+import { LoginSuccess } from '../_form/success'
 import { LOGIN_PAGE_DATA } from '../_utils/login.data'
 
 const SCREENS = {

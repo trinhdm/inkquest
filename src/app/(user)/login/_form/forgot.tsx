@@ -36,6 +36,7 @@ export const LoginForgot = () => {
 			>
 				<Field
 					required
+					disabled={ pending }
 					id={ `${FIELD_ID}-email` }
 					label="Email"
 				>

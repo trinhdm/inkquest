@@ -33,6 +33,15 @@ export const verifySchema = z.object({ email: emailRule })
 export const validateVerify = validateWith(verifySchema)
 
 
+//	SignupResend
+
+export type ResendValues =
+	z.infer<typeof resendSchema>
+
+export const resendSchema = z.object({ email: emailRule })
+export const validateResend = validateWith(resendSchema)
+
+
 //	general
 
 export const validateSignupForm = (data: FormData) =>

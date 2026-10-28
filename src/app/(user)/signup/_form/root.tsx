@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { useSignupCtx } from '../_utils/signup.context'
 import { validateSignupForm } from '../_utils/schema'
 import { Button } from '@/components/core/Button'
@@ -7,6 +6,7 @@ import { Form } from '@/components/form/Form'
 import { Icon } from '@/components/core/Icon'
 import { Section } from '@/components/layout/Section'
 import { PLACEHOLDER_EMAIL } from '@/lib/form'
+import Link from 'next/link'
 
 const FORM_ID = 'signup',
 	FIELD_ID = `${FORM_ID}-field`
@@ -14,7 +14,7 @@ const FORM_ID = 'signup',
 export const SignupRoot = () => {
 	const {
 		handleSignupFlow,
-		formReply: { pending, state },
+		// formReply: { pending, state },
 		magic, signup,
 		pageID, screen,
 	} = useSignupCtx()
@@ -81,19 +81,20 @@ export const SignupRoot = () => {
 			<Form
 				action={ signup.action }
 				id={ FORM_ID }
-				pending={ pending }
-				state={ state }
+				pending={ signup.pending }
+				state={ signup.state }
 				validate={ validateSignupForm }
 			>
 				<Field
 					required
+					disabled={ signup.pending }
 					id={ `${FIELD_ID}-email` }
 					label="Email"
 					caption={ AuthChoices }
 				>
 					<Field.Input
 						autoComplete="email"
-						defaultValue={ state.values.email }
+						defaultValue={ signup.state.values.email }
 						name="email"
 						placeholder={ PLACEHOLDER_EMAIL }
 						type="email"
@@ -102,6 +103,7 @@ export const SignupRoot = () => {
 
 				<Field
 					required
+					disabled={ signup.pending }
 					id={ `${FIELD_ID}-password` }
 					label="Password"
 					caption={ PasswordCriteria }

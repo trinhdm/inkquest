@@ -46,6 +46,7 @@ export const LoginRoot = () => {
 			>
 				<Field
 					required
+					disabled={ pending }
 					id={ `${FIELD_ID}-email` }
 					label="Email"
 				>
@@ -60,6 +61,7 @@ export const LoginRoot = () => {
 
 				<Field
 					required
+					disabled={ pending }
 					id={ `${FIELD_ID}-password` }
 					label="Password"
 					caption={ ForgotPass }
