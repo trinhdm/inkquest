@@ -1,9 +1,11 @@
+import { useState } from 'react'
 import { useSignupCtx } from '../_utils/signup.context'
 import { validateSignupForm } from '../_utils/schema'
 import { Button } from '@/components/core/Button'
 import { Field } from '@/components/form/Field'
 import { Form } from '@/components/form/Form'
 import { Icon } from '@/components/core/Icon'
+import { PasswordRules } from '../_components/password'
 import { Section } from '@/components/layout/Section'
 import { PLACEHOLDER_EMAIL } from '@/lib/form'
 import Link from 'next/link'
@@ -18,6 +20,14 @@ export const SignupRoot = () => {
 		magic, signup,
 		pageID, screen,
 	} = useSignupCtx()
+
+	const [password, setPassword] = useState('')
+	const [lastState, setLastState] = useState(signup.state)
+​
+	if (signup.state !== lastState) {
+		setLastState(signup.state)
+		setPassword('')
+	}
 
 	const AuthChoices = (
 		<>
@@ -41,31 +51,6 @@ export const SignupRoot = () => {
 				<span data-link>Email me a magic link</span>
 			</Button>
 		</>
-	)
-
-	const PasswordCriteria = (
-		<div className="password">
-			<div className="password__strength">
-				<ul className="password__requirements" data-unlist>
-					<li className="password__check">
-						<span className="password__status" />
-						<span>8+ characters</span>
-					</li>
-					<li className="password__check">
-						<span className="password__status" />
-						<span>Upper & lower case</span>
-					</li>
-					<li className="password__check">
-						<span className="password__status" />
-						<span>A number</span>
-					</li>
-					<li className="password__check">
-						<span className="password__status" />
-						<span>A symbol</span>
-					</li>
-				</ul>
-			</div>
-		</div>
 	)
 
 	return (
@@ -106,11 +91,12 @@ export const SignupRoot = () => {
 					disabled={ signup.pending }
 					id={ `${FIELD_ID}-password` }
 					label="Password"
-					caption={ PasswordCriteria }
+					caption={ <PasswordRules value={ password } /> }
 				>
 					<Field.Input
 						autoComplete="new-password"
 						name="password"
+						onChange={ event => setPassword(event.currentTarget.value) }
 						placeholder="Your password"
 						type="password"
 					/>

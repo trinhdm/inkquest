@@ -73,10 +73,13 @@
     &__caption {
         column-gap: var(--inkq-indent-list);
         display: inline-flex;
-        // justify-content: flex-end;
-        // max-width: fit-content;
         text-wrap: pretty;
         width: 100%;
+
+        &:has(> [data-link]) {
+            justify-content: flex-end;
+            max-width: fit-content;
+        }
     }
 
     &__choice {

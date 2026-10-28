@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { describeMissing } from './signup.data'
 import { emailRule, validateWith } from '@/lib/form'
 
 
@@ -9,7 +10,12 @@ export type SignupValues =
 
 export const signupSchema = z.object({
 	email: emailRule,
-	password: z.string().min(1, `Password doesn't meet the requirements.`),
+	password: z.string()
+		.min(1, 'Enter a password.')
+		.superRefine((value, ctx) => {
+			const message = describeMissing(value)
+			if (message) ctx.addIssue({ code: 'custom', message })
+		}),
 })
 
 export const validateSignup = validateWith(signupSchema)

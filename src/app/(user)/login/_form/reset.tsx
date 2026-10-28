@@ -88,7 +88,7 @@ export const LoginReset = () => {
 						) }
 					</Button>
 
-					<span>·</span>
+					<span data-dot>·</span>
 
 					<Button
 						unstyled data-link

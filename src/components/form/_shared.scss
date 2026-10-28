@@ -96,14 +96,24 @@
 		color: var(--inkq-color-placeholder);
 	}
 
-	&:-webkit-autofill {
-		&,
+
+	&:-webkit-autofill,
+	&:autofill {
+		--form-autofill-transition: background-color 9999s ease-in-out 0s,
+			box-shadow var(--form-control-transition);
+
+		box-shadow: global.autofill(var(--form-control-background));
+		background-clip: content-box;
+		font-weight: var(--inkq-font-weight-semibold);
+		-webkit-text-fill-color: var(--form-control-color);
+
+		&:is(:disabled, [read-only]) {
+			box-shadow: global.autofill(var(--form-control-background));
+			transition: var(--form-autofill-transition) var(--form-control-duration);
+		}
+
 		&:is(:active, :focus, :hover) {
-			background-clip: content-box;
-			box-shadow: 0 0 0 1000px var(--form-control-background-active) inset;
-			font-weight: var(--inkq-font-weight-semibold);
-			transition: background-color 5000s ease-in-out 0s;
-			-webkit-text-fill-color: var(--form-control-color);
+			box-shadow: global.autofill(var(--form-control-background-active));
 		}
 	}
 }
