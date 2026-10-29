@@ -119,7 +119,7 @@ export const Bullet: Story = {
 		<Row>
 			<Group label="custom bullet">
 				<Timeline>
-					<Timeline.Item { ...args } bullet={ <Icon type="confirm" /> } />
+					<Timeline.Item { ...args } bullet={ <Icon type="check" /> } />
 				</Timeline>
 			</Group>
 			<Group label="default (empty marker)">

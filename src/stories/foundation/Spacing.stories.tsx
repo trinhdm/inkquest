@@ -65,7 +65,7 @@ const boxRow: CSSProperties = { display: 'flex', gap: 24, flexWrap: 'wrap', alig
 // --- semantic -----------------------------------------------------------------
 
 const BREAKPOINT_KEYS = ['min', 'xs', 'sm', 'md', 'lg', 'xl', 'max'] as const
-const CONTAINER_KEYS = ['block', 'page'] as const
+const CONTAINER_KEYS = ['block', 'form', 'page'] as const
 
 const SemanticLayoutTokens = () => {
 	const spaces: TokenBoxProps[] = [
@@ -124,6 +124,7 @@ const ApiLayoutTokens = () => {
 		{ label: 'icon.sm', path: "tokens.el.icon.size('sm')", value: tokens.el.icon.size('sm'), kind: 'size' },
 		{ label: 'icon.md', path: "tokens.el.icon.size('md')", value: tokens.el.icon.size('md'), kind: 'size' },
 		{ label: 'icon.lg', path: "tokens.el.icon.size('lg')", value: tokens.el.icon.size('lg'), kind: 'size' },
+		{ label: 'icon.accessible', path: 'tokens.el.icon.accessible()', value: tokens.el.icon.accessible(), kind: 'size' },
 	]
 
 	const fieldPadding: TokenBoxProps[] = [
@@ -145,7 +146,7 @@ const ApiLayoutTokens = () => {
 				{ padding.map(item => <TokenBox key={ item.path } { ...item } />) }
 			</div>
 
-			<h4 style={ { fontSize: 13, marginBottom: 8 } }>icon size (<code>ElementTokens.icon</code>)</h4>
+			<h4 style={ { fontSize: 13, marginBottom: 8 } }>icon size (<code>ElementTokens.icon</code>, plus <code>GridTokens.accessible.icon</code> as <code>accessible</code>)</h4>
 			<div style={ boxRow }>
 				{ icons.map(item => <TokenBox key={ item.path } { ...item } />) }
 			</div>
@@ -244,6 +245,7 @@ const InternalComposites = () => {
 		literal('navbar.size', '--inkq-navbar-size', 'size'),
 		literal('subnav.size', '--inkq-subnav-size', 'size'),
 		literal('field.gap', '--inkq-field-gap', 'size'),
+		literal('accessible.control', '--inkq-accessible-control', 'size'),
 	]
 
 	return (

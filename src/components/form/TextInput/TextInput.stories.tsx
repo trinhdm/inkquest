@@ -95,7 +95,7 @@ const meta: Meta<InputStoryProps> = {
 		iconPosition: {
 			control: 'select',
 			options: ICON_POSITION_OPTIONS,
-			description: 'Only for icon types (anything but `text`). Sets `--form-control-icon-inset` on the icon (`0 auto` left, the default; `auto 0` right). See the `IconPosition` story.',
+			description: 'Only for icon types (anything but `text`). Sets `--form-control-icon-inset` on the icon span that follows the input (`0 auto` left, the default; `auto 0` right). See the `IconPosition` story.',
 		},
 		readonly: {
 			control: false,
@@ -148,14 +148,14 @@ export const Default: Story = {
 		await expect(input).not.toHaveAttribute('readonly')
 		await expect(input).not.toHaveAttribute('aria-invalid')
 
-		// plain text has no type icon
-		await expect(input.previousElementSibling).toBeNull()
+		// plain text has no type icon (the icon span would follow the input)
+		await expect(input.nextElementSibling).toBeNull()
 	},
 }
 
 // Each type is set explicitly, so the minimal props are spelled out rather
 // than spreading `args`. Every type but `text` renders an icon: a span just
-// before the input, or for `password` a toggle button just after it.
+// after the input, which for `password` holds a show/hide toggle button.
 export const Types: Story = {
 	parameters: {
 		layout: 'padded',
@@ -178,17 +178,16 @@ export const Types: Story = {
 		expect(inputs).toHaveLength(INPUT_TYPE_OPTIONS.length)
 
 		for (const [index, type] of INPUT_TYPE_OPTIONS.entries()) {
-			const sibling = type === 'password'
-				? 'nextElementSibling'
-				: 'previousElementSibling'
-
 			const input = inputs[index],
-				icon = input[sibling]
+				icon = input.nextElementSibling
 
 			await expect(input).toHaveAttribute('type', type)
 
 			if (type === 'text') await expect(icon).toBeNull()
-			else await expect(icon?.querySelector('svg')).toBeInTheDocument()
+			else {
+				await expect(icon).toBeInTheDocument()
+				await expect(icon?.querySelector('svg')).toBeInTheDocument()
+			}
 		}
 	},
 }
@@ -215,9 +214,36 @@ export const IconPosition: Story = {
 		const [defaultInput, leftInput, rightInput] = within(canvasElement).getAllByRole('textbox')
 
 		// `ICON_POSITION_OPTIONS` is `['left', 'right']`, mapped in order.
-		await expect(read(defaultInput.previousElementSibling as Element, '--form-control-icon-inset')).toBe('0 auto')
-		await expect(read(leftInput.previousElementSibling as Element, '--form-control-icon-inset')).toBe('0 auto')
-		await expect(read(rightInput.previousElementSibling as Element, '--form-control-icon-inset')).toBe('auto 0')
+		// the token sits on the icon span, which follows the input
+		await expect(read(defaultInput.nextElementSibling as Element, '--form-control-icon-inset')).toBe('0 auto')
+		await expect(read(leftInput.nextElementSibling as Element, '--form-control-icon-inset')).toBe('0 auto')
+		await expect(read(rightInput.nextElementSibling as Element, '--form-control-icon-inset')).toBe('auto 0')
+	},
+}
+
+// In a Field with `layout="inline"` the label floats inside the control, so the
+// input renders no type icon (nor password toggle) at all.
+export const InlineLayout: Story = {
+	parameters: { controls: { exclude: ['type', 'iconPosition'] } },
+	render: () => (
+		<Row>
+			<Group label="Field layout=default">
+				<Field id="inline-default" label="Email">
+					<Field.Input name="inline-default" type="email" />
+				</Field>
+			</Group>
+			<Group label="Field layout=inline">
+				<Field id="inline-inline" label="Email" layout="inline">
+					<Field.Input name="inline-inline" type="email" />
+				</Field>
+			</Group>
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const [defaultInput, inlineInput] = within(canvasElement).getAllByRole('textbox')
+
+		await expect(defaultInput.nextElementSibling?.querySelector('svg')).toBeInTheDocument()
+		await expect(inlineInput.nextElementSibling).toBeNull()
 	},
 }
 
@@ -242,7 +268,8 @@ export const PasswordToggle: Story = {
 		const [, input] = canvas.getAllByLabelText('Name'),
 			[locked, toggle] = canvas.getAllByRole('button', { name: 'Show password' })
 		await expect(locked).toBeDisabled()
-		await expect(input.nextElementSibling).toBe(toggle)
+		// the toggle sits in the icon span, which follows the input
+		await expect(input.nextElementSibling).toBe(toggle.parentElement)
 		await userEvent.click(toggle)
 		await expect(input).toHaveAttribute('type', 'text')
 		await expect(toggle).toHaveAttribute('aria-pressed', 'true')
@@ -425,7 +452,8 @@ export const Loading: Story = {
 	},
 }
 
-// `error` lives on the Field: it flags the input invalid and describes it.
+// `error` lives on the Field: it flags the input invalid and describes it. The
+// description is read out with a visually hidden `Error: ` prefix.
 export const Errors: Story = {
 	parameters: { controls: { exclude: ['name'] } },
 	render: args => (
@@ -442,7 +470,7 @@ export const Errors: Story = {
 		const [withError, without] = within(canvasElement).getAllByRole('textbox')
 
 		await expect(withError).toHaveAttribute('aria-invalid', 'true')
-		await expect(withError).toHaveAccessibleDescription('Enter your name')
+		await expect(withError).toHaveAccessibleDescription('Error: Enter your name')
 
 		await expect(without).not.toHaveAttribute('aria-invalid')
 		await expect(without).not.toHaveAttribute('aria-describedby')

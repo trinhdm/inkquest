@@ -21,7 +21,10 @@ type FooterLayout = Exclude<Section.Layout, 'content-blocks'>
 const HERO_GRID_LAYOUTS = ['hero-split', 'hero-tight'] as const satisfies readonly FooterLayout[]
 
 // Every other layout that renders a footer: a plain `div`, no grid placement of its own.
-const PLAIN_LAYOUTS = ['default', 'banner', 'hero', 'content', 'content-split'] as const satisfies readonly FooterLayout[]
+const PLAIN_LAYOUTS = [
+	'default', 'banner', 'banner-note', 'hero',
+	'content', 'content-form', 'content-split',
+] as const satisfies readonly FooterLayout[]
 
 const BUTTON_COUNTS = [0, 1, 2, 3] as const
 
@@ -356,13 +359,11 @@ export const RevealFrom: Story = {
 }
 
 /**
- * INTENDED BEHAVIOUR, currently failing (source bug). In `hero-split` and
- * `hero-tight`, `buildSection.tsx` (~line 160) puts `{ as: Grid.Item, span: 1 }` in
- * the footer's context, so the footer should be a `Grid.Item` that spans one column
- * (`--grid-span-col: span 1`), beside the `span 3` content item. But
- * `SectionFooter.tsx:72` checks `as && isValidElement(as)`, which is false for a
- * component, so the footer falls back to a plain `div` and `span` is dropped. Proposed
- * fix: `const itemProps = !!as ? { as, span } : { as: 'div' }`.
+ * In `hero-split` and `hero-tight`, `buildSection.tsx` (`buildContent`) puts
+ * `{ as: Grid.Item, span: 1 }` in the footer's context, so the footer is a
+ * `Grid.Item` that spans one column (`--grid-span-col: span 1`), beside the `span 3`
+ * content item. `SectionFooter.tsx` hands the context's `as`/`span` to its `Box`
+ * whenever `as` is set (`!!as ? { as, span } : { as: 'div' }`).
  */
 export const HeroGridItem: Story = {
 	parameters: { controls: { exclude: ['children'] } },
@@ -391,11 +392,10 @@ export const HeroGridItem: Story = {
 }
 
 /**
- * INTENDED BEHAVIOUR, currently failing for the same reason as `HeroGridItem`. Once
- * the footer is a `Grid.Item`, `grid-column: span 1` sets `grid-column-start` to
- * `span 1`; `grid-column-end` stays `auto`. Kept apart from `HeroGridItem` because
- * the computed value also depends on the `Grid.Item` CSS class surviving the footer's
- * own class, which the inline token check does not.
+ * Once the footer is a `Grid.Item` (see `HeroGridItem`), `grid-column: span 1` sets
+ * `grid-column-start` to `span 1`; `grid-column-end` stays `auto`. Kept apart from
+ * `HeroGridItem` because the computed value also depends on the `Grid.Item` CSS class
+ * surviving the footer's own class, which the inline token check does not.
  */
 export const HeroGridColumn: Story = {
 	parameters: { controls: { exclude: ['children'] } },

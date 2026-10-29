@@ -37,6 +37,12 @@ const ROOT_SELECTOR = '.inkq-footer'
 const DEFAULT_SOCIAL_COUNT = 3,
 	ALL_RENDERABLE_SOCIAL_COUNT = 5
 
+// `Icon` (`core/Icon/Icon.tsx`) no longer renders `role="img"`/`<title>`. With an
+// `href` it renders `<a><svg aria-hidden="true" aria-label="<type> icon" /></a>` (the
+// registered default `hidden: true` drives `aria-hidden`), so each social icon is
+// reached as a `link`, with the `<svg>` as its child.
+const getSocialLinks = (socials: HTMLElement) => within(socials).getAllByRole('link')
+
 // A small custom `items` fixture, independent of `FOOTER_GLOBAL_NAV`, used to
 // demonstrate the `location: 'legal'` vs. info partition deterministically:
 // `About`/`Careers` are real leaf children of the `Company` `NavigationItem` (no
@@ -95,11 +101,15 @@ export const Default: Story = {
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement)
 
-		// Scoped to `.inkq-footer__socials`, NOT `canvas` as a whole — `Logo`
-		// (`next/image`) also renders an `<img>` with a non-empty `alt`, which
-		// otherwise inflates a canvas-wide `getAllByRole('img')` count by one.
-		const socials = within(canvasElement.querySelector('.inkq-footer__socials') as HTMLElement)
-		await expect(socials.getAllByRole('img')).toHaveLength(DEFAULT_SOCIAL_COUNT)
+		// Scoped to `.inkq-footer__socials`, NOT `canvas` as a whole — the footer
+		// menus also render links, which would inflate a canvas-wide count.
+		const socialLinks = getSocialLinks(canvasElement.querySelector('.inkq-footer__socials') as HTMLElement)
+		await expect(socialLinks).toHaveLength(DEFAULT_SOCIAL_COUNT)
+
+		// Each link wraps a decorative `<svg>` (`aria-hidden="true"`).
+		for (const link of socialLinks) {
+			await expect(link.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+		}
 		await expect(canvas.getByText('Find your artist. Own the ink.')).toBeInTheDocument()
 
 		// One `<Menu role="menubar">` per `FOOTER_GLOBAL_NAV` entry.
@@ -154,8 +164,27 @@ export const EmptyItems: Story = {
 		await expect(canvas.queryAllByRole('menubar')).toHaveLength(0)
 		await expect(canvas.getByText('Find your artist. Own the ink.')).toBeInTheDocument()
 
-		const socials = within(canvasElement.querySelector('.inkq-footer__socials') as HTMLElement)
-		await expect(socials.getAllByRole('img')).toHaveLength(DEFAULT_SOCIAL_COUNT)
+		const socials = canvasElement.querySelector('.inkq-footer__socials') as HTMLElement
+		await expect(getSocialLinks(socials)).toHaveLength(DEFAULT_SOCIAL_COUNT)
+	},
+}
+
+/**
+ * BUG: every social link should have a non-empty accessible name, but today it has
+ * none. `Footer.tsx` renders `<Icon href={ url } type={ type } />` and never passes
+ * `hidden={ false }` or any label, so `Icon`'s new registered default `hidden: true`
+ * puts `aria-hidden="true"` on the `<svg>` (`buildIcon.tsx` also sets
+ * `aria-label="<type> icon"` on it, but a hidden element is excluded from the name
+ * computation). The `<a>` therefore ends up icon-only with an empty name. This story
+ * asserts the INTENDED behavior and is expected to fail until the source is fixed.
+ */
+export const SocialLinkNames: Story = {
+	play: async ({ canvasElement }) => {
+		const socials = canvasElement.querySelector('.inkq-footer__socials') as HTMLElement
+
+		for (const link of getSocialLinks(socials)) {
+			await expect(link).toHaveAccessibleName()
+		}
 	},
 }
 
@@ -191,18 +220,18 @@ export const Socials: Story = {
 		await expect(roots).toHaveLength(4)
 
 		// Scoped to each root's OWN `.inkq-footer__socials`, NOT the whole root —
-		// each `Footer` also renders its own `Logo` (`next/image`) `<img>`, which
-		// otherwise inflates a root-wide `getAllByRole('img')` count by one.
+		// each `Footer` also renders menu links, which would inflate a root-wide
+		// `getAllByRole('link')` count.
 		const socialsOf = (root: HTMLElement) =>
-			within(root.querySelector('.inkq-footer__socials') as HTMLElement)
+			getSocialLinks(root.querySelector('.inkq-footer__socials') as HTMLElement)
 
 		const [defaultRoot, customRoot, emptyRoot, undefinedRoot] = roots
 
-		await expect(socialsOf(defaultRoot).getAllByRole('img')).toHaveLength(DEFAULT_SOCIAL_COUNT)
-		await expect(socialsOf(customRoot).getAllByRole('img')).toHaveLength(2)
+		await expect(socialsOf(defaultRoot)).toHaveLength(DEFAULT_SOCIAL_COUNT)
+		await expect(socialsOf(customRoot)).toHaveLength(2)
 		// Fallback to ALL of `SOCIALS_NAV` (7 brands), but only 5 render visibly.
-		await expect(socialsOf(emptyRoot).getAllByRole('img')).toHaveLength(ALL_RENDERABLE_SOCIAL_COUNT)
-		await expect(socialsOf(undefinedRoot).getAllByRole('img')).toHaveLength(DEFAULT_SOCIAL_COUNT)
+		await expect(socialsOf(emptyRoot)).toHaveLength(ALL_RENDERABLE_SOCIAL_COUNT)
+		await expect(socialsOf(undefinedRoot)).toHaveLength(DEFAULT_SOCIAL_COUNT)
 		await expect(SOCIALS_NAV.length).toBeGreaterThan(ALL_RENDERABLE_SOCIAL_COUNT)
 	},
 }

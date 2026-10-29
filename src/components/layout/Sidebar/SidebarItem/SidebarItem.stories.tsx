@@ -382,9 +382,7 @@ export const KeyboardActivation: Story = {
  * it: rendering it on its own, and passing it as `children` of a `Sidebar` that has
  * no `items` (the display branch renders `children` outside the context provider).
  *
- * The expected text is the message AFTER the pending rename of the component's
- * `NAME` from `'SidebarItem'` to `'Sidebar.Item'`, so this story fails until the
- * rename is applied (it currently names `<SidebarItem />`).
+ * The message names the component by its `NAME`, `'Sidebar.Item'`.
  */
 export const OutsideSidebar: Story = {
 	parameters: { controls: { exclude: ['id', 'label', 'url'] } },

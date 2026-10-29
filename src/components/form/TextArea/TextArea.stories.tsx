@@ -408,7 +408,7 @@ export const Errors: Story = {
 		const [withError, without] = within(canvasElement).getAllByRole('textbox')
 
 		await expect(withError).toHaveAttribute('aria-invalid', 'true')
-		await expect(withError).toHaveAccessibleDescription('Too short')
+		await expect(withError).toHaveAccessibleDescription('Error: Too short')
 
 		await expect(without).not.toHaveAttribute('aria-invalid')
 		await expect(without).not.toHaveAttribute('aria-describedby')

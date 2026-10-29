@@ -167,7 +167,7 @@ const FontPropertyTokens = () => {
 	]
 
 	const leading = [
-		{ key: 'none', path: "alias.lineHeight('none')", value: alias.lineHeight('exact') },
+		{ key: 'exact', path: "alias.lineHeight('exact')", value: alias.lineHeight('exact') },
 		{ key: 'heading', path: "alias.lineHeight('heading')", value: alias.lineHeight('heading') },
 		{ key: 'body', path: "alias.lineHeight('body')", value: alias.lineHeight('body') },
 		{ key: 'label', path: "alias.lineHeight('label')", value: alias.lineHeight('label') },
@@ -258,6 +258,7 @@ const PresetTokens = () => {
 		{ label: 'text.h5', path: 'tokens.presets.text.h5()', varName: '--inkq-text-h5', value: text.h5(), sample: 'Heading five' },
 		{ label: 'text.h6', path: 'tokens.presets.text.h6()', varName: '--inkq-text-h6', value: text.h6(), sample: 'Heading six' },
 		{ label: 'text.body', path: 'tokens.presets.text.body()', varName: '--inkq-text-body', value: text.body() },
+		{ label: 'text.body.sm (no accessor)', path: 'var(--inkq-text-body-sm)', varName: '--inkq-text-body-sm', value: 'var(--inkq-text-body-sm)' },
 		{ label: 'text.prose', path: 'tokens.presets.text.prose()', varName: '--inkq-text-prose', value: text.prose() },
 		{ label: 'text.label', path: 'tokens.presets.text.label()', varName: '--inkq-text-label', value: text.label(), sample: 'Label text' },
 		{ label: 'text.label.mono (no accessor)', path: 'var(--inkq-text-label-mono)', varName: '--inkq-text-label-mono', value: 'var(--inkq-text-label-mono)', sample: 'Label text' },
@@ -266,6 +267,7 @@ const PresetTokens = () => {
 		{ label: 'text.numeric (no accessor)', path: 'var(--inkq-text-numeric)', varName: '--inkq-text-numeric', value: 'var(--inkq-text-numeric)', sample: '0123456789' },
 		{ label: 'text.caption', path: 'tokens.presets.text.caption()', varName: '--inkq-text-caption', value: text.caption(), sample: 'Caption text' },
 		{ label: 'text.caption.image', path: "tokens.presets.text.caption('image')", varName: '--inkq-text-caption-image', value: text.caption('image'), sample: 'Image caption' },
+		{ label: 'text.error (no accessor)', path: 'var(--inkq-text-error)', varName: '--inkq-text-error', value: 'var(--inkq-text-error)', sample: 'Error message text' },
 		{ label: 'text.eyebrow', path: "tokens.presets.text.eyebrow()", varName: '--inkq-text-eyebrow', value: text.eyebrow(), sample: 'EYEBROW' },
 	]
 
@@ -276,7 +278,7 @@ const PresetTokens = () => {
 				<code>FontPresetTokens</code>), each collapsed to a <code>font</code> shorthand and emitted as{ ' ' }
 				<code>--inkq-text-*</code>. They are the shorthand layer — <code>reference/api.ts</code> says
 				&quot;limit component usage to only shorthand tokens&quot; — exposed as{ ' ' }
-				<code>tokens.presets.text</code>. <code>label.mono</code> and <code>numeric</code> are emitted but
+				<code>tokens.presets.text</code>. <code>body.sm</code>, <code>error</code>, <code>label.mono</code> and <code>numeric</code> are emitted but
 				not wired into that accessor, so they are referenced by literal variable name. Heading presets use the
 				base size; the fluid sizes are separate <code>font.size.hN.fluid</code> properties.
 			</p>
@@ -329,8 +331,18 @@ const GlobalTextStyles = () => (
 		<h4 style={ headingStyle }>utility classes</h4>
 		<div style={ rowStyle }>
 			<div>
-				<span className="inkq-eyebrow">Eyebrow</span>
-				<div style={ metaStyle }>.inkq-eyebrow — text.section.eyebrow, tertiary color, wide tracking, uppercase</div>
+				<span
+					style={ {
+						color: 'var(--inkq-color-text-tertiary)',
+						display: 'inline-block',
+						font: tokens.presets.text.eyebrow(),
+						letterSpacing: alias.letterSpacing('wide'),
+						textTransform: 'uppercase',
+					} }
+				>
+					Eyebrow
+				</span>
+				<div style={ metaStyle }>no global class — the eyebrow mixin in src/styles/utils/_mixins.scss (used by Section&apos;s module class): text.eyebrow, tertiary color, wide tracking, uppercase. Sample applies the same properties inline.</div>
 			</div>
 			<div>
 				<span className="inkq-label">Label</span>
@@ -338,7 +350,7 @@ const GlobalTextStyles = () => (
 			</div>
 			<div>
 				<span className="inkq-caption">Caption</span>
-				<div style={ metaStyle }>.inkq-caption — text.caption.item, tertiary color, wide tracking, uppercase</div>
+				<div style={ metaStyle }>.inkq-caption — text.caption, tertiary color, wide tracking, uppercase</div>
 			</div>
 			<div>
 				<p className="inkq-prose" style={ { margin: 0, maxWidth: 480 } }>

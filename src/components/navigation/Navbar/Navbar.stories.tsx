@@ -71,7 +71,7 @@ const meta: Meta<NavbarStoryProps> = {
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Comes from `FactoryContract` (via `_PolymorphicContract`), not `Navbar`\'s own `NavbarProps`. The semantic classes (`inkq-navbar`, `inkq-navbar__wrapper`, `inkq-navbar__inner`, `inkq-navbar__col`, `inkq-navbar__menu`, `inkq-navbar__buttons`) are still emitted regardless; `unstyled` also reaches the root `<Box>` through `others`, where it would drop non-state `data-*` attributes (`Navbar` sets none). `Navbar` defines no tokens, so there are none to drop. `Navbar.tsx` does not forward `unstyled` to the nested `Menu`/`Button.Group`, so those keep their own styling. The render tree is root → wrapper (`styles(\'wrapper\', true)`) → inner → col ×3, with `menu` (`styles(\'menu\')`, no config) applied to the `<Menu>` inside the 2nd col and `buttons` (`styles(\'buttons\')`, no config) applied to the auth `Button.Group` inside the 3rd col — both land on the nested component\'s own root, not the `col` div wrapping it. `styles(\'wrapper\', true)` is the BOOLEAN-shorthand config form — `getConfigClasses` now checks `check.isUnstyled` FIRST, before the boolean-shorthand branch, so the global `inkq-wrapper` class it emits is suppressed entirely when `unstyled`, same as any object-config class. For the other plain `styles(selector)` calls (no config) the effect is dropping the CSS-module hash normally appended alongside, and only where `Navbar.module.scss` actually declares a rule to hash — `&__inner`/`&__col`/`&__buttons` do; `&__wrapper`/`&__menu` have no SCSS rule at all, so those two never carry a hash, styled or unstyled. See the `Unstyled` story.',
+			description: 'Comes from `FactoryContract` (via `_PolymorphicContract`), not `Navbar`\'s own `NavbarProps`. The semantic classes (`inkq-navbar`, `inkq-navbar__wrapper`, `inkq-navbar__inner`, `inkq-navbar__col`, `inkq-navbar__menu`, `inkq-navbar__buttons`, and on `/login`/`/signup` `inkq-navbar__tip`) are still emitted regardless; `unstyled` also reaches the root `<Box>` through `others`, where it would drop non-state `data-*` attributes (`Navbar` sets none). `Navbar` defines no tokens, so there are none to drop. `Navbar.tsx` does not forward `unstyled` to the nested `Menu`/`Button.Group`, so those keep their own styling. The render tree is root → wrapper (`styles(\'wrapper\', true)`) → inner → col ×3, with `menu` (`styles(\'menu\')`, no config) applied to the `<Menu>` inside the 2nd col and `buttons` (`styles(\'buttons\')`, no config) applied to the auth `Button.Group` inside the 3rd col — both land on the nested component\'s own root, not the `col` div wrapping it. `styles(\'wrapper\', true)` is the BOOLEAN-shorthand config form — `getConfigClasses` now checks `check.isUnstyled` FIRST, before the boolean-shorthand branch, so the global `inkq-wrapper` class it emits is suppressed entirely when `unstyled`, same as any object-config class. For the other plain `styles(selector)` calls (no config) the effect is dropping the CSS-module hash normally appended alongside, and only where `Navbar.module.scss` actually declares a rule to hash — `&__inner`/`&__col`/`&__buttons`/`&__tip` do (`tip` is a plain `styles(\'tip\')` call rendered only on `/login`/`/signup`, see `LoginPath`/`SignupPath`); `&__wrapper`/`&__menu` have no SCSS rule at all, so those two never carry a hash, styled or unstyled. See the `Unstyled` story.',
 		},
 	},
 	args: {
@@ -126,6 +126,51 @@ export const Default: Story = {
 		await expect(canvas.getByRole('link', { name: 'Log in' })).toBeInTheDocument()
 		await expect(canvas.getByRole('link', { name: 'Sign up' })).toBeInTheDocument()
 		await expect(canvas.getAllByRole('button')).toHaveLength(2)
+	},
+}
+
+/**
+ * `Navbar.tsx` calls `usePathname()` (`next/navigation`) and, on `/login`, swaps the
+ * `Button.Group` of auth buttons for a `tip` `<span>` ("New to Inkquest?") plus ONE
+ * outline `Button` linking to `/signup`. `@storybook/nextjs-vite` only supplies the
+ * App Router pathname context when `parameters.nextjs.appDirectory` is truthy, so
+ * this story (and `SignupPath`) set it per story, leaving every other story in this
+ * file on its existing (un-mocked) pathname.
+ */
+export const LoginPath: Story = {
+	parameters: { nextjs: { appDirectory: true, navigation: { pathname: '/login' } } },
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement)
+
+		await expect(canvas.getByText('New to Inkquest?')).toBeInTheDocument()
+		await expect(canvasElement.querySelectorAll('.inkq-navbar__tip')).toHaveLength(1)
+
+		const signUp = canvas.getByRole('link', { name: 'Sign up' })
+		await expect(signUp).toHaveAttribute('href', '/signup')
+
+		// A single link — the login/signup pair (`.inkq-navbar__buttons`) is absent.
+		await expect(canvas.queryByRole('link', { name: 'Log in' })).not.toBeInTheDocument()
+		await expect(canvasElement.querySelector('.inkq-navbar__buttons')).toBeNull()
+	},
+}
+
+/**
+ * The mirror of `LoginPath`: on `/signup` the `tip` reads "Already have an account?"
+ * and the single outline `Button` reads "Login" and links to `/login`.
+ */
+export const SignupPath: Story = {
+	parameters: { nextjs: { appDirectory: true, navigation: { pathname: '/signup' } } },
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement)
+
+		await expect(canvas.getByText('Already have an account?')).toBeInTheDocument()
+		await expect(canvasElement.querySelectorAll('.inkq-navbar__tip')).toHaveLength(1)
+
+		const login = canvas.getByRole('link', { name: 'Login' })
+		await expect(login).toHaveAttribute('href', '/login')
+
+		await expect(canvas.queryByRole('link', { name: 'Sign up' })).not.toBeInTheDocument()
+		await expect(canvasElement.querySelector('.inkq-navbar__buttons')).toBeNull()
 	},
 }
 

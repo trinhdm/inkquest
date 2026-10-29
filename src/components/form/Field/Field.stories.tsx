@@ -28,11 +28,15 @@ const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 // `attributes`, etc.).
 type FieldStoryProps = Parameters<typeof Field>[0]
 
-// `Field.Props` is a union on `layout`: the `button` branch forbids `size` and
-// `labelPosition` (`never`). Almost every story here uses the default layout, so
-// it is cast to that branch once; the `Layouts` story spells out its own
-// minimal props for the `button` branch instead.
-type DefaultLayoutArgs = Exclude<FieldStoryProps, { layout: 'button' }>
+// `Field.Props` is a union on `layout` (`button` forbids `size` and
+// `labelPosition`, `inline` forbids `iconPosition`, `keypad` forbids `caption`,
+// `labelPosition` and `iconPosition`), but the polymorphic wrapper flattens
+// `Parameters<typeof Field>[0]` into ONE object type whose `layout` is the whole
+// union. It is not a union, so `Extract`/`Exclude` can't pick a branch (`Extract`
+// gives `never`); intersecting with `{ layout?: 'default' }` narrows `layout`
+// instead. Almost every story uses the default layout; the `Layouts` story spells
+// out its own minimal props for every branch.
+type DefaultLayoutArgs = FieldStoryProps & { layout?: 'default' }
 
 type Story = StoryObj<FieldStoryProps>
 
@@ -46,9 +50,45 @@ const rootOf = (control: Element) => control.parentElement?.parentElement as HTM
 
 const labelOf = (control: Element) => (control as HTMLInputElement).labels?.[0] as HTMLElement
 
-// The button layout adds `inkq-field--button` as a literal modifier class (the
-// stylesheet only targets it with `[class$="button"]`).
-const hasButtonClass = (el: Element) => [...el.classList].some(name => name.endsWith('--button'))
+// Every non-default layout adds `inkq-field--<layout>` as a literal modifier
+// class on the Field root (the stylesheet targets it with `[class$="button"]`
+// and the like). The root is not always the control's grandparent (the `inline`
+// layout adds a container), so walk up from the control.
+const hasLayoutClass = (el: Element, layout: string) => {
+	for (let node: Element | null = el; node; node = node.parentElement)
+		if ([...node.classList].some(name => name.endsWith(`--${layout}`))) return true
+	return false
+}
+
+const MODIFIER_LAYOUTS = LAYOUT_OPTIONS.filter(layout => layout !== 'default')
+
+// The `layout` union forbids different props per branch, so every branch spells
+// out its own minimal props instead of spreading `args`. Each example uses its
+// own id and `name` so the side-by-side groups never collide.
+const layoutExample = (layout: (typeof LAYOUT_OPTIONS)[number]) => {
+	switch (layout) {
+		case 'button': return (
+			<Field caption="Unlimited sessions" id="layout-button" label="Pro plan" layout="button">
+				<Field.Choice name="layout-button" value="pro" />
+			</Field>
+		)
+		case 'inline': return (
+			<Field id="layout-inline" label="Email" layout="inline">
+				<Field.Input name="layout-inline" />
+			</Field>
+		)
+		case 'keypad': return (
+			<Field id="layout-keypad" label="Seven" layout="keypad">
+				<Field.Choice name="layout-keypad" value="7" />
+			</Field>
+		)
+		default: return (
+			<Field caption="Unlimited sessions" id="layout-default" label="Pro plan" layout="default">
+				<Field.Choice name="layout-default" value="pro" />
+			</Field>
+		)
+	}
+}
 
 // Single place for the repeated template: a Field around one control. The id
 // doubles as the control's `name` so side-by-side groups never collide.
@@ -75,11 +115,11 @@ const meta: Meta<FieldStoryProps> = {
 		},
 		caption: {
 			control: 'text',
-			description: 'Helper text rendered under the control (inside the label card in the `button` layout). It is NOT linked to the control with `aria-describedby`; only `error` is. See the `Caption` story.',
+			description: 'Helper text rendered under the control (inside the label card in the `button` layout, and above the control in the `inline` layout unless `labelPosition="last"`). It sits in an element with id `<id>-info`, which is added to the control\'s `aria-describedby` (before the error, when both are set). Forbidden by the type in the `keypad` layout. See the `Caption` story.',
 		},
 		error: {
 			control: 'text',
-			description: 'Shows the message in a `<span id="<id>-error">`, sets `aria-invalid` and `aria-describedby` on the control and `data-invalid` on the root. A whitespace-only string counts as no error. Not rendered in the `button` layout. See the `Errors` story.',
+			description: 'Shows the message in a `<span id="<id>-error">` (after a visually hidden `Error: ` prefix, and wrapped in a `<p>` when it is plain text), sets `aria-invalid` and `aria-describedby` on the control and `data-invalid` on the root. A whitespace-only string counts as no error. Not rendered in the `button` layout. See the `Errors` story.',
 		},
 		disabled: {
 			control: 'boolean',
@@ -101,12 +141,12 @@ const meta: Meta<FieldStoryProps> = {
 		layout: {
 			control: 'select',
 			options: LAYOUT_OPTIONS,
-			description: '`default` puts the label and control in the usual stacked (or, for choices, inline) arrangement. `button` turns a choice into a clickable card: the control is hidden visually (still keyboard reachable), the label and caption live in the card, and the error message and asterisk are not rendered. Adds the literal `inkq-field--button` class. See the `Layouts` story.',
+			description: '`default` puts the label and control in the usual stacked (or, for choices, inline) arrangement. `button` turns a choice into a clickable card: the control is hidden visually (still keyboard reachable), the label and caption live in the card, and the error message and asterisk are not rendered. `inline` floats the label inside the control and moves the caption and error into a row beside it (a TextInput\'s type icon is hidden). `keypad` hides the label visually (it stays accessible to assistive tech) and forbids `caption`. Every non-default layout adds the literal `inkq-field--<layout>` class. See the `Layouts` story.',
 		},
 		labelPosition: {
 			control: 'select',
 			options: LABEL_POSITION_OPTIONS,
-			description: 'Whether the label is rendered before (`first`, the default) or after (`last`) the control. Forbidden by the type in the `button` layout. See the `LabelPositions` story.',
+			description: 'Whether the label is rendered before (`first`, the default) or after (`last`) the control. Forbidden by the type in the `button` and `keypad` layouts. With `inline` it moves the caption and error row instead (after the control for `last`). See the `LabelPositions` story.',
 		},
 		type: {
 			control: 'select',
@@ -119,7 +159,7 @@ const meta: Meta<FieldStoryProps> = {
 		},
 		children: {
 			control: false,
-			description: 'Exactly one of `Field.Input`, `Field.Textarea` or `Field.Choice`. Anything else is dropped with a console warning, and so is every control after the first. See the `ChildFiltering` story.',
+			description: 'Exactly one of `Field.Input`, `Field.Number`, `Field.Textarea` or `Field.Choice`. Anything else is dropped with a console warning, and so is every control after the first. See the `ChildFiltering` story.',
 		},
 	},
 	args: {
@@ -181,9 +221,11 @@ export const Sizes: Story = {
 	},
 }
 
-// The `button` branch of the type forbids `size` and `labelPosition`, so each
-// group spells out its own minimal props instead of spreading `args`. The
-// radios use a different `name` per group so the two don't share one selection.
+// Each group spells out its own minimal props (see `layoutExample`): the
+// `button` branch forbids `size` and `labelPosition`, `inline` forbids
+// `iconPosition`, and `keypad` additionally forbids `caption`. `inline` floats
+// the label inside the input and shows the caption and error above it; `keypad`
+// hides the label visually (it stays accessible) for a compact choice.
 export const Layouts: Story = {
 	parameters: {
 		layout: 'padded',
@@ -193,37 +235,31 @@ export const Layouts: Story = {
 		<Row>
 			{ LAYOUT_OPTIONS.map(layout => (
 				<Group key={ layout } label={ layout }>
-					{ layout === 'button'
-						? (
-							<Field caption="Unlimited sessions" id="layout-button" label="Pro plan" layout="button">
-								<Field.Choice name="layout-button" value="pro" />
-							</Field>
-						)
-						: (
-							<Field caption="Unlimited sessions" id="layout-default" label="Pro plan" layout="default">
-								<Field.Choice name="layout-default" value="pro" />
-							</Field>
-						) }
+					{ layoutExample(layout) }
 				</Group>
 			)) }
 		</Row>
 	),
 	play: async ({ canvasElement }) => {
-		const canvas = within(canvasElement),
-			radios = canvas.getAllByRole('radio')
+		const canvas = within(canvasElement)
 
-		expect(radios).toHaveLength(LAYOUT_OPTIONS.length)
+		// `LAYOUT_OPTIONS` is `['default', 'button', 'inline', 'keypad']`. Only the
+		// matching modifier class is present on each Field root; `default` has none.
+		for (const layout of LAYOUT_OPTIONS) {
+			const control = canvasElement.querySelector(`#layout-${layout}-control`) as HTMLElement
 
-		// `LAYOUT_OPTIONS` is `['default', 'button']`, mapped in order.
-		const [defaultRadio, buttonRadio] = radios
+			await expect(control).toBeInTheDocument()
 
-		await expect(hasButtonClass(rootOf(defaultRadio))).toBe(false)
-		await expect(hasButtonClass(rootOf(buttonRadio))).toBe(true)
+			for (const modifier of MODIFIER_LAYOUTS)
+				await expect(hasLayoutClass(control, modifier)).toBe(modifier === layout)
+		}
 
-		// the control stays reachable by its label in both layouts, and the
-		// caption renders in both
+		// the control stays reachable by its label in every layout, and the
+		// caption renders in the two layouts that allow one here
 		await expect(canvas.getAllByText('Unlimited sessions')).toHaveLength(2)
 		await expect(canvas.getAllByRole('radio', { name: /Pro plan/ })).toHaveLength(2)
+		await expect(canvas.getByRole('textbox', { name: 'Email' })).toBeInTheDocument()
+		await expect(canvas.getByRole('radio', { name: 'Seven' })).toBeInTheDocument()
 	},
 }
 
@@ -349,8 +385,9 @@ export const Loading: Story = {
 	},
 }
 
-// `error` is the one piece of text wired to the control with `aria-describedby`.
-// A whitespace-only error is trimmed away and treated as no error.
+// `error` is wired to the control with `aria-describedby` (so is `caption`, see
+// the `Caption` story). A whitespace-only error is trimmed away and treated as
+// no error.
 export const Errors: Story = {
 	parameters: { controls: { exclude: ['error'] } },
 	render: args => (
@@ -374,12 +411,14 @@ export const Errors: Story = {
 
 		const [withError, none, blank] = inputs
 
-		const message = canvas.getByText('Enter a valid email')
+		// the id sits on the outer `<span>`; the text itself is wrapped in a `<p>`
+		// inside it, after a visually hidden `Error: ` prefix
+		const message = canvasElement.querySelector('#error-message-error') as HTMLElement
 
-		await expect(message).toHaveAttribute('id', 'error-message-error')
+		await expect(message).toContainElement(canvas.getByText('Enter a valid email'))
 		await expect(withError).toHaveAttribute('aria-invalid', 'true')
 		await expect(withError).toHaveAttribute('aria-describedby', message.id)
-		await expect(withError).toHaveAccessibleDescription('Enter a valid email')
+		await expect(withError).toHaveAccessibleDescription('Error: Enter a valid email')
 		await expect(rootOf(withError)).toHaveAttribute('data-invalid')
 
 		for (const input of [none, blank]) {
@@ -413,6 +452,12 @@ export const Caption: Story = {
 		await expect(caption).toBeInTheDocument()
 		await expect(rootOf(withCaption)).toContainElement(caption)
 		await expect(rootOf(without)).not.toContainElement(caption)
+
+		// the caption is linked to the control: `<id>-info` is its `aria-describedby`
+		await expect(withCaption).toHaveAttribute('aria-describedby', 'caption-set-info')
+		await expect(caption.closest('#caption-set-info')).toBeInTheDocument()
+		await expect(withCaption).toHaveAccessibleDescription('We never share your email.')
+		await expect(without).not.toHaveAttribute('aria-describedby')
 	},
 }
 

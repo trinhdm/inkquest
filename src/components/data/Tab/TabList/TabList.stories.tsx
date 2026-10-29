@@ -75,7 +75,7 @@ const meta: Meta<TabListStoryProps> = {
 	argTypes: {
 		disabled: {
 			control: 'boolean',
-			description: 'Not registered via `set` — `undefined` unless passed. Cascades to every child `Tab` through context (own `disabled` on a tab wins, including an explicit `false`). It only guards selection: a disabled tab ignores clicks and Enter/Space, but `Tab` does not render a `disabled` or `aria-disabled` attribute. See the `Disabled` and `ContextOverrides` stories.',
+			description: 'Not registered via `set` — `undefined` unless passed. Cascades to every child `Tab` through context (own `disabled` on a tab wins, including an explicit `false`). It guards selection: a disabled tab ignores clicks and Enter/Space, and renders `aria-disabled="true"` and `data-disabled` (not the native `disabled` attribute). See the `Disabled` and `ContextOverrides` stories.',
 		},
 	},
 	args: {
@@ -107,7 +107,6 @@ export const Default: Story = {
 
 // `disabled` cascades to every tab through context. Guards clicks and
 // Enter/Space; the 1st tab stays selected in the disabled group.
-// The `aria-disabled` checks fail until the `aria-disabled` fix lands in `Tab.tsx`.
 export const Disabled: Story = {
 	parameters: { controls: { exclude: ['disabled'] } },
 	render: args => (
@@ -132,6 +131,8 @@ export const Disabled: Story = {
 			await expect(tab).toHaveAttribute('aria-disabled', 'true')
 		for (const tab of enabledTabs)
 			await expect(tab).not.toHaveAttribute('aria-disabled')
+		for (const tab of disabledTabs)
+			await expect(tab).toHaveAttribute('data-disabled')
 
 		await userEvent.click(disabledTabs[1])
 		await expect(disabledTabs[0]).toHaveAttribute('aria-selected', 'true')
@@ -152,7 +153,6 @@ export const Disabled: Story = {
 
 // A tab's own `disabled` wins over the list's, including an explicit `false`:
 // the list is disabled, the 2nd tab opts back in, the 3rd inherits.
-// The `aria-disabled` checks fail until the `aria-disabled` fix lands in `Tab.tsx`.
 export const ContextOverrides: Story = {
 	parameters: { controls: { exclude: ['disabled'] } },
 	render: args => (
@@ -300,8 +300,7 @@ export const Empty: Story = {
 }
 
 // `useTabGroupCtx` is the required reader, so a `Tab.List` with no `Tab.Group`
-// throws. Needs the pending context-name fix in `TabGroup.context.tsx`
-// (`'TabGroup'` -> `'Tab.Group'`) for the message below.
+// throws, naming the group (`Tab.Group`) in the message below.
 export const RequiresTabGroup: Story = {
 	render: args => (
 		<Row>

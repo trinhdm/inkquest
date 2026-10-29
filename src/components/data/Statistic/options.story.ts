@@ -8,6 +8,11 @@ import type { Statistic } from './Statistic'
 
 export const BOOLEAN_OPTIONS = [true, false] as const
 
+// Tags offered for `Statistic.Group`'s `as` (registered default `'div'`).
+// Not typed against the component: `as` is a free `ElementType`, so these are
+// just two representative container tags.
+export const AS_OPTIONS = ['div', 'section'] as const
+
 // `Statistic.Group.Props` (`Omit<Group.Props, 'childName' | 'provider' |
 // 'values'>`) inherits `orientation` verbatim from `layout/Group`'s own
 // `'horizontal' | 'vertical'` literal union — read off the namespace type

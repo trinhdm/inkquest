@@ -29,9 +29,9 @@ const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 // `attributes`/etc., which only exist on the actual accepted prop type,
 // `PolymorphicProps<AccordionGroupProps, C>`. `Parameters<typeof
 // Accordion.Group>[0]` reads that real, wrapped type straight off the
-// component itself — `AccordionGroupSpecs`'s `isCompound: true` makes `as`
-// resolve to `never` (compound components don't take a tag override), so
-// this also correctly excludes `as` from the story's own controls.
+// component itself — `AccordionGroupSpecs` is a group (`isGroup: true`) with a
+// registered default `as: 'div'`, so `as` is accepted and `getDefaultProps`
+// returns it.
 type AccordionGroupStoryProps = Parameters<typeof Accordion.Group>[0]
 type Story = StoryObj<AccordionGroupStoryProps>
 
@@ -52,6 +52,11 @@ const meta: Meta<AccordionGroupStoryProps> = {
 	title: 'Data/Accordion/Accordion.Group',
 	parameters: { layout: 'padded' },
 	argTypes: {
+		as: {
+			control: 'select',
+			options: ['div', 'section'],
+			description: 'Registered default `\'div\'`. The tag of the group\'s root element; `data-group` and the shared tokens are kept whatever the tag. See the `As` story.',
+		},
 		collapsible: {
 			control: 'select',
 			options: COLLAPSIBLE_OPTIONS,
@@ -110,6 +115,40 @@ export const Default: Story = {
 		await expect(titles[0]).toHaveAttribute('aria-expanded', 'true')
 		await expect(titles[1]).toHaveAttribute('aria-expanded', 'false')
 		await expect(titles[2]).toHaveAttribute('aria-expanded', 'false')
+	},
+}
+
+// `as` sets the tag of the group's root element. The root keeps its
+// `data-group` attribute and the items inside still toggle.
+export const As: Story = {
+	parameters: { controls: { exclude: ['as'] } },
+	render: args => (
+		<Row>
+			<Group label="div (default)">
+				<Accordion.Group { ...args } as="div">
+					{ renderItems(2) }
+				</Accordion.Group>
+			</Group>
+			<Group label="section">
+				<Accordion.Group { ...args } as="section">
+					{ renderItems(2) }
+				</Accordion.Group>
+			</Group>
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const groups = canvasElement.querySelectorAll<HTMLElement>('[data-group]')
+		expect(groups).toHaveLength(2)
+
+		const [asDiv, asSection] = groups
+
+		await expect(asDiv.tagName).toBe('DIV')
+		await expect(asSection.tagName).toBe('SECTION')
+
+		const titles = within(asSection).getAllByRole('button')
+		await userEvent.click(titles[1])
+		await expect(titles[1]).toHaveAttribute('aria-expanded', 'true')
+		await expect(titles[0]).toHaveAttribute('aria-expanded', 'false')
 	},
 }
 

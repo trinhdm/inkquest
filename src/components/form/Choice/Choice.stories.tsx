@@ -302,7 +302,8 @@ export const InheritsFromField: Story = {
 	},
 }
 
-// `error` lives on the Field: it flags the input invalid and describes it.
+// `error` lives on the Field: it flags the input invalid and describes it. The
+// description is read out with a visually hidden `Error: ` prefix.
 export const Errors: Story = {
 	parameters: { controls: { exclude: ['name'] } },
 	render: args => (
@@ -319,7 +320,7 @@ export const Errors: Story = {
 		const [withError, without] = within(canvasElement).getAllByRole('checkbox')
 
 		await expect(withError).toHaveAttribute('aria-invalid', 'true')
-		await expect(withError).toHaveAccessibleDescription('Pick one to continue')
+		await expect(withError).toHaveAccessibleDescription('Error: Pick one to continue')
 
 		await expect(without).not.toHaveAttribute('aria-invalid')
 		await expect(without).not.toHaveAttribute('aria-describedby')

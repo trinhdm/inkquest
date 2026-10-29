@@ -36,10 +36,13 @@ const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 // compound, so `as` resolves to `never` and is not a control.
 type GroupStoryProps = Parameters<typeof Field.Group>[0]
 
-// `layout` is a union: the `button` branch forbids `labelPosition`. Most
-// stories use the default branch, so it is cast to that once; the `Layouts`
-// story spells out its own minimal props for the `button` branch instead.
-type DefaultLayoutArgs = Exclude<GroupStoryProps, { layout: 'button' }>
+// `layout` is a union (`labelPosition` is `never` in `button` and `keypad`), but
+// the polymorphic wrapper flattens `Parameters<typeof Field.Group>[0]` into ONE
+// object type whose `layout` is the whole union. It is not a union, so
+// `Extract`/`Exclude` can't pick a branch (`Extract` gives `never`); intersecting
+// with `{ layout?: 'default' }` narrows `layout` instead. The `Layouts` story
+// spells out its own minimal props for every other branch.
+type DefaultLayoutArgs = GroupStoryProps & { layout?: 'default' }
 
 type Story = StoryObj<GroupStoryProps>
 
@@ -52,7 +55,31 @@ const rootOf = (control: Element) => control.parentElement?.parentElement as HTM
 
 const labelOf = (control: Element) => (control as HTMLInputElement).labels?.[0] as HTMLElement
 
-const hasButtonClass = (el: Element) => [...el.classList].some(name => name.endsWith('--button'))
+// Every non-default layout adds `inkq-field--<layout>` to the Field root. The
+// root is not always the control's grandparent (`inline` adds a container), so
+// walk up from the control.
+const hasLayoutClass = (el: Element, layout: string) => {
+	for (let node: Element | null = el; node; node = node.parentElement)
+		if ([...node.classList].some(name => name.endsWith(`--${layout}`))) return true
+	return false
+}
+
+const hasButtonClass = (el: Element) => hasLayoutClass(el, 'button')
+
+const MODIFIER_LAYOUTS = LAYOUT_OPTIONS.filter(layout => layout !== 'default')
+
+// Captionless choices (the `keypad` layout forbids captions). The layout itself
+// comes from the surrounding group.
+const keypadFields = (prefix: string) => (
+	<>
+		<Field id={ `${prefix}-one` } label="One">
+			<Field.Choice name={ `${prefix}-digit` } value="1" />
+		</Field>
+		<Field id={ `${prefix}-two` } label="Two">
+			<Field.Choice name={ `${prefix}-digit` } value="2" />
+		</Field>
+	</>
+)
 
 const fieldsets = (canvasElement: HTMLElement) =>
 	canvasElement.querySelectorAll<HTMLFieldSetElement>('fieldset')
@@ -116,7 +143,7 @@ const meta: Meta<GroupStoryProps> = {
 		layout: {
 			control: 'select',
 			options: LAYOUT_OPTIONS,
-			description: 'Shared with every Field; a Field\'s own value wins. `button` turns each choice into a card. See the `Layouts` and `LayoutOverride` stories.',
+			description: 'Shared with every Field; a Field\'s own value wins. `button` turns each choice into a card; `inline` floats each label inside its control; `keypad` hides each label visually and forbids captions. See the `Layouts` and `LayoutOverride` stories.',
 		},
 		type: {
 			control: 'select',
@@ -146,7 +173,7 @@ const meta: Meta<GroupStoryProps> = {
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Shared with every Field (which passes it on to its control), dropping their styling. The group is also expected to drop `Group`\'s own tokens, but `FieldGroup.tsx` only passes `unstyled` inside `values`, never as a prop of `<Group>`, so that last assertion fails until it is forwarded. See the `Unstyled` story.',
+			description: 'Shared with every Field (which passes it on to its control), dropping their styling. It is also forwarded to the inner `Group`, which drops its own `--group-item-count` / `--group-justify` tokens. See the `Unstyled` story.',
 		},
 		children: {
 			control: false,
@@ -296,8 +323,9 @@ export const LabelPositions: Story = {
 	},
 }
 
-// The `button` branch of the type forbids `labelPosition`, so each branch
-// spells out its own minimal props instead of spreading `args`.
+// The union forbids different props per branch (`labelPosition` is `never` in
+// `button` and `keypad`), so each branch spells out its own minimal props
+// instead of spreading `args`.
 export const Layouts: Story = {
 	parameters: {
 		layout: 'padded',
@@ -307,25 +335,39 @@ export const Layouts: Story = {
 		<Row>
 			{ LAYOUT_OPTIONS.map(layout => (
 				<Group key={ layout } label={ layout }>
-					{ layout === 'button'
-						? <Field.Group layout="button" legend="Plan">{ planFields('layout-button') }</Field.Group>
-						: <Field.Group layout="default" legend="Plan">{ planFields('layout-default') }</Field.Group> }
+					{ layout === 'button' && (
+						<Field.Group layout="button" legend="Plan">{ planFields('layout-button') }</Field.Group>
+					) }
+					{ layout === 'inline' && (
+						<Field.Group layout="inline" legend="Contact details">{ contactFields('layout-inline') }</Field.Group>
+					) }
+					{ layout === 'keypad' && (
+						<Field.Group layout="keypad" legend="Digit">{ keypadFields('layout-keypad') }</Field.Group>
+					) }
+					{ layout === 'default' && (
+						<Field.Group layout="default" legend="Plan">{ planFields('layout-default') }</Field.Group>
+					) }
 				</Group>
 			)) }
 		</Row>
 	),
 	play: async ({ canvasElement }) => {
-		const [defaultGroup, buttonGroup] = fieldsets(canvasElement)
+		const groups = fieldsets(canvasElement)
 
-		// `LAYOUT_OPTIONS` is `['default', 'button']`, mapped in order.
-		const defaultRadios = within(defaultGroup).getAllByRole('radio'),
-			buttonRadios = within(buttonGroup).getAllByRole('radio')
+		expect(groups).toHaveLength(LAYOUT_OPTIONS.length)
 
-		expect(defaultRadios).toHaveLength(3)
-		expect(buttonRadios).toHaveLength(3)
+		// `LAYOUT_OPTIONS` is `['default', 'button', 'inline', 'keypad']`, mapped
+		// in order. Inside each group only the matching modifier class is present
+		// on the Fields; `default` has none.
+		for (const [index, layout] of LAYOUT_OPTIONS.entries()) {
+			const controls = Array.from(groups[index].querySelectorAll<HTMLElement>('input'))
 
-		for (const radio of defaultRadios) await expect(hasButtonClass(rootOf(radio))).toBe(false)
-		for (const radio of buttonRadios) await expect(hasButtonClass(rootOf(radio))).toBe(true)
+			expect(controls.length).toBeGreaterThan(0)
+
+			for (const control of controls)
+				for (const modifier of MODIFIER_LAYOUTS)
+					await expect(hasLayoutClass(control, modifier)).toBe(modifier === layout)
+		}
 	},
 }
 
@@ -512,11 +554,9 @@ export const NonFieldChildren: Story = {
 }
 
 // `unstyled` is shared with each Field (which passes it on to its control), so
-// their `--field-*` / `--form-control-*` tokens go. The group is EXPECTED to
-// drop `Group`'s own `--group-item-count` too (`columns` is set so there is one
-// to drop). That last assertion is kept last and currently FAILS:
-// `FieldGroup.tsx` passes `unstyled` only inside `values={ ... }`, never as a
-// prop of `<Group>`, and `Group`'s own root styling reads `props.unstyled`.
+// their `--field-*` / `--form-control-*` tokens go. The group drops `Group`'s own
+// `--group-item-count` too (`columns` is set so there is one to drop):
+// `FieldGroup.tsx` now passes `unstyled` to `<Group>` as well as in `values`.
 export const Unstyled: Story = {
 	parameters: { controls: { exclude: ['unstyled'] } },
 	render: args => (
@@ -544,7 +584,7 @@ export const Unstyled: Story = {
 
 		await expect(read(styledGroup, '--group-item-count')).toBe('2')
 
-		// intended: no Group tokens on an unstyled root (fails until fixed)
+		// no Group tokens on an unstyled root
 		await expect(read(unstyledGroup, '--group-item-count')).toBe('')
 	},
 }

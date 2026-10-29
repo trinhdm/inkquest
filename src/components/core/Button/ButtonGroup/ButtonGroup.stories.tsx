@@ -48,9 +48,9 @@ const hasModuleClass = (el: Element, base: string) => {
 // etc., which only exist on the actual accepted prop type,
 // `PolymorphicProps<ButtonGroupProps, C>`. `Parameters<typeof
 // Button.Group>[0]` reads that real, wrapped type straight off the component
-// itself — `ButtonGroupSpecs`'s `isCompound: true` makes `as`
-// resolve to `never` (compound components don't take a tag override), so
-// this also correctly excludes `as` from the story's own controls.
+// itself. `ButtonGroupSpecs` is `isGroup: true` with a registered default
+// `as: 'div'`, so `as` is an accepted prop here (see the `AsElement` story),
+// unlike `Button.Section`, whose `isCompound: true` rules `as` out.
 //
 // `variant` isn't a `ButtonGroup` prop — it's a story-only control that feeds
 // the `Button` children rendered inside the group. `size` IS a real
@@ -173,6 +173,41 @@ export const Orientations: Story = {
 
 		await expect(rowGroup).toHaveClass('inkq-button-group--horizontal')
 		await expect(columnGroup).not.toHaveClass('inkq-button-group--horizontal')
+	},
+}
+
+// `as` is a registered default (`DEFAULT_PROPS.as`, `'div'`) and accepted by
+// the prop type. SUSPECTED SOURCE BUG, left visible on purpose: `ButtonGroup.tsx`
+// never destructures `as`, `extractOthers` drops it (it is a reserved prop), and
+// the root `Box` is rendered with a hard-coded `as="div"` (~L131), so every
+// other value is silently ignored. The `section` group fails until the source
+// forwards `as`.
+export const AsElement: Story = {
+	parameters: { layout: 'padded' },
+	render: ({ size, variant, ...args }) => (
+		<Row>
+			<Group label='as="div" (default)'>
+				<Button.Group { ...args }>
+					{ renderGroup({ size, variant }) }
+				</Button.Group>
+			</Group>
+			<Group label='as="section"'>
+				<Button.Group { ...args } as="section">
+					{ renderGroup({ size, variant }) }
+				</Button.Group>
+			</Group>
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			groups = canvas.getAllByRole('group')
+
+		expect(groups).toHaveLength(2)
+
+		const [asDiv, asSection] = groups
+
+		await expect(asDiv.tagName).toBe('DIV')
+		await expect(asSection.tagName).toBe('SECTION')
 	},
 }
 

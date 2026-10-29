@@ -1,7 +1,7 @@
 import { expect, within } from 'storybook/test'
 import { getDefaultProps } from '@/hooks/useProps'
 import { Statistic } from '../Statistic'
-import { BOOLEAN_OPTIONS, COLUMNS_OPTIONS, ORDER_OPTIONS, ORIENTATION_OPTIONS, SIZE_OPTIONS } from '../options.story'
+import { AS_OPTIONS, BOOLEAN_OPTIONS, COLUMNS_OPTIONS, ORDER_OPTIONS, ORIENTATION_OPTIONS, SIZE_OPTIONS } from '../options.story'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import statisticModuleClasses from '../Statistic.module.scss'
@@ -26,10 +26,9 @@ const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 // interface — it doesn't include `unstyled`/`attributes`/etc., which only
 // exist on the actual accepted prop type, `PolymorphicProps<...>`.
 // `Parameters<typeof Statistic.Group>[0]` reads that real, wrapped type
-// straight off the component itself — `StatisticGroupSpecs`'s
-// `isCompound: true` makes `as` resolve to `never` (compound components
-// don't take a tag override), so this also correctly excludes `as` from the
-// story's own controls.
+// straight off the component itself — `StatisticGroupSpecs` is a group
+// (`isGroup: true`) with a registered default `as: 'div'`, so `as` is
+// accepted and `getDefaultProps` returns it.
 type StatisticGroupStoryProps = Parameters<typeof Statistic.Group>[0]
 
 // `layout/Group`'s props are a union (`MaybeAnimationProps`: an animated
@@ -76,6 +75,11 @@ const meta: Meta<StatisticGroupStoryProps> = {
 	component: Statistic.Group,
 	title: 'Data/Statistic/Statistic.Group',
 	argTypes: {
+		as: {
+			control: 'select',
+			options: AS_OPTIONS,
+			description: 'Registered default `\'div\'`. The tag of the group\'s root element, passed on to the inner `<Group>`; The inner `<Group>` adds `role="group"` unless the tag is `fieldset`, `hgroup` or `optgroup`. See the `As` story.',
+		},
 		columns: {
 			control: 'number',
 			description: 'Fed straight through to the inner `<Group>`, which feeds a `--group-item-count` CSS custom property on the root element via its own `tokens` function built with `defineTokens` (`tokens.root`) — no clamping/validation. `--group-cols` (the property `Group.module.scss`\'s `grid-template-columns` actually reads) is computed FROM `--group-item-count` inside the stylesheet itself and is never set inline, so it isn\'t something a story can assert on directly. Rendered as an inline style, not a class. See the `Columns` story.',
@@ -147,6 +151,42 @@ export const Default: Story = {
 
 		await expect(group).toBeInTheDocument()
 		expect(canvas.getAllByText(/^Metric \d$/)).toHaveLength(4)
+	},
+}
+
+// `as` sets the tag of the group's root element (it is passed on to the inner
+// `<Group>`); the children still render, and a `section` root still gets
+// `role="group"` (only `fieldset`/`hgroup`/`optgroup` skip it).
+export const As: Story = {
+	parameters: {
+		layout: 'padded',
+		controls: { exclude: ['as'] },
+	},
+	render: (args) => (
+		<div style={ { display: 'flex', flexDirection: 'column', gap: 24 } }>
+			<Group label="div (default)">
+				<Statistic.Group { ...args as AnimatedGroupArgs } as="div">
+					{ renderStatistics(2) }
+				</Statistic.Group>
+			</Group>
+			<Group label="section">
+				<Statistic.Group { ...args as AnimatedGroupArgs } as="section">
+					{ renderStatistics(2) }
+				</Statistic.Group>
+			</Group>
+		</div>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			groups = canvas.getAllByRole('group')
+
+		expect(groups).toHaveLength(2)
+
+		const [asDiv, asSection] = groups
+
+		await expect(asDiv.tagName).toBe('DIV')
+		await expect(asSection.tagName).toBe('SECTION')
+		await expect(within(asSection).getAllByText(/^Metric \d$/)).toHaveLength(2)
 	},
 }
 

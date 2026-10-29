@@ -154,11 +154,11 @@ export const Sides: Story = {
 
 		// `buildSections` (`Button.tsx`) lays the inner element out as
 		// `[left section][label span][right section]`, whichever of the two
-		// sections exist. Read each button's inner children in DOM order,
-		// ignoring the loader (only present while `loading`).
+		// sections exist. Read each button's inner children in DOM order. (The
+		// loading indicator is a sibling of the inner element, not a child of
+		// it, so it never shows up here even while `loading`.)
 		const layoutOf = (button: HTMLElement) =>
 			Array.from(button.querySelector('.inkq-button__inner')!.children)
-				.filter(el => !el.matches('.inkq-button__loader'))
 				.map(el => el.matches('.inkq-button__label')
 					? 'label'
 					: el.getAttribute('data-side'))
@@ -414,10 +414,11 @@ export const RequiresButtonParent: Story = {
 // set. Lucide's underlying `Icon` component (`lucide-react`) renders `size`
 // straight onto the `<svg>`'s `width`/`height` attributes.
 //
-// Those are ATTRIBUTES only. While styled, `Icon.module.scss` sets `width`/
-// `height` to `1em` with `font-size: var(--icon-size)`, and `Button.module.scss`
-// sets `--icon-size` on the inner element from `--button-icon-size`, so both
-// groups LOOK the same size — it follows the Button's `size`, not the Icon's.
+// Those are ATTRIBUTES only. While styled, the global `svg` rule in
+// `_base.scss` sets `width`/`height` to `var(--icon-size, auto)`, and
+// `Button.module.scss` sets `--icon-size` on the inner element from
+// `--button-icon-size`, so both groups LOOK the same size — it follows the
+// Button's `size`, not the Icon's.
 export const IconChildren: Story = {
 	render: ({ variant, size, disabled, loading, unstyled }: ButtonSectionStoryArgs) => {
 		const buttonProps = { variant, size, disabled, loading }

@@ -4,7 +4,7 @@ import { Button } from './Button'
 import { Icon } from '../Icon'
 import {
 	BOOLEAN_OPTIONS, FONT_SIZE_BY_SIZE, ICON_SIZE_BY_SIZE,
-	PADDING_BY_SIZE, PRIORITY_OPTIONS, SIZE_OPTIONS,
+	INDICATOR_SIZE_BY_SIZE, PADDING_BY_SIZE, PRIORITY_OPTIONS, SIZE_OPTIONS,
 	TONE_OPTIONS, TRACKING_BY_SIZE, VARIANT_OPTIONS,
 } from './options.story'
 import type { ReactNode } from 'react'
@@ -80,7 +80,11 @@ const meta: Meta<ButtonStoryProps> = {
 		size: {
 			control: 'select',
 			options: SIZE_OPTIONS,
-			description: 'Sizing is token-driven: `size` adds NO modifier class and NO `data-size` attribute. The `tokens` function in `Button.tsx` turns it into inline CSS custom properties — `--button-font-size`, `--button-icon-size` and `--button-tracking` on the root element, and `--button-padding` on the inner element — which `Button.module.scss` reads (with fallbacks). Registered default is `md` (`DEFAULT_PROPS` in `Button.tsx`). `unstyled` skips these inline tokens. Also inheritable from an enclosing `Button.Group` (own prop wins). See the `Sizes` story.',
+			description: 'Sizing is token-driven: `size` adds NO modifier class and NO `data-size` attribute. The `tokens` function in `Button.tsx` turns it into inline CSS custom properties — `--button-font-size` and `--button-tracking` on the root element, `--button-icon-size` and `--button-padding` on the inner element (which also holds `--button-gap` and, with `animate`, `--button-icon-translate`), and `--button-indicator-size` on the loading indicator — which `Button.module.scss` reads (with fallbacks). Registered default is `md` (`DEFAULT_PROPS` in `Button.tsx`). `unstyled` skips these inline tokens. Also inheritable from an enclosing `Button.Group` (own prop wins). See the `Sizes` and `LoadingSizes` stories.',
+		},
+		fullWidth: {
+			control: 'boolean',
+			description: 'Stretches the button to its container\'s width. Maps to both a `data-block` attribute and a literal `inkq-block` class on the root. Unlike `size`/`disabled`/`loading`, it is not published by an enclosing `Button.Group` (the group has its own `fullWidth`). See the `FullWidth` story.',
 		},
 		disabled: {
 			control: 'boolean',
@@ -88,11 +92,11 @@ const meta: Meta<ButtonStoryProps> = {
 		},
 		loading: {
 			control: 'boolean',
-			description: 'Also inheritable from an enclosing `Button.Group`, via the same `ButtonGroupProvider` / `useButtonGroupProps` own-prop-wins precedence as `disabled`. See the `LoadingState` story, and `Button.Group`\'s `Loading`/`ChildOverrides` stories.',
+			description: 'Also inheritable from an enclosing `Button.Group`, via the same `ButtonGroupProvider` / `useButtonGroupProps` own-prop-wins precedence as `disabled`. While true the root gets a valueless `data-loading` and a loading indicator (`<span class="inkq-button__indicator">` holding the `inkq-button__loader` spinner) rendered as a SIBLING before the inner element, not inside it; the inner content is hidden by CSS and clicks are swallowed. The indicator is NOT rendered when `unstyled` is also set (`isLoading && !unstyled` in `Button.tsx`). See the `LoadingState`, `LoadingSizes` and `LoadingUnstyled` stories, and `Button.Group`\'s `Loading`/`ChildOverrides` stories.',
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of the shared `FactoryContract` (`unstyled` on `_PolymorphicContract`), not `Button`\'s own `ButtonProps`. The semantic base class (`inkq-button`, `inkq-button__inner`, `inkq-button__label`, and `inkq-button__loader` while loading) is emitted regardless of this prop (an inherited semantic `className` could replace it). `unstyled` drops the CSS-module-hashed class for every selector this component styles (`root`, `inner`, `label`, `loader`), the config classes (the global `inkq-block` from `fullWidth` and `inkq-loader` on the loader, since `getConfigClasses` returns early), and the inline size tokens (`getStyle` returns early). `Button` also forwards `unstyled` to its root `Box`, which strips the non-state `data-*` attributes (`data-variant`, `data-tone`, `data-priority`, `data-block`) while keeping the state ones (`data-disabled` is dropped on a native `<button>`, which has real `disabled`) — see the `Unstyled` story. Also inheritable from an enclosing `Button.Group`, via the same `ButtonGroupProvider` / `useButtonGroupProps` own-prop-wins precedence as `disabled`/`loading`/`priority`.',
+			description: 'Part of the shared `FactoryContract` (`unstyled` on `_PolymorphicContract`), not `Button`\'s own `ButtonProps`. The semantic base class (`inkq-button`, `inkq-button__inner`, `inkq-button__label` when a `Button.Section` is present) is emitted regardless of this prop (an inherited semantic `className` could replace it). `unstyled` drops the CSS-module-hashed class for every selector this component styles (`root`, `inner`, `label`), the config class (the global `inkq-block` from `fullWidth`, since `getConfigClasses` returns early), and the inline size tokens (`getStyle` returns early). While `loading`, an unstyled Button renders NO loading indicator or loader at all (`isLoading && !unstyled` in `Button.tsx`) — see the `LoadingUnstyled` story. `Button` also forwards `unstyled` to its root `Box`, which strips the non-state `data-*` attributes (`data-variant`, `data-tone`, `data-priority`, `data-block`) while keeping the state ones (`data-disabled` is dropped on a native `<button>`, which has real `disabled`) — see the `Unstyled` story. Also inheritable from an enclosing `Button.Group`, via the same `ButtonGroupProvider` / `useButtonGroupProps` own-prop-wins precedence as `disabled`/`loading`/`priority`.',
 		},
 		showLabel: {
 			control: 'boolean',
@@ -101,7 +105,7 @@ const meta: Meta<ButtonStoryProps> = {
 		animate: {
 			control: 'select',
 			options: ANIMATE_OPTIONS,
-			description: 'Reflected as `data-animate`. When set, the `tokens` function in `Button.tsx` also emits `--button-icon-translate` on the root (`calc(<icon space> - <step>)`, the step depending on `size`), which `Button.module.scss` uses to slide the button\'s `svg` on hover/focus (`left` slides it the other way). Unset: no attribute and no token. See the `Animate` story.',
+			description: 'Reflected as `data-animate`. When set, the `tokens` function in `Button.tsx` also emits `--button-icon-translate` on the inner element (`calc(<icon space> - <step>)`, the step depending on `size`), which `Button.module.scss` uses to slide the button\'s `svg` on hover/focus (`left` slides it the other way). Unset: no attribute and no token. See the `Animate` story.',
 		},
 		action: {
 			control: 'select',
@@ -223,13 +227,14 @@ export const Sizes: Story = {
 		expect(buttons).toHaveLength(SIZE_OPTIONS.length)
 
 		// `size` has no modifier class and no data attribute — it only shows up
-		// as inline tokens: three on the root, `--button-padding` on the inner.
+		// as inline tokens: font size and tracking on the root, icon size and
+		// padding on the inner.
 		const readTokens = (button: HTMLElement) => {
 			const inner = button.querySelector('.inkq-button__inner') as HTMLElement
 
 			return {
 				fontSize: button.style.getPropertyValue('--button-font-size'),
-				iconSize: button.style.getPropertyValue('--button-icon-size'),
+				iconSize: inner.style.getPropertyValue('--button-icon-size'),
 				padding: inner.style.getPropertyValue('--button-padding'),
 				tracking: button.style.getPropertyValue('--button-tracking'),
 			}
@@ -322,7 +327,8 @@ export const FullWidth: Story = {
 }
 
 // `animate` is reflected as `data-animate`, and (only when set) the `tokens`
-// function adds `--button-icon-translate` on the root. The slide itself runs
+// function adds `--button-icon-translate` on the INNER element (not the root;
+// the `data-animate` attribute is on the root). The slide itself runs
 // on hover/focus in CSS, so this story asserts the attribute and token only.
 export const Animate: Story = {
 	parameters: { controls: { exclude: ['animate'] } },
@@ -360,12 +366,18 @@ export const Animate: Story = {
 
 		const [unset, ...animated] = buttons
 
+		const translateOf = (button: HTMLElement) =>
+			(button.querySelector('.inkq-button__inner') as HTMLElement)
+				.style.getPropertyValue('--button-icon-translate')
+
 		await expect(unset).not.toHaveAttribute('data-animate')
-		await expect(unset.style.getPropertyValue('--button-icon-translate')).toBe('')
+		await expect(translateOf(unset)).toBe('')
 
 		for (const [i, animate] of ANIMATE_OPTIONS.entries()) {
 			await expect(animated[i]).toHaveAttribute('data-animate', animate)
-			await expect(animated[i].style.getPropertyValue('--button-icon-translate')).not.toBe('')
+			await expect(translateOf(animated[i])).not.toBe('')
+			// Not on the root any more.
+			await expect(animated[i].style.getPropertyValue('--button-icon-translate')).toBe('')
 		}
 	},
 }
@@ -619,10 +631,12 @@ export const ShowLabel: Story = {
 }
 
 // `loading` does two things: a valueless `data-loading` attribute on the root,
-// and a `loader` part — a spinner icon rendered inside the inner element
-// (`styles('loader', true)` in `Button.tsx`), carrying the semantic
-// `inkq-button__loader` class plus the global `inkq-loader` class. Neither
-// exists when `loading` is false.
+// and an `indicator` part — a `<span class="inkq-button__indicator">` rendered
+// as a SIBLING placed before the inner element (not inside it), holding the
+// `loader` spinner icon (`styles('loader', true)` in `Button.tsx`), which
+// carries the semantic `inkq-button__loader` class plus the global
+// `inkq-loader` class. Neither exists when `loading` is false (or when
+// `unstyled`, see `LoadingUnstyled`).
 export const LoadingState: Story = {
 	parameters: { controls: { exclude: ['loading'] } },
 	render: args => (
@@ -646,13 +660,95 @@ export const LoadingState: Story = {
 		await expect(isLoading).toHaveAttribute('data-loading', '')
 		await expect(isNotLoading).not.toHaveAttribute('data-loading')
 
+		await expect(isLoading.querySelectorAll('.inkq-button__indicator')).toHaveLength(1)
 		await expect(isLoading.querySelectorAll('.inkq-button__loader')).toHaveLength(1)
-		const loader = isLoading.querySelector('.inkq-button__loader')
+		const indicator = isLoading.querySelector('.inkq-button__indicator') as HTMLElement,
+			inner = isLoading.querySelector('.inkq-button__inner') as HTMLElement,
+			loader = isLoading.querySelector('.inkq-button__loader')
+
 		await expect(loader).toBeInTheDocument()
 		await expect(loader).toHaveClass('inkq-loader')
 
+		// The loader sits in the indicator, which is a direct child of the root
+		// placed right before the inner element — not inside the inner element.
+		await expect(indicator).toContainElement(loader as HTMLElement)
+		await expect(inner).not.toContainElement(indicator)
+		await expect(inner.querySelector('.inkq-button__loader')).not.toBeInTheDocument()
+		await expect(indicator.parentElement).toBe(isLoading)
+		await expect(indicator.nextElementSibling).toBe(inner)
+
+		await expect(isNotLoading.querySelector('.inkq-button__indicator')).not.toBeInTheDocument()
 		await expect(isNotLoading.querySelector('.inkq-button__loader')).not.toBeInTheDocument()
 		await expect(isNotLoading.querySelector('.inkq-loader')).not.toBeInTheDocument()
+	},
+}
+
+// `--button-indicator-size` is `calc(.375rem + <icon size>)`, emitted on the
+// indicator element by the `indicator` group of `Button.tsx`'s `tokens`
+// function, so it grows with `size`. Each Button here is loading; the token
+// only exists on the indicator (not the root or inner).
+export const LoadingSizes: Story = {
+	parameters: { controls: { exclude: ['loading', 'size'] } },
+	render: args => (
+		<Row>
+			{ SIZE_OPTIONS.map(size => (
+				<Group key={ size } label={ size }>
+					<Button { ...args as NativeButtonArgs } size={ size } loading />
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			buttons = canvas.getAllByRole('button')
+
+		expect(buttons).toHaveLength(SIZE_OPTIONS.length)
+
+		const sizes = buttons.map(button => {
+			const indicator = button.querySelector('.inkq-button__indicator') as HTMLElement
+
+			return indicator.style.getPropertyValue('--button-indicator-size')
+		})
+
+		for (const [i, size] of SIZE_OPTIONS.entries()) {
+			await expect(sizes[i]).toBe(INDICATOR_SIZE_BY_SIZE[size])
+			await expect(buttons[i].style.getPropertyValue('--button-indicator-size')).toBe('')
+		}
+
+		// The icon size differs per size, so the indicator size does too.
+		await expect(new Set(sizes).size).toBe(SIZE_OPTIONS.length)
+	},
+}
+
+// `loading` and `unstyled` together: `Button.tsx` only renders the indicator
+// when `isLoading && !unstyled`, so an unstyled loading Button has no spinner
+// at all. The styled loading Button, as the contrast, has one.
+export const LoadingUnstyled: Story = {
+	parameters: { controls: { exclude: ['loading', 'unstyled'] } },
+	render: args => (
+		<Row>
+			{ BOOLEAN_OPTIONS.map(unstyled => (
+				<Group key={ String(unstyled) } label={ `unstyled: ${unstyled}` }>
+					<Button { ...args as NativeButtonArgs } loading unstyled={ unstyled } />
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			buttons = canvas.getAllByRole('button')
+
+		expect(buttons).toHaveLength(2)
+
+		// `BOOLEAN_OPTIONS` is `[true, false]`, matching the render order above.
+		const [unstyledButton, styledButton] = buttons
+
+		await expect(unstyledButton.querySelectorAll('.inkq-button__indicator')).toHaveLength(0)
+		await expect(unstyledButton.querySelectorAll('.inkq-button__loader')).toHaveLength(0)
+		await expect(unstyledButton.querySelectorAll('svg')).toHaveLength(0)
+
+		await expect(styledButton.querySelectorAll('.inkq-button__indicator')).toHaveLength(1)
+		await expect(styledButton.querySelectorAll('.inkq-button__loader')).toHaveLength(1)
 	},
 }
 
@@ -703,15 +799,20 @@ export const DisabledState: Story = {
 // It also skips the inline size tokens (`getStyle.tsx` returns early when
 // unstyled, so `--button-tracking` and `--button-padding` are not set).
 // Verified against `Button.tsx`'s own render: root is the `<button>` itself
-// (`inkq-button`), wrapping an inner `<span>` (`inkq-button__inner`) that
-// wraps a label `<span>` (`inkq-button__label`).
+// (`inkq-button`), wrapping an inner `<span>` (`inkq-button__inner`). The
+// label `<span>` (`inkq-button__label`) only exists when a `Button.Section` is
+// present (`buildSections` returns plain children otherwise — see the
+// `LabelWrapping` story), so each Button here carries a left section.
 export const Unstyled: Story = {
 	parameters: { controls: { exclude: ['unstyled'] } },
 	render: args => (
 		<Row>
 			{ BOOLEAN_OPTIONS.map(unstyled => (
 				<Group key={ String(unstyled) } label={ String(unstyled) }>
-					<Button { ...args as NativeButtonArgs } unstyled={ unstyled } />
+					<Button { ...args as NativeButtonArgs } unstyled={ unstyled }>
+						<Button.Section left><Icon type="download" /></Button.Section>
+						Button
+					</Button>
 				</Group>
 			)) }
 		</Row>
@@ -740,20 +841,23 @@ export const Unstyled: Story = {
 		expect(hasModuleClass(isStyled, 'inkq-button')).toBe(true)
 		expect(hasModuleClass(isUnstyled, 'inkq-button')).toBe(false)
 
-		const styledInner = isStyled.querySelector('span'),
-			unstyledInner = isUnstyled.querySelector('span')
+		const styledInner = isStyled.querySelector<HTMLElement>('.inkq-button__inner'),
+			unstyledInner = isUnstyled.querySelector<HTMLElement>('.inkq-button__inner')
 
 		await expect(styledInner).toHaveClass('inkq-button__inner')
 		await expect(unstyledInner).toHaveClass('inkq-button__inner')
 		expect(hasModuleClass(styledInner!, 'inkq-button__inner')).toBe(true)
 		expect(hasModuleClass(unstyledInner!, 'inkq-button__inner')).toBe(false)
 
-		const styledLabel = styledInner?.querySelector('span'),
-			unstyledLabel = unstyledInner?.querySelector('span')
+		const styledLabel = styledInner?.querySelector<HTMLElement>('.inkq-button__label'),
+			unstyledLabel = unstyledInner?.querySelector<HTMLElement>('.inkq-button__label')
 
 		await expect(styledLabel).toHaveClass('inkq-button__label')
 		await expect(unstyledLabel).toHaveClass('inkq-button__label')
-		expect(hasModuleClass(styledLabel!, 'inkq-button__label')).toBe(true)
+		// `Button.module.scss` has no `__label` rule any more (only `__inner`,
+		// `__indicator` and `__section`), so there is no hash to suppress and
+		// neither instance carries a module class on the label.
+		expect(hasModuleClass(styledLabel!, 'inkq-button__label')).toBe(false)
 		expect(hasModuleClass(unstyledLabel!, 'inkq-button__label')).toBe(false)
 
 		// Inline size tokens: set on the styled instance (registered default
@@ -762,6 +866,55 @@ export const Unstyled: Story = {
 		await expect(styledInner!.style.getPropertyValue('--button-padding')).not.toBe('')
 		await expect(isUnstyled.style.getPropertyValue('--button-tracking')).toBe('')
 		await expect(unstyledInner!.style.getPropertyValue('--button-padding')).toBe('')
+	},
+}
+
+// The `inkq-button__label` span is only created when a `Button.Section` is
+// present: `buildSections` returns the plain children as they are when there
+// is neither a left nor a right section, so a text-only Button has no label
+// element (the text sits directly in the inner element).
+export const LabelWrapping: Story = {
+	render: args => {
+		const buttonProps = { variant: args.variant, size: args.size }
+
+		return (
+			<Row>
+				<Group label="text only (no label span)">
+					<Button { ...buttonProps }>Text only</Button>
+				</Group>
+				<Group label="left section">
+					<Button { ...buttonProps }>
+						<Button.Section left><Icon type="download" /></Button.Section>
+						Left section
+					</Button>
+				</Group>
+				<Group label="right section">
+					<Button { ...buttonProps }>
+						Right section
+						<Button.Section right><Icon type="arrow-right" /></Button.Section>
+					</Button>
+				</Group>
+			</Row>
+		)
+	},
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			buttons = canvas.getAllByRole('button')
+
+		expect(buttons).toHaveLength(3)
+
+		const [textOnly, left, right] = buttons
+
+		await expect(textOnly.querySelectorAll('.inkq-button__label')).toHaveLength(0)
+		await expect(textOnly.querySelector('.inkq-button__inner')).toHaveTextContent('Text only')
+
+		for (const button of [left, right]) {
+			await expect(button.querySelectorAll('.inkq-button__label')).toHaveLength(1)
+			await expect(button.querySelectorAll('.inkq-button__section')).toHaveLength(1)
+		}
+
+		await expect(left.querySelector('.inkq-button__label')).toHaveTextContent('Left section')
+		await expect(right.querySelector('.inkq-button__label')).toHaveTextContent('Right section')
 	},
 }
 

@@ -97,7 +97,7 @@ const meta: Meta<TabStoryProps> = {
 		},
 		disabled: {
 			control: 'boolean',
-			description: 'Inherited from `Tab.List` unless passed (own prop wins). Only guards selection: the click handler skips `onSelect`. `Tab` does not forward it to the element, so no `disabled`/`aria-disabled` attribute is rendered. See the `Disabled` story.',
+			description: 'Inherited from `Tab.List` unless passed (own prop wins). Guards selection (the click handler skips `onSelect`) and is reflected on the element as `aria-disabled="true"` and a `data-disabled` attribute; the native `disabled` attribute is not set. Both are absent when not disabled. See the `Disabled` story.',
 		},
 		index: {
 			control: 'number',
@@ -225,7 +225,6 @@ export const As: Story = {
 // click handler. Each group gets a spy as the 2nd tab's own `onSelect`, so the
 // exact call count proves the guard; the spy replaces the group's handler,
 // which is why selection is not asserted to move in the enabled group.
-// The `aria-disabled` checks fail until the `aria-disabled` fix lands in `Tab.tsx`.
 const disabledSpy = fn()
 
 export const Disabled: Story = {
@@ -252,6 +251,8 @@ export const Disabled: Story = {
 
 		await expect(disabledTab).toHaveAttribute('aria-disabled', 'true')
 		await expect(enabledTab).not.toHaveAttribute('aria-disabled')
+		await expect(disabledTab).toHaveAttribute('data-disabled')
+		await expect(enabledTab).not.toHaveAttribute('data-disabled')
 
 		await userEvent.click(disabledTab)
 		await expect(disabledSpy).toHaveBeenCalledTimes(0)
@@ -280,6 +281,10 @@ export const Index: Story = {
 
 		await expect(tabs[0]).toHaveAttribute('aria-controls', 'tab-tab-index-story-2-panel')
 		await expect(tabs[1]).toHaveAttribute('aria-controls', 'tab-tab-index-story-1-panel')
+
+		// The tab's own element `id` is built from the same group uid and index.
+		await expect(tabs[0]).toHaveAttribute('id', 'tab-tab-index-story-2')
+		await expect(tabs[1]).toHaveAttribute('id', 'tab-tab-index-story-1')
 
 		await userEvent.click(tabs[0])
 		await expect(tabs[2]).toHaveAttribute('aria-selected', 'true')
@@ -344,31 +349,59 @@ export const Clickable: Story = {
 	},
 }
 
-// Pure focus mechanics. There is no roving tabindex or arrow-key handling in
-// `Tab`, so every tab is its own Tab stop. Focus alone never selects.
+// Pure focus mechanics, written for the WAI-ARIA tabs pattern: a roving tab
+// stop (only the active tab is tabbable), arrow keys that move focus between
+// tabs and wrap at the ends, and Tab leaving the list for the active panel.
+// Focus alone never selects.
+//
+// BUG: this story is expected to FAIL on the arrow-key part. `Tab.tsx:87` sets
+// `tabIndex={ active ? 0 : -1 }` but no arrow-key handler exists anywhere in
+// `src/components/data/Tab/`, so keyboard users cannot reach the inactive tabs.
+// Everything before the arrow keys matches today's code and passes.
 export const KeyboardFocus: Story = {
 	render: () => renderTabs(),
 	play: async ({ canvasElement }) => {
-		const tabs = within(canvasElement).getAllByRole('tab')
+		const canvas = within(canvasElement),
+			tabs = canvas.getAllByRole('tab')
 
+		// Roving tab stop: Tab lands on the active tab, the others are skipped.
 		await userEvent.tab()
 		await expect(tabs[0]).toHaveFocus()
+		await expect(tabs[0]).toHaveAttribute('tabindex', '0')
+		await expect(tabs[1]).toHaveAttribute('tabindex', '-1')
+		await expect(tabs[2]).toHaveAttribute('tabindex', '-1')
 
+		// Tab leaves the list for the active panel; Shift+Tab comes back.
 		await userEvent.tab()
-		await expect(tabs[1]).toHaveFocus()
-
-		await userEvent.tab()
-		await expect(tabs[2]).toHaveFocus()
-
+		await expect(canvas.getByRole('tabpanel')).toHaveFocus()
 		await userEvent.tab({ shift: true })
-		await expect(tabs[1]).toHaveFocus()
+		await expect(tabs[0]).toHaveFocus()
 
+		// Focus alone never selects.
 		await expect(tabs[0]).toHaveAttribute('aria-selected', 'true')
 		await expect(tabs[1]).toHaveAttribute('aria-selected', 'false')
+
+		// Expected-to-fail part: arrow keys move focus and wrap at the ends.
+		await userEvent.keyboard('{ArrowRight}')
+		await expect(tabs[1]).toHaveFocus()
+		await userEvent.keyboard('{ArrowRight}')
+		await expect(tabs[2]).toHaveFocus()
+		await userEvent.keyboard('{ArrowRight}')
+		await expect(tabs[0]).toHaveFocus()
+		await userEvent.keyboard('{ArrowLeft}')
+		await expect(tabs[2]).toHaveFocus()
+		await userEvent.keyboard('{ArrowLeft}')
+		await expect(tabs[1]).toHaveFocus()
 	},
 }
 
-// Enter and Space both activate the focused tab (native button behavior).
+// Arrow to another tab, then Enter selects it; arrow to a third, then Space
+// selects it. Whether arrows alone change selection is undecided, so it is not
+// asserted.
+//
+// BUG: this story is expected to FAIL. There is no arrow-key handler
+// (`Tab.tsx:87` makes inactive tabs `tabindex="-1"` with nothing to move focus
+// to them), so the first ArrowRight assertion fails.
 export const KeyboardActivation: Story = {
 	render: () => renderTabs(),
 	play: async ({ canvasElement }) => {
@@ -376,13 +409,15 @@ export const KeyboardActivation: Story = {
 			tabs = canvas.getAllByRole('tab')
 
 		await userEvent.tab()
-		await userEvent.tab()
+		await expect(tabs[0]).toHaveFocus()
+
+		await userEvent.keyboard('{ArrowRight}')
 		await expect(tabs[1]).toHaveFocus()
 		await userEvent.keyboard('{Enter}')
 		await expect(tabs[1]).toHaveAttribute('aria-selected', 'true')
 		await expect(canvas.getByRole('tabpanel')).toHaveTextContent('Two panel')
 
-		await userEvent.tab()
+		await userEvent.keyboard('{ArrowRight}')
 		await expect(tabs[2]).toHaveFocus()
 		await userEvent.keyboard(' ')
 		await expect(tabs[2]).toHaveAttribute('aria-selected', 'true')
@@ -392,8 +427,7 @@ export const KeyboardActivation: Story = {
 }
 
 // `useTabGroupCtx` is the required reader, so a `Tab` with no `Tab.Group`
-// throws. Needs the pending context-name fix in `TabGroup.context.tsx`
-// (`'TabGroup'` -> `'Tab.Group'`) for the message below.
+// throws, naming the group (`Tab.Group`) in the message below.
 export const RequiresTabGroup: Story = {
 	render: () => (
 		<Row>

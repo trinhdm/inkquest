@@ -14,6 +14,19 @@ const MAX_OPTIONS = [100, 50, 10] as const
 
 const BOOLEAN_OPTIONS = [true, false] as const
 
+const ANCHOR_OPTIONS = ['top', 'right', 'bottom', 'left'] as const satisfies readonly Progress.Anchor[]
+
+const LAYOUT_OPTIONS = ['fixed', 'inline'] as const
+
+// What `tokens` writes for each anchor. `top`/`bottom` pin the bar along an edge and
+// need no rotation; `left`/`right` rotate it a quarter turn and centre it on that edge.
+const EXPECTED_ANCHOR_TOKENS: Record<Progress.Anchor, { inset: string, rotate: string }> = {
+	bottom: { inset: 'auto 0 0 0', rotate: '' },
+	left: { inset: '50% 50% 50% auto', rotate: 'rotate(90deg)' },
+	right: { inset: '50% auto 50% 50%', rotate: 'rotate(90deg)' },
+	top: { inset: '0 0 auto 0', rotate: '' },
+}
+
 // `height`/`width` accept a CSS string (kept verbatim) or a number (converted to
 // rem by `tokens`). The first entry leaves both unset, so the registered defaults apply.
 interface SizeOption {
@@ -65,6 +78,14 @@ const Frame = ({ children }: { children: ReactNode }) => (
 	</div>
 )
 
+// Same containing-block trick as `Frame`, but square: a `left`/`right` bar is
+// rotated a quarter turn, so it needs room on both axes.
+const AnchorFrame = ({ children }: { children: ReactNode }) => (
+	<div style={ { height: 120, outline: '1px dashed currentColor', position: 'relative', transform: 'translateZ(0)', width: 120 } }>
+		{ children }
+	</div>
+)
+
 const Page = ({ children }: { children: ReactNode }) => (
 	<div style={ { minHeight: PAGE_HEIGHT } }>
 		{ children }
@@ -94,6 +115,14 @@ const expectedValue = (max: number) => {
 	return percent * (max / 100)
 }
 
+// The layout modifier is emitted only as the hashed CSS-module class, never as a
+// plain `inkq-progress--<layout>` class. `inline` has no rule in the stylesheet, so
+// it has no module class at all.
+const hasLayoutClass = (el: Element, layout: (typeof LAYOUT_OPTIONS)[number]) => {
+	const moduleClass = (moduleClasses as Record<string, string>)[`inkq-progress--${layout}`]
+	return !!moduleClass && el.classList.contains(moduleClass)
+}
+
 // `Parameters<typeof Progress>[0]` reads the real, wrapped prop type off the
 // component itself (it includes `as`, `unstyled`, ...). It fills the polymorphic
 // `C` with its constraint (`ElementType`), not the default `'progress'`.
@@ -104,6 +133,11 @@ const meta: Meta<ProgressStoryProps> = {
 	component: Progress,
 	title: 'Data/Progress',
 	argTypes: {
+		anchor: {
+			control: 'select',
+			options: ANCHOR_OPTIONS,
+			description: 'Only valid with `layout: \'fixed\'` (it is `never` for `inline`). Which viewport edge the fixed bar is pinned to; `left`/`right` also rotate it a quarter turn. Becomes the inline `--progress-bar-inset` and `--progress-bar-rotate` custom properties. Registered default is `top`. See the `Anchor` story.',
+		},
 		as: {
 			control: false,
 			description: 'Polymorphic escape hatch via the shared `Box` contract; the registered default is the native `progress`. Anything else loses `max`/`value` semantics, so no story overrides it.',
@@ -115,6 +149,11 @@ const meta: Meta<ProgressStoryProps> = {
 		id: {
 			control: 'text',
 			description: 'Optional. Used for both the bar\'s `id` and the label\'s `htmlFor`; when omitted a `useId()` value is used instead, so two bars on one page never share an id. See the `Id` story.',
+		},
+		layout: {
+			control: 'select',
+			options: LAYOUT_OPTIONS,
+			description: '`fixed` pins the bar to a viewport edge (`position: fixed`, see `anchor`); `inline` leaves it in the normal flow. `fixed` adds the hashed CSS-module modifier class (`inkq-progress--fixed`); `inline` has no rule in the stylesheet, so it adds no module class. Registered default is `fixed`. See the `Layout` story.',
 		},
 		label: {
 			control: 'text',
@@ -400,6 +439,77 @@ export const Id: Story = {
 		await expect(first.id).not.toBe(second.id)
 		await expect(canvas.getByLabelText('Generated first')).toBe(first)
 		await expect(canvas.getByLabelText('Generated second')).toBe(second)
+	},
+}
+
+/**
+ * `anchor` (only valid with `layout: 'fixed'`) picks the viewport edge the bar is
+ * pinned to. It becomes the inline `--progress-bar-inset` custom property, and
+ * `left`/`right` also set `--progress-bar-rotate` to turn the bar a quarter turn;
+ * `top`/`bottom` set no rotation. Each bar sits in a square frame so the four do
+ * not stack on the viewport's edges.
+ */
+export const Anchor: Story = {
+	parameters: { controls: { exclude: ['anchor', 'layout', 'label'] } },
+	render: (args) => (
+		<Row>
+			{ ANCHOR_OPTIONS.map(anchor => (
+				<Group key={ anchor } label={ anchor }>
+					<AnchorFrame>
+						<Progress { ...args } anchor={ anchor } label={ `Anchor ${anchor}` } layout="fixed" />
+					</AnchorFrame>
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement)
+
+		for (const anchor of ANCHOR_OPTIONS) {
+			const bar = canvas.getByRole('progressbar', { name: `Anchor ${anchor}` }),
+				expected = EXPECTED_ANCHOR_TOKENS[anchor]
+
+			expect(hasLayoutClass(bar, 'fixed')).toBe(true)
+			await expect(bar.style.getPropertyValue('--progress-bar-inset')).toBe(expected.inset)
+			await expect(bar.style.getPropertyValue('--progress-bar-rotate')).toBe(expected.rotate)
+		}
+	},
+}
+
+/**
+ * `layout` switches between `fixed` (pinned to a viewport edge, the default) and
+ * `inline` (left in the normal flow). `fixed` adds the hashed CSS-module modifier
+ * class (there is no plain `inkq-progress--fixed` class); `inline` has no rule in
+ * the stylesheet, so it adds none. Only `fixed` is `position: fixed`.
+ */
+export const Layout: Story = {
+	parameters: { controls: { exclude: ['anchor', 'layout', 'label'] } },
+	render: (args) => (
+		<Row>
+			{ LAYOUT_OPTIONS.map(layout => (
+				<Group key={ layout } label={ layout }>
+					<Frame>
+						{ layout === 'fixed'
+							? <Progress { ...args } label={ `Layout ${layout}` } layout="fixed" />
+							: <Progress { ...args } anchor={ undefined } label={ `Layout ${layout}` } layout="inline" />
+						}
+					</Frame>
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			fixed = canvas.getByRole('progressbar', { name: 'Layout fixed' }),
+			inline = canvas.getByRole('progressbar', { name: 'Layout inline' })
+
+		expect(hasLayoutClass(fixed, 'fixed')).toBe(true)
+		expect(hasLayoutClass(fixed, 'inline')).toBe(false)
+		expect(hasLayoutClass(inline, 'inline')).toBe(false)
+		expect(hasLayoutClass(inline, 'fixed')).toBe(false)
+
+		await expect(getComputedStyle(fixed).position).toBe('fixed')
+		await expect(getComputedStyle(inline).position).not.toBe('fixed')
 	},
 }
 

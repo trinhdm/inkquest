@@ -22,8 +22,8 @@ const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 )
 
 // `Parameters<typeof Tab.Group>[0]` reads the real accepted prop type
-// (including `unstyled`/`attributes`) off the component. `isCompound: true`
-// makes `as` resolve to `never`, so it is also excluded from the controls.
+// (including `as`, `unstyled`, `attributes`) off the component. `Tab.Group` is
+// a group (`isGroup: true`) with a registered default `as: 'div'`.
 type TabGroupStoryProps = Parameters<typeof Tab.Group>[0]
 type Story = StoryObj<TabGroupStoryProps>
 
@@ -48,13 +48,18 @@ const meta: Meta<TabGroupStoryProps> = {
 	title: 'Data/Tab/Tab.Group',
 	parameters: { layout: 'padded' },
 	argTypes: {
+		as: {
+			control: 'select',
+			options: ['div', 'section'],
+			description: 'Registered default `\'div\'`. The tag of the group\'s root element. See the `As` story.',
+		},
 		defaultActive: {
 			control: 'number',
 			description: 'Registered default `0`. The index of the tab selected on first render; it only seeds state, so changing it later does not move the selection. An index with no matching tab (e.g. `5` with three tabs) leaves every tab unselected and every panel hidden. See the `DefaultActive` and `DefaultActiveOutOfRange` stories.',
 		},
 		id: {
 			control: 'text',
-			description: 'Not registered via `set`. Seeds the ids that link tabs and panels: `tab-<id>-<index>` for the tab and `tab-<id>-<index>-panel` for the panel (kebab-cased). Without it an id is generated with `useId`. It is not set on the group\'s own element. See the `Id` story.',
+			description: 'Not registered via `set`. Seeds the ids that link tabs and panels: `tab-<id>-<index>` for the tab and `tab-<id>-<index>-panel` for the panel (kebab-cased). Without it an id is generated with `useId`. The same kebab-cased `tab-<id>` value is also set as the `id` of the group\'s own root element. See the `Id` story.',
 		},
 	},
 	args: {
@@ -149,6 +154,10 @@ export const Id: Story = {
 		const [alpha, beta, generated] = groupsOf(canvasElement),
 			panelsOf = (group: HTMLElement) => within(group).getAllByRole('tabpanel', { hidden: true })
 
+		// The group's own root element carries the same `tab-<id>` value.
+		await expect(alpha.querySelector('[id="tab-alpha"]')).toBeInTheDocument()
+		await expect(beta.querySelector('[id="tab-beta"]')).toBeInTheDocument()
+
 		await expect(panelsOf(alpha).map(panel => panel.id)).toEqual([
 			'tab-alpha-0-panel', 'tab-alpha-1-panel', 'tab-alpha-2-panel',
 		])
@@ -189,19 +198,27 @@ export const Clickable: Story = {
 	},
 }
 
-// Enter and Space on a focused tab both change the group's selection.
+// Arrow to another tab, then Enter changes the group's selection; arrow to a
+// third, then Space does too. Whether arrows alone change selection is
+// undecided, so it is not asserted.
+//
+// BUG: this story is expected to FAIL. `Tab.tsx:87` gives inactive tabs
+// `tabindex="-1"` but no arrow-key handler exists anywhere in
+// `src/components/data/Tab/`, so ArrowRight never moves focus to the 2nd tab.
 export const KeyboardActivation: Story = {
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement),
 			tabs = canvas.getAllByRole('tab')
 
 		await userEvent.tab()
-		await userEvent.tab()
+		await expect(tabs[0]).toHaveFocus()
+
+		await userEvent.keyboard('{ArrowRight}')
 		await expect(tabs[1]).toHaveFocus()
 		await userEvent.keyboard('{Enter}')
 		await expect(canvas.getByRole('tabpanel')).toHaveTextContent('Two panel')
 
-		await userEvent.tab()
+		await userEvent.keyboard('{ArrowRight}')
 		await expect(tabs[2]).toHaveFocus()
 		await userEvent.keyboard(' ')
 		await expect(canvas.getByRole('tabpanel')).toHaveTextContent('Three panel')
@@ -254,6 +271,41 @@ export const PanelIndexing: Story = {
 
 		await userEvent.click(canvas.getAllByRole('tab')[1])
 		await expect(canvas.getByRole('tabpanel')).toHaveTextContent('Two panel')
+	},
+}
+
+// `as` sets the tag of the group's root element; the tabs and panels inside
+// keep working.
+export const As: Story = {
+	parameters: { controls: { exclude: ['as'] } },
+	render: () => (
+		<Row>
+			<Group label="div (default)">
+				<Tab.Group as="div" id="as-div">
+					<Tab.List>
+						{ LABELS.map(label => <Tab key={ label }>{ label }</Tab>) }
+					</Tab.List>
+					{ LABELS.map(label => <Tab.Panel key={ label }>{ `${ label } panel` }</Tab.Panel>) }
+				</Tab.Group>
+			</Group>
+			<Group label="section">
+				<Tab.Group as="section" id="as-section">
+					<Tab.List>
+						{ LABELS.map(label => <Tab key={ label }>{ label }</Tab>) }
+					</Tab.List>
+					{ LABELS.map(label => <Tab.Panel key={ label }>{ `${ label } panel` }</Tab.Panel>) }
+				</Tab.Group>
+			</Group>
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const [div, section] = groupsOf(canvasElement)
+
+		await expect(div.querySelector('#tab-as-div')?.tagName).toBe('DIV')
+		await expect(section.querySelector('#tab-as-section')?.tagName).toBe('SECTION')
+
+		await userEvent.click(within(section).getAllByRole('tab')[1])
+		await expect(within(section).getByRole('tabpanel')).toHaveTextContent('Two panel')
 	},
 }
 

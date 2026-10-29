@@ -20,14 +20,14 @@ import type { SocialBrand } from '@/types/shared'
 const ARROW_NAV_TYPES: readonly LucideType[] = [
 	'arrow-down', 'caret-down', 'arrow-left', 'caret-left',
 	'arrow-right', 'caret-right', 'arrow-up', 'caret-up',
-	'add', 'close', 'confirm', 'remove',
+	'add', 'close', 'check', 'remove',
 	'alert-tooltip', 'info-tooltip', 'warn-tooltip',
 ]
 
 const ACTION_TYPES: readonly LucideType[] = [
-	'attach', 'block', 'call', 'comment', 'copy', 'delete', 'download',
-	'drag', 'edit', 'email', 'invite', 'like', 'notify', 'paste', 'print',
-	'refresh', 'report', 'save', 'send', 'share',
+	'attach', 'block', 'comment', 'copy', 'delete', 'download', 'drag',
+	'edit', 'email', 'invite', 'like', 'notify', 'paste', 'print',
+	'phone', 'refresh', 'report', 'save', 'send', 'share',
 ]
 
 const CONTROL_TYPES: readonly LucideType[] = [
@@ -43,7 +43,7 @@ const USER_SETTING_TYPES: readonly LucideType[] = [
 
 const MISC_TYPES: readonly LucideType[] = [
 	'camera', 'media', 'loading', 'location',
-	'private', 'rating', 'ruler', 'time', 'wrench',
+	'private', 'rating', 'ruler', 'time', 'wand-sparkles', 'wrench',
 ]
 
 const ICON_GROUPS: Record<string, readonly LucideType[]> = {
@@ -147,7 +147,7 @@ const meta: Meta<IconStoryProps> = {
 		},
 		href: {
 			control: 'text',
-			description: 'When set, wraps the rendered icon glyph in a `next/link` `<Link>` instead of the default `<div>` wrapper (`Icon.tsx`\'s `keyHasValue(props, \'href\')` branch, so a falsy `href`, such as an empty string, falls back to the `<div>`). `isExternalLink(href)` (`@/utils/helpers`) additionally adds `target="_blank" rel="noopener noreferrer"` whenever the link is external. See the `AsLink` story for both branches.',
+			description: 'When set, wraps the rendered icon glyph in a `next/link` `<Link>` instead of the default `<span>` wrapper (`Icon.tsx`\'s `keyHasValue(props, \'href\')` branch, so a falsy `href`, such as an empty string, falls back to the `<span>`). `isExternalLink(href)` (`@/utils/helpers`) additionally adds `target="_blank" rel="noopener noreferrer"` whenever the link is external. See the `AsLink` story for both branches.',
 		},
 		strokeLinecap: {
 			control: 'select',
@@ -156,7 +156,7 @@ const meta: Meta<IconStoryProps> = {
 		},
 		size: {
 			control: 'number',
-			description: 'Sets the `width` and `height` ATTRIBUTES on the rendered `<svg>` (Lucide `size` for Lucide icons; `width`/`height` for social brands). It does not by itself change the rendered size while styled: `Icon.module.scss` sets `width` and `height` to `1em` on both `.inkq-icon` and `.inkq-icon__glyph`, which overrides those attributes, so the visible size follows `font-size` (`--icon-size`). With `unstyled`, the attributes apply. See the `Sizes` story, which asserts the attributes only.',
+			description: 'Sets the `width` and `height` ATTRIBUTES on the rendered `<svg>` (Lucide `size` for Lucide icons; `width`/`height` for social brands). `Icon` itself sets no size token. The global `svg` rule in `src/styles/_base.scss` sizes every `<svg>` with `width: var(--icon-size, auto)` and `height: var(--icon-size, auto)` (plus a `font-size` fallback of `--inkq-icon-md`), and `Icon.module.scss`\'s old `1em` rule is commented out. A parent that sets `--icon-size` (a `Button` does, on its inner element) therefore controls the visible size; the attributes are what you get when nothing sets it. See the `Sizes` story, which asserts the attributes only.',
 		},
 		color: {
 			control: 'color',
@@ -168,7 +168,7 @@ const meta: Meta<IconStoryProps> = {
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of the shared `FactoryContract` (`unstyled` on `_PolymorphicContract`), not `Icon`\'s own `IconProps`. `Icon` makes two `styles(...)` calls on two different elements: `styles(\'root\')` on the wrapper (a `<div>`, or the `<Link>` when `href` is set — `inkq-icon`) and `styles(\'glyph\')` on the rendered `<svg>` (`inkq-icon__glyph`). Both semantic base classes are emitted regardless of this prop (an inherited semantic `className` could replace one). `Icon` uses no config classes or tokens, so what `unstyled` drops is the CSS-module-hashed class normally appended alongside each — which is also what removes the `1em` sizing from `Icon.module.scss` — see the `Unstyled` story.',
+			description: 'Part of the shared `FactoryContract` (`unstyled` on `_PolymorphicContract`), not `Icon`\'s own `IconProps`. `Icon` makes two `styles(...)` calls on two different elements: `styles(\'root\')` on the wrapper (a `<span>`, or the `<Link>` when `href` is set — `inkq-icon`) and `styles(\'glyph\')` on the rendered `<svg>` (`inkq-icon__glyph`). Both semantic base classes are emitted regardless of this prop (an inherited semantic `className` could replace one). `Icon` uses no config classes or tokens, so what `unstyled` drops is the CSS-module-hashed class normally appended alongside each — which is the only thing it changes today (`Icon.module.scss` keeps just the wrapper\'s `display`/`font-size`/`margin` and the glyph\'s `pointer-events`/`user-select` rules; the `1em` sizing is commented out) — see the `Unstyled` story.',
 		},
 		filled: {
 			control: 'boolean',
@@ -176,13 +176,14 @@ const meta: Meta<IconStoryProps> = {
 		},
 		hidden: {
 			control: 'boolean',
-			description: 'Destructured in `buildIcon.tsx` and mapped to the `aria-hidden` attribute on the rendered `<svg>` (`attributes.aria.hidden`): `true` gives `aria-hidden="true"`, `false` gives `aria-hidden="false"`. Not the HTML `hidden` attribute. See the `Hidden` story.',
+			description: 'Destructured in `buildIcon.tsx` and mapped to the `aria-hidden` attribute on the rendered `<svg>` (`attributes.aria.hidden`): `true` gives `aria-hidden="true"`, `false` gives `aria-hidden="false"`. Not the HTML `hidden` attribute. Registered default `true` (`DEFAULT_PROPS` in `Icon.tsx`), so icons are decorative unless `hidden={ false }` is passed. The same `aria` bag always sets `aria-label` to `` `${type} icon` `` (no `role="img"` and no `<title>`, for Lucide and brand icons alike). See the `Hidden` story.',
 		},
 	},
 	args: {
 		// `type` has no registered default — `getDefaultProps<Icon.Props>('Icon')`
 		// only resolves whatever `Icon.tsx`'s own `DEFAULT_PROPS` registers
-		// (currently `as`/`color`/`size`/`strokeLinecap`) — supplied explicitly here.
+		// (currently `as`/`color`/`hidden`/`size`/`strokeLinecap`) — supplied
+		// explicitly here.
 		...getDefaultProps<Icon.Props>('Icon'),
 		type: 'settings',
 	},
@@ -249,15 +250,20 @@ export const SocialIcons: Story = {
 
 		await expect(canvasElement.querySelectorAll('svg')).toHaveLength(renderedBrands.length)
 
-		// `getByText(brand)` alone is ambiguous: the rendered social icon itself
-		// carries a real `<title>{type}</title>` text node (`Icon.tsx`'s social
-		// branch) with the SAME text as this story's own group label — restrict
-		// the query to the label `<span>` (see the local `Group` helper) to
-		// avoid matching both.
+		// Brand icons no longer render a `<title>` or `role="img"`
+		// (`buildIcon.tsx`); like every icon they get `aria-hidden="true"` (the
+		// registered `hidden` default) and `aria-label="<brand> icon"`. The
+		// query is still restricted to the label `<span>` (see the local
+		// `Group` helper) so it only ever matches this story's group label.
 		for (const brand of renderedBrands) {
 			const label = canvas.getByText(brand, { selector: 'span' })
 			const group = label.parentElement as HTMLElement
-			await expect(group.querySelector('svg')).toBeInTheDocument()
+			const svg = group.querySelector('svg')
+
+			await expect(svg).toBeInTheDocument()
+			await expect(svg).toHaveAttribute('aria-label', `${brand} icon`)
+			await expect(svg).toHaveAttribute('aria-hidden', 'true')
+			await expect(svg!.querySelector('title')).not.toBeInTheDocument()
 		}
 
 		for (const brand of unrenderedBrands) {
@@ -268,9 +274,10 @@ export const SocialIcons: Story = {
 	},
 }
 
-// Asserts the `width`/`height` ATTRIBUTES only. While styled, `Icon.module.scss`
-// forces `width`/`height` to `1em` on `.inkq-icon` and `.inkq-icon__glyph`, so
-// the four groups look the same size on screen; the attributes still differ.
+// Asserts the `width`/`height` ATTRIBUTES only. `Icon` sets no `--icon-size`
+// itself and the global `svg` rule (`_base.scss`) reads `var(--icon-size, auto)`,
+// so how the four groups look on screen is decided by CSS, not by this prop;
+// the attributes are what differ per group.
 export const Sizes: Story = {
 	render: (args) => (
 		<Row>
@@ -417,6 +424,9 @@ export const Filled: Story = {
 }
 
 // `hidden` maps to `aria-hidden` (`attributes.aria.hidden` in `buildIcon.tsx`).
+// It has a registered default of `true`, so an Icon with no `hidden` prop at
+// all is `aria-hidden="true"` too (the last group). `aria-label` is set to
+// `` `${type} icon` `` regardless of `hidden`.
 export const Hidden: Story = {
 	parameters: { controls: { exclude: ['hidden'] } },
 	render: (args) => (
@@ -426,18 +436,28 @@ export const Hidden: Story = {
 					<Icon { ...args as IconStoryProps } hidden={ hidden } />
 				</Group>
 			)) }
+			<Group label="not passed (registered default)">
+				<Icon type="settings" />
+			</Group>
 		</Row>
 	),
-	play: async ({ canvasElement }) => {
+	play: async ({ args, canvasElement }) => {
 		const svgs = canvasElement.querySelectorAll('svg')
 
-		await expect(svgs).toHaveLength(BOOLEAN_OPTIONS.length)
+		await expect(svgs).toHaveLength(BOOLEAN_OPTIONS.length + 1)
 
 		// `BOOLEAN_OPTIONS` is `[true, false]`, matching the render order above.
-		const [hiddenSvg, visibleSvg] = svgs
+		const [hiddenSvg, visibleSvg, defaultSvg] = svgs
 
 		await expect(hiddenSvg).toHaveAttribute('aria-hidden', 'true')
 		await expect(visibleSvg).toHaveAttribute('aria-hidden', 'false')
+		await expect(defaultSvg).toHaveAttribute('aria-hidden', 'true')
+
+		// The accessible name is independent of `hidden`. The first two groups
+		// use the story's `type` arg, the last one is a literal `settings`.
+		await expect(hiddenSvg).toHaveAttribute('aria-label', `${args.type} icon`)
+		await expect(visibleSvg).toHaveAttribute('aria-label', `${args.type} icon`)
+		await expect(defaultSvg).toHaveAttribute('aria-label', 'settings icon')
 	},
 }
 
@@ -467,7 +487,7 @@ export const UnrecognizedType: Story = {
 // replace it; none is passed here). `Icon` uses no config classes or tokens, so
 // the effect is the CSS-module-hashed class (`styleName`) normally appended
 // alongside it being suppressed. `Icon.tsx` calls `styles('root')` on
-// the WRAPPING `<div>`/`<a>` (`inkq-icon`) and `styles('glyph')` on the
+// the WRAPPING `<span>`/`<a>` (`inkq-icon`) and `styles('glyph')` on the
 // rendered `<svg>` glyph itself (`inkq-icon__glyph`) — two different
 // elements, not one — see `Icon.module.scss`'s `&`/`&__glyph` rules.
 export const Unstyled: Story = {
@@ -512,7 +532,7 @@ export const Unstyled: Story = {
 }
 
 // `href` routes the rendered icon glyph through `Icon.tsx`'s
-// `keyHasValue(props, 'href')` branch — a `next/link` `<Link>` instead of the default `<div>`
+// `keyHasValue(props, 'href')` branch — a `next/link` `<Link>` instead of the default `<span>`
 // wrapper — with `isExternalLink(href)` (`@/utils/helpers`) additionally
 // gating `target="_blank" rel="noopener noreferrer"`. `SITE_URL` comes from
 // `NEXT_PUBLIC_SITE_URL` (`.env.local` sets it to `http://localhost:3000`), so
@@ -525,7 +545,7 @@ export const AsLink: Story = {
 	parameters: { layout: 'padded' },
 	render: (args) => (
 		<Row>
-			<Group label="no href (div wrapper)">
+			<Group label="no href (span wrapper)">
 				<Icon { ...args as IconStoryProps } />
 			</Group>
 			<Group label='href="/discover" (internal)'>
@@ -545,6 +565,8 @@ export const AsLink: Story = {
 		const [noHrefIcon, internalIcon, externalIcon] = Array.from(svgs)
 
 		await expect(noHrefIcon.closest('a')).not.toBeInTheDocument()
+		await expect(noHrefIcon.parentElement?.tagName).toBe('SPAN')
+		await expect(noHrefIcon.parentElement).toHaveClass('inkq-icon')
 
 		const links = canvas.getAllByRole('link')
 		await expect(links).toHaveLength(2)

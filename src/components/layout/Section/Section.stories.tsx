@@ -16,11 +16,13 @@ type SectionAlign = NonNullable<Section.Props['alignText']>
 const LAYOUT_OPTIONS: readonly SectionLayout[] = [
 	'default',
 	'banner',
+	'banner-note',
 	'hero',
 	'hero-split',
 	'hero-tight',
 	'content',
 	'content-blocks',
+	'content-form',
 	'content-split',
 ] as const
 
@@ -111,12 +113,12 @@ const meta: Meta<SectionStoryProps> = {
 		},
 		eyebrow: {
 			control: 'text',
-			description: 'Rendered CONDITIONALLY by `buildHeader` in `buildSection.tsx` —`buildHeader` pushes `{ eyebrow && <span {...styles(\'eyebrow\', true)} {...reveal.next()}>{eyebrow}</span> }`. The semantic base class (`inkq-section__eyebrow`, from `nameClassBase`, always emitted) is NOT the whole story: the `true` shorthand ALSO runs `getConfigClasses`\' boolean branch (`getClassName.tsx`: `if (typeof config === \'boolean\' && config) return getBaseClass(selector, prefix)`), which computes a SEPARATE, literal, unhashed GLOBAL class — `inkq-eyebrow` (styled by `styles/_base.scss`\'s own `.inkq-eyebrow` rule), stacked alongside the semantic base class. `check.isUnstyled` is now checked FIRST in `getConfigClasses`, before that boolean branch, so `inkq-eyebrow` is suppressed entirely when `unstyled` (same mechanism as `Container`\'s `styles(\'wrapper\', true)`-driven `inkq-wrapper` — see `Container.stories.tsx`\'s `unstyled` argType description, which now behaves identically to an OBJECT config). In `hero-tight` the title comes BEFORE the eyebrow in the DOM (`header.reverse()`); see the `Layout` story. When `eyebrow` is falsy (`undefined`/`\'\'`), neither class renders at all — the `<span>` isn\'t rendered. Forbidden entirely (`never`) when `layout: \'content-blocks\'` (`SectionBlocksProps`), where `buildHeader` returns an empty header. See the `Eyebrow` story.',
+			description: 'Rendered CONDITIONALLY by `buildHeader` in `buildSection.tsx` —`buildHeader` builds `<span {...styles(\'eyebrow\')} {...reveal.next()}>{eyebrow}</span>` when `eyebrow` is truthy. The span gets the semantic base class (`inkq-section__eyebrow`, always emitted) plus the CSS-module hash for `Section.module.scss`\'s `&__eyebrow` rule, which pulls in the shared `eyebrow` mixin from `styles/utils`. There is no separate global `inkq-eyebrow` class any more (the old `.inkq-eyebrow` rule was removed from `styles/_base.scss`), so `unstyled` simply drops the module hash and leaves the semantic class. In `hero-tight` the title comes BEFORE the eyebrow in the DOM (`header.reverse()`); see the `Layout` story. When `eyebrow` is falsy (`undefined`/`\'\'`), the `<span>` isn\'t rendered at all. Forbidden entirely (`never`) when `layout: \'content-blocks\'` (`SectionBlocksProps`), where `buildHeader` returns an empty header. See the `Eyebrow` story.',
 		},
 		layout: {
 			control: 'select',
 			options: LAYOUT_OPTIONS,
-			description: 'Registered default is `\'default\'`. Picks the heading tag, a heading class, the content wrapper and the root modifier. Heading tag: `h1` when the layout name contains `hero` (`hero`, `hero-split`, `hero-tight`), `h2` otherwise. Heading class: `hero-split` adds `h1-display`, `hero-tight` adds `h3`, `content` adds `h4`. Wrapper (`buildSection`\'s `switch`): `hero`/`banner` wrap in a plain `<div class="inkq-section__inner">`; `hero-split` and `hero-tight` wrap in a `Grid` (4 columns when there is a footer) with the header and body in a `span 3` item and the footer meant to sit in a `span 1` slot; `content-split` wraps in a two-`Grid.Item` `Grid`; `default`, `content` and `content-blocks` render the header and content with no wrapper element at all. The root gets an `inkq-section--<layout>` modifier for every value except `\'default\'`. `content-blocks` (`SectionBlocksProps`) additionally FORBIDS `title`/`eyebrow` at the type level. See the `Layout` story.',
+			description: 'Registered default is `\'default\'`. Picks the heading tag, a heading class, the content wrapper and the root modifier. Heading tag: `h1` when the layout name contains `hero` (`hero`, `hero-split`, `hero-tight`), `h2` otherwise. Heading class: `hero-split` adds `h1-display`, `hero-tight` adds `h3`, `content` adds `h4`. Wrapper (`buildSection`\'s `switch`): `hero`, `banner`, `banner-note` and `content-form` wrap in a plain `<div class="inkq-section__inner">` (`banner-note` renders it as a bordered note card and its description paragraphs get no `inkq-prose` class; `content-form` centers it at the form width); `hero-split` and `hero-tight` wrap in a `Grid` (4 columns when there is a footer) with the header and body in a `span 3` item and the footer meant to sit in a `span 1` slot; `content-split` wraps in a two-`Grid.Item` `Grid`; `default`, `content` and `content-blocks` render the header and content with no wrapper element at all. The inner wrapper also carries the layout\'s default `--section-align` (`banner` centers, `content-form` left-aligns); see `alignText`. The root gets an `inkq-section--<layout>` modifier for every value except `\'default\'`. `content-blocks` (`SectionBlocksProps`) additionally FORBIDS `title`/`eyebrow` at the type level. See the `Layout` story.',
 		},
 		title: {
 			control: 'text',
@@ -129,7 +131,7 @@ const meta: Meta<SectionStoryProps> = {
 		alignText: {
 			control: 'select',
 			options: ALIGN_OPTIONS,
-			description: 'Optional (`\'left\' | \'center\' | \'right\'`), no registered default. `Section` destructures it (so it never reaches the DOM as an `alignText` attribute) and emits it as the inline `--section-align` token on the root; `Section.module.scss` applies it as `text-align: var(--section-align)` on `.inkq-section__inner`. It therefore only has a visible effect for layouts that render an inner wrapper (`hero`, `hero-split`, `hero-tight`, `content-split`); `banner` centers its own inner wrapper and ignores it. The token is dropped when `unstyled`. See the `AlignText` story.',
+			description: 'Optional (`\'left\' | \'center\' | \'right\'`), no registered default. `Section` destructures it (so it never reaches the DOM as an `alignText` attribute) and emits it as the inline `--section-align` token on the INNER wrapper (`.inkq-section__inner`, the `inner` token group), not on the root; `Section.module.scss` applies it as `text-align: var(--section-align)` there. Without `alignText` the token falls back to a per-layout default: `left` for `content-form`, `center` for `banner`, and unset for every other layout. It therefore only has a visible effect for layouts that render an inner wrapper (`hero`, `banner`, `banner-note`, `content-form`, `hero-split`, `hero-tight`, `content-split`). The token is dropped when `unstyled`. See the `AlignText` story.',
 		},
 		animated: {
 			control: 'boolean',
@@ -145,7 +147,7 @@ const meta: Meta<SectionStoryProps> = {
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of the factory\'s `FactoryContract` (`_PolymorphicContract.unstyled`), not `Section`\'s own `SectionProps`. The semantic base class (`inkq-section`) is emitted regardless of this prop (`namespace ?? baseName`). When `unstyled` is true, `Section` loses: the CSS-module hash, the `inkq-section--<layout>` modifier hash/class (`module` config), the eyebrow `inkq-eyebrow` and title `h1-display` global config classes, and the inline `--reveal-duration`/`--reveal-stagger` tokens. `useReveal` also treats it as non-animated (`animated && !rest.unstyled`), so no `data-js-reveal`/`data-reveal-item` attributes. It also flows on through to `Container` itself: `Section` never destructures `unstyled` out of `rest`, so it survives into `others` and reaches `<Box as={Container} {...others}>`, and `Box.tsx` forwards its own `unstyled` prop to the `as` target whenever that target carries `POLYMORPHIC_MARKER` — which `Container` does, being built via `polymorphic()`. See the `Unstyled` story for the resulting effect on `Container`\'s own wrapper hash.',
+			description: 'Part of the factory\'s `FactoryContract` (`_PolymorphicContract.unstyled`), not `Section`\'s own `SectionProps`. The semantic base class (`inkq-section`) is emitted regardless of this prop (`namespace ?? baseName`). When `unstyled` is true, `Section` loses: the CSS-module hash, the `inkq-section--<layout>` modifier hash/class (`module` config), the title\'s global heading classes (`h1-display`, `h3`, `h4`), the eyebrow\'s module hash, and the inline `--reveal-duration`/`--reveal-stagger` tokens. `useReveal` also treats it as non-animated (`animated && !rest.unstyled`), so no `data-js-reveal`/`data-reveal-item` attributes. It also flows on through to `Container` itself: `Section` never destructures `unstyled` out of `rest`, so it survives into `others` and reaches `<Box as={Container} {...others}>`, and `Box.tsx` forwards its own `unstyled` prop to the `as` target whenever that target carries `POLYMORPHIC_MARKER` — which `Container` does, being built via `polymorphic()`. See the `Unstyled` story for the resulting effect on `Container`\'s own wrapper hash.',
 		},
 	},
 	args: {
@@ -182,7 +184,7 @@ export const Default: Story = {
  * branches on `layout` for the heading tag (`h1` when the name contains
  * `hero`, `h2` otherwise), the heading class (`hero-split` adds `h1-display`,
  * `hero-tight` adds `h3`, `content` adds `h4`) and the content wrapper
- * (`hero`/`banner` → plain `<div>`, `content-split` → a two-`Grid.Item`
+ * (`hero`/`banner`/`banner-note`/`content-form` → plain `<div>`, `content-split` → a two-`Grid.Item`
  * `Grid`, `hero-split`/`hero-tight` → a 4-column `Grid` with a `span 3`
  * content item and the footer meant to sit in a `span 1` slot,
  * `default`/`content`/`content-blocks` → no wrapper element at all).
@@ -226,6 +228,8 @@ export const Layout: Story = {
 
 		const defaultHeading = canvas.getByRole('heading', { name: 'Layout: default' }),
 			bannerHeading = canvas.getByRole('heading', { name: 'Layout: banner' }),
+			bannerNoteHeading = canvas.getByRole('heading', { name: 'Layout: banner-note' }),
+			contentFormHeading = canvas.getByRole('heading', { name: 'Layout: content-form' }),
 			heroHeading = canvas.getByRole('heading', { name: 'Layout: hero' }),
 			heroSplitHeading = canvas.getByRole('heading', { name: 'Layout: hero-split' }),
 			heroTightHeading = canvas.getByRole('heading', { name: 'Layout: hero-tight' }),
@@ -247,6 +251,8 @@ export const Layout: Story = {
 		await expect(heroTightHeading.tagName).toBe('H1')
 		await expect(defaultHeading.tagName).toBe('H2')
 		await expect(bannerHeading.tagName).toBe('H2')
+		await expect(bannerNoteHeading.tagName).toBe('H2')
+		await expect(contentFormHeading.tagName).toBe('H2')
 		await expect(contentHeading.tagName).toBe('H2')
 		await expect(contentSplitHeading.tagName).toBe('H2')
 
@@ -258,6 +264,8 @@ export const Layout: Story = {
 		await expect(heroHeading).not.toHaveClass('inkq-h1-display')
 		await expect(heroHeading).not.toHaveClass('inkq-h3')
 		await expect(defaultHeading).not.toHaveClass('inkq-h4')
+		await expect(bannerNoteHeading).not.toHaveClass('inkq-h3')
+		await expect(contentFormHeading).not.toHaveClass('inkq-h4')
 
 		// The eyebrow comes before the title everywhere except `hero-tight`,
 		// which reverses the header so the title leads.
@@ -267,6 +275,8 @@ export const Layout: Story = {
 
 		const defaultRoot = defaultHeading.closest(ROOT_SELECTOR) as HTMLElement,
 			bannerRoot = bannerHeading.closest(ROOT_SELECTOR) as HTMLElement,
+			bannerNoteRoot = bannerNoteHeading.closest(ROOT_SELECTOR) as HTMLElement,
+			contentFormRoot = contentFormHeading.closest(ROOT_SELECTOR) as HTMLElement,
 			heroRoot = heroHeading.closest(ROOT_SELECTOR) as HTMLElement,
 			heroSplitRoot = heroSplitHeading.closest(ROOT_SELECTOR) as HTMLElement,
 			heroTightRoot = heroTightHeading.closest(ROOT_SELECTOR) as HTMLElement,
@@ -286,14 +296,16 @@ export const Layout: Story = {
 		await expect(defaultRoot.className).not.toMatch('inkq-section--')
 		await expect(blocksRoot.className).toMatch('inkq-section--content-blocks')
 		await expect(bannerRoot.className).toMatch('inkq-section--banner')
+		await expect(bannerNoteRoot.className).toMatch('inkq-section--banner-note')
+		await expect(contentFormRoot.className).toMatch('inkq-section--content-form')
 		await expect(heroRoot.className).toMatch('inkq-section--hero')
 		await expect(heroSplitRoot.className).toMatch('inkq-section--hero-split')
 		await expect(heroTightRoot.className).toMatch('inkq-section--hero-tight')
 		await expect(contentRoot.className).toMatch('inkq-section--content')
 		await expect(contentSplitRoot.className).toMatch('inkq-section--content-split')
 
-		// `hero`/`banner` wrap the header + content in a plain `.inkq-section__inner`
-		// div. Queried by walking up from the heading itself, not via a selector
+		// `hero`, `banner`, `banner-note` and `content-form` wrap the header +
+		// content in a plain `.inkq-section__inner` div. Queried by walking up from the heading itself, not via a selector
 		// chain through `Container`'s own internal wrapper — `Container`'s
 		// `styles('wrapper')` call inherits and mangles its computed class name
 		// once rendered via `Section`'s `<Box as={Container}>` (see the
@@ -301,6 +313,8 @@ export const Layout: Story = {
 		// className isn't a stable thing to assert against here.
 		await expect(heroHeading.closest('.inkq-section__inner')).toBeInTheDocument()
 		await expect(bannerHeading.closest('.inkq-section__inner')).toBeInTheDocument()
+		await expect(bannerNoteHeading.closest('.inkq-section__inner')).toBeInTheDocument()
+		await expect(contentFormHeading.closest('.inkq-section__inner')).toBeInTheDocument()
 
 		// `default`, `content` and `content-blocks` all fall through to
 		// `buildSection`'s `default:` branch: no wrapper element at all around
@@ -314,13 +328,9 @@ export const Layout: Story = {
 
 		// `hero-split` and `hero-tight` are 4-column `Grid`s (`equalWidth` is on
 		// by default, hence `repeat(4, ...)`): the header/body item spans 3
-		// columns and the footer item should span 1. Located via the inline
-		// `--grid-span-col` token, since `Section` hands those items its own
-		// `content` class.
-		//
-		// The footer `span 1` check currently fails: `SectionFooter` only honors
-		// the context's `as`/`span` when `isValidElement(as)`, which is false for
-		// the `Grid.Item` component, so the footer renders as a plain `div`.
+		// columns and the footer item spans 1 (`SectionFooter` renders as the
+		// context's `Grid.Item`). Located via the inline `--grid-span-col` token,
+		// since `Section` hands those items its own `content` class.
 		for (const [heading, root] of [
 			[heroSplitHeading, heroSplitRoot],
 			[heroTightHeading, heroTightRoot],
@@ -337,7 +347,7 @@ export const Layout: Story = {
 
 		// The footer's `Button.Group` renders identically regardless of `layout`.
 		for (const root of [
-			defaultRoot, blocksRoot, bannerRoot, heroRoot,
+			defaultRoot, blocksRoot, bannerRoot, bannerNoteRoot, contentFormRoot, heroRoot,
 			heroSplitRoot, heroTightRoot, contentRoot, contentSplitRoot,
 		]) {
 			await expect(within(root).getByRole('group')).toBeInTheDocument()
@@ -347,7 +357,7 @@ export const Layout: Story = {
 }
 
 /**
- * `eyebrow` is conditional (`buildHeader` in `buildSection.tsx`) — `{ eyebrow && <span {...styles('eyebrow', true)}
+ * `eyebrow` is conditional (`buildHeader` in `buildSection.tsx`) — `{ eyebrow && <span {...styles('eyebrow')}
  * {...reveal.next()}>{eyebrow}</span> }`. When `eyebrow` is falsy, there is
  * NO `<span>` in the DOM at all.
  */
@@ -672,10 +682,13 @@ export const Animated: Story = {
 
 /**
  * `alignText` side by side with the unset case. `Section` emits it as the
- * inline `--section-align` token on the root, and `Section.module.scss`
- * applies it as `text-align` on `.inkq-section__inner`. Only layouts that
- * render an inner wrapper show the effect, so these use `hero`. The prop is
- * consumed by `Section` and never reaches the DOM as an `alignText` attribute.
+ * inline `--section-align` token on the INNER wrapper (`.inkq-section__inner`,
+ * not the root), and `Section.module.scss` applies it as `text-align` there.
+ * Only layouts that render an inner wrapper show the effect, so these use
+ * `hero`. With no `alignText`, `banner` falls back to `center` and
+ * `content-form` to `left` (the two extra groups); `hero` has no default. The
+ * prop is consumed by `Section` and never reaches the DOM as an `alignText`
+ * attribute.
  */
 export const AlignText: Story = {
 	parameters: {
@@ -690,6 +703,26 @@ export const AlignText: Story = {
 					alignText={ undefined }
 					layout="hero"
 					title="Align: undefined"
+				>
+					Aligned description.
+				</Section>
+			</Group>
+			<Group label="undefined (banner)">
+				<Section
+					{ ...args as SectionContentArgs }
+					alignText={ undefined }
+					layout="banner"
+					title="Align: banner default"
+				>
+					Aligned description.
+				</Section>
+			</Group>
+			<Group label="undefined (content-form)">
+				<Section
+					{ ...args as SectionContentArgs }
+					alignText={ undefined }
+					layout="content-form"
+					title="Align: content-form default"
 				>
 					Aligned description.
 				</Section>
@@ -713,16 +746,26 @@ export const AlignText: Story = {
 			rootFor = (value: string) => canvas.getByRole('heading', { name: `Align: ${ value }` })
 				.closest(ROOT_SELECTOR) as HTMLElement
 
+		// The token lives on the inner wrapper (the `inner` token group), not the root.
+		const innerOf = (root: HTMLElement) =>
+			root.querySelector('.inkq-section__inner') as HTMLElement
+
 		const unsetRoot = rootFor('undefined')
 
+		await expect(innerOf(unsetRoot).style.getPropertyValue('--section-align')).toBe('')
 		await expect(unsetRoot.style.getPropertyValue('--section-align')).toBe('')
 		await expect(unsetRoot).not.toHaveAttribute('aligntext')
 
+		// Unset `alignText` falls back to the layout's own default.
+		await expect(innerOf(rootFor('banner default')).style.getPropertyValue('--section-align')).toBe('center')
+		await expect(innerOf(rootFor('content-form default')).style.getPropertyValue('--section-align')).toBe('left')
+
 		for (const alignText of ALIGN_OPTIONS) {
 			const root = rootFor(alignText),
-				inner = root.querySelector('.inkq-section__inner') as HTMLElement
+				inner = innerOf(root)
 
-			await expect(root.style.getPropertyValue('--section-align')).toBe(alignText)
+			await expect(inner.style.getPropertyValue('--section-align')).toBe(alignText)
+			await expect(root.style.getPropertyValue('--section-align')).toBe('')
 			await expect(getComputedStyle(inner).textAlign).toBe(alignText)
 			await expect(root).not.toHaveAttribute('aligntext')
 		}

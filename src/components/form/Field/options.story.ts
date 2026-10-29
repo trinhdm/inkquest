@@ -15,7 +15,7 @@ export const SIZE_OPTIONS: readonly NonNullable<Field.Props['size']>[] = [
 ]
 
 export const LAYOUT_OPTIONS: readonly NonNullable<Field.Props['layout']>[] = [
-	'default', 'button',
+	'default', 'button', 'inline', 'keypad',
 ]
 
 export const LABEL_POSITION_OPTIONS: readonly NonNullable<Field.Props['labelPosition']>[] = [

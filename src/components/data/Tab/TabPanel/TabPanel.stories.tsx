@@ -201,8 +201,8 @@ export const Content: Story = {
 
 // Each tab points at its panel with `aria-controls`, and the panel points back
 // with `aria-labelledby`. Split from `Default` because the back-reference needs
-// the tab itself to carry that id; it is asserted here as the intended
-// behavior, so this story fails while `Tab` leaves its `id` off the element.
+// the tab itself to carry that id (`Tab` sets `id` to `<group uid>-<index>`),
+// which also gives the panel its accessible name.
 export const LabelledByTab: Story = {
 	render: args => renderPanel(<Tab.Panel { ...args } />, { id: 'panel-labelled' }),
 	play: async ({ canvasElement }) => {
