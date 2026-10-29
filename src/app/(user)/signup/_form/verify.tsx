@@ -7,10 +7,6 @@ import { Icon } from '@/components/core/Icon'
 import { Form } from '@/components/form/Form'
 import { Section } from '@/components/layout/Section'
 
-const FORM_ID = 'verify',
-	FIELD_ID = `${FORM_ID}-field`,
-	TIMER_ID = `${FORM_ID}-timer`
-
 const COPY = {
 	email: {
 		// eyebrow: 'Verify Email',
@@ -30,18 +26,18 @@ export const SignupVerify = () => {
 	const {
 		endWait,
 		goBack,
-		pageID, resent, waiting,
-		method, screen, to,
-		reply, resend, verify,
+		idx, method, reply,
+		resend, resent, to,
+		verify, waiting,
 		waitUntilExpiry,
 	} = useSignupCtx()
 
-	const copy = COPY[method === 'tel' ? 'phone' : 'email']
+	const copy = COPY[method === 'phone' ? 'phone' : 'email']
 
 	return (
 		<Section
 			eyebrow="Verify"
-			id={ `${pageID}-${screen}` }
+			id={ idx.section }
 			layout="content-form"
 			tabIndex={ -1 }
 			title={ copy.title }
@@ -52,15 +48,18 @@ export const SignupVerify = () => {
 
 			<Form
 				action={ verify.action }
-				id={ FORM_ID }
+				id={ idx.form }
 				onSubmit={ waitUntilExpiry }
-				pending={ verify.pending || resend.pending }
+				pending={ reply.pending }
 				state={ {
 					...reply.state,
 					message: resent && waiting ? `We sent another link to ${to}.` : undefined,
 				} }
 				validate={ validateVerify }
 			>
+				<input name="method" type="hidden" value={ method } />
+				<input name="to" type="hidden" value={ to } />
+
 				{/* <Field.Group layout="keypad" legend="">
 					<Field id={ `${FIELD_ID}-code-1` } label="1">
 						<Field.Number
@@ -114,7 +113,7 @@ export const SignupVerify = () => {
 				<Field
 					required
 					disabled={ verify.pending }
-					id={ `${FIELD_ID}-code` }
+					id={ `${idx.field}-code` }
 					label="6-digit code"
 				>
 					<Field.Number
@@ -151,7 +150,7 @@ export const SignupVerify = () => {
 					<Button
 						unstyled data-link
 						attributes={ { aria: {
-							describedby: waiting ? `${TIMER_ID}-text` : undefined,
+							describedby: waiting ? `${idx.timer}-text` : undefined,
 						} } }
 						className="authentication__resend"
 						data-intent="resend"
@@ -165,7 +164,7 @@ export const SignupVerify = () => {
 						{ waiting && (
 							<Countdown
 								from={ 30 }
-								id={ TIMER_ID }
+								id={ idx.timer }
 								onComplete={ endWait }
 							/>
 						) }

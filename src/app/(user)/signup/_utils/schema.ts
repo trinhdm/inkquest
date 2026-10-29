@@ -27,7 +27,7 @@ const magicSignup = z.object({
 })
 
 const telSignup = z.object({
-	method: z.literal('tel'),
+	method: z.literal('phone'),
 	tel: telRule,
 })
 
@@ -37,15 +37,6 @@ export const signupSchema = z.discriminatedUnion(
 )
 
 export const validateSignup = validateWith(signupSchema)
-
-
-//	SignupMagic
-
-export type MagicValues =
-	z.infer<typeof magicSchema>
-
-export const magicSchema = z.object({ email: emailRule })
-// const validateMagic = validateWith(magicSchema)
 
 
 //	SignupVerify

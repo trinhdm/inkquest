@@ -1,5 +1,6 @@
 import { createPageCtx } from '@/lib/page/context'
 import type { MouseEvent, SubmitEvent, SyntheticEvent } from 'react'
+import type { AuthFormIDs } from '../../_utils/types'
 import type { FormResults } from '@/lib/form'
 import type { SignupPageData, SIGNUP_METHODS } from './signup.data'
 
@@ -26,12 +27,12 @@ export interface SignupFlow {
 	handleSignupMethod: (method: SignupMethod) => void
 	waitUntilExpiry: <E extends SyntheticEvent>(event: WaitUntilEvent<E>) => void
 
+	idx: AuthFormIDs
 	signup: FormResults
-	magic: FormResults
 	resend: FormResults
 	verify: FormResults
-
 	reply: FormResults
+
 	method: SignupMethod
 	screen: SignupScreen
 	resent: boolean

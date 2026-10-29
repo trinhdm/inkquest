@@ -1,6 +1,6 @@
 import type { BasePageData } from '@/types/shared'
 
-export const SIGNUP_METHODS = ['email', 'magic', 'tel'] as const
+export const SIGNUP_METHODS = ['email', 'magic', 'phone'] as const
 
 export const CODE_EXPIRY_SECONDS = 10 * 60
 export const RESEND_COOLDOWN_SECONDS = 30

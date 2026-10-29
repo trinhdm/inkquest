@@ -1,103 +1,28 @@
-import { useState } from 'react'
 import { useSignupCtx, type SignupMethod } from '../_utils/signup.context'
 import { validateSignup } from '../_utils/schema'
-import { AuthChoices } from '../_components/auth-choices'
 import { Button } from '@/components/core/Button'
-import { Field } from '@/components/form/Field'
 import { Form } from '@/components/form/Form'
 import { Icon } from '@/components/core/Icon'
-import { PasswordRules } from '../_components/password'
 import { Section } from '@/components/layout/Section'
-import { PLACEHOLDER_EMAIL, PLACEHOLDER_TEL } from '@/lib/form'
+import { SignupFields } from '../_components/fields'
 import Link from 'next/link'
-
-const FORM_ID = 'signup',
-	FIELD_ID = `${FORM_ID}-field`
 
 const SUBMIT_LABELS = {
 	email:	'Create account',
 	magic:	'Send magic link',
-	tel:	'Send code',
+	phone:	'Send code',
 } as const satisfies Record<SignupMethod, string>
-
-const SignupFields = () => {
-	const {
-		method,
-		signup: { pending, state },
-	} = useSignupCtx()
-
-	const [password, setPassword] = useState('')
-	const [lastState, setLastState] = useState(state)
-
-	if (state !== lastState) {
-		setLastState(state)
-		setPassword('')
-	}
-
-	return (
-		<>
-			<input name="method" type="hidden" value={ method } />
-
-			<Field
-				required
-				disabled={ pending }
-				id={ `${FIELD_ID}-${method}` }
-				label={ method === 'tel' ? 'Phone number' : 'Email' }
-				caption={ <AuthChoices /> }
-			>
-				{ method === 'tel' ? (
-					<Field.Input
-						autoComplete="tel"
-						defaultValue={ state.values.tel }
-						name="tel"
-						placeholder={ PLACEHOLDER_TEL }
-						type="tel"
-					/>
-				) : (
-					<Field.Input
-						autoComplete="email"
-						defaultValue={ state.values.email }
-						name="email"
-						placeholder={ PLACEHOLDER_EMAIL }
-						type="email"
-					/>
-				) }
-			</Field>
-
-			{ method === 'email' && (
-				<>
-					<input hidden autoComplete="username" name="username" ng-hide="true" type="text" />
-					<Field
-						required
-						disabled={ pending }
-						id={ `${FIELD_ID}-password` }
-						label="Password"
-						caption={ <PasswordRules value={ password } /> }
-					>
-						<Field.Input
-							autoComplete="new-password"
-							name="password"
-							onChange={ event => setPassword(event.currentTarget.value) }
-							placeholder="Your password"
-							type="password"
-						/>
-					</Field>
-				</>
-			) }
-		</>
-	)
-}
 
 export const SignupRoot = () => {
 	const {
-		method, pageID, screen, waiting,
+		idx, method, waiting,
 		signup: { action, pending, state },
 	} = useSignupCtx()
 
 	return (
 		<Section
 			eyebrow="Create Account"
-			id={ `${pageID}-${screen}` }
+			id={ idx.section }
 			layout="content-form"
 			tabIndex={ -1 }
 			title="Join Inkquest."
@@ -106,12 +31,12 @@ export const SignupRoot = () => {
 
 			<Form
 				action={ action }
-				id={ FORM_ID }
+				id={ idx.form }
 				pending={ pending }
 				state={ state }
 				validate={ validateSignup }
 			>
-				<SignupFields />
+				<SignupFields id={ idx.field } />
 
 				<div className="form__ctas authentication">
 					<Button

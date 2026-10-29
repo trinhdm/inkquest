@@ -6,15 +6,10 @@ import { Form } from '@/components/form/Form'
 import { Icon } from '@/components/core/Icon'
 import { Section } from '@/components/layout/Section'
 
-const FORM_ID = 'reset',
-	FIELD_ID = `${FORM_ID}-field`,
-	TIMER_ID = `${FORM_ID}-timer`
-
 export const LoginReset = () => {
 	const {
-		endWait,
-		handleLoginFlow,
-		pageID, resent, screen, waiting,
+		endWait, handleLoginFlow,
+		idx, resent, waiting,
 		reset: { action, pending, state },
 		waitUntilExpiry,
 	} = useLoginCtx()
@@ -24,7 +19,7 @@ export const LoginReset = () => {
 	return (
 		<Section
 			eyebrow="Check your inbox"
-			id={ `${pageID}-${screen}` }
+			id={ idx.section }
 			layout="content-form"
 			tabIndex={ -1 }
 			title="Reset link sent"
@@ -35,18 +30,17 @@ export const LoginReset = () => {
 
 			<Form
 				action={ action }
-				id={ FORM_ID }
+				id={ idx.form }
 				onSubmit={ waitUntilExpiry }
 				pending={ pending }
 				state={ {
-					errors: state.errors,
-					formError: state.formError,
+					...state,
 					message: resent && waiting ? `We sent another link to ${email}.` : undefined,
 				} }
 			>
 				<Field
 					readonly
-					id={ `${FIELD_ID}-email` }
+					id={ `${idx.field}-email` }
 					label="Email"
 					labelPosition="last"
 					layout="inline"
@@ -71,7 +65,7 @@ export const LoginReset = () => {
 					<Button
 						unstyled data-link
 						attributes={ { aria: {
-							describedby: waiting ? `${TIMER_ID}-text` : undefined
+							describedby: waiting ? `${idx.timer}-text` : undefined
 						} } }
 						className="authentication__resend"
 						disabled={ waiting }
@@ -82,7 +76,7 @@ export const LoginReset = () => {
 						{ waiting && (
 							<Countdown
 								from={ 30 }
-								id={ TIMER_ID }
+								id={ idx.timer }
 								onComplete={ endWait }
 							/>
 						) }

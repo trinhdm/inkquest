@@ -20,13 +20,13 @@ const AUTH_OPTIONS: AuthOption[] = [
 		label: 'Email me a magic link',
 	},
 	{
-		name: 'tel',
+		name: 'phone',
 		icon: 'phone',
 		label: 'Use phone number',
 	},
 ]
 
-export const AuthChoices = () => {
+export const SignupOptions = () => {
 	const { handleSignupMethod, method, signup } = useSignupCtx()
 
 	return AUTH_OPTIONS.map(({ icon, label, name }) => (
@@ -45,4 +45,4 @@ export const AuthChoices = () => {
 	))
 }
 
-AuthChoices.displayName = 'AuthChoices'
+SignupOptions.displayName = 'SignupOptions'

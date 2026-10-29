@@ -6,16 +6,11 @@ import { Form } from '@/components/form/Form'
 import { Icon } from '@/components/core/Icon'
 import { Section } from '@/components/layout/Section'
 
-const FORM_ID = 'magic',
-	FIELD_ID = `${FORM_ID}-field`,
-	TIMER_ID = `${FORM_ID}-timer`
-
 export const LoginMagic = () => {
 	const {
-		endWait,
-		handleLoginFlow,
+		endWait, handleLoginFlow,
 		magic: { action, pending, state },
-		pageID, resent, screen, waiting,
+		idx, resent, waiting,
 		waitUntilExpiry,
 	} = useLoginCtx()
 
@@ -24,7 +19,7 @@ export const LoginMagic = () => {
 	return (
 		<Section
 			eyebrow="Magic Link"
-			id={ `${pageID}-${screen}` }
+			id={ idx.section }
 			layout="content-form"
 			tabIndex={ -1 }
 			title="Check your inbox"
@@ -35,18 +30,17 @@ export const LoginMagic = () => {
 
 			<Form
 				action={ action }
-				id={ FORM_ID }
+				id={ idx.form }
 				onSubmit={ waitUntilExpiry }
 				pending={ pending }
 				state={ {
-					errors: state.errors,
-					formError: state.formError,
+					...state,
 					message: resent && waiting ? `We sent another link to ${email}.` : undefined,
 				} }
 			>
 				<Field
 					readonly
-					id={ `${FIELD_ID}-email` }
+					id={ `${idx.field}-email` }
 					label="Email"
 					labelPosition="last"
 					layout="inline"
@@ -72,7 +66,7 @@ export const LoginMagic = () => {
 					<Button
 						unstyled data-link
 						attributes={ { aria: {
-							describedby: waiting ? `${TIMER_ID}-text` : undefined
+							describedby: waiting ? `${idx.timer}-text` : undefined
 						} } }
 						className="authentication__resend"
 						disabled={ waiting }
@@ -83,7 +77,7 @@ export const LoginMagic = () => {
 						{ waiting && (
 							<Countdown
 								from={ 30 }
-								id={ TIMER_ID }
+								id={ idx.timer }
 								onComplete={ endWait }
 							/>
 						) }

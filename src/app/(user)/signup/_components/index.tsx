@@ -17,22 +17,21 @@ const SCREENS = {
 } satisfies Record<SignupScreen, ComponentType>
 
 export const SignupBase = () => {
-	const { screen, ...flow } = useSignupFlow()
+	const { idx, screen, ...flow } = useSignupFlow(SIGNUP_PAGE_DATA)
 	const lastScreen = useRef(screen)
 
 	useEffect(() => {				//	on screen change, moves focus to new screen's first field
 		if (lastScreen.current === screen) return
-		lastScreen.current = screen
 
-		const id = `${SIGNUP_PAGE_DATA.id}-${screen}`,
-			section = document.getElementById(id)
+		lastScreen.current = screen
+		const section = document.getElementById(idx.section)
 
 		if (!section?.contains(document.activeElement))
 			section?.focus()
-	}, [screen])
+	}, [idx.section, screen])
 
 	const Screen = SCREENS[screen],
-		ctxValues = { data: SIGNUP_PAGE_DATA, screen, ...flow }
+		ctxValues = { data: SIGNUP_PAGE_DATA, idx, screen, ...flow }
 
 	return (
 		<SignupProvider value={ ctxValues }>

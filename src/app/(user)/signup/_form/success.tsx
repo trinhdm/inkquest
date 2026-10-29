@@ -6,29 +6,26 @@ import { Form } from '@/components/form/Form'
 import { Icon } from '@/components/core/Icon'
 import { Section } from '@/components/layout/Section'
 
-const FORM_ID = 'signup-success',
-	FIELD_ID = `${FORM_ID}-field`
-
 export const SignupSuccess = () => {
 	const {
-		method, pageID, screen, to,
+		idx, method, to,
 		waitUntilExpiry,
 	} = useSignupCtx()
 
 	return (
 		<Section
 			eyebrow="Success!"
-			id={ `${pageID}-${screen}` }
+			id={ idx.section }
 			layout="content-form"
 			tabIndex={ -1 }
 			title="Account created."
 		>
 			You&apos;re in. A two-minute setup tunes your feed, search, and profile.
 
-			<Form id={ FORM_ID } onSubmit={ waitUntilExpiry }>
+			<Form id={ idx.form } onSubmit={ waitUntilExpiry }>
 				<Field
 					readonly
-					id={ `${FIELD_ID}-to` }
+					id={ `${idx.field}-to` }
 					label={ capitalize(method) }
 					layout="inline"
 				>

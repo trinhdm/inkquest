@@ -1,5 +1,6 @@
 import { PASSWORD_RULES } from './signup.data'
 import type { SignupMethod } from './signup.context'
+import type { SignupValues } from './schema'
 
 const listFormat = new Intl.ListFormat('en', { type: 'conjunction' })
 
@@ -14,4 +15,8 @@ export const describeMissing = (value: string) => {
 }
 
 export const maskTo = (method: SignupMethod, to: string) =>
-	method === 'tel' ? `•••-${to.slice(-4)}` : to
+	method === 'phone' ? `•••-${to.slice(-4)}` : to
+
+
+export const pickTo = (start: SignupValues) =>
+	start.method === 'phone' ? start.tel : start.email

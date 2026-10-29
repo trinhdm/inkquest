@@ -7,15 +7,11 @@ import { Icon } from '@/components/core/Icon'
 import { Section } from '@/components/layout/Section'
 import { PLACEHOLDER_EMAIL } from '@/lib/form'
 
-const FORM_ID = 'login',
-	FIELD_ID = `${FORM_ID}-field`
-
 export const LoginRoot = () => {
 	const {
 		handleLoginFlow,
 		formReply: { pending, state },
-		login, magic,
-		pageID, screen,
+		idx, login, magic, waiting,
 	} = useLoginCtx()
 
 	const ForgotPass = (
@@ -30,7 +26,7 @@ export const LoginRoot = () => {
 	return (
 		<Section
 			eyebrow="Log In"
-			id={ `${pageID}-${screen}` }
+			id={ idx.section }
 			layout="content-form"
 			tabIndex={ -1 }
 			title="Welcome back."
@@ -39,7 +35,7 @@ export const LoginRoot = () => {
 
 			<Form
 				action={ login.action }
-				id={ FORM_ID }
+				id={ idx.form }
 				pending={ pending }
 				state={ state }
 				validate={ validateLoginForm }
@@ -47,7 +43,7 @@ export const LoginRoot = () => {
 				<Field
 					required
 					disabled={ pending }
-					id={ `${FIELD_ID}-email` }
+					id={ `${idx.field}-email` }
 					label="Email"
 				>
 					<Field.Input
@@ -62,7 +58,7 @@ export const LoginRoot = () => {
 				<Field
 					required
 					disabled={ pending }
-					id={ `${FIELD_ID}-password` }
+					id={ `${idx.field}-password` }
 					label="Password"
 					caption={ ForgotPass }
 				>
@@ -79,6 +75,7 @@ export const LoginRoot = () => {
 						fullWidth
 						animate="right"
 						className="authentication__email"
+						disabled={ waiting }
 						loading={ login.pending }
 						type="submit"
 					>
@@ -117,6 +114,7 @@ export const LoginRoot = () => {
 						<Button
 							unstyled data-link
 							data-intent="magic"
+							disabled={ waiting }
 							formAction={ magic.action }
 							loading={ magic.pending }
 							type="submit"

@@ -7,20 +7,16 @@ import { Icon } from '@/components/core/Icon'
 import { Section } from '@/components/layout/Section'
 import { PLACEHOLDER_EMAIL } from '@/lib/form'
 
-const FORM_ID = 'forgot',
-	FIELD_ID = `${FORM_ID}-field`
-
 export const LoginForgot = () => {
 	const {
-		handleLoginFlow,
-		pageID, screen,
+		handleLoginFlow, idx,
 		reset: { action, pending, state },
 	} = useLoginCtx()
 
 	return (
 		<Section
 			eyebrow="Reset password"
-			id={ `${pageID}-${screen}` }
+			id={ idx.section }
 			layout="content-form"
 			tabIndex={ -1 }
 			title="Forgot your password?"
@@ -29,7 +25,7 @@ export const LoginForgot = () => {
 
 			<Form
 				action={ action }
-				id={ FORM_ID }
+				id={ idx.form }
 				pending={ pending }
 				state={ state }
 				validate={ validateReset }
@@ -37,7 +33,7 @@ export const LoginForgot = () => {
 				<Field
 					required
 					disabled={ pending }
-					id={ `${FIELD_ID}-email` }
+					id={ `${idx.field}-email` }
 					label="Email"
 				>
 					<Field.Input

@@ -1,14 +1,16 @@
 import { useState} from 'react'
 import { useForm, useOnReply } from '@/hooks/form'
+import { getAuthFormIDs } from '../../_utils/helpers'
 import { initFormState } from '@/lib/form'
 import { login, magicLogin, requestReset } from '../_utils/actions'
+import type { LoginPageData } from './login.data'
 
 import type {
 	LoginFlow, LoginScreen,
 	ReplyFromScreen, SendLinkScreen,
 } from './login.context'
 
-export const useLoginFlow = (): LoginFlow => {
+export const useLoginFlow = ({ id: pageID }: LoginPageData): LoginFlow => {
 	const [screen, setScreen] = useState<LoginScreen>('email')
 	const [replyFrom, setReplyFrom] = useState<ReplyFromScreen>('email')
 	const [resent, setResent] = useState<boolean>(false)
@@ -33,13 +35,11 @@ export const useLoginFlow = (): LoginFlow => {
 
 	useOnReply(magicForm.state, state => {
 		setReplyFrom('magic')
-		if (!state.success) return
-		handleScreen('magic')
+		if (state.success) handleScreen('magic')
 	})
 
 	useOnReply(resetForm.state, state => {
-		if (!state.success) return
-		handleScreen('reset')
+		if (state.success) handleScreen('reset')
 	})
 
 	return {
@@ -51,7 +51,11 @@ export const useLoginFlow = (): LoginFlow => {
 		magic: magicForm,
 		reset: resetForm,
 
-		formReply: replyFrom === 'magic' ? magicForm : loginForm,
+		formReply: {
+			...(replyFrom === 'magic' ? magicForm : loginForm),
+			pending: loginForm.pending || magicForm.pending,
+		},
+		idx: getAuthFormIDs(pageID, screen),
 		screen: loginForm.state.success ? 'success' : screen,
 		resent,
 		waiting,
