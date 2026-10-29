@@ -1,44 +1,32 @@
 'use server'
 
 import {
-	actionable, pause,
-	pickValues, showMessage,
-	BASE_ERROR,
+	action,
+	BASE_ERROR, MOCK_DATA,
 	type FormState,
 } from '@/lib/form'
 
-import { magicSchema, resendSchema, signupSchema, verifySchema } from './schema'
-import { maskTo } from './helpers'
-import { MOCK_DEMO } from './signup.data'
+import { maskTo, pickTo } from './helpers'
+import { resendSchema, signupSchema, verifySchema } from './schema'
 
-export const signup = async (_prev: FormState, data: FormData): Promise<FormState> => {
-	const values = pickValues(data, ['email', 'magic', 'tel']),
-		base = { errors: {}, values }
+const FAIL_TO: string[] = [MOCK_DATA.failEmail, MOCK_DATA.failTel]
 
-	try {
-		const result = signupSchema.safeParse(Object.fromEntries(data))
+const start = action(signupSchema, {
+	names: ['email', 'method', 'tel'],
+	conditions: [{
+		check: data => FAIL_TO.includes(pickTo(data)),
+		formError: BASE_ERROR,
+	}],
+	onSuccess: (data, values) => ({
+		values: { ...values, to: maskTo(data.method, pickTo(data)) },
+	}),
+})
 
-		if (!result.success) {
-			const errors = showMessage(result.error),
-				formError = errors.method ? BASE_ERROR : undefined
-			return { errors, formError, values }
-		}
-
-		await pause(800)
-
-		const start = result.data,
-			to = start.method === 'tel' ? start.tel : start.email
-
-		if (to === MOCK_DEMO.failEmail || to === MOCK_DEMO.failTel)
-			return { ...base, formError: BASE_ERROR }
-
-		return { ...base, success: true, values: { ...values, to: maskTo(start.method, to) } }
-	} catch {
-		return { ...base, formError: BASE_ERROR }
-	}
+export const signup = async (prev: FormState, data: FormData): Promise<FormState> => {
+	const state = await start(prev, data)
+	return state.errors.method ? { ...state, formError: BASE_ERROR } : state
+	//	`method` is a hidden field, so its error shows as a form error instead
 }
 
-export const magicSignup = actionable(magicSchema)
-export const resendSignup = actionable(resendSchema)
-
-export const verify = actionable(verifySchema)
+export const resend = action(resendSchema)
+export const verify = action(verifySchema)

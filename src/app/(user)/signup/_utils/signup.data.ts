@@ -5,14 +5,6 @@ export const SIGNUP_METHODS = ['email', 'magic', 'tel'] as const
 export const CODE_EXPIRY_SECONDS = 10 * 60
 export const RESEND_COOLDOWN_SECONDS = 30
 
-export const MOCK_DEMO = {
-	failEmail: 'fail@example.com',
-	failResend: 'resend-fail@example.com',
-	failTel: '+10000000000',		//	what telRule makes of '(000) 000-0000'
-	wrongCode: '000000',
-	expiredCode: '111111',
-} as const
-
 interface PasswordCriteria {
 	id: string
 	label: string
