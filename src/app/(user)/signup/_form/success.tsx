@@ -1,8 +1,6 @@
 import { useSignupCtx } from '../_utils/signup.context'
 import { AuthForm } from '../../_components/AuthForm'
-import { Button } from '@/components/core/Button'
 import { Field } from '@/components/form/Field'
-import { Icon } from '@/components/core/Icon'
 
 export const SignupSuccess = () => {
 	const {
@@ -12,18 +10,12 @@ export const SignupSuccess = () => {
 
 	const isPhone = method === 'phone'
 
-	const authFormProps = {
-		form: { onSubmit: waitUntilExpiry },
-		header: {
-			title: 'Account created.',
-			eyebrow: 'Success!',
-			description: `You're in. A two-minute setup tunes your feed, search, and profile.`,
-		},
-		idx,
-	} satisfies Omit<AuthForm.Props, 'children'>
-
 	return (
-		<AuthForm { ...authFormProps }>
+		<AuthForm idx={ idx } onSubmit={ waitUntilExpiry }>
+			<AuthForm.Header eyebrow="Success!" title="Account created.">
+				You&apos;re in. A two-minute setup tunes your feed, search, and profile.
+			</AuthForm.Header>
+
 			{ !!destination && (
 				<Field
 					readonly
@@ -39,14 +31,13 @@ export const SignupSuccess = () => {
 				</Field>
 			) }
 
-			<Button animate="right" href="/community/feed">
-				Start setup
-				<Button.Section right><Icon type="arrow-right" /></Button.Section>
-			</Button>
+			<AuthForm.Footer>
+				<AuthForm.Continue href="/community/feed">Start setup</AuthForm.Continue>
 
-			<div className="authentication__note">
-				<p>Setup takes about two minutes — styles, location, and (for artists) your shop.</p>
-			</div>
+				<AuthForm.Note>
+					<p>Setup takes about two minutes — styles, location, and (for artists) your shop.</p>
+				</AuthForm.Note>
+			</AuthForm.Footer>
 		</AuthForm>
 	)
 }

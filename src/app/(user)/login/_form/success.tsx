@@ -1,8 +1,6 @@
 import { useLoginCtx } from '../_utils/login.context'
 import { AuthForm } from '../../_components/AuthForm'
-import { Button } from '@/components/core/Button'
 import { Field } from '@/components/form/Field'
-import { Icon } from '@/components/core/Icon'
 
 export const LoginSuccess = () => {
 	const {
@@ -10,18 +8,12 @@ export const LoginSuccess = () => {
 		idx, waitUntilExpiry,
 	} = useLoginCtx()
 
-	const authFormProps = {
-		form: { onSubmit: waitUntilExpiry },
-		header: {
-			title: 'Logged in.',
-			eyebrow: 'Success!',
-			description: `Welcome back — your feed is where you left it.`,
-		},
-		idx,
-	} satisfies Omit<AuthForm.Props, 'children'>
-
 	return (
-		<AuthForm { ...authFormProps }>
+		<AuthForm idx={ idx } onSubmit={ waitUntilExpiry }>
+			<AuthForm.Header eyebrow="Success!" title="Logged in.">
+				Welcome back — your feed is where you left it.
+			</AuthForm.Header>
+
 			{ !!state.values.email && (
 				<Field
 					readonly
@@ -37,10 +29,9 @@ export const LoginSuccess = () => {
 				</Field>
 			) }
 
-			<Button animate="right" href="/community/feed">
-				Go to your feed
-				<Button.Section right><Icon type="arrow-right" /></Button.Section>
-			</Button>
+			<AuthForm.Footer>
+				<AuthForm.Continue href="/community/feed">Go to your feed</AuthForm.Continue>
+			</AuthForm.Footer>
 		</AuthForm>
 	)
 }

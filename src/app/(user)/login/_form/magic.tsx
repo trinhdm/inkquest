@@ -1,9 +1,6 @@
 import { useLoginCtx } from '../_utils/login.context'
 import { AuthForm } from '../../_components/AuthForm'
-import { Button } from '@/components/core/Button'
 import { Field } from '@/components/form/Field'
-import { Icon } from '@/components/core/Icon'
-import { ResendTimer } from '../../_components/ResendTimer'
 
 export const LoginMagic = () => {
 	const {
@@ -13,18 +10,12 @@ export const LoginMagic = () => {
 		waitUntilExpiry,
 	} = useLoginCtx()
 
-	const authFormProps = {
-		form: { ...magic, onSubmit: waitUntilExpiry },
-		header: {
-			title: 'Check your inbox',
-			eyebrow: 'Magic Link',
-			description: <>We emailed a sign-in link to { destination }. It expires in 15 minutes.</>,
-		},
-		idx,
-	} satisfies Omit<AuthForm.Props, 'children'>
-
 	return (
-		<AuthForm { ...authFormProps }>
+		<AuthForm { ...magic } idx={ idx } onSubmit={ waitUntilExpiry }>
+			<AuthForm.Header eyebrow="Magic Link" title="Check your inbox">
+				We emailed a sign-in link to { destination }. It expires in 15 minutes.
+			</AuthForm.Header>
+
 			<Field
 				readonly
 				id={ `${idx.field}-email` }
@@ -40,17 +31,10 @@ export const LoginMagic = () => {
 				/>
 			</Field>
 
-			<Button.Group hasPriority={ false }>
-				<Button
-					animate="left"
-					onClick={ () => handleLoginFlow('begin') }
-					variant="ghost"
-				>
-					Back
-					<Button.Section left><Icon type="arrow-left" /></Button.Section>
-				</Button>
+			<AuthForm.Footer>
+				<AuthForm.Back onClick={ () => handleLoginFlow('begin') } />
 
-				<ResendTimer
+				<AuthForm.Resend
 					idx={ idx }
 					loading={ magic.pending }
 					name="resent"
@@ -58,7 +42,7 @@ export const LoginMagic = () => {
 					value="true"
 					waiting={ waiting }
 				/>
-			</Button.Group>
+			</AuthForm.Footer>
 		</AuthForm>
 	)
 }

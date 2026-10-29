@@ -1,52 +1,116 @@
+import {
+	isValidElement, Children,
+	type ComponentProps,
+	type ReactElement, type ReactNode,
+} from 'react'
+
+import {
+	AuthBack, AuthContinue, AuthFooter,
+	AuthHeader, AuthNote, AuthResend,
+	AuthSSO, AuthSubmit,
+} from './_parts'
+
+import { verifyChildren } from '@/lib/component/children'
 import { Form } from '@/components/form/Form'
 import { Section } from '@/components/layout/Section'
 import type { AuthFormIDs } from '../_utils/types'
 import type { FormResults } from '@/lib/form'
 
+const NAME = 'AuthForm' as const
+
+const SUBCOMPONENTS = {
+	Back:		AuthBack,
+	Continue:	AuthContinue,
+	Footer:		AuthFooter,
+	Header:		AuthHeader,
+	Note:		AuthNote,
+	Resend:		AuthResend,
+	SSO:		AuthSSO,
+	Submit:		AuthSubmit,
+} as const
+
 type AuthFormArgs =
 	& Partial<FormResults>
 	& Pick<Form.Props, 'onSubmit' | 'validate'>
 
-type AuthHeaderArgs = {
-	description?: Section.Props['children']
-	eyebrow?: Section.Props['eyebrow']
-	title: NonNullable<Section.Props['title']>
-}
-
-interface AuthFormProps {
+interface AuthFormProps
+	extends AuthFormArgs {
 	children: Form.Props['children']
-	form?: AuthFormArgs
-	header: AuthHeaderArgs
 	idx: AuthFormIDs
 }
 
-export const AuthForm = ({
+const sortAuthSlots = (children: ReactNode) => {
+	const fields: ReactNode[] = []
+	let footer: ReactElement<AuthFooter.Props> | undefined,
+		header: ReactElement<AuthHeader.Props> | undefined
+
+	Children.toArray(children).forEach(child => {
+		if (isValidElement<AuthHeader.Props>(child) && child.type === AuthHeader) {
+			if (!header) header = child
+			else verifyChildren({ name: NAME, repeated: [child] })
+			return
+		}
+
+		if (isValidElement<AuthFooter.Props>(child) && child.type === AuthFooter) {
+			if (!footer) footer = child
+			else verifyChildren({ name: NAME, repeated: [child] })
+			return
+		}
+
+		fields.push(child)
+	})
+
+	verifyChildren({
+		children: header,
+		name: { childName: 'AuthHeader', parentName: NAME },
+		total: 1,
+	})
+
+	return { fields, footer, header }
+}
+
+export const AuthFormRoot = ({
+	action,
 	children,
-	header,
-	form,
 	idx,
+	onSubmit,
+	pending,
+	state,
+	validate,
 }: AuthFormProps) => {
-	const { description, ...headerProps } = header
-	const formProps = form ?? {}
+	const { fields, footer, header } = sortAuthSlots(children)
+	const { children: description, eyebrow, title } = header?.props ?? {}
 
 	return (
 		<Section
-			{ ...headerProps }
+			eyebrow={ eyebrow }
 			id={ idx.section }
 			layout="content-form"
 			tabIndex={ -1 }
+			title={ title }
 		>
-			{ description }
+			{ !!description && <>{ description }</> }
 
-			<Form { ...formProps } id={ idx.form }>
-				{ children }
+			<Form
+				action={ action }
+				id={ idx.form }
+				onSubmit={ onSubmit }
+				pending={ pending }
+				state={ state }
+				validate={ validate }
+			>
+				{ fields }
+				{ footer }
 			</Form>
 		</Section>
 	)
 }
 
-AuthForm.displayName = 'AuthForm'
+AuthFormRoot.displayName = NAME
+export const AuthForm = Object.assign(AuthFormRoot, SUBCOMPONENTS)
 
 export declare namespace AuthForm {
-	export type Props = AuthFormProps
+	type Parts = typeof SUBCOMPONENTS
+	export type Props<K extends keyof Parts | 'Root' = 'Root'> =
+		K extends keyof Parts ? ComponentProps<Parts[K]> : AuthFormProps
 }

@@ -1,9 +1,6 @@
 import { useSignupCtx } from '../_utils/signup.context'
 import { AuthForm } from '../../_components/AuthForm'
-import { Button } from '@/components/core/Button'
 import { Field } from '@/components/form/Field'
-import { Icon } from '@/components/core/Icon'
-import { ResendTimer } from '../../_components/ResendTimer'
 
 export const SignupMagic = () => {
 	const {
@@ -13,23 +10,18 @@ export const SignupMagic = () => {
 		waitUntilExpiry,
 	} = useSignupCtx()
 
-	const authFormProps = {
-		form: {
-			action: resend.action,
-			onSubmit: waitUntilExpiry,
-			pending: resend.pending,
-			state: reply.state,
-		},
-		header: {
-			title: 'Check your inbox',
-			eyebrow: 'Magic Link',
-			description: <>We emailed a sign-in link to { destination }. It expires in 15 minutes.</>,
-		},
-		idx,
-	} satisfies Omit<AuthForm.Props, 'children'>
-
 	return (
-		<AuthForm { ...authFormProps }>
+		<AuthForm
+			action={ resend.action }
+			idx={ idx }
+			onSubmit={ waitUntilExpiry }
+			pending={ resend.pending }
+			state={ reply.state }
+		>
+			<AuthForm.Header eyebrow="Magic Link" title="Check your inbox">
+				We emailed a sign-in link to { destination }. It expires in 15 minutes.
+			</AuthForm.Header>
+
 			<input name="destination" type="hidden" value={ destination } />
 			<input name="method" type="hidden" value={ method } />
 
@@ -48,23 +40,16 @@ export const SignupMagic = () => {
 				/>
 			</Field>
 
-			<Button.Group hasPriority={ false }>
-				<Button
-					animate="left"
-					onClick={ goBack }
-					variant="ghost"
-				>
-					Back
-					<Button.Section left><Icon type="arrow-left" /></Button.Section>
-				</Button>
+			<AuthForm.Footer>
+				<AuthForm.Back onClick={ goBack } />
 
-				<ResendTimer
+				<AuthForm.Resend
 					idx={ idx }
-					onComplete={ endWait }
 					loading={ resend.pending }
+					onComplete={ endWait }
 					waiting={ waiting }
 				/>
-			</Button.Group>
+			</AuthForm.Footer>
 		</AuthForm>
 	)
 }

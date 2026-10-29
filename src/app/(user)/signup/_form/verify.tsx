@@ -3,8 +3,6 @@ import { validateResend } from '../_utils/schema'
 import { AuthForm } from '../../_components/AuthForm'
 import { Button } from '@/components/core/Button'
 import { Field } from '@/components/form/Field'
-import { Icon } from '@/components/core/Icon'
-import { ResendTimer } from '../../_components/ResendTimer'
 
 const COPY = {
 	email: {
@@ -30,23 +28,18 @@ export const SignupVerify = () => {
 
 	const copy = COPY[method === 'phone' ? 'phone' : 'email']
 
-	const authFormProps = {
-		form: {
-			action: verify.action,
-			pending: reply.pending,
-			state: reply.state,
-			validate: validateResend,
-		},
-		header: {
-			title: copy.title,
-			eyebrow: 'Verify',
-			description: <>We sent a 6-digit code to { destination }. Enter it below.</>,
-		},
-		idx,
-	} satisfies Omit<AuthForm.Props, 'children'>
-
 	return (
-		<AuthForm { ...authFormProps }>
+		<AuthForm
+			action={ verify.action }
+			idx={ idx }
+			pending={ reply.pending }
+			state={ reply.state }
+			validate={ validateResend }
+		>
+			<AuthForm.Header eyebrow="Verify" title={ copy.title }>
+				We sent a 6-digit code to { destination }. Enter it below.
+			</AuthForm.Header>
+
 			<input name="destination" type="hidden" value={ destination } />
 			<input name="method" type="hidden" value={ method } />
 
@@ -116,42 +109,29 @@ export const SignupVerify = () => {
 				/>
 			</Field>
 
-			<Button.Group hasPriority={ false }>
-				<Button
-					animate="left"
-					onClick={ goBack }
-					variant="ghost"
-				>
-					Back
-					<Button.Section left><Icon type="arrow-left" /></Button.Section>
-				</Button>
-				<Button
-					animate="right"
-					loading={ verify.pending }
-					type="submit"
-				>
+			<AuthForm.Footer>
+				<AuthForm.Back onClick={ goBack } />
+
+				<AuthForm.Submit loading={ verify.pending }>
 					Verify
-					<Button.Section right><Icon type="arrow-right" /></Button.Section>
-				</Button>
-			</Button.Group>
+				</AuthForm.Submit>
 
-			<div className="authentication__note">
-				<ResendTimer
-					data-intent="resend"
-					formAction={ resend.action }
-					idx={ idx }
-					loading={ resend.pending }
-					noun="code"
-					onComplete={ endWait }
-					waiting={ waiting }
-				/>
+				<AuthForm.Note>
+					<AuthForm.Resend
+						data-intent="resend"
+						formAction={ resend.action }
+						idx={ idx }
+						loading={ resend.pending }
+						noun="code"
+						onComplete={ endWait }
+						waiting={ waiting }
+					/>
 
-				<span data-dot>·</span>
-
-				<Button unstyled data-link onClick={ goBack }>
-					{ copy.wrong }
-				</Button>
-			</div>
+					<Button unstyled data-link onClick={ goBack }>
+						{ copy.wrong }
+					</Button>
+				</AuthForm.Note>
+			</AuthForm.Footer>
 		</AuthForm>
 	)
 }

@@ -2,7 +2,6 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { useSignupCtx, type SignupMethod } from '../_utils/signup.context'
 import { validateSignup } from '../_utils/schema'
-import { AuthFooter } from '../../_components/AuthFooter'
 import { AuthForm } from '../../_components/AuthForm'
 import { Field } from '@/components/form/Field'
 import { PasswordRules } from '../_components/password'
@@ -29,32 +28,18 @@ export const SignupRoot = () => {
 		setPassword('')
 	}
 
-	const authFormProps = {
-		form: {
-			action, pending, state,
-			validate: validateSignup,
-		},
-		header: {
-			title: 'Join Inkquest.',
-			eyebrow: 'Sign Up',
-			description: 'One account for finding artists, bidding on flash, and booking.',
-		},
-		idx,
-	} satisfies Omit<AuthForm.Props, 'children'>
-
-	const authFooterProps = {
-		button: {
-			disabled: waiting,
-			label: SUBMIT_LABELS[method],
-			loading: pending,
-			name: 'method',
-			value: method,
-		},
-		sso: { verb: 'continue' },
-	} satisfies Omit<AuthFooter.Props, 'children'>
-
 	return (
-		<AuthForm { ...authFormProps }>
+		<AuthForm
+			action={ action }
+			idx={ idx }
+			pending={ pending }
+			state={ state }
+			validate={ validateSignup }
+		>
+			<AuthForm.Header eyebrow="Sign Up" title="Join Inkquest.">
+				One account for finding artists, bidding on flash, and booking.
+			</AuthForm.Header>
+
 			<input name="method" type="hidden" value={ method } />
 
 			<Field
@@ -107,9 +92,23 @@ export const SignupRoot = () => {
 				</>
 			) }
 
-			<AuthFooter { ...authFooterProps }>
-				<p>By creating an account, you confirm you&apos;re 18+ and agree to the <Link href="/terms" data-link>Terms</Link> and <Link href="/privacy-policy" data-link>Privacy Policy</Link>.</p>
-			</AuthFooter>
+			<AuthForm.Footer>
+				<AuthForm.Submit
+					fullWidth
+					disabled={ waiting }
+					loading={ pending }
+					name="method"
+					value={ method }
+				>
+					{ SUBMIT_LABELS[method] }
+				</AuthForm.Submit>
+
+				<AuthForm.SSO verb="continue" />
+
+				<AuthForm.Note>
+					<p>By creating an account, you confirm you&apos;re 18+ and agree to the <Link href="/terms" data-link>Terms</Link> and <Link href="/privacy-policy" data-link>Privacy Policy</Link>.</p>
+				</AuthForm.Note>
+			</AuthForm.Footer>
 		</AuthForm>
 	)
 }
