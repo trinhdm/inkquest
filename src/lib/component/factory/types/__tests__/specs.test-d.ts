@@ -26,6 +26,7 @@ import type {
 } from '../specs.types'
 
 import type { AsPolymorphic, IsPolymorphic } from '../props.types'
+import type { polymorphic } from '../../polymorphic'
 
 /** Exact equality — defeats the usual bidirectional-assignability fudge. */
 type Equal<A, B> =
@@ -126,6 +127,58 @@ const _compoundStyles: Specs<object> = { isCompound: true, props: {}, styles: { 
 
 // @ts-expect-error compound specs cannot declare a default tag
 const _compoundDefaultAs: Specs<object> = { isCompound: true, props: {}, defaults: { as: 'div' } }
+
+
+// ---- Group specs ------------------------------------------------------
+
+// Positive control: a group spec may declare a default tag, unlike a compound one.
+const _validGroup: Specs<{ onClick?: () => void }> = {
+	isGroup: true,
+	props: {},
+	defaults: { as: 'div' },
+}
+
+// a group with a default tag is still polymorphic
+type GroupSpec = {
+	defaults: { as: 'div' }
+	isGroup: true
+	props: { onClick?: () => void }
+}
+type _GroupIsPoly = Expect<Equal<IsPolymorphic<GroupSpec>, true>>
+type _GroupAsOpen = Expect<Equal<AsPolymorphic<GroupSpec>, { as?: 'div' }>>
+
+// @ts-expect-error a spec cannot be both a group and a compound part
+const _groupAndCompound: Specs<object> = { isGroup: true, isCompound: true, props: {} }
+
+// @ts-expect-error group specs cannot declare subcomponents
+const _groupSubcomponents: Specs<object> = { isGroup: true, props: {}, subcomponents: { Item: 1 } }
+
+// @ts-expect-error `isGroup` only accepts `true` or `false`
+const _groupNotBoolean: Specs<object> = { isGroup: 'yes', props: {} }
+
+
+// ---- SpecsConstraint (the bound on `polymorphic<S>`) ------------------
+
+type ConstrainedSpec = {
+	defaults: { as: 'div'; props: 'size' }
+	props: { size?: 'sm' | 'lg' }
+}
+
+type UnknownDefaultSpec = {
+	defaults: { as: 'div'; props: 'nope' }
+	props: { size?: 'sm' | 'lg' }
+}
+
+// Positive control: instantiating `polymorphic` with a spec whose default
+// keys all exist in its props compiles. If the import went stale, the
+// negative below would turn into a different, unrelated error.
+type _ConstraintAccepts = typeof polymorphic<ConstrainedSpec>
+
+// @ts-expect-error `defaults.props` may only name keys that exist in `props`
+type _ConstraintRejects = typeof polymorphic<UnknownDefaultSpec>
+
+// a spec with no defaults has nothing to check
+type _ConstraintNoDefaults = typeof polymorphic<PlainSpec>
 
 
 // ---- Token specs ------------------------------------------------------

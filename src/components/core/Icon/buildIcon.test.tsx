@@ -21,14 +21,14 @@ describe('buildIcon', () => {
 			['instagram', '-1.33 -1.33 26.66 26.66', '2.222'],
 			['tiktok', '0.833 1.333 21.333 21.333', '1.777'],
 			['x', '1.06 0.86 23.28 23.28', undefined],
-		] as const)('draws %s as a labelled image with its own viewBox', (type, viewBox, strokeWidth) => {
+		] as const)('draws %s as a labelled glyph with its own viewBox', (type, viewBox, strokeWidth) => {
 			const svg = renderGlyph({ type }, 'svg').querySelector('svg')
 
 			expect(svg).toBeInTheDocument()
-			expect(svg).toHaveAttribute('role', 'img')
+			expect(svg).not.toHaveAttribute('role')
 			expect(svg).toHaveAttribute('aria-label', `${type} icon`)
 			expect(svg).toHaveAttribute('viewBox', viewBox)
-			expect(svg?.querySelector('title')).toHaveTextContent(type)
+			expect(svg?.querySelector('title')).not.toBeInTheDocument()
 			expect(svg?.querySelector('path, rect, circle')).toBeInTheDocument()
 			if (strokeWidth) expect(svg).toHaveAttribute('stroke-width', strokeWidth)
 		})

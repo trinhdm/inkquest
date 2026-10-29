@@ -36,9 +36,10 @@ describe('Progress', () => {
 	})
 
 	describe('defaults', () => {
-		it('registers a native progress element, 3px tall, full width, out of 100', () => {
+		it('registers a native progress element, fixed to the top, 3px tall, full width, out of 100', () => {
 			expect(getDefaultProps('Progress')).toEqual({
-				as: 'progress', height: '3px', max: 100, width: '100%',
+				anchor: 'top', as: 'progress', height: '3px',
+				layout: 'fixed', max: 100, width: '100%',
 			})
 		})
 	})

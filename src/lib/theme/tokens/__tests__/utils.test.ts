@@ -56,7 +56,7 @@ describe('byScheme', () => {
 		it('returns every state hue', () => {
 			const hues = byScheme(dark).modColor('red')
 			expect(Object.keys(hues).sort()).toEqual(
-				['active', 'base', 'bright', 'dim', 'hover', 'muted', 'shade', 'tint']
+				['active', 'base', 'bright', 'dim', 'dull', 'hover', 'muted', 'shade', 'tint']
 			)
 		})
 
@@ -84,7 +84,7 @@ describe('byScheme', () => {
 		it('mixes tint/bright toward white and shade/dim toward black on dark', () => {
 			const hues = byScheme(dark).modColor('#fff')
 			expect(hues.tint).toBe(`color-mix(in oklab, ${base.white()} 15%, #fff)`)
-			expect(hues.bright).toBe(`color-mix(in oklab, ${base.white()} 50%, #fff)`)
+			expect(hues.bright).toBe(`color-mix(in oklab, ${base.white()} 30%, #fff)`)
 			expect(hues.shade).toBe(`color-mix(in oklab, ${base.black()} 30%, #fff)`)
 			expect(hues.dim).toBe(`color-mix(in oklab, ${base.black()} 80%, #fff)`)
 		})
@@ -95,9 +95,12 @@ describe('byScheme', () => {
 			expect(hues.shade).toBe(`color-mix(in oklab, ${base.white()} 30%, #fff)`)
 		})
 
-		it('mixes muted with the page background on both schemes', () => {
-			expect(byScheme(dark).modColor('#fff').muted).toBe(`color-mix(in oklab, ${PAGE} 85%, #fff)`)
-			expect(byScheme(light).modColor('#fff').muted).toBe(`color-mix(in oklab, ${PAGE} 85%, #fff)`)
+		it('mixes muted and dull with the page background on both schemes', () => {
+			for (const config of [dark, light]) {
+				const hues = byScheme(config).modColor('#fff')
+				expect(hues.muted).toBe(`color-mix(in oklab, ${PAGE} 20%, #fff)`)
+				expect(hues.dull).toBe(`color-mix(in oklab, ${PAGE} 20%, #fff)`)
+			}
 		})
 
 		it('uses custom percents in place of every default', () => {
@@ -108,7 +111,8 @@ describe('byScheme', () => {
 			expect(hues.shade).toContain(' 2%,')
 			expect(hues.bright).toContain(' 3%,')
 			expect(hues.dim).toContain(' 4%,')
-			expect(hues.muted).toContain(' 5%,')
+			expect(hues.dull).toContain(' 5%,')
+			expect(hues.muted).toContain(' 6%,')
 		})
 
 		it('is bound to the scheme: dark and light yield different mixes for the same color', () => {

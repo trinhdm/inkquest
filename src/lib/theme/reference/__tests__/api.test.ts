@@ -47,6 +47,12 @@ describe('apiTokens', () => {
 		expect(apiTokens.el.field.padding('sm')).toBe('var(--inkq-field-padding-sm)')
 	})
 
+	it('resolves the accessible icon size as a bare reference that takes no argument', () => {
+		expect(apiTokens.el.icon.accessible()).toBe('var(--inkq-accessible-icon)')
+		// positive control: the sized icon tokens stay under their own `icon` path
+		expect(apiTokens.el.icon.accessible()).not.toBe(apiTokens.el.icon.size('md'))
+	})
+
 	it('resolves padding under the short `pad` segment', () => {
 		expect(apiTokens.padding('block')).toBe('var(--inkq-pad-block)')
 	})

@@ -1,7 +1,9 @@
 import { createContext, useContext } from 'react'
 import { getDefaultProps } from '@/hooks/useProps'
 import { render, reset, screen } from '@/tests/test-utils'
-import { Group } from './Group'
+import { act } from 'react'
+import { extractOthers } from '@/hooks/useProps'
+import { Group, GROUP_CASCADE_PROPS } from './Group'
 import type { RootProviderFn } from '@/lib/component/context'
 
 // A plain, library-external component with its own `displayName` — the
@@ -35,6 +37,7 @@ const DebugItem = ({ label }: { label: string }) => {
 			data-duration={ ctx?.duration }
 			data-stagger={ ctx?.stagger }
 			data-unstyled={ String(!!ctx?.unstyled) }
+			data-within-view={ String(ctx?.withinView) }
 		>
 			{ label }
 		</div>
@@ -256,6 +259,159 @@ describe('Group', () => {
 
 			expect(screen.getByText('Item 1')).toHaveAttribute('data-duration', '321')
 			expect(screen.getByText('Item 1')).toHaveAttribute('data-unstyled', 'true')
+		})
+	})
+
+	describe('header', () => {
+		it('renders the header before the items, inside the group', () => {
+			render(
+				<Group childName="GroupItem" header={ <h2>Group heading</h2> }>
+					<GroupItem label="Item 1" />
+				</Group>
+			)
+
+			const group = screen.getByRole('group'),
+				heading = screen.getByRole('heading', { name: 'Group heading' })
+
+			expect(group).toContainElement(heading)
+			expect(heading.compareDocumentPosition(screen.getByText('Item 1')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+		})
+
+		it('keeps the header out of the child filtering, so it never triggers a warning', () => {
+			const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+
+			try {
+				render(
+					<Group childName="GroupItem" header={ <legend>Legend</legend> }>
+						<GroupItem label="Item 1" />
+					</Group>
+				)
+
+				expect(screen.getByText('Legend')).toBeInTheDocument()
+				expect(warn).not.toHaveBeenCalled()
+			} finally {
+				warn.mockRestore()
+			}
+		})
+	})
+
+	describe('justify', () => {
+		it('publishes justify as the --group-justify custom property only when set', () => {
+			const { rerender } = render(
+				<Group childName="GroupItem" justify="center">
+					<GroupItem label="Item" />
+				</Group>
+			)
+			expect(screen.getByRole('group').style.getPropertyValue('--group-justify')).toBe('center')
+
+			rerender(<Group childName="GroupItem"><GroupItem label="Item" /></Group>)
+			expect(screen.getByRole('group').style.getPropertyValue('--group-justify')).toBe('')
+		})
+	})
+
+	describe('role', () => {
+		it('adds role="group" to a div root (positive control)', () => {
+			const { container } = render(
+				<Group childName="GroupItem"><GroupItem label="Item" /></Group>
+			)
+
+			expect(container.firstElementChild).toHaveAttribute('role', 'group')
+		})
+
+		it.each(['fieldset', 'hgroup'] as const)('adds no role attribute to a %s, which already has its own semantics', tag => {
+			const { container } = render(
+				<Group as={ tag } childName="GroupItem"><GroupItem label="Item" /></Group>
+			)
+
+			expect(container.firstElementChild?.tagName.toLowerCase()).toBe(tag)
+			expect(container.firstElementChild).not.toHaveAttribute('role')
+		})
+	})
+
+	describe('GROUP_CASCADE_PROPS', () => {
+		it('lets the cascade props through extractOthers, while still dropping the other reserved ones', () => {
+			const rest = {
+				animated: true, duration: 300, once: true, stagger: 50,
+				revealFrom: 2, withinView: true,
+				className: 'x', 'data-kept': 'yes',
+			}
+
+			const kept = extractOthers(rest, GROUP_CASCADE_PROPS)
+			expect(kept).toMatchObject({
+				animated: true, duration: 300, once: true, stagger: 50,
+				revealFrom: 2, withinView: true, 'data-kept': 'yes',
+			})
+			expect(kept).not.toHaveProperty('className')
+
+			// positive control: without the list, the same props are stripped
+			const stripped = extractOthers(rest)
+			expect(stripped).not.toHaveProperty('duration')
+			expect(stripped).toHaveProperty('data-kept', 'yes')
+		})
+
+		it('does not leak the cascade props onto the group element', () => {
+			render(
+				<Group childName="GroupItem" animated duration={ 300 } stagger={ 50 }>
+					<GroupItem label="Item" />
+				</Group>
+			)
+
+			const group = screen.getByRole('group')
+			expect(group).not.toHaveAttribute('animated')
+			expect(group).not.toHaveAttribute('duration')
+			expect(group).not.toHaveAttribute('stagger')
+		})
+	})
+
+	describe('withinView in the published context', () => {
+		const renderDebug = () =>
+			render(
+				<Group childName="DebugItem" provider={ DebugProvider }>
+					<DebugItem label="Item 1" />
+					<DebugItem label="Item 2" />
+				</Group>
+			)
+
+		it('publishes withinView=false to every child while the group is off screen', () => {
+			renderDebug()
+
+			expect(screen.getByText('Item 1')).toHaveAttribute('data-within-view', 'false')
+			expect(screen.getByText('Item 2')).toHaveAttribute('data-within-view', 'false')
+		})
+
+		it('publishes withinView=true to every child once the group scrolls into view', () => {
+			const callbacks: IntersectionObserverCallback[] = []
+			const original = global.IntersectionObserver
+
+			class CapturingObserver {
+				constructor(callback: IntersectionObserverCallback) { callbacks.push(callback) }
+				observe = jest.fn()
+				unobserve = jest.fn()
+				disconnect = jest.fn()
+				takeRecords = jest.fn(() => [])
+			}
+
+			Object.defineProperty(global, 'IntersectionObserver', { configurable: true, writable: true, value: CapturingObserver })
+
+			try {
+				renderDebug()
+				expect(callbacks.length).toBeGreaterThan(0)
+
+				const target = screen.getByRole('group')
+				act(() => {
+					for (const callback of callbacks) {
+						callback(
+							[{ isIntersecting: true, target, intersectionRatio: 1 } as unknown as IntersectionObserverEntry],
+							{} as IntersectionObserver
+						)
+					}
+				})
+
+				expect(screen.getByText('Item 1')).toHaveAttribute('data-within-view', 'true')
+				expect(screen.getByText('Item 2')).toHaveAttribute('data-within-view', 'true')
+			} finally {
+				Object.defineProperty(global, 'IntersectionObserver', { configurable: true, writable: true, value: original })
+			}
 		})
 	})
 })

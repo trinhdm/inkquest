@@ -45,8 +45,7 @@ describe('enumerateVariantPalettes', () => {
 	const lightDarkVariants: Variant[] = specialVariants.filter(variant => variant !== 'text')
 
 	const allTones = Object.keys(TONES) as Tone[]
-	const nonNeutralTones = allTones.filter(tone => tone !== 'neutral')
-	// "accent" is the brand tone, not a status colour — the remaining 4 are
+		// "accent" is the brand tone, not a status colour — the remaining 4 are
 	// the semantic/status tones the old (pre-cc32b37) test called out by name.
 	// Widened back to `Tone[]` for the same reason as `lightDarkVariants` above.
 	const semanticTones: Tone[] = allTones.filter(tone => tone !== 'neutral' && tone !== 'accent')
@@ -60,11 +59,18 @@ describe('enumerateVariantPalettes', () => {
 		expect(byVariant('solid')?.priority).toBeUndefined()
 	})
 
-	it('produces a light/dark entry for every non-neutral tone, and a text entry only for the neutral tone', () => {
-		// per the source's `specialty.filter(...)`: `text` only ever pairs with
-		// 'neutral'; light/dark pair with every OTHER tone, never 'neutral'
-		const lightDarkEntries = all.filter(p => lightDarkVariants.includes(p.variant))
-		expect(lightDarkEntries).toHaveLength(lightDarkVariants.length * nonNeutralTones.length) // 2 * 5 = 10
+	it('produces light for every tone but cta, dark for every tone but cta and neutral, and text only for neutral', () => {
+		// per the source's `specialty.filter(...)`: cta gets no light/dark,
+		// neutral gets light but not dark, `text` pairs with neutral alone
+		const lightEntries = all.filter(p => p.variant === 'light'),
+			darkEntries = all.filter(p => p.variant === 'dark')
+
+		expect(lightEntries.map(p => p.tone).sort())
+			.toEqual(allTones.filter(tone => tone !== 'cta').sort())
+		expect(darkEntries.map(p => p.tone).sort())
+			.toEqual(allTones.filter(tone => tone !== 'cta' && tone !== 'neutral').sort())
+		expect(lightEntries.length + darkEntries.length).toBe(11)
+		expect(all.filter(p => lightDarkVariants.includes(p.variant))).toHaveLength(11)
 
 		const textEntries = all.filter(p => p.variant === 'text')
 		expect(textEntries).toHaveLength(1)
@@ -82,7 +88,7 @@ describe('enumerateVariantPalettes', () => {
 				expect(byTone(tone, priority)).toBeDefined()
 	})
 
-	it('resolves the "solid" structural variant to the action tone\'s primary shape', () => {
+	it('resolves the "solid" structural variant to the accent tone\'s primary shape', () => {
 		expect(byVariant('solid')?.palette).toEqual({
 			background: { base: 'var(--inkq-accent)', hover: 'var(--inkq-accent-hover)' },
 			border: { base: 'transparent', hover: 'transparent' },
@@ -114,22 +120,14 @@ describe('enumerateVariantPalettes', () => {
 		})
 	})
 
-	// FIX: this used to call `byVariant('light')` / `byVariant('dark')` with no
-	// tone filter, and happened to pass because `.find()` returns the FIRST
-	// match and "action" is the first non-neutral key in TONE_ACCESSORS'
-	// insertion order — it was never actually asserting "always resolves via
-	// the action tone", just whichever tone enumerateVariantPalettes() visits
-	// first. Since cc32b37, light/dark resolve PER-TONE (one entry per
-	// non-neutral tone, see the test above), so the real contract is keyed on
-	// the (variant, tone) pair, not a single hardcoded tone.
-	it('resolves "light"/"dark" per-tone: the "action" tone case, and a non-action tone resolving through its OWN accessor', () => {
-		expect(byVariantTone('light', 'action')?.palette).toEqual({
+	it('resolves "light"/"dark" per-tone, each through its OWN accessor (light colours are dim then shade)', () => {
+		expect(byVariantTone('light', 'accent')?.palette).toEqual({
 			background: 'var(--inkq-accent-muted)',
 			border: 'currentColor',
-			color: { base: 'var(--inkq-accent)', hover: 'var(--inkq-color-text)' },
+			color: { base: 'var(--inkq-accent-dim)', hover: 'var(--inkq-accent-shade)' },
 		})
 
-		expect(byVariantTone('dark', 'action')?.palette).toEqual({
+		expect(byVariantTone('dark', 'accent')?.palette).toEqual({
 			background: 'var(--inkq-accent-dim)',
 			border: 'var(--inkq-accent-muted)',
 			color: { base: 'var(--inkq-accent-hover)', hover: 'var(--inkq-color-text)' },
@@ -138,8 +136,19 @@ describe('enumerateVariantPalettes', () => {
 		expect(byVariantTone('light', 'danger')?.palette).toEqual({
 			background: 'var(--inkq-color-danger-muted)',
 			border: 'currentColor',
-			color: { base: 'var(--inkq-color-danger)', hover: 'var(--inkq-color-text)' },
+			color: { base: 'var(--inkq-color-danger-dim)', hover: 'var(--inkq-color-danger-shade)' },
 		})
+	})
+
+	it('gives neutral light its own secondary-accent and border references, and cta none at all', () => {
+		expect(byVariantTone('light', 'neutral')?.palette).toEqual({
+			background: 'var(--inkq-accent-secondary-muted)',
+			border: 'currentColor',
+			color: { base: 'var(--inkq-border)', hover: 'var(--inkq-accent-secondary-shade)' },
+		})
+		expect(byVariantTone('light', 'cta')).toBeUndefined()
+		expect(byVariantTone('dark', 'cta')).toBeUndefined()
+		expect(byVariantTone('dark', 'neutral')).toBeUndefined()
 	})
 
 	it('fills every slot with the transparent/inherit default palette when a shape omits it', () => {

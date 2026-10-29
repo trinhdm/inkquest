@@ -175,6 +175,88 @@ const _FieldAll: Field.Props = {
 	id: 'a', children, disabled: true, readonly: true, required: true,
 }
 
+// ---- Field.Number: inputmode ------------------------------------------
+
+// positive controls: both valid shapes compile
+const _NumberDigit: Field.Number.Props = { name: 'a', type: 'text', inputmode: 'numeric' }
+const _NumberDigitLimit: Field.Number.Props = { name: 'a', type: 'text', inputmode: 'tel', maxLength: 6 }
+
+// @ts-expect-error a text-typed number input needs an inputmode
+const _NumberTextNoMode: Field.Number.Props = { name: 'a', type: 'text' }
+
+const _NumberTypeNoMode: Field.Number.Props = {
+	name: 'a', type: 'number',
+	// @ts-expect-error inputmode belongs to the text-typed digit input
+	inputmode: 'numeric',
+}
+
+// @ts-expect-error a limit only makes sense on the text-typed digit input
+const _NumberTypeNoMaxLength: Field.Number.Props = { name: 'a', type: 'number', maxLength: 1 }
+
+const _NumberDigitNoIcon: Field.Number.Props = {
+	name: 'a', type: 'text', inputmode: 'numeric',
+	// @ts-expect-error the digit input has no icon
+	iconPosition: 'left',
+}
+
+const _NumberTypeIconPosition: Field.Number.Props = { name: 'a', type: 'number', iconPosition: 'right' }
+
+// ---- Field layouts ----------------------------------------------------
+
+const _LayoutDefault: Field.Props = {
+	id: 'a', children, layout: 'default', iconPosition: 'left', labelPosition: 'last', size: 'sm',
+}
+
+const _LayoutInline: Field.Props = {
+	id: 'a', children, layout: 'inline', labelPosition: 'last', size: 'sm',
+}
+
+const _LayoutInlineNoIcon: Field.Props = {
+	id: 'a', children, layout: 'inline',
+	// @ts-expect-error the inline layout draws no icon
+	iconPosition: 'left',
+}
+
+const _LayoutButton: Field.Props = { id: 'a', children, layout: 'button', caption: 'Hint' }
+
+const _LayoutButtonNoSize: Field.Props = {
+	id: 'a', children, layout: 'button',
+	// @ts-expect-error the button layout has a fixed size
+	size: 'lg',
+}
+
+const _LayoutButtonNoLabelPosition: Field.Props = {
+	id: 'a', children, layout: 'button',
+	// @ts-expect-error the button layout always puts the label after the control
+	labelPosition: 'last',
+}
+
+const _LayoutButtonNoIcon: Field.Props = {
+	id: 'a', children, layout: 'button',
+	// @ts-expect-error the button layout draws no icon
+	iconPosition: 'left',
+}
+
+const _LayoutKeypad: Field.Props = { id: 'a', children, layout: 'keypad', size: 'lg' }
+
+// @ts-expect-error the keypad layout has no caption
+const _LayoutKeypadNoCaption: Field.Props = { id: 'a', children, layout: 'keypad', caption: 'Hint' }
+
+const _LayoutKeypadNoLabelPosition: Field.Props = {
+	id: 'a', children, layout: 'keypad',
+	// @ts-expect-error the keypad layout hides the label, so its position is moot
+	labelPosition: 'first',
+}
+
+const _LayoutKeypadNoIcon: Field.Props = {
+	id: 'a', children, layout: 'keypad',
+	// @ts-expect-error the keypad layout draws no icon
+	iconPosition: 'right',
+}
+
+// @ts-expect-error an unknown layout name is rejected
+const _LayoutUnknown: Field.Props = { id: 'a', children, layout: 'grid' }
+
 // ---- Field.ControlProps itself ----------------------------------------
 
 const _ControlShared: Field.ControlProps = { size: 'sm', type: 'email', unstyled: true }

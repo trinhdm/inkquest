@@ -259,11 +259,13 @@ describe('Field', () => {
 
 			const input = screen.getByLabelText('Email'),
 				message = screen.getByText('Enter a valid email')
-
 			expect(input).toHaveAttribute('aria-invalid', 'true')
 			expect(input).toHaveAccessibleDescription('Error: Enter a valid email')
-			expect(input).toHaveAttribute('aria-describedby', message.id)
-			expect(message.id).toBe('email-error')
+
+			// the message is wrapped in an inner element; the id sits on the outer one
+			const described = document.getElementById(input.getAttribute('aria-describedby') ?? '')
+			expect(described).toHaveAttribute('id', 'email-error')
+			expect(described).toContainElement(message)
 		})
 
 		it('sets data-invalid on the root when there is an error', () => {
@@ -316,6 +318,163 @@ describe('Field', () => {
 			)
 
 			expect(screen.getByText('We never share it')).toBeInTheDocument()
+		})
+	})
+
+	describe('caption description', () => {
+		it('links the caption to the control through aria-describedby', () => {
+			render(
+				<Field id="a" label="A" caption="We never share it">
+					<Field.Input name="a" />
+				</Field>
+			)
+
+			const input = screen.getByLabelText('A')
+			expect(input).toHaveAttribute('aria-describedby', 'a-info')
+			expect(input).toHaveAccessibleDescription('We never share it')
+		})
+
+		it('lists the caption id before the error id when both exist', () => {
+			render(
+				<Field id="a" label="A" caption="Hint" error="Bad">
+					<Field.Input name="a" />
+				</Field>
+			)
+
+			expect(screen.getByLabelText('A')).toHaveAttribute('aria-describedby', 'a-info a-error')
+		})
+
+		it('adds no info id when there is no caption (positive control: a caption adds one)', () => {
+			render(
+				<>
+					<Field id="a" label="A" error="Bad">
+						<Field.Input name="a" />
+					</Field>
+					<Field id="b" label="B" caption="Hint">
+						<Field.Input name="b" />
+					</Field>
+				</>
+			)
+
+			expect(screen.getByLabelText('A')).toHaveAttribute('aria-describedby', 'a-error')
+			expect(screen.getByLabelText('B')).toHaveAttribute('aria-describedby', 'b-info')
+		})
+	})
+
+	describe('inline layout', () => {
+		it('marks the root and puts label and control together in one container', () => {
+			const { container } = render(
+				<Field id="a" label="Name" layout="inline">
+					<Field.Input name="a" />
+				</Field>
+			)
+
+			expect(container.firstElementChild).toHaveClass('field--inline')
+			const wrapper = container.querySelector('.field__container') as HTMLElement
+			expect(wrapper).toContainElement(screen.getByText('Name'))
+			expect(wrapper).toContainElement(screen.getByLabelText('Name'))
+		})
+
+		it('puts the caption and error before the container by default', () => {
+			const { container } = render(
+				<Field id="a" label="Name" layout="inline" caption="Hint" error="Bad">
+					<Field.Input name="a" />
+				</Field>
+			)
+
+			const wrapper = container.querySelector('.field__container') as HTMLElement,
+				info = container.querySelector('.field__info') as HTMLElement
+
+			expect(info).toHaveTextContent('Hint')
+			expect(info).toHaveTextContent('Bad')
+			expect(info.compareDocumentPosition(wrapper) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+			expect(screen.getByLabelText('Name')).toHaveAttribute('aria-describedby', 'a-info a-error')
+		})
+
+		it('puts the caption and error after the container with labelPosition="last"', () => {
+			const { container } = render(
+				<Field id="a" label="Name" layout="inline" labelPosition="last" caption="Hint">
+					<Field.Input name="a" />
+				</Field>
+			)
+
+			const wrapper = container.querySelector('.field__container') as HTMLElement,
+				info = container.querySelector('.field__info') as HTMLElement
+
+			expect(wrapper.compareDocumentPosition(info) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+		})
+
+		it('renders no info block without a caption or error', () => {
+			const { container } = render(
+				<Field id="a" label="Name" layout="inline">
+					<Field.Input name="a" />
+				</Field>
+			)
+
+			expect(container.querySelector('.field__info')).toBeNull()
+			expect(container.querySelector('.field__container')).toBeInTheDocument()
+		})
+
+		it('drops the type icon beside the control (positive control: the default layout keeps it)', () => {
+			const { container } = render(
+				<>
+					<Field id="a" label="A" layout="inline">
+						<Field.Input name="a" type="email" />
+					</Field>
+					<Field id="b" label="B">
+						<Field.Input name="b" type="email" />
+					</Field>
+				</>
+			)
+
+			expect(container.querySelectorAll('.text-input__icon')).toHaveLength(1)
+			expect(container.querySelector('.field--inline .text-input__icon')).toBeNull()
+		})
+	})
+
+	describe('keypad layout', () => {
+		it('keeps the label for assistive tech but hides it visually', () => {
+			const { container } = render(
+				<Field id="a" label="Digit 1" layout="keypad">
+					<Field.Number name="a" type="number" />
+				</Field>
+			)
+
+			expect(container.firstElementChild).toHaveClass('field--keypad')
+			expect(screen.getByText('Digit 1')).toHaveClass('sr')
+			expect(screen.getByLabelText('Digit 1')).toBeInTheDocument()
+		})
+
+		it('leaves the label visible in the default layout (positive control)', () => {
+			render(
+				<Field id="a" label="Digit 1">
+					<Field.Number name="a" type="number" />
+				</Field>
+			)
+
+			expect(screen.getByText('Digit 1')).not.toHaveClass('sr')
+		})
+	})
+
+	describe('asterisk inside a group', () => {
+		it('hides the required asterisk on the label when the Field sits in a Field.Group', () => {
+			render(
+				<>
+					<Field.Group legend="Group">
+						<Field id="a" label="In group" required>
+							<Field.Input name="a" />
+						</Field>
+					</Field.Group>
+					<Field id="b" label="Alone" required>
+						<Field.Input name="b" />
+					</Field>
+				</>
+			)
+
+			// still required, but only the standalone label carries the asterisk
+			expect(screen.getByLabelText('In group')).toBeRequired()
+			expect(screen.getByText('In group').querySelector('[aria-hidden]')).toBeNull()
+			expect(screen.getByText('Alone').querySelector('[aria-hidden="true"]')).toHaveTextContent('*')
 		})
 	})
 
@@ -412,6 +571,37 @@ describe('Field', () => {
 			)
 
 			expect(container.querySelector('.text-input__icon svg')).toBeInTheDocument()
+		})
+
+		it('falls back to the Field type for the icon when the control has no type of its own', () => {
+			const { container } = render(
+				<Field id="a" label="A" type="email">
+					<Field.Input name="a" />
+				</Field>
+			)
+
+			expect(container.querySelector('.text-input__icon svg')).toBeInTheDocument()
+			expect(screen.getByLabelText('A')).toHaveAttribute('type', 'email')
+		})
+
+		it('prefers the control type over the Field type for the icon', () => {
+			const { container } = render(
+				<Field id="a" label="A" type="email">
+					<Field.Input name="a" type="text" />
+				</Field>
+			)
+
+			expect(container.querySelector('.text-input__icon')).toBeNull()
+		})
+
+		it('shows no icon for a Field type that has none', () => {
+			const { container } = render(
+				<Field id="a" label="A" type="text">
+					<Field.Input name="a" />
+				</Field>
+			)
+
+			expect(container.querySelector('.text-input__icon')).toBeNull()
 		})
 
 		it('renders no icon for plain text (positive control: email has one)', () => {

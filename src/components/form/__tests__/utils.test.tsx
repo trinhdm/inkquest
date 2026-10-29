@@ -186,6 +186,72 @@ describe('form/utils', () => {
 			})
 		})
 
+		describe('password inputs', () => {
+			it('always puts the inset on the right (`auto 0`), even with no iconPosition and no icon', () => {
+				expect(inset(inputTokens({ type: 'password' }, asContext({ size: 'lg' })))).toBe('auto 0')
+				// positive control: a plain input with no icon has no inset at all
+				expect(inset(inputTokens({}, asContext({ size: 'lg' })))).toBeUndefined()
+			})
+
+			it('reverses the padding so the extra room is on the right, like iconPosition="right"', () => {
+				const { block, inline, iconPadding } = expectedFor('lg')
+				const result = inputTokens({ type: 'password' }, asContext({ icon: iconNode, size: 'lg' }))
+
+				expect(sides(padding(result))).toEqual({
+					top: block, right: iconPadding, bottom: block, left: inline,
+				})
+				expect(inset(result)).toBe('auto 0')
+			})
+
+			it('ignores iconPosition="left", since the toggle always sits on the right', () => {
+				const context = asContext({ icon: iconNode, size: 'lg' })
+				const result = inputTokens({ iconPosition: 'left', type: 'password' }, context)
+
+				expect(result).toEqual(inputTokens({ type: 'password' }, context))
+				expect(inset(result)).toBe('auto 0')
+				// positive control: the same left on a text input pads the left
+				expect(inset(inputTokens({ iconPosition: 'left' }, context))).toBe('0 auto')
+			})
+		})
+
+		describe('inline layout', () => {
+			it('triples the icon buffer on the left when the icon is on the left', () => {
+				const { block, inline, iconPadding } = expectedFor('lg')
+				const result = inputTokens({}, asContext({ icon: iconNode, layout: 'inline', size: 'lg' }))
+
+				expect(sides(padding(result))).toEqual({
+					top: block, right: inline, bottom: block, left: `calc(3 * ${iconPadding})`,
+				})
+			})
+
+			it('triples the icon buffer on the right when the icon is on the right', () => {
+				const { block, inline, iconPadding } = expectedFor('lg')
+				const result = inputTokens(
+					{ iconPosition: 'right' },
+					asContext({ icon: iconNode, layout: 'inline', size: 'lg' })
+				)
+
+				expect(sides(padding(result))).toEqual({
+					top: block, right: `calc(3 * ${iconPadding})`, bottom: block, left: inline,
+				})
+			})
+
+			it('leaves the padding alone when there is no icon (positive control: the icon case changes it)', () => {
+				const { block, inline } = expectedFor('lg')
+				const result = inputTokens({}, asContext({ layout: 'inline', size: 'lg' }))
+
+				expect(splitShorthand(padding(result))).toEqual([block, inline])
+				expect(padding(result)).not.toBe(padding(inputTokens({}, asContext({ icon: iconNode, layout: 'inline', size: 'lg' }))))
+			})
+
+			it('uses the plain icon buffer for any other layout', () => {
+				const { iconPadding } = expectedFor('lg')
+				const result = inputTokens({}, asContext({ icon: iconNode, layout: 'default', size: 'lg' }))
+
+				expect(sides(padding(result)).left).toBe(iconPadding)
+			})
+		})
+
 		describe('names', () => {
 			const props = { iconPosition: 'right', size: 'sm' }
 			const context = asContext({ icon: iconNode, size: 'lg' })

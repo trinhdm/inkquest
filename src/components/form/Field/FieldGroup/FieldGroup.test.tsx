@@ -1,9 +1,10 @@
 import userEvent from '@testing-library/user-event'
 import { render, reset, screen, within } from '@/tests/test-utils'
 import { Field } from '../Field'
+import { Form } from '../../Form'
 
 describe('Field.Group', () => {
-	reset('Field', 'Field.Group', 'Group', 'TextInput', 'NumberInput', 'Textarea', 'Choice')
+	reset('Field', 'Field.Group', 'Group', 'TextInput', 'NumberInput', 'Textarea', 'Choice', 'Form', 'Grid', 'Grid.Item')
 
 	let warn: jest.SpyInstance
 
@@ -256,6 +257,185 @@ describe('Field.Group', () => {
 			)
 
 			expect(warn).not.toHaveBeenCalled()
+		})
+	})
+
+	describe('structure', () => {
+		it('wraps the fieldset in a div root', () => {
+			const { container } = render(
+				<Field.Group legend="G">
+					<Field id="a" label="A"><Field.Input name="a" /></Field>
+				</Field.Group>
+			)
+
+			const root = container.firstElementChild as HTMLElement
+			expect(root.tagName).toBe('DIV')
+			expect(root).toContainElement(screen.getByRole('group', { name: 'G' }))
+			expect(screen.getByRole('group', { name: 'G' }).parentElement).toBe(root)
+		})
+
+		it('renders the root as the given element', () => {
+			const { container } = render(
+				<Field.Group as="section" legend="G">
+					<Field id="a" label="A"><Field.Input name="a" /></Field>
+				</Field.Group>
+			)
+
+			expect(container.firstElementChild?.tagName).toBe('SECTION')
+		})
+
+		it('puts the legend first inside the fieldset', () => {
+			render(
+				<Field.Group legend="G">
+					<Field id="a" label="A"><Field.Input name="a" /></Field>
+				</Field.Group>
+			)
+
+			expect(screen.getByRole('group', { name: 'G' }).firstElementChild?.tagName).toBe('LEGEND')
+		})
+
+		it('gives the fieldset no explicit role, since it is already a group', () => {
+			render(
+				<Field.Group legend="G">
+					<Field id="a" label="A"><Field.Input name="a" /></Field>
+				</Field.Group>
+			)
+
+			expect(screen.getByRole('group', { name: 'G' })).not.toHaveAttribute('role')
+		})
+	})
+
+	describe('group pass-through props', () => {
+		it('hands columns and justify to the group as custom properties', () => {
+			render(
+				<Field.Group legend="G" columns={ 3 } justify="center">
+					<Field id="a" label="A"><Field.Input name="a" /></Field>
+				</Field.Group>
+			)
+
+			const set = screen.getByRole('group', { name: 'G' })
+			expect(set.style.getPropertyValue('--group-item-count')).toBe('3')
+			expect(set.style.getPropertyValue('--group-justify')).toBe('center')
+		})
+
+		it('marks full width and dividers on the fieldset', () => {
+			render(
+				<Field.Group legend="G" fullWidth divider>
+					<Field id="a" label="A"><Field.Input name="a" /></Field>
+				</Field.Group>
+			)
+
+			const set = screen.getByRole('group', { name: 'G' })
+			expect(set).toHaveAttribute('data-block')
+			expect(set).toHaveAttribute('data-divide')
+		})
+
+		it('marks neither when they are not set (positive control for the test above)', () => {
+			render(
+				<Field.Group legend="G">
+					<Field id="a" label="A"><Field.Input name="a" /></Field>
+				</Field.Group>
+			)
+
+			const set = screen.getByRole('group', { name: 'G' })
+			expect(set).not.toHaveAttribute('data-block')
+			expect(set).not.toHaveAttribute('data-divide')
+		})
+
+		it('reflects orientation as aria-orientation on the fieldset', () => {
+			render(
+				<Field.Group legend="G" orientation="horizontal">
+					<Field id="a" label="A"><Field.Input name="a" /></Field>
+				</Field.Group>
+			)
+
+			expect(screen.getByRole('group', { name: 'G' })).toHaveAttribute('aria-orientation', 'horizontal')
+		})
+
+		it('keeps the animation props off the DOM', () => {
+			const error = jest.spyOn(console, 'error').mockImplementation(() => {})
+
+			try {
+				const { container } = render(
+					<Field.Group legend="G" animated duration={ 300 } stagger={ 50 }>
+						<Field id="a" label="A"><Field.Input name="a" /></Field>
+					</Field.Group>
+				)
+
+				const root = container.firstElementChild as HTMLElement
+				expect(root).not.toHaveAttribute('duration')
+				expect(root).not.toHaveAttribute('stagger')
+				expect(error).not.toHaveBeenCalled()
+			} finally {
+				error.mockRestore()
+			}
+		})
+	})
+
+	describe('form errors', () => {
+		const renderInForm = (errors: Record<string, string | undefined>, groupName: string | null = 'contact') =>
+			render(
+				<Form state={ { errors, formError: undefined, message: undefined } } mountFocus={ false } shiftFocus={ false }>
+					<Field.Group legend="Contact" name={ groupName ?? undefined }>
+						<Field id="a" label="First"><Field.Input name="first" /></Field>
+					</Field.Group>
+				</Form>
+			)
+
+		it('shows the form error for the group name, prefixed for screen readers', () => {
+			const { container } = renderInForm({ contact: 'Add at least one way to reach you' })
+
+			const message = container.querySelector('.field-group__error') as HTMLElement
+			expect(message).toHaveTextContent('Error: Add at least one way to reach you')
+			expect(message.querySelector('.sr')).toHaveTextContent('Error:')
+			expect(screen.getByRole('group', { name: 'Contact' })).toContainElement(message)
+		})
+
+		it('describes the fieldset with the error message', () => {
+			const { container } = renderInForm({ contact: 'Add at least one way to reach you' })
+
+			const set = screen.getByRole('group', { name: 'Contact' }),
+				message = container.querySelector('.field-group__error') as HTMLElement
+
+			expect(set).toHaveAttribute('aria-describedby', message.id)
+			expect(set).toHaveAccessibleDescription('Error: Add at least one way to reach you')
+		})
+
+		it('marks the Fields inside invalid while the group has an error', () => {
+			renderInForm({ contact: 'Add at least one way to reach you' })
+
+			expect(screen.getByLabelText('First')).toHaveAttribute('aria-invalid', 'true')
+		})
+
+		it('shows no error and no aria-describedby when the form has none for this group', () => {
+			const { container } = renderInForm({ other: 'Not mine' })
+
+			expect(container.querySelector('.field-group__error')).toBeNull()
+			expect(screen.getByRole('group', { name: 'Contact' })).not.toHaveAttribute('aria-describedby')
+			expect(screen.getByLabelText('First')).not.toHaveAttribute('aria-invalid')
+		})
+
+		it('treats a whitespace-only error as no error', () => {
+			const { container } = renderInForm({ contact: '   ' })
+
+			expect(container.querySelector('.field-group__error')).toBeNull()
+			expect(screen.getByRole('group', { name: 'Contact' })).not.toHaveAttribute('aria-describedby')
+		})
+
+		it('looks nothing up when the group has no name', () => {
+			const { container } = renderInForm({ contact: 'Add at least one way to reach you' }, null)
+
+			expect(container.querySelector('.field-group__error')).toBeNull()
+		})
+
+		it('renders without a Form around it, with no error', () => {
+			const { container } = render(
+				<Field.Group legend="G" name="contact">
+					<Field id="a" label="A"><Field.Input name="a" /></Field>
+				</Field.Group>
+			)
+
+			expect(container.querySelector('.field-group__error')).toBeNull()
 		})
 	})
 })

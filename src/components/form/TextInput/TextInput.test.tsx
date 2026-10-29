@@ -108,8 +108,15 @@ describe('TextInput', () => {
 				</>
 			)
 
-			const left = screen.getByLabelText('L').previousElementSibling as HTMLElement,
-				right = screen.getByLabelText('R').previousElementSibling as HTMLElement
+			// the icon span follows the input inside the field's control wrapper
+			const iconOf = (label: string) =>
+				screen.getByLabelText(label).closest('.field__control')?.querySelector('.text-input__icon') as HTMLElement
+
+			const left = iconOf('L'),
+				right = iconOf('R')
+
+			expect(left).toBeInTheDocument()
+			expect(right).toBeInTheDocument()
 
 			expect(left.style.getPropertyValue('--form-control-icon-inset')).toBe('0 auto')
 			expect(right.style.getPropertyValue('--form-control-icon-inset')).toBe('auto 0')
@@ -123,10 +130,15 @@ describe('TextInput', () => {
 			expect(toggle).toHaveAttribute('type', 'button')
 			expect(toggle).toHaveAttribute('aria-pressed', 'false')
 		})
-		it('sits just after the input', () => {
+		it('sits inside the icon span, which follows the input in the control wrapper', () => {
 			render(<Field id="a" label="A"><Field.Input name="a" type="password" /></Field>)
-			const toggle = screen.getByRole('button', { name: 'Show password' })
-			expect(screen.getByLabelText('A').nextElementSibling).toBe(toggle)
+			const input = screen.getByLabelText('A'),
+				toggle = screen.getByRole('button', { name: 'Show password' }),
+				icon = toggle.closest('.text-input__icon') as HTMLElement
+
+			expect(icon).toBeInTheDocument()
+			expect(input.nextElementSibling).toBe(icon)
+			expect(input.closest('.field__control')).toContainElement(icon)
 		})
 		it('points aria-controls at the input', () => {
 			render(<Field id="a" label="A"><Field.Input name="a" type="password" /></Field>)

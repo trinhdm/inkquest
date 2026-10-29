@@ -14,8 +14,9 @@ describe('Accordion.Group', () => {
 	// `Accordion.Title` renders a real `Icon` for its default "plus" indicator.
 	reset('Accordion.Group', 'Accordion', 'Accordion.Title', 'Accordion.Content', 'Icon')
 
-	it('registers defaults of collapsible="single", defaultOpen=0, order=3, size="md"', () => {
-		expect(getDefaultProps<Accordion.Group.Props>('Accordion.Group')).toEqual({
+	it('registers defaults of as="div", collapsible="single", defaultOpen=0, order=3, size="md"', () => {
+		expect(getDefaultProps<Accordion.Group.Props & { as: 'div' }>('Accordion.Group')).toEqual({
+			as: 'div',
 			collapsible: 'single',
 			defaultOpen: 0,
 			order: 3,
@@ -186,6 +187,86 @@ describe('Accordion.Group', () => {
 		await user.click(first)
 		expect(first).toHaveAttribute('aria-expanded', 'false')
 		expect(second).toHaveAttribute('aria-expanded', 'true')
+	})
+
+	describe('disabled', () => {
+		it('disables every item in the group and ignores clicks', async () => {
+			const user = userEvent.setup()
+			render(
+				<Accordion.Group disabled>
+					{ item('One', 'First body') }
+					{ item('Two', 'Second body') }
+				</Accordion.Group>
+			)
+
+			const [first, second] = screen.getAllByRole('button')
+			expect(first).toBeDisabled()
+			expect(second).toBeDisabled()
+
+			await user.click(second)
+			expect(first).toHaveAttribute('aria-expanded', 'true')
+			expect(second).toHaveAttribute('aria-expanded', 'false')
+		})
+
+		it('leaves items enabled when the group is not disabled', () => {
+			render(
+				<Accordion.Group>
+					{ item('One', 'First body') }
+					{ item('Two', 'Second body') }
+				</Accordion.Group>
+			)
+
+			for (const title of screen.getAllByRole('button')) expect(title).toBeEnabled()
+		})
+
+		it('lets an item opt back in with its own disabled={ false }', async () => {
+			const user = userEvent.setup()
+			render(
+				<Accordion.Group disabled>
+					<Accordion>
+						<Accordion.Title>Locked</Accordion.Title>
+						<Accordion.Content>Locked body</Accordion.Content>
+					</Accordion>
+					<Accordion disabled={ false }>
+						<Accordion.Title>Free</Accordion.Title>
+						<Accordion.Content>Free body</Accordion.Content>
+					</Accordion>
+				</Accordion.Group>
+			)
+
+			const locked = screen.getByRole('button', { name: 'Locked' }),
+				free = screen.getByRole('button', { name: 'Free' })
+
+			expect(locked).toBeDisabled()
+			expect(free).toBeEnabled()
+
+			await user.click(free)
+			expect(free).toHaveAttribute('aria-expanded', 'true')
+		})
+
+		it('skips a disabled item during arrow-key navigation', async () => {
+			const user = userEvent.setup()
+			render(
+				<Accordion.Group>
+					<Accordion>
+						<Accordion.Title>One</Accordion.Title>
+						<Accordion.Content>First body</Accordion.Content>
+					</Accordion>
+					<Accordion disabled>
+						<Accordion.Title>Two</Accordion.Title>
+						<Accordion.Content>Second body</Accordion.Content>
+					</Accordion>
+					<Accordion>
+						<Accordion.Title>Three</Accordion.Title>
+						<Accordion.Content>Third body</Accordion.Content>
+					</Accordion>
+				</Accordion.Group>
+			)
+
+			screen.getByRole('button', { name: 'One' }).focus()
+			await user.keyboard('{ArrowDown}')
+			expect(screen.getByRole('button', { name: 'Three' })).toHaveFocus()
+		})
 	})
 
 	it('drops children that are not Accordion instances, and warns about them', () => {

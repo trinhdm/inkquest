@@ -30,22 +30,28 @@ describe('buildSections', () => {
 
 	const host = (c: HTMLElement) => c.querySelector('[data-testid="host"]') as HTMLElement
 
-	it('wraps plain children in a single label span and nothing else when there are no sections', () => {
+	it('returns the bare label, with no label span, when there are no sections', () => {
 		const { container } = renderSections(['Save ', 'draft'])
 		const el = host(container)
 
-		expect(el.children).toHaveLength(1)
-		expect(el.firstElementChild).toHaveClass('s-label')
-		expect(el.firstElementChild).toHaveTextContent('Save draft')
+		expect(el.children).toHaveLength(0)
+		expect(el.querySelector('.s-label')).not.toBeInTheDocument()
+		expect(el).toHaveTextContent('Save draft')
 		expect(consoleWarn).not.toHaveBeenCalled()
 	})
 
-	it('renders an empty label span for no children', () => {
+	it('renders nothing at all for no children', () => {
 		const { container } = renderSections(null)
+
+		expect(host(container)).toBeEmptyDOMElement()
+	})
+
+	it('wraps the label in a label span as soon as one section exists', () => {
+		const { container } = renderSections(['Save', <Button.Section key="l" left>L</Button.Section>])
 		const label = host(container).querySelector('.s-label')
 
 		expect(label).toBeInTheDocument()
-		expect(label).toBeEmptyDOMElement()
+		expect(label).toHaveTextContent('Save')
 	})
 
 	it('places the left section before and the right section after the label, whatever the source order', () => {

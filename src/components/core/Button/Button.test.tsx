@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { render, reset, screen } from '@/tests/test-utils'
 import { tokens } from '@/lib/theme/reference'
 import Link from 'next/link'
+import type { ReactElement } from 'react'
 import { Button } from './Button'
 
 // wraps the real `next/link` so a test can read the props Button forwards to it;
@@ -162,6 +163,60 @@ describe('Button', () => {
 		expect(container.querySelector('svg')).toBeInTheDocument()
 	})
 
+	describe('loading', () => {
+		it('is announced as aria-disabled but stays natively enabled, so it keeps focus', () => {
+			render(<Button loading>Save</Button>)
+			const button = screen.getByRole('button')
+
+			expect(button).toHaveAttribute('aria-disabled', 'true')
+			expect(button).not.toBeDisabled()
+			expect(button).not.toHaveAttribute('data-disabled')
+		})
+
+		it('is not aria-disabled when idle', () => {
+			render(<Button>Save</Button>)
+			expect(screen.getByRole('button')).not.toHaveAttribute('aria-disabled', 'true')
+		})
+
+		it('swallows clicks, so the consumer onClick never runs', async () => {
+			const user = userEvent.setup()
+			const onClick = jest.fn()
+			const { rerender } = render(<Button loading onClick={ onClick }>Save</Button>)
+
+			await user.click(screen.getByRole('button'))
+			expect(onClick).not.toHaveBeenCalled()
+
+			// positive control: once loading ends, the same handler fires
+			rerender(<Button onClick={ onClick }>Save</Button>)
+			await user.click(screen.getByRole('button'))
+			expect(onClick).toHaveBeenCalledTimes(1)
+		})
+
+		it('does not print while loading', async () => {
+			const user = userEvent.setup()
+			const print = jest.spyOn(window, 'print').mockImplementation(() => {})
+
+			try {
+				render(<Button action="print" loading>Print</Button>)
+				await user.click(screen.getByRole('button'))
+				expect(print).not.toHaveBeenCalled()
+			} finally {
+				print.mockRestore()
+			}
+		})
+
+		it('hides the spinner when unstyled, while keeping data-loading', () => {
+			const { container, rerender } = render(<Button unstyled loading>Save</Button>)
+
+			expect(container.querySelector('svg')).not.toBeInTheDocument()
+			expect(screen.getByRole('button')).toHaveAttribute('data-loading', '')
+
+			// positive control: the styled button does render the spinner
+			rerender(<Button loading>Save</Button>)
+			expect(container.querySelector('svg')).toBeInTheDocument()
+		})
+	})
+
 	it('omits data-loading entirely when not loading', () => {
 		render(<Button>Save</Button>)
 		expect(screen.getByRole('button')).not.toHaveAttribute('data-loading')
@@ -215,25 +270,40 @@ describe('Button', () => {
 			expect(screen.getByRole('button')).toHaveAttribute('data-animate', 'right')
 		})
 
-		it('sets the icon-translate token only when animate is set', () => {
-			const translate = (el: HTMLElement) => el.style.getPropertyValue('--button-icon-translate')
+		// the token lives on the `inner` span (the element wrapping the label), not the root;
+		// with no sections the label is a bare text node, so getByText finds that span
+		const translate = (text: string) =>
+			screen.getByText(text).style.getPropertyValue('--button-icon-translate')
+
+		it('sets the icon-translate token on the inner element only when animate is set', () => {
 			const { rerender } = render(<Button animate="left">Back</Button>)
 
-			expect(translate(screen.getByRole('button'))).toMatch(/^calc\(.+ - .+\)$/)
-			expect(translate(screen.getByRole('button'))).toContain(tokens.space('icon'))
+			expect(translate('Back')).toMatch(/^calc\(.+ - .+\)$/)
+			expect(translate('Back')).toContain(tokens.space('icon'))
+			expect(screen.getByRole('button').style.getPropertyValue('--button-icon-translate')).toBe('')
 
 			rerender(<Button>Back</Button>)
 			expect(screen.getByRole('button')).not.toHaveAttribute('data-animate')
-			expect(translate(screen.getByRole('button'))).toBe('')
+			expect(translate('Back')).toBe('')
+		})
+
+		it('negates the distance when animating left, and not when animating right', () => {
+			const { rerender } = render(<Button animate="left">Go</Button>)
+			expect(translate('Go')).toMatch(/^calc\(-1 \* calc\(/)
+
+			rerender(<Button animate="right">Go</Button>)
+			expect(translate('Go')).not.toContain('-1 *')
+			expect(translate('Go')).toContain(tokens.space('icon'))
 		})
 
 		it('changes the translate distance with size', () => {
-			const translate = (el: HTMLElement) => el.style.getPropertyValue('--button-icon-translate')
 			const { rerender } = render(<Button animate="right" size="sm">Next</Button>)
-			const small = translate(screen.getByRole('button'))
+			const small = translate('Next')
+			expect(small).not.toBe('')
 
 			rerender(<Button animate="right" size="lg">Next</Button>)
-			expect(translate(screen.getByRole('button'))).not.toBe(small)
+			expect(translate('Next')).not.toBe('')
+			expect(translate('Next')).not.toBe(small)
 		})
 	})
 
@@ -471,6 +541,18 @@ describe('Button', () => {
 
 			expect(screen.getByText('L')).toHaveAttribute('data-side', 'left')
 			expect(screen.getByText('R')).toHaveAttribute('data-side', 'right')
+		})
+
+		it('defaults to the left side when neither left nor right is passed', () => {
+			const Section = Button.Section as unknown as (props: { children: string }) => ReactElement
+			render(
+				<Button>
+					<Section>Icon</Section>
+					Label
+				</Button>
+			)
+
+			expect(screen.getByText('Icon')).toHaveAttribute('data-side', 'left')
 		})
 
 		// Guards the fix above at its root: if a `left` default is ever

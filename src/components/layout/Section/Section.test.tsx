@@ -57,9 +57,8 @@ describe('Section', () => {
 		expect(container.firstElementChild).toBeInTheDocument()
 	})
 
-	// `orderSection` always wraps content items in a `body` element that sits
-	// beside the heading; only 2+ items get an extra `description` wrapper
-	// inside that body.
+	// content items sit directly in the `body` element beside the heading;
+	// only text gets a `description` wrapper, so items are never wrapped together
 	it('places a single non-string content child directly in a body beside the heading', () => {
 		render(
 			<Section title="t">
@@ -74,7 +73,7 @@ describe('Section', () => {
 		expect(body?.parentElement).toBe(heading.parentElement)
 	})
 
-	it('wraps two or more non-string content children in a shared container inside the body', () => {
+	it('places two or more non-string content children side by side in the body, with no extra wrapper', () => {
 		render(
 			<Section title="t">
 				<span>First</span>
@@ -83,11 +82,9 @@ describe('Section', () => {
 		)
 
 		const heading = screen.getByRole('heading', { name: 't' }),
-			first = screen.getByText('First'),
-			description = first.parentElement,
-			body = description?.parentElement
+			body = screen.getByText('First').parentElement
 
-		expect(screen.getByText('Second').parentElement).toBe(description)
+		expect(screen.getByText('Second').parentElement).toBe(body)
 		expect(body).not.toBe(heading.parentElement)
 		expect(body?.parentElement).toBe(heading.parentElement)
 	})
@@ -127,24 +124,51 @@ describe('Section', () => {
 	})
 
 	describe('alignText', () => {
-		it('publishes alignText as the --section-align custom property on the root', () => {
-			const { container } = render(<Section title="t" alignText="center">content</Section>)
+		// `--section-align` lives on the `inner` element, which only layouts with
+		// an inner wrapper (hero, banner, content-form, ...) render
+		const align = (container: HTMLElement) =>
+			(container.querySelector('.section__inner') as HTMLElement).style.getPropertyValue('--section-align')
 
-			expect((container.firstElementChild as HTMLElement).style.getPropertyValue('--section-align')).toBe('center')
+		it('publishes alignText as the --section-align custom property on the inner element, not the root', () => {
+			const { container } = render(<Section layout="hero" title="t" alignText="center">content</Section>)
+
+			expect(align(container)).toBe('center')
+			expect((container.firstElementChild as HTMLElement).style.getPropertyValue('--section-align')).toBe('')
 		})
 
 		it.each(['left', 'right'] as const)('passes "%s" through unchanged', alignText => {
-			const { container } = render(<Section title="t" alignText={ alignText }>content</Section>)
+			const { container } = render(<Section layout="hero" title="t" alignText={ alignText }>content</Section>)
 
-			expect((container.firstElementChild as HTMLElement).style.getPropertyValue('--section-align')).toBe(alignText)
+			expect(align(container)).toBe(alignText)
 		})
 
 		it('sets no --section-align when alignText is unset, with a styled control that sets it', () => {
-			const { container: plain } = render(<Section title="t">content</Section>)
-			const { container: aligned } = render(<Section title="t" alignText="right">content</Section>)
+			const { container: plain } = render(<Section layout="hero" title="t">content</Section>)
+			const { container: aligned } = render(<Section layout="hero" title="t" alignText="right">content</Section>)
 
-			expect((plain.firstElementChild as HTMLElement).style.getPropertyValue('--section-align')).toBe('')
-			expect((aligned.firstElementChild as HTMLElement).style.getPropertyValue('--section-align')).toBe('right')
+			expect(align(plain)).toBe('')
+			expect(align(aligned)).toBe('right')
+		})
+
+		it('defaults content-form to left and banner to center', () => {
+			const { container: form } = render(<Section layout="content-form" title="t">content</Section>)
+			const { container: banner } = render(<Section layout="banner" title="t">content</Section>)
+
+			expect(align(form)).toBe('left')
+			expect(align(banner)).toBe('center')
+		})
+
+		it('lets an explicit alignText beat the layout default', () => {
+			const { container } = render(<Section layout="banner" title="t" alignText="right">content</Section>)
+
+			expect(align(container)).toBe('right')
+		})
+
+		it('renders no inner element in the default layout, so there is nowhere to publish it', () => {
+			const { container } = render(<Section title="t" alignText="center">content</Section>)
+
+			expect(container.querySelector('.section__inner')).toBeNull()
+			expect(container.querySelector('[style*="--section-align"]')).toBeNull()
 		})
 
 		it('does not leak alignText onto the DOM as an attribute', () => {

@@ -31,7 +31,6 @@ describe('getStateHueTokens', () => {
 			hover: 'var(--inkq-accent-hover)',
 			active: 'var(--inkq-accent-active)',
 			select: 'var(--inkq-accent-tint)',
-			disable: 'var(--inkq-accent-muted)',
 		})
 	})
 

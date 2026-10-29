@@ -5,9 +5,9 @@ import { Button } from '../Button'
 describe('Button.Group', () => {
 	reset('Button', 'Button.Group')
 
-	it('registers hasPriority and orientation as its own defaults', () => {
-		const defaults = getDefaultProps<Button.Group.Props>('Button.Group')
-		expect(defaults).toEqual({ hasPriority: true, orientation: 'horizontal' })
+	it('registers div, hasPriority and orientation as its own defaults', () => {
+		const defaults = getDefaultProps<Button.Group.Props & { as: 'div' }>('Button.Group')
+		expect(defaults).toEqual({ as: 'div', hasPriority: true, orientation: 'horizontal' })
 	})
 
 	it('renders a group role for assistive tech', () => {
@@ -52,6 +52,20 @@ describe('Button.Group', () => {
 			</Button.Group>
 		)
 		expect(screen.getByRole('button', { name: 'First' })).not.toHaveAttribute('data-priority')
+	})
+
+	it('with hasPriority="reverse", makes the last button primary and ranks the others in reverse', () => {
+		render(
+			<Button.Group hasPriority="reverse">
+				<Button>First</Button>
+				<Button>Second</Button>
+				<Button>Third</Button>
+			</Button.Group>
+		)
+
+		expect(screen.getByRole('button', { name: 'First' })).toHaveAttribute('data-priority', 'tertiary')
+		expect(screen.getByRole('button', { name: 'Second' })).toHaveAttribute('data-priority', 'secondary')
+		expect(screen.getByRole('button', { name: 'Third' })).toHaveAttribute('data-priority', 'primary')
 	})
 
 	it('marks full width via data-block, and omits it when fullWidth is falsy', () => {

@@ -92,12 +92,12 @@ describe('buildVariantSchemes', () => {
 
 	it('never appends a priority clause for special variants (light/dark/text), since they are not registered in VARIANT_ORDER — but still appends their tone clause', () => {
 		const rules = buildVariantSchemes()
-		// the first "dark" rule enumerated pairs with the "action" tone (see
+		// the first "dark" rule enumerated pairs with the "accent" tone (see
 		// tokens/variants.test.ts); pinning the full selector doubles as the
 		// positive control that its tone clause IS present, alongside the
 		// (implicit, by exact match) absence of any data-priority clause
 		const dark = rules.find(r => r.selector.startsWith('[data-variant="dark"]'))
 
-		expect(dark?.selector).toBe('[data-variant="dark"],\n[data-variant="dark"]:is([data-tone="action"])')
+		expect(dark?.selector).toBe('[data-variant="dark"],\n[data-variant="dark"]:is([data-tone="accent"])')
 	})
 })

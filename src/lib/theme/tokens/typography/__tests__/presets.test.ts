@@ -53,12 +53,21 @@ describe('getFontPresetTokens', () => {
 		expect(text.caption.image.fontFamily).toBe(alias.fontFamily('body'))
 	})
 
+	it('splits body into a base and an sm preset that differ only in size', () => {
+		expect(Object.keys(text.body).sort()).toEqual(['base', 'sm'])
+		expect(text.body.sm.fontSize).toBe(alias.fontSize('caption'))
+		expect(text.body.sm.fontSize).not.toBe(text.body.base.fontSize)
+		expect(text.body.sm.fontFamily).toBe(text.body.base.fontFamily)
+		expect(text.body.sm.fontWeight).toBe(text.body.base.fontWeight)
+		expect(text.body.sm.lineHeight).toBe(text.body.base.lineHeight)
+	})
+
 	it('provides all four font longhands on every required preset (shorthand collapse needs them)', () => {
 		const presets = [
 			text.h1, text.h2, text.h3, text.h4, text.h5, text.h6,
-			text.body, text.control, text.navigation, text.numeric, text.prose,
-			text.eyebrow, text.label.base, text.label.mono,
-			text.caption.base, text.caption.image, text.caption,
+			text.body.base, text.body.sm, text.control, text.navigation, text.numeric, text.prose,
+			text.eyebrow, text.error, text.label.base, text.label.mono,
+			text.caption.base, text.caption.image,
 		]
 		for (const preset of presets) {
 			expect(Object.keys(preset).sort()).toEqual(['fontFamily', 'fontSize', 'fontWeight', 'lineHeight'])

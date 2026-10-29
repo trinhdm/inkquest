@@ -1,6 +1,7 @@
 import { getDefaultProps } from '@/hooks/useProps'
-import { render, reset } from '@/tests/test-utils'
+import { render, reset, screen } from '@/tests/test-utils'
 import { Icon } from './Icon'
+import type { Route } from 'next'
 
 describe('Icon', () => {
 	reset('Icon')
@@ -69,20 +70,95 @@ describe('Icon', () => {
 		expect(svg).not.toHaveAttribute('role')
 	})
 
-	it('labels a social-brand glyph with its type and marks it as an image', () => {
+	it('labels a social-brand glyph with its type, with no img role and no title', () => {
 		const { container } = render(<Icon type="instagram" />)
 		const svg = container.querySelector('svg')
 
 		expect(svg).toHaveAttribute('aria-label', 'instagram icon')
-		expect(svg).toHaveAttribute('role', 'img')
-		expect(svg?.querySelector('title')).toHaveTextContent('instagram')
+		expect(svg).not.toHaveAttribute('role')
+		expect(svg?.querySelector('title')).not.toBeInTheDocument()
 	})
 
-	it('hides a glyph from assistive tech when hidden is set, with a visible control', () => {
-		const { container: hidden } = render(<Icon type="close" hidden />)
-		const { container: shown } = render(<Icon type="close" />)
+	it('hides a glyph from assistive tech by default, as a decorative icon', () => {
+		const { container } = render(<Icon type="close" />)
+		expect(container.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+	})
 
-		expect(hidden.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
-		expect(shown.querySelector('svg')).not.toHaveAttribute('aria-hidden')
+	it('registers hidden, color, size and strokeLinecap defaults', () => {
+		const defaults = getDefaultProps<Icon.Props & Pick<Icon.Specs['defaults'], 'as'>>('Icon')
+
+		expect(defaults).toEqual({
+			as: 'svg',
+			color: 'currentColor',
+			hidden: true,
+			size: 16,
+			strokeLinecap: 'round',
+		})
+	})
+
+	it('exposes the glyph to assistive tech when hidden is false', () => {
+		const { container } = render(<Icon type="close" hidden={ false } />)
+		const svg = container.querySelector('svg')
+
+		expect(svg).not.toHaveAttribute('aria-hidden', 'true')
+		expect(svg).toHaveAttribute('aria-label', 'close icon')
+	})
+
+	it('draws a lucide glyph in currentColor by default', () => {
+		const { container } = render(<Icon type="close" />)
+		expect(container.querySelector('svg')).toHaveAttribute('stroke', 'currentColor')
+	})
+
+	it('draws a social-brand glyph with the default color and round line caps', () => {
+		const { container } = render(<Icon type="instagram" />)
+		const svg = container.querySelector('svg')
+
+		expect(svg).toHaveAttribute('stroke', 'currentColor')
+		expect(svg).toHaveAttribute('stroke-linecap', 'round')
+	})
+
+	it('lets a social brand override the color and line cap', () => {
+		const { container } = render(<Icon type="instagram" color="red" strokeLinecap="square" />)
+		const svg = container.querySelector('svg')
+
+		expect(svg).toHaveAttribute('stroke', 'red')
+		expect(svg).toHaveAttribute('stroke-linecap', 'square')
+	})
+
+	describe('root element', () => {
+		it('wraps the glyph in a span, not a bare svg', () => {
+			const { container } = render(<Icon type="close" />)
+			const root = container.firstElementChild
+
+			expect(root?.tagName.toLowerCase()).toBe('span')
+			expect(root?.querySelector('svg')).toBeInTheDocument()
+			expect(container.querySelectorAll('a')).toHaveLength(0)
+		})
+
+		it('wraps the glyph in a link when href is set', () => {
+			render(<Icon type="close" href="/about" hidden={ false } />)
+			const link = screen.getByRole('link')
+
+			expect(link).toHaveAttribute('href', '/about')
+			expect(link.querySelector('svg')).toBeInTheDocument()
+			expect(link).not.toHaveAttribute('target')
+			expect(link).not.toHaveAttribute('rel')
+		})
+
+		it('opens an external href in a new tab with a safe rel', () => {
+			render(<Icon type="instagram" href={ 'https://instagram.com/inkquest' as Route } hidden={ false } />)
+			const link = screen.getByRole('link')
+
+			expect(link).toHaveAttribute('href', 'https://instagram.com/inkquest')
+			expect(link).toHaveAttribute('target', '_blank')
+			expect(link).toHaveAttribute('rel', 'noopener noreferrer')
+		})
+
+		it('renders no link for an unknown icon type, even with an href', () => {
+			const { container } = render(
+				<Icon type={ 'not-a-real-icon' as Icon.Props['type'] } href="/about" />
+			)
+			expect(container).toBeEmptyDOMElement()
+		})
 	})
 })

@@ -1,5 +1,6 @@
 import { buildSection } from '../buildSection'
 import { render, reset, screen } from '@/tests/test-utils'
+import { tokens } from '@/lib/theme/reference'
 import { Button } from '@/components/core/Button'
 import { SectionFooter } from '../SectionFooter'
 import type { useStyles } from '@/hooks/useStyles'
@@ -330,6 +331,169 @@ describe('buildSection', () => {
 			)
 
 			expect(container.querySelector('.style-inner')).not.toBeInTheDocument()
+		})
+	})
+
+	describe('text wrapping', () => {
+		const renderChildren = (children: Section.Props['children'], overrides: Partial<Section.Props> = {}) =>
+			render(
+				<>{ buildSection({
+					props: buildProps({ children, ...overrides }),
+					reveal: makeReveal(),
+					styles: makeStyles(),
+				}) }</>
+			)
+
+		it('wraps a string child in a <p> with the inkq-prose class', () => {
+			renderChildren('Lead paragraph')
+
+			const text = screen.getByText('Lead paragraph')
+			expect(text.tagName).toBe('P')
+			expect(text).toHaveClass('inkq-prose')
+		})
+
+		it('gives every string its own <p>, each with its own reveal slot', () => {
+			renderChildren(['One', 'Two'])
+
+			expect(screen.getByText('One').tagName).toBe('P')
+			expect(screen.getByText('Two').tagName).toBe('P')
+			expect(screen.getByText('One')).toHaveAttribute('data-reveal-item', '0')
+			expect(screen.getByText('Two')).toHaveAttribute('data-reveal-item', '1')
+		})
+
+		it('treats a Fragment as text, wrapping it in a prose <p>', () => {
+			renderChildren(<>Fragment <strong>text</strong></>)
+
+			const strong = screen.getByText('text'),
+				paragraph = strong.closest('p')
+
+			expect(paragraph).toBeInTheDocument()
+			expect(paragraph).toHaveClass('inkq-prose')
+			expect(paragraph).toHaveTextContent('Fragment text')
+		})
+
+		it('keeps an element child out of the text wrappers', () => {
+			renderChildren(['Text', <span key="el">Element</span>])
+
+			expect(screen.getByText('Element').closest('p')).toBeNull()
+			expect(screen.getByText('Text').tagName).toBe('P')
+		})
+
+		it('leaves the inkq-prose class off the <p> for layout="banner-note"', () => {
+			renderChildren('A note', { layout: 'banner-note' })
+
+			const note = screen.getByText('A note')
+			expect(note.tagName).toBe('P')
+			expect(note).not.toHaveClass('inkq-prose')
+		})
+
+		it('groups several text children and elements in one description container when a title is present', () => {
+			const { container } = renderChildren(['One', <span key="el">El</span>], { title: 'Headline' })
+			const description = container.querySelector('.style-description') as HTMLElement
+
+			expect(description).toBeInTheDocument()
+			expect(description).toContainElement(screen.getByText('One'))
+			expect(description).not.toContainElement(screen.getByText('El'))
+		})
+	})
+
+	describe('more layouts', () => {
+		const renderLayout = (props: Partial<Section.Props>) =>
+			render(
+				<>{ buildSection({
+					props: buildProps(props),
+					reveal: makeReveal(),
+					styles: makeStyles(),
+				}) }</>
+			)
+
+		it('wraps layout="banner-note" in a single "inner" element', () => {
+			const { container } = renderLayout({ children: 'A note', layout: 'banner-note', title: 'Heads up' })
+			const inner = container.querySelector('.style-inner') as HTMLElement
+
+			expect(inner).toBeInTheDocument()
+			expect(inner).toContainElement(screen.getByRole('heading', { level: 2, name: 'Heads up' }))
+			expect(inner).toContainElement(screen.getByText('A note'))
+		})
+
+		it('renders layout="content" as an <h2> with no inner wrapper', () => {
+			const { container } = renderLayout({ children: 'Body', layout: 'content', title: 'Content title' })
+
+			expect(screen.getByRole('heading', { level: 2, name: 'Content title' })).toBeInTheDocument()
+			expect(container.querySelector('.style-inner')).not.toBeInTheDocument()
+			expect(container.querySelector('.style-body')).toBeInTheDocument()
+		})
+
+		it('puts the title before the eyebrow for layout="hero-tight", the reverse of the default', () => {
+			const order = (layout: Section.Layout) => {
+				const { unmount } = renderLayout({ eyebrow: 'Eyebrow', layout, title: 'Title' } as Partial<Section.Props>)
+				const title = screen.getByRole('heading', { name: 'Title' }),
+					eyebrow = screen.getByText('Eyebrow'),
+					before = !!(title.compareDocumentPosition(eyebrow) & Node.DOCUMENT_POSITION_FOLLOWING)
+				unmount()
+				return before
+			}
+
+			expect(order('hero-tight')).toBe(true)
+			// positive control: hero-split keeps the eyebrow first
+			expect(order('hero-split')).toBe(false)
+		})
+
+		it('lays hero-tight out in a Grid content column, with no body wrapper', () => {
+			const { container } = renderLayout({ children: 'Tight body', layout: 'hero-tight', title: 'Tight' })
+			const content = container.querySelector('.style-content') as HTMLElement
+
+			expect(screen.getByRole('heading', { level: 1, name: 'Tight' })).toBeInTheDocument()
+			expect(content).toContainElement(screen.getByText('Tight body'))
+			expect(container.querySelector('.style-body')).not.toBeInTheDocument()
+		})
+
+		it('places the hero-tight footer beside the content column', () => {
+			const { container } = renderLayout({
+				children: ['Tight body', <SectionFooter key="f"><Button>Join</Button></SectionFooter>],
+				layout: 'hero-tight',
+				title: 'Tight',
+			})
+			const content = container.querySelector('.style-content') as HTMLElement
+
+			expect(content).not.toContainElement(screen.getByRole('button', { name: 'Join' }))
+		})
+	})
+
+	describe('footer size', () => {
+		const footer = (
+			<SectionFooter>
+				<Button>One</Button>
+				<Button>Two</Button>
+			</SectionFooter>
+		)
+
+		const trackingOf = (name: string) =>
+			screen.getByRole('button', { name }).style.getPropertyValue('--button-tracking')
+
+		it('sizes the footer buttons large for layout="hero"', () => {
+			render(
+				<>{ buildSection({
+					props: buildProps({ children: footer, layout: 'hero' }),
+					reveal: makeReveal(),
+					styles: makeStyles(),
+				}) }</>
+			)
+
+			expect(trackingOf('One')).toBe(tokens.letterSpacing('stat'))
+			expect(trackingOf('Two')).toBe(tokens.letterSpacing('stat'))
+		})
+
+		it('sizes the footer buttons medium for any other layout', () => {
+			render(
+				<>{ buildSection({
+					props: buildProps({ children: footer, layout: 'hero-split' }),
+					reveal: makeReveal(),
+					styles: makeStyles(),
+				}) }</>
+			)
+
+			expect(trackingOf('One')).toBe(tokens.letterSpacing('display'))
 		})
 	})
 })
