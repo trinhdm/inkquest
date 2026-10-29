@@ -35,7 +35,7 @@ export const PasswordRules = ({ value }: PasswordRulesProps) => {
 					)) }
 				</div>
 				<div className="password__score">
-					<span>{ PW_SCORE[met - 1] ?? 'SCORE' }</span>
+					<span>{ PW_SCORE[met - 1] ?? '-' }</span>
 				</div>
 			</div>
 

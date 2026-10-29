@@ -10,8 +10,13 @@ export type SignupValues =
 
 export const signupSchema = z.object({
 	email: emailRule,
+	tel: z.string()
+		.refine(
+			val => /^\d{10}$/.test(val),
+			{ message: 'Please enter a valid 10-digit phone number' }
+		).optional(),
 	password: z.string()
-		.min(1, 'Enter a password.')
+		.min(1, 'Password doesn’t meet the requirements.')
 		.superRefine((value, ctx) => {
 			const message = describeMissing(value)
 			if (message) ctx.addIssue({ code: 'custom', message })

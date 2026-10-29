@@ -6,17 +6,22 @@ import { magicSignup, signup, verify } from '../_utils/actions'
 import type {
 	SignupFlow, SignupScreen,
 	ReplyFromScreen, SendLinkScreen,
+	SignupMethod,
+	VerifyFromScreen,
 } from './signup.context'
 
 export const useSignupFlow = (): SignupFlow => {
 	const [screen, setScreen] = useState<SignupScreen>('join')
 	const [replyFrom, setReplyFrom] = useState<ReplyFromScreen>('join')
+	const [verifyFrom, setVerifyFrom] = useState<VerifyFromScreen>('join')
+
 	const [resent, setResent] = useState<boolean>(false)
 	const [waiting, setWaiting] = useState(false)
+	const [method, setMethod] = useState<SignupMethod>('email')
 
 	const signupForm = useForm(signup, initFormState)
-	const resendForm = useForm(signup, initFormState)
 	const magicForm = useForm(magicSignup, initFormState)
+	const resendForm = useForm(signup, initFormState)
 	const verifyForm = useForm(verify, initFormState)
 
 	const waitUntilExpiry: SignupFlow['waitUntilExpiry'] = event => {
@@ -37,7 +42,7 @@ export const useSignupFlow = (): SignupFlow => {
 	})
 
 	useOnReply(magicForm.state, state => {
-		// setReplyFrom('magic')
+		setReplyFrom('magic')
 		if (!state.success) return
 		handleScreen('magic')
 	})
@@ -45,6 +50,7 @@ export const useSignupFlow = (): SignupFlow => {
 	return {
 		endWait: () => setWaiting(false),
 		handleSignupFlow: setScreen,
+		handleSignupMethod: setMethod,
 		waitUntilExpiry,
 
 		signup: signupForm,
@@ -52,8 +58,10 @@ export const useSignupFlow = (): SignupFlow => {
 		resend: resendForm,
 		verify: verifyForm,
 
-		verifyReply: replyFrom === 'verify' ? resendForm : verifyForm,
+		formReply: replyFrom === 'magic' ? magicForm : signupForm,
+		verifyReply: verifyFrom === 'verify' ? resendForm : verifyForm,
 		// screen: signupForm.state.success ? 'success' : screen,
+		method,
 		screen,
 		resent,
 		waiting,

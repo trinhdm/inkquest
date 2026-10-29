@@ -15,8 +15,9 @@ export const SignupVerify = () => {
 	const {
 		endWait,
 		handleSignupFlow,
-		pageID, resent, screen, waiting,
+		pageID, resent, waiting,
 		resend, signup,
+		method, screen,
 		verify: { action, pending, state },
 		waitUntilExpiry,
 	} = useSignupCtx()
@@ -166,7 +167,7 @@ export const SignupVerify = () => {
 						unstyled data-link
 						onClick={ () => handleSignupFlow('join') }
 					>
-						Wrong email?
+						Wrong { method }?
 					</Button>
 				</div>
 			</Form>
