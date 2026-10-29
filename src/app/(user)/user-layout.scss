@@ -49,20 +49,12 @@
 		}
 	}
 
-	&__magic,
 	&__note {
 		color: var(--inkq-color-text-tertiary);
-		font: var(--inkq-text-body-sm);
-		line-height: var(--inkq-font-leading-label);
-	}
-
-	&__magic {
-		text-align: center;
-	}
-
-	&__note {
 		column-gap: var(--inkq-gutter-list);
 		display: flex;
+		font: var(--inkq-text-body-sm);
+		line-height: var(--inkq-font-leading-label);
 		max-width: var( --inkq-breakpoint-min);
 
 		[data-dot] {
@@ -83,6 +75,11 @@
 					color: var(--inkq-color-text-tertiary);
 				}
 			}
+		}
+
+		#login-email & {
+			justify-content: center;
+			max-width: none;
 		}
 	}
 

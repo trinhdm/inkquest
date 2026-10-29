@@ -1,11 +1,13 @@
+import Link from 'next/link'
+import { useState } from 'react'
 import { useSignupCtx, type SignupMethod } from '../_utils/signup.context'
 import { validateSignup } from '../_utils/schema'
-import { Button } from '@/components/core/Button'
-import { Form } from '@/components/form/Form'
-import { Icon } from '@/components/core/Icon'
-import { Section } from '@/components/layout/Section'
-import { SignupFields } from '../_components/fields'
-import Link from 'next/link'
+import { AuthFooter } from '../../_components/AuthFooter'
+import { AuthForm } from '../../_components/AuthForm'
+import { Field } from '@/components/form/Field'
+import { PasswordRules } from '../_components/password'
+import { SignupOptions } from '../_components/options'
+import { PLACEHOLDER_EMAIL, PLACEHOLDER_TEL } from '@/lib/form'
 
 const SUBMIT_LABELS = {
 	email:	'Create account',
@@ -19,71 +21,96 @@ export const SignupRoot = () => {
 		signup: { action, pending, state },
 	} = useSignupCtx()
 
+	const [password, setPassword] = useState('')
+	const [lastState, setLastState] = useState(state)
+
+	if (state !== lastState) {
+		setLastState(state)
+		setPassword('')
+	}
+
+	const authFormProps = {
+		form: {
+			action, pending, state,
+			validate: validateSignup,
+		},
+		header: {
+			title: 'Join Inkquest.',
+			eyebrow: 'Create Account',
+			description: 'One account for finding artists, bidding on flash, and booking.',
+		},
+		idx,
+	} satisfies Omit<AuthForm.Props, 'children'>
+
+	const authFooterProps = {
+		button: {
+			disabled: waiting,
+			label: SUBMIT_LABELS[method],
+			loading: pending,
+			name: 'method',
+			value: method,
+		},
+		sso: { verb: 'continue' },
+	} satisfies Omit<AuthFooter.Props, 'children'>
+
 	return (
-		<Section
-			eyebrow="Create Account"
-			id={ idx.section }
-			layout="content-form"
-			tabIndex={ -1 }
-			title="Join Inkquest."
-		>
-			One account for finding artists, bidding on flash, and booking.
+		<AuthForm { ...authFormProps }>
+			<input name="method" type="hidden" value={ method } />
 
-			<Form
-				action={ action }
-				id={ idx.form }
-				pending={ pending }
-				state={ state }
-				validate={ validateSignup }
+			<Field
+				required
+				disabled={ pending }
+				id={ `${idx.field}-${method}` }
+				label={ method === 'phone' ? 'Phone number' : 'Email' }
+				caption={ <SignupOptions /> }
 			>
-				<SignupFields id={ idx.field } />
+				{ method === 'phone' ? (
+					<Field.Input
+						autoComplete="tel"
+						defaultValue={ state.values.tel }
+						key="tel"
+						name="tel"
+						placeholder={ PLACEHOLDER_TEL }
+						type="tel"
+					/>
+				) : (
+					<Field.Input
+						autoComplete="email"
+						defaultValue={ state.values.email }
+						key="email"
+						name="email"
+						placeholder={ PLACEHOLDER_EMAIL }
+						type="email"
+					/>
+				) }
+			</Field>
 
-				<div className="form__ctas authentication">
-					<Button
-						fullWidth
-						animate="right"
-						className="authentication__email"
-						disabled={ waiting }
-						loading={ pending }
-						name="method"
-						type="submit"
-						value={ method }
+			{ method === 'email' && (
+				<>
+					<input hidden autoComplete="username" name="username" ng-hide="true" type="text" />
+
+					<Field
+						required
+						disabled={ pending }
+						id={ `${idx.field}-password` }
+						label="Password"
+						caption={ <PasswordRules value={ password } /> }
 					>
-						{ SUBMIT_LABELS[method] }
-						<Button.Section right><Icon type="arrow-right" /></Button.Section>
-					</Button>
+						<Field.Input
+							autoComplete="new-password"
+							name="password"
+							onChange={ event => setPassword(event.currentTarget.value) }
+							placeholder="Your password"
+							type="password"
+						/>
+					</Field>
+				</>
+			) }
 
-					<div className="authentication__label" role="presentation">
-						<span>or</span>
-					</div>
-
-					<Button.Group
-						fullWidth
-						className="authentication__sso"
-						hasPriority={ false }
-					>
-						<Button
-							fullWidth
-							variant="outline"
-						>
-							<Button.Section><Icon type="google" /></Button.Section>
-							Continue with Google
-						</Button>
-						<Button
-							fullWidth
-							variant="outline"
-						>
-							<Button.Section><Icon type="apple" /></Button.Section>
-							Continue with Apple
-						</Button>
-					</Button.Group>
-
-					<div className="authentication__note">
-						<p>By creating an account, you confirm you&apos;re 18+ and agree to the <Link href="/terms" data-link>Terms</Link> and <Link href="/privacy-policy" data-link>Privacy Policy</Link>.</p>
-					</div>
-				</div>
-			</Form>
-		</Section>
+			<AuthFooter { ...authFooterProps }>
+				<p>By creating an account, you confirm you&apos;re 18+ and agree to the <Link href="/terms" data-link>Terms</Link> and <Link href="/privacy-policy" data-link>Privacy Policy</Link>.</p>
+			</AuthFooter>
+		</AuthForm>
 	)
 }
 

@@ -1,10 +1,9 @@
 import { useLoginCtx } from '../_utils/login.context'
 import { validateLoginForm } from '../_utils/schema'
+import { AuthFooter } from '../../_components/AuthFooter'
+import { AuthForm } from '../../_components/AuthForm'
 import { Button } from '@/components/core/Button'
 import { Field } from '@/components/form/Field'
-import { Form } from '@/components/form/Form'
-import { Icon } from '@/components/core/Icon'
-import { Section } from '@/components/layout/Section'
 import { PLACEHOLDER_EMAIL } from '@/lib/form'
 
 export const LoginRoot = () => {
@@ -23,108 +22,75 @@ export const LoginRoot = () => {
 		</Button>
 	)
 
+	const authFormProps = {
+		form: {
+			action: login.action,
+			pending,
+			state,
+			validate: validateLoginForm,
+		},
+		header: {
+			title: 'Welcome back.',
+			eyebrow: 'Log In',
+			description: 'Pick up where you left off.',
+		},
+		idx,
+	} satisfies Omit<AuthForm.Props, 'children'>
+
+	const authFooterProps = {
+		button: {
+			disabled: waiting,
+			label: 'Log In',
+			loading: login.pending,
+		},
+		sso: { verb: 'Log In' },
+	} satisfies Omit<AuthFooter.Props, 'children'>
+
 	return (
-		<Section
-			eyebrow="Log In"
-			id={ idx.section }
-			layout="content-form"
-			tabIndex={ -1 }
-			title="Welcome back."
-		>
-			Pick up where you left off.
-
-			<Form
-				action={ login.action }
-				id={ idx.form }
-				pending={ pending }
-				state={ state }
-				validate={ validateLoginForm }
+		<AuthForm { ...authFormProps }>
+			<Field
+				required
+				disabled={ pending }
+				id={ `${idx.field}-email` }
+				label="Email"
 			>
-				<Field
-					required
-					disabled={ pending }
-					id={ `${idx.field}-email` }
-					label="Email"
+				<Field.Input
+					autoComplete="email"
+					defaultValue={ state.values.email }
+					name="email"
+					placeholder={ PLACEHOLDER_EMAIL }
+					type="email"
+				/>
+			</Field>
+
+			<Field
+				required
+				disabled={ pending }
+				id={ `${idx.field}-password` }
+				label="Password"
+				caption={ ForgotPass }
+			>
+				<Field.Input
+					autoComplete="current-password"
+					name="password"
+					placeholder="Your password"
+					type="password"
+				/>
+			</Field>
+
+			<AuthFooter { ...authFooterProps }>
+				<Button
+					unstyled data-link
+					data-intent="magic"
+					disabled={ waiting }
+					formAction={ magic.action }
+					loading={ magic.pending }
+					type="submit"
 				>
-					<Field.Input
-						autoComplete="email"
-						defaultValue={ state.values.email }
-						name="email"
-						placeholder={ PLACEHOLDER_EMAIL }
-						type="email"
-					/>
-				</Field>
-
-				<Field
-					required
-					disabled={ pending }
-					id={ `${idx.field}-password` }
-					label="Password"
-					caption={ ForgotPass }
-				>
-					<Field.Input
-						autoComplete="current-password"
-						name="password"
-						placeholder="Your password"
-						type="password"
-					/>
-				</Field>
-
-				<div className="form__ctas authentication">
-					<Button
-						fullWidth
-						animate="right"
-						className="authentication__email"
-						disabled={ waiting }
-						loading={ login.pending }
-						type="submit"
-					>
-						Log In
-						<Button.Section right><Icon type="arrow-right" /></Button.Section>
-					</Button>
-
-					<div className="authentication__label" role="presentation">
-						<span>or</span>
-					</div>
-
-					<Button.Group
-						fullWidth
-						className="authentication__sso"
-						hasPriority={ false }
-					>
-						<Button
-							fullWidth
-							onClick={ () => handleLoginFlow('success') }
-							variant="outline"
-						>
-							<Button.Section><Icon type="google" /></Button.Section>
-							Log In with Google
-						</Button>
-						<Button
-							fullWidth
-							onClick={ () => handleLoginFlow('success') }
-							variant="outline"
-						>
-							<Button.Section><Icon type="apple" /></Button.Section>
-							Log In with Apple
-						</Button>
-					</Button.Group>
-
-					<div className="authentication__magic">
-						<Button
-							unstyled data-link
-							data-intent="magic"
-							disabled={ waiting }
-							formAction={ magic.action }
-							loading={ magic.pending }
-							type="submit"
-						>
-							Email me a magic link instead
-						</Button>
-					</div>
-				</div>
-			</Form>
-		</Section>
+					Email me a magic link instead
+				</Button>
+			</AuthFooter>
+		</AuthForm>
 	)
 }
 
