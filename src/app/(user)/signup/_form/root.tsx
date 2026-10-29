@@ -7,7 +7,7 @@ import { AuthForm } from '../../_components/AuthForm'
 import { Field } from '@/components/form/Field'
 import { PasswordRules } from '../_components/password'
 import { SignupOptions } from '../_components/options'
-import { PLACEHOLDER_EMAIL, PLACEHOLDER_TEL } from '@/lib/form'
+import { PLACEHOLDER } from '@/lib/form'
 
 const SUBMIT_LABELS = {
 	email:	'Create account',
@@ -36,7 +36,7 @@ export const SignupRoot = () => {
 		},
 		header: {
 			title: 'Join Inkquest.',
-			eyebrow: 'Create Account',
+			eyebrow: 'Sign Up',
 			description: 'One account for finding artists, bidding on flash, and booking.',
 		},
 		idx,
@@ -70,7 +70,7 @@ export const SignupRoot = () => {
 						defaultValue={ state.values.tel }
 						key="tel"
 						name="tel"
-						placeholder={ PLACEHOLDER_TEL }
+						placeholder={ PLACEHOLDER.tel }
 						type="tel"
 					/>
 				) : (
@@ -79,7 +79,7 @@ export const SignupRoot = () => {
 						defaultValue={ state.values.email }
 						key="email"
 						name="email"
-						placeholder={ PLACEHOLDER_EMAIL }
+						placeholder={ PLACEHOLDER.email }
 						type="email"
 					/>
 				) }

@@ -11,27 +11,37 @@ import type {
 } from './login.context'
 
 export const useLoginFlow = ({ id: pageID }: LoginPageData): LoginFlow => {
-	const [screen, setScreen] = useState<LoginScreen>('email')
-	const [replyFrom, setReplyFrom] = useState<ReplyFromScreen>('email')
-	const [resent, setResent] = useState<boolean>(false)
+	const [screen, setScreen] = useState<LoginScreen>('begin')
+	const [replyFrom, setReplyFrom] = useState<ReplyFromScreen>('begin')
 	const [waiting, setWaiting] = useState(false)
 
 	const loginForm = useForm(login, initFormState)
 	const magicForm = useForm(magicLogin, initFormState)
 	const resetForm = useForm(requestReset, initFormState)
 
-	const waitUntilExpiry: LoginFlow['waitUntilExpiry'] = event => {
-		if (waiting || screen === 'success')
-			event.preventDefault()
+	const formReply = replyFrom === 'magic' ? magicForm : loginForm
+	const shown = loginForm.state.success ? 'success' : screen
+
+	const resetEmail = screen === 'forgot' || screen === 'reset'
+		? resetForm.state.values.email
+		: undefined
+
+	const handleLoginFlow = (next: LoginScreen) => {
+		setWaiting(false)
+		setScreen(next)
 	}
 
 	const handleScreen = (next: SendLinkScreen) => {
 		setWaiting(true)
-		setResent(screen === next)
 		setScreen(next)
 	}
 
-	useOnReply(loginForm.state, () => setReplyFrom('email'))
+	const waitUntilExpiry: LoginFlow['waitUntilExpiry'] = event => {
+		if (waiting || shown === 'success')
+			event.preventDefault()
+	}
+
+	useOnReply(loginForm.state, () => setReplyFrom('begin'))
 
 	useOnReply(magicForm.state, state => {
 		setReplyFrom('magic')
@@ -44,7 +54,7 @@ export const useLoginFlow = ({ id: pageID }: LoginPageData): LoginFlow => {
 
 	return {
 		endWait: () => setWaiting(false),
-		handleLoginFlow: setScreen,
+		handleLoginFlow,
 		waitUntilExpiry,
 
 		login: loginForm,
@@ -52,12 +62,12 @@ export const useLoginFlow = ({ id: pageID }: LoginPageData): LoginFlow => {
 		reset: resetForm,
 
 		formReply: {
-			...(replyFrom === 'magic' ? magicForm : loginForm),
+			...formReply,
 			pending: loginForm.pending || magicForm.pending,
 		},
+		destination: resetEmail ?? formReply.state.values.email ?? '',
 		idx: getAuthFormIDs(pageID, screen),
-		screen: loginForm.state.success ? 'success' : screen,
-		resent,
+		screen: shown,
 		waiting,
 	}
 }

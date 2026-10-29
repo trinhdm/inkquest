@@ -15,12 +15,17 @@ export const loginSchema = z.object({
 const validateLogin = validateWith(loginSchema)
 
 
+const sharedSchema = {
+	email: emailRule,
+	resent: z.stringbool().optional(),
+}
+
 //	LoginReset
 
 export type ResetValues =
 	z.infer<typeof resetSchema>
 
-export const resetSchema = z.object({ email: emailRule })
+export const resetSchema = z.object(sharedSchema)
 export const validateReset = validateWith(resetSchema)
 
 
@@ -29,7 +34,7 @@ export const validateReset = validateWith(resetSchema)
 export type MagicValues =
 	z.infer<typeof magicSchema>
 
-export const magicSchema = z.object({ email: emailRule })
+export const magicSchema = z.object(sharedSchema)
 const validateMagic = validateWith(magicSchema)
 
 

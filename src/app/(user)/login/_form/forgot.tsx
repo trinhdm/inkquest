@@ -4,17 +4,16 @@ import { AuthForm } from '../../_components/AuthForm'
 import { Button } from '@/components/core/Button'
 import { Field } from '@/components/form/Field'
 import { Icon } from '@/components/core/Icon'
-import { PLACEHOLDER_EMAIL } from '@/lib/form'
+import { PLACEHOLDER } from '@/lib/form'
 
 export const LoginForgot = () => {
-	const { handleLoginFlow, idx, reset } = useLoginCtx()
-	const { email } = reset.state.values
+	const {
+		destination, handleLoginFlow,
+		idx, reset,
+	} = useLoginCtx()
 
 	const authFormProps = {
-		form: {
-			...reset,
-			validate: validateReset,
-		},
+		form: { ...reset, validate: validateReset },
 		header: {
 			title: 'Forgot your password?',
 			eyebrow: 'Reset password',
@@ -33,9 +32,9 @@ export const LoginForgot = () => {
 			>
 				<Field.Input
 					autoComplete="email"
-					defaultValue={ email }
+					defaultValue={ destination }
 					name="email"
-					placeholder={ PLACEHOLDER_EMAIL }
+					placeholder={  PLACEHOLDER.email }
 					type="email"
 				/>
 			</Field>
@@ -43,7 +42,7 @@ export const LoginForgot = () => {
 			<Button.Group hasPriority={ false }>
 				<Button
 					animate="left"
-					onClick={ () => handleLoginFlow('email') }
+					onClick={ () => handleLoginFlow('begin') }
 					variant="ghost"
 				>
 					Back

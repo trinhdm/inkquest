@@ -11,7 +11,7 @@ import { LoginSuccess } from '../_form/success'
 import { LOGIN_PAGE_DATA } from '../_utils/login.data'
 
 const SCREENS = {
-	email:		LoginRoot,
+	begin:		LoginRoot,
 	forgot:		LoginForgot,
 	magic:		LoginMagic,
 	reset:		LoginReset,

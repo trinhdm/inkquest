@@ -1,5 +1,5 @@
 import { useSignupCtx } from '../_utils/signup.context'
-import { validateVerify } from '../_utils/schema'
+import { validateResend } from '../_utils/schema'
 import { AuthForm } from '../../_components/AuthForm'
 import { Button } from '@/components/core/Button'
 import { Field } from '@/components/form/Field'
@@ -23,11 +23,9 @@ const COPY = {
 
 export const SignupVerify = () => {
 	const {
-		endWait, goBack,
+		destination, endWait, goBack,
 		idx, method, reply,
-		resend, resent, to,
-		verify, waiting,
-		waitUntilExpiry,
+		resend, verify, waiting,
 	} = useSignupCtx()
 
 	const copy = COPY[method === 'phone' ? 'phone' : 'email']
@@ -35,26 +33,22 @@ export const SignupVerify = () => {
 	const authFormProps = {
 		form: {
 			action: verify.action,
-			onSubmit: waitUntilExpiry,
 			pending: reply.pending,
-			state: {
-				...reply.state,
-				message: resent && waiting ? `We sent another link to ${to}.` : undefined,
-			},
-			validate: validateVerify,
+			state: reply.state,
+			validate: validateResend,
 		},
 		header: {
 			title: copy.title,
 			eyebrow: 'Verify',
-			description: <>We sent a 6-digit code to { to }. Enter it below.</>,
+			description: <>We sent a 6-digit code to { destination }. Enter it below.</>,
 		},
 		idx,
 	} satisfies Omit<AuthForm.Props, 'children'>
 
 	return (
 		<AuthForm { ...authFormProps }>
+			<input name="destination" type="hidden" value={ destination } />
 			<input name="method" type="hidden" value={ method } />
-			<input name="to" type="hidden" value={ to } />
 
 			{/* <Field.Group layout="keypad" legend="">
 				<Field id={ `${FIELD_ID}-code-1` } label="1">
@@ -133,7 +127,6 @@ export const SignupVerify = () => {
 				</Button>
 				<Button
 					animate="right"
-					disabled={ waiting }
 					loading={ verify.pending }
 					type="submit"
 				>
@@ -148,7 +141,7 @@ export const SignupVerify = () => {
 					formAction={ resend.action }
 					idx={ idx }
 					loading={ resend.pending }
-					onClick={ waitUntilExpiry }
+					noun="code"
 					onComplete={ endWait }
 					waiting={ waiting }
 				/>

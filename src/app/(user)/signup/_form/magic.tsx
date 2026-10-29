@@ -7,9 +7,9 @@ import { ResendTimer } from '../../_components/ResendTimer'
 
 export const SignupMagic = () => {
 	const {
-		endWait, goBack,
-		idx, method, reply, resend,
-		resent, to, waiting,
+		destination, endWait, goBack,
+		idx, method, reply,
+		resend, waiting,
 		waitUntilExpiry,
 	} = useSignupCtx()
 
@@ -18,23 +18,20 @@ export const SignupMagic = () => {
 			action: resend.action,
 			onSubmit: waitUntilExpiry,
 			pending: resend.pending,
-			state: {
-				...reply.state,
-				message: resent && waiting ? `We sent another link to ${to}.` : undefined,
-			},
+			state: reply.state,
 		},
 		header: {
 			title: 'Check your inbox',
 			eyebrow: 'Magic Link',
-			description: <>We emailed a sign-in link to { to }. It expires in 15 minutes.</>,
+			description: <>We emailed a sign-in link to { destination }. It expires in 15 minutes.</>,
 		},
 		idx,
 	} satisfies Omit<AuthForm.Props, 'children'>
 
 	return (
 		<AuthForm { ...authFormProps }>
+			<input name="destination" type="hidden" value={ destination } />
 			<input name="method" type="hidden" value={ method } />
-			<input name="to" type="hidden" value={ to } />
 
 			<Field
 				readonly
@@ -45,7 +42,7 @@ export const SignupMagic = () => {
 				caption="Didn't arrive? Check spam, or resend below."
 			>
 				<Field.Input
-					defaultValue={ to }
+					defaultValue={ destination }
 					name="email"
 					type="email"
 				/>

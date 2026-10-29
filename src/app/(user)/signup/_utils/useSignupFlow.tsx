@@ -11,12 +11,10 @@ import type {
 } from './signup.context'
 
 export const useSignupFlow = ({ id: pageID }: SignupPageData): SignupFlow => {
-	const [screen, setScreen] = useState<SignupScreen>('join')
-	const [replyFrom, setReplyFrom] = useState<ReplyFromStep | null>(null)
-
 	const [method, setMethod] = useState<SignupMethod>('email')
-	const [resent, setResent] = useState<boolean>(false)
-	const [waiting, setWaiting] = useState(false)
+	const [screen, setScreen] = useState<SignupScreen>('begin')
+	const [replyFrom, setReplyFrom] = useState<ReplyFromStep | null>(null)
+	const [waiting, setWaiting] = useState<boolean>(false)
 
 	const signupForm = useForm(signup, initFormState)
 	const resendForm = useForm(resend, initFormState)
@@ -28,7 +26,7 @@ export const useSignupFlow = ({ id: pageID }: SignupPageData): SignupFlow => {
 	}
 
 	const goBack = () => {
-		setScreen('join')
+		setScreen('begin')
 		setReplyFrom(null)
 		setWaiting(false)
 	}
@@ -43,7 +41,6 @@ export const useSignupFlow = ({ id: pageID }: SignupPageData): SignupFlow => {
 	useOnReply(resendForm.state, state => {
 		setReplyFrom('resend')
 		if (state.success) setWaiting(true)
-		setResent(screen === 'verify')
 	})
 
 	useOnReply(verifyForm.state, state => {
@@ -72,11 +69,10 @@ export const useSignupFlow = ({ id: pageID }: SignupPageData): SignupFlow => {
 		resend: resendForm,
 		verify: verifyForm,
 
+		destination: signupForm.state.values.destination ?? '',
 		idx: getAuthFormIDs(pageID, screen),
-		to: signupForm.state.values.to ?? '',
 		method,
 		reply,
-		resent,
 		screen,
 		waiting,
 	}

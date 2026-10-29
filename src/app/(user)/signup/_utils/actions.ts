@@ -18,7 +18,7 @@ const start = action(signupSchema, {
 		formError: BASE_ERROR,
 	}],
 	onSuccess: (data, values) => ({
-		values: { ...values, to: maskTo(data.method, pickTo(data)) },
+		values: { ...values, destination: maskTo(data.method, pickTo(data)) },
 	}),
 })
 
@@ -28,5 +28,31 @@ export const signup = async (prev: FormState, data: FormData): Promise<FormState
 	//	`method` is a hidden field, so its error shows as a form error instead
 }
 
-export const resend = action(resendSchema)
-export const verify = action(verifySchema)
+
+//	resend
+
+export const resend = action(resendSchema, {
+	conditions: [{
+		check: ({ destination }) => destination.includes(MOCK_DATA.failResend),
+		formError: BASE_ERROR,
+	}],
+	onSuccess: ({ destination, method }) => ({
+		message: `We sent another ${method === 'magic' ? 'link' : 'code'} to ${destination}.`,
+	}),
+})
+
+
+//	verify
+
+export const verify = action(verifySchema, {
+	conditions: [
+		{
+			check: ({ code }) => code.includes(MOCK_DATA.wrongCode),
+			errors: { code: `That code isn't right. Check it and try again.` },
+		},
+		{
+			check: ({ code }) => code.includes(MOCK_DATA.expiredCode),
+			formError: 'That code has expired. Resend to get a new one.',
+		},
+	],
+})

@@ -1,42 +1,34 @@
 import { createPageCtx } from '@/lib/page/context'
-import type { MouseEvent, SubmitEvent, SyntheticEvent } from 'react'
+import type { SubmitEvent } from 'react'
 import type { AuthFormIDs } from '../../_utils/types'
 import type { FormResults } from '@/lib/form'
 import type { SignupPageData, SIGNUP_METHODS } from './signup.data'
 
 export type SignupScreen =
-	| 'join' | 'verify'
+	| 'begin' | 'verify'
 	| 'inbox' | 'success'
 
 export type ReplyFromStep =
-	'resend' | 'verify'
+	| 'resend' | 'verify'
 
 export type SignupMethod =
 	typeof SIGNUP_METHODS[number]
-
-type WaitUntilEvent<E extends SyntheticEvent> =
-	E extends MouseEvent
-		? MouseEvent<HTMLButtonElement>
-		: E extends SubmitEvent
-			? SubmitEvent<HTMLFormElement>
-			: SyntheticEvent<HTMLElement>
 
 export interface SignupFlow {
 	endWait: () => void
 	goBack: () => void
 	handleSignupMethod: (method: SignupMethod) => void
-	waitUntilExpiry: <E extends SyntheticEvent>(event: WaitUntilEvent<E>) => void
+	waitUntilExpiry: (event: SubmitEvent<HTMLFormElement>) => void
 
-	idx: AuthFormIDs
 	signup: FormResults
 	resend: FormResults
 	verify: FormResults
 	reply: FormResults
 
+	destination: string
+	idx: AuthFormIDs
 	method: SignupMethod
 	screen: SignupScreen
-	resent: boolean
-	to: string
 	waiting: boolean
 }
 

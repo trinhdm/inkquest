@@ -4,7 +4,7 @@ import { AuthFooter } from '../../_components/AuthFooter'
 import { AuthForm } from '../../_components/AuthForm'
 import { Button } from '@/components/core/Button'
 import { Field } from '@/components/form/Field'
-import { PLACEHOLDER_EMAIL } from '@/lib/form'
+import { PLACEHOLDER } from '@/lib/form'
 
 export const LoginRoot = () => {
 	const {
@@ -43,7 +43,10 @@ export const LoginRoot = () => {
 			label: 'Log In',
 			loading: login.pending,
 		},
-		sso: { verb: 'Log In' },
+		sso: {
+			onClick: () => handleLoginFlow('success'),
+			verb: 'Log In',
+		},
 	} satisfies Omit<AuthFooter.Props, 'children'>
 
 	return (
@@ -58,7 +61,7 @@ export const LoginRoot = () => {
 					autoComplete="email"
 					defaultValue={ state.values.email }
 					name="email"
-					placeholder={ PLACEHOLDER_EMAIL }
+					placeholder={ PLACEHOLDER.email }
 					type="email"
 				/>
 			</Field>

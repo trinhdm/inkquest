@@ -2,14 +2,15 @@ import { createPageCtx } from '@/lib/page/context'
 import type { FormResults } from '@/lib/form'
 import type { LoginPageData } from './login.data'
 import type { SubmitEvent } from 'react'
+import type { AuthFormIDs } from '../../_utils/types'
 
 export type LoginScreen =
-	| 'email' | 'magic'
+	| 'begin' | 'magic'
 	| 'forgot' | 'reset'
 	| 'success'
 
 export type ReplyFromScreen =
-	Extract<LoginScreen, 'email' | 'magic'>
+	Extract<LoginScreen, 'begin' | 'magic'| 'forgot'>
 
 export type SendLinkScreen =
 	Extract<LoginScreen, 'magic' | 'reset'>
@@ -22,10 +23,11 @@ export interface LoginFlow {
 	login: FormResults
 	magic: FormResults
 	reset: FormResults
-
 	formReply: FormResults
+
+	destination: string
+	idx: AuthFormIDs
 	screen: LoginScreen
-	resent: boolean
 	waiting: boolean
 }
 

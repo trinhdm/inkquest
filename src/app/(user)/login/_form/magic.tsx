@@ -7,27 +7,18 @@ import { ResendTimer } from '../../_components/ResendTimer'
 
 export const LoginMagic = () => {
 	const {
-		endWait, handleLoginFlow,
-		magic: { action, pending, state },
-		idx, resent, waiting,
+		destination, endWait,
+		handleLoginFlow, idx,
+		magic, waiting,
 		waitUntilExpiry,
 	} = useLoginCtx()
 
-	const { email } = state.values
-
 	const authFormProps = {
-		form: {
-			action, pending,
-			onSubmit: waitUntilExpiry,
-			state: {
-				...state,
-				message: resent && waiting ? `We sent another link to ${email}.` : undefined,
-			},
-		},
+		form: { ...magic, onSubmit: waitUntilExpiry },
 		header: {
 			title: 'Check your inbox',
 			eyebrow: 'Magic Link',
-			description: <>We emailed a sign-in link to { email }. It expires in 15 minutes.</>,
+			description: <>We emailed a sign-in link to { destination }. It expires in 15 minutes.</>,
 		},
 		idx,
 	} satisfies Omit<AuthForm.Props, 'children'>
@@ -43,7 +34,7 @@ export const LoginMagic = () => {
 				caption="Didn't arrive? Check spam, or resend below."
 			>
 				<Field.Input
-					defaultValue={ email }
+					defaultValue={ destination }
 					name="email"
 					type="email"
 				/>
@@ -52,7 +43,7 @@ export const LoginMagic = () => {
 			<Button.Group hasPriority={ false }>
 				<Button
 					animate="left"
-					onClick={ () => handleLoginFlow('email') }
+					onClick={ () => handleLoginFlow('begin') }
 					variant="ghost"
 				>
 					Back
@@ -61,8 +52,10 @@ export const LoginMagic = () => {
 
 				<ResendTimer
 					idx={ idx }
+					loading={ magic.pending }
+					name="resent"
 					onComplete={ endWait }
-					loading={ pending }
+					value="true"
 					waiting={ waiting }
 				/>
 			</Button.Group>

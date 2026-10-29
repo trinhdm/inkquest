@@ -49,12 +49,12 @@ export interface SignupPageData
 
 export const SIGNUP_PAGE_DATA: SignupPageData = {
 	id: 'signup',
-	title: 'Signup',
-	description: 'Signup for your own Inkquest account.',
+	title: 'Sign Up',
+	description: 'Create your own Inkquest account.',
 	hero: {
 		id: 'hero',
-		eyebrow: 'Log In',
-		heading: 'Welcome back.',
+		eyebrow: 'Sign Up',
+		heading: 'Join Inkquest.',
 		body: 'One account for finding artists, bidding on flash, and booking.',
 	},
 }

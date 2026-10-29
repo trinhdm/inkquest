@@ -1,5 +1,4 @@
 import { useSignupCtx } from '../_utils/signup.context'
-import { capitalize } from '@/utils/helpers'
 import { AuthForm } from '../../_components/AuthForm'
 import { Button } from '@/components/core/Button'
 import { Field } from '@/components/form/Field'
@@ -7,9 +6,11 @@ import { Icon } from '@/components/core/Icon'
 
 export const SignupSuccess = () => {
 	const {
-		idx, method, to,
+		destination, idx, method,
 		waitUntilExpiry,
 	} = useSignupCtx()
+
+	const isPhone = method === 'phone'
 
 	const authFormProps = {
 		form: { onSubmit: waitUntilExpiry },
@@ -23,18 +24,20 @@ export const SignupSuccess = () => {
 
 	return (
 		<AuthForm { ...authFormProps }>
-			<Field
-				readonly
-				id={ `${idx.field}-to` }
-				label={ capitalize(method) }
-				layout="inline"
-			>
-				<Field.Input
-					defaultValue={ to }
-					name="email"
-					type="email"
-				/>
-			</Field>
+			{ !!destination && (
+				<Field
+					readonly
+					id={ `${idx.field}-to` }
+					label={ isPhone ? 'Phone number' : 'Email' }
+					layout="inline"
+				>
+					<Field.Input
+						defaultValue={ destination }
+						name={ isPhone ? 'tel' : 'email' }
+						type={ isPhone ? 'tel' : 'email' }
+					/>
+				</Field>
+			) }
 
 			<Button animate="right" href="/community/feed">
 				Start setup

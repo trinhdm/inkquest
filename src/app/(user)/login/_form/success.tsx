@@ -22,18 +22,20 @@ export const LoginSuccess = () => {
 
 	return (
 		<AuthForm { ...authFormProps }>
-			<Field
-				readonly
-				id={ `${idx.field}-email` }
-				label="Email"
-				layout="inline"
-			>
-				<Field.Input
-					defaultValue={ state.values.email }
-					name="email"
-					type="email"
-				/>
-			</Field>
+			{ !!state.values.email && (
+				<Field
+					readonly
+					id={ `${idx.field}-email` }
+					label="Email"
+					layout="inline"
+				>
+					<Field.Input
+						defaultValue={ state.values.email }
+						name="email"
+						type="email"
+					/>
+				</Field>
+			) }
 
 			<Button animate="right" href="/community/feed">
 				Go to your feed

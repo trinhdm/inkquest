@@ -7,27 +7,18 @@ import { ResendTimer } from '../../_components/ResendTimer'
 
 export const LoginReset = () => {
 	const {
-		endWait, handleLoginFlow,
-		idx, resent, waiting,
-		reset: { action, pending, state },
+		destination, endWait,
+		handleLoginFlow, idx,
+		reset, waiting,
 		waitUntilExpiry,
 	} = useLoginCtx()
 
-	const { email } = state.values
-
 	const authFormProps = {
-		form: {
-			action, pending,
-			onSubmit: waitUntilExpiry,
-			state: {
-				...state,
-				message: resent && waiting ? `We sent another link to ${email}.` : undefined,
-			},
-		},
+		form: { ...reset, onSubmit: waitUntilExpiry },
 		header: {
 			title: 'Reset link sent',
 			eyebrow: 'Check your inbox',
-			description: <>If an account exists for { email }, a link to reset your password is on its way. It expires in 30 minutes.</>,
+			description: <>If an account exists for { destination }, a link to reset your password is on its way. It expires in 30 minutes.</>,
 		},
 		idx,
 	} satisfies Omit<AuthForm.Props, 'children'>
@@ -43,7 +34,7 @@ export const LoginReset = () => {
 				caption="Didn't arrive? Check spam, or resend below."
 			>
 				<Field.Input
-					defaultValue={ email }
+					defaultValue={ destination }
 					name="email"
 					type="email"
 				/>
@@ -51,7 +42,7 @@ export const LoginReset = () => {
 
 			<Button
 				animate="left"
-				onClick={ () => handleLoginFlow('email') }
+				onClick={ () => handleLoginFlow('begin') }
 			>
 				Back to log in
 				<Button.Section left><Icon type="arrow-left" /></Button.Section>
@@ -60,8 +51,10 @@ export const LoginReset = () => {
 			<div className="authentication__note">
 				<ResendTimer
 					idx={ idx }
+					loading={ reset.pending }
+					name="resent"
 					onComplete={ endWait }
-					loading={ pending }
+					value="true"
 					waiting={ waiting }
 				/>
 
