@@ -1,44 +1,48 @@
-import { useSignupCtx } from '../_utils/signup.context'
+import { useSignupCtx, type SignupMethod } from '../_utils/signup.context'
 import { Button } from '@/components/core/Button'
 import { Icon } from '@/components/core/Icon'
 
-export const AuthChoices = () => {
-	const { handleSignupMethod, method } = useSignupCtx()
+interface AuthOption {
+	name: SignupMethod
+	icon: Icon.Props['type']
+	label: string
+}
 
-	return (
-		<>
-			{ method !== 'email' && (
-				<Button
-					unstyled
-					className="authentication__option"
-					onClick={ () => handleSignupMethod('email') }
-				>
-					<Button.Section><Icon size="14" type="email" /></Button.Section>
-					<span data-link>Use email & password</span>
-				</Button>
-			) }
-			{ method !== 'tel' && (
-				<Button
-					unstyled
-					className="authentication__option"
-					onClick={ () => handleSignupMethod('tel') }
-				>
-					<Button.Section><Icon size="14" type="phone" /></Button.Section>
-					<span data-link>Use phone number</span>
-				</Button>
-			) }
-			{ method !== 'magic' && (
-				<Button
-					unstyled
-					className="authentication__option"
-					onClick={ () => handleSignupMethod('magic') }
-				>
-					<Button.Section><Icon size="14" type="wand-sparkles" /></Button.Section>
-					<span data-link>Email me a magic link</span>
-				</Button>
-			) }
-		</>
-	)
+const AUTH_OPTIONS: AuthOption[] = [
+	{
+		name: 'email',
+		icon: 'email',
+		label: 'Use email & password',
+	},
+	{
+		name: 'magic',
+		icon: 'wand-sparkles',
+		label: 'Email me a magic link',
+	},
+	{
+		name: 'tel',
+		icon: 'phone',
+		label: 'Use phone number',
+	},
+]
+
+export const AuthChoices = () => {
+	const { handleSignupMethod, method, signup } = useSignupCtx()
+
+	return AUTH_OPTIONS.map(({ icon, label, name }) => (
+		method !== name && (
+			<Button
+				unstyled
+				className="authentication__option"
+				disabled={ signup.pending }
+				key={ `${name}-option` }
+				onClick={ () => handleSignupMethod(name) }
+			>
+				<Button.Section><Icon size="14" type={ icon } /></Button.Section>
+				<span data-link>{ label }</span>
+			</Button>
+		)
+	))
 }
 
 AuthChoices.displayName = 'AuthChoices'

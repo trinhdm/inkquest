@@ -39,7 +39,7 @@ export const PasswordRules = ({ value }: PasswordRulesProps) => {
 				</div>
 			</div>
 
-			<ul className="password__requirements" data-unlist>
+			<ul className="password__requirements" aria-live="polite" data-unlist>
 				{ PASSWORD_RULES.map(rule => {
 					const isMet = rule.test(value)
 

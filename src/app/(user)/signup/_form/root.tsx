@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { useSignupCtx } from '../_utils/signup.context'
-import { validateSignupForm } from '../_utils/schema'
+import { useSignupCtx, type SignupMethod } from '../_utils/signup.context'
+import { validateSignup } from '../_utils/schema'
 import { AuthChoices } from '../_components/auth-choices'
 import { Button } from '@/components/core/Button'
 import { Field } from '@/components/form/Field'
@@ -14,22 +14,30 @@ import Link from 'next/link'
 const FORM_ID = 'signup',
 	FIELD_ID = `${FORM_ID}-field`
 
+const SUBMIT_LABELS = {
+	email:	'Create account',
+	magic:	'Send magic link',
+	tel:	'Send code',
+} as const satisfies Record<SignupMethod, string>
+
 const SignupFields = () => {
 	const {
-		formReply: { pending, state },
-		method, signup,
+		method,
+		signup: { pending, state },
 	} = useSignupCtx()
 
 	const [password, setPassword] = useState('')
-	const [lastState, setLastState] = useState(signup.state)
+	const [lastState, setLastState] = useState(state)
 
-	if (signup.state !== lastState) {
-		setLastState(signup.state)
+	if (state !== lastState) {
+		setLastState(state)
 		setPassword('')
 	}
 
 	return (
 		<>
+			<input name="method" type="hidden" value={ method } />
+
 			<Field
 				required
 				disabled={ pending }
@@ -57,21 +65,24 @@ const SignupFields = () => {
 			</Field>
 
 			{ method === 'email' && (
-				<Field
-					required
-					disabled={ pending }
-					id={ `${FIELD_ID}-password` }
-					label="Password"
-					caption={ <PasswordRules value={ password } /> }
-				>
-					<Field.Input
-						autoComplete="new-password"
-						name="password"
-						onChange={ event => setPassword(event.currentTarget.value) }
-						placeholder="Your password"
-						type="password"
-					/>
-				</Field>
+				<>
+					<input hidden autoComplete="username" name="username" ng-hide="true" type="text" />
+					<Field
+						required
+						disabled={ pending }
+						id={ `${FIELD_ID}-password` }
+						label="Password"
+						caption={ <PasswordRules value={ password } /> }
+					>
+						<Field.Input
+							autoComplete="new-password"
+							name="password"
+							onChange={ event => setPassword(event.currentTarget.value) }
+							placeholder="Your password"
+							type="password"
+						/>
+					</Field>
+				</>
 			) }
 		</>
 	)
@@ -79,36 +90,9 @@ const SignupFields = () => {
 
 export const SignupRoot = () => {
 	const {
-		handleSignupFlow,
-		formReply: { pending, state },
-		magic, method, signup,
-		pageID, screen,
+		method, pageID, screen, waiting,
+		signup: { action, pending, state },
 	} = useSignupCtx()
-
-	const getSignupButton = () => {
-		switch (method) {
-			case 'email':
-				return {
-					loading: signup.pending,
-				}
-			case 'magic':
-				return {
-					'data-intent': 'magic',
-					formAction: magic.action,
-					loading: magic.pending,
-				}
-			case 'tel':
-				return {
-					// intent: 'phone',
-					// formAction: phone.action,
-					loading: signup.pending,
-				}
-			default:
-				return {}
-		}
-	}
-
-	const submitProps = getSignupButton()
 
 	return (
 		<Section
@@ -121,23 +105,26 @@ export const SignupRoot = () => {
 			One account for finding artists, bidding on flash, and booking.
 
 			<Form
-				action={ signup.action }
+				action={ action }
 				id={ FORM_ID }
 				pending={ pending }
 				state={ state }
-				validate={ validateSignupForm }
+				validate={ validateSignup }
 			>
 				<SignupFields />
 
 				<div className="form__ctas authentication">
 					<Button
-						{ ...submitProps }
 						fullWidth
 						animate="right"
 						className="authentication__email"
+						disabled={ waiting }
+						loading={ pending }
+						name="method"
 						type="submit"
+						value={ method }
 					>
-						{ method === 'magic' ? 'Send magic link' : 'Create account' }
+						{ SUBMIT_LABELS[method] }
 						<Button.Section right><Icon type="arrow-right" /></Button.Section>
 					</Button>
 
@@ -152,7 +139,6 @@ export const SignupRoot = () => {
 					>
 						<Button
 							fullWidth
-							onClick={ () => handleSignupFlow('success') }
 							variant="outline"
 						>
 							<Button.Section><Icon type="google" /></Button.Section>
@@ -160,7 +146,6 @@ export const SignupRoot = () => {
 						</Button>
 						<Button
 							fullWidth
-							onClick={ () => handleSignupFlow('success') }
 							variant="outline"
 						>
 							<Button.Section><Icon type="apple" /></Button.Section>

@@ -11,40 +11,53 @@ const FORM_ID = 'verify',
 	FIELD_ID = `${FORM_ID}-field`,
 	TIMER_ID = `${FORM_ID}-timer`
 
+const COPY = {
+	email: {
+		// eyebrow: 'Verify Email',
+		// sent: 'We emailed a 6-digit code to',
+		title: 'Check your email',
+		wrong: 'Wrong email?',
+	},
+	phone: {
+		// eyebrow: 'Verify Phone',
+		// sent: 'We texted a 6-digit code to',
+		title: 'Check your texts',
+		wrong: 'Wrong number?',
+	},
+} as const
+
 export const SignupVerify = () => {
 	const {
 		endWait,
-		handleSignupFlow,
+		goBack,
 		pageID, resent, waiting,
-		resend, signup,
-		method, screen,
-		verify: { action, pending, state },
+		method, screen, to,
+		reply, resend, verify,
 		waitUntilExpiry,
 	} = useSignupCtx()
 
-	const { email } = signup.state.values
+	const copy = COPY[method === 'tel' ? 'phone' : 'email']
 
 	return (
 		<Section
-			eyebrow="Verify Email"
+			eyebrow="Verify"
 			id={ `${pageID}-${screen}` }
 			layout="content-form"
 			tabIndex={ -1 }
-			title="Check your email"
+			title={ copy.title }
 		>
 			<>
-				We sent a 6-digit code to { email }. Enter it below.
+				We sent a 6-digit code to { to }. Enter it below.
 			</>
 
 			<Form
-				action={ action }
+				action={ verify.action }
 				id={ FORM_ID }
 				onSubmit={ waitUntilExpiry }
-				pending={ pending }
+				pending={ verify.pending || resend.pending }
 				state={ {
-					errors: state.errors,
-					formError: state.formError,
-					message: resent && waiting ? `We sent another link to ${email}.` : undefined,
+					...reply.state,
+					message: resent && waiting ? `We sent another link to ${to}.` : undefined,
 				} }
 				validate={ validateVerify }
 			>
@@ -98,41 +111,37 @@ export const SignupVerify = () => {
 					</Field>
 				</Field.Group> */}
 
-				<Field id={ `${FIELD_ID}-code-1` }>
-					<Field.Number
-						name={ `${FORM_ID}-code-1` }
-						inputmode="numeric"
-						type="text"
-					/>
-				</Field>
-
-				<Field id={ `${FIELD_ID}-code-2` }>
-					<Field.Number
-						name={ `${FORM_ID}-code-2` }
-						inputmode="numeric"
-						type="text"
-					/>
-				</Field>
-
-				{/* <input
-					type="text"
-					inputMode="numeric"
-					maxLength={ 1 }
-					pattern="\d{6}"
-					autoComplete="one-time-code"
+				<Field
 					required
-				/> */}
+					disabled={ verify.pending }
+					id={ `${FIELD_ID}-code` }
+					label="6-digit code"
+				>
+					<Field.Number
+						autoComplete="one-time-code"
+						inputmode="numeric"
+						maxLength={ 6 }
+						name="code"
+						placeholder="123456"
+						type="text"
+					/>
+				</Field>
 
 				<Button.Group hasPriority={ false }>
 					<Button
 						animate="left"
-						onClick={ () => handleSignupFlow('join') }
+						onClick={ goBack }
 						variant="ghost"
 					>
 						Back
 						<Button.Section left><Icon type="arrow-left" /></Button.Section>
 					</Button>
-					<Button animate="right" loading={ pending } type="submit">
+					<Button
+						animate="right"
+						disabled={ waiting }
+						loading={ verify.pending }
+						type="submit"
+					>
 						Verify
 						<Button.Section right><Icon type="arrow-right" /></Button.Section>
 					</Button>
@@ -142,16 +151,17 @@ export const SignupVerify = () => {
 					<Button
 						unstyled data-link
 						attributes={ { aria: {
-							describedby: waiting ? `${TIMER_ID}-text` : undefined
+							describedby: waiting ? `${TIMER_ID}-text` : undefined,
 						} } }
 						className="authentication__resend"
 						data-intent="resend"
 						disabled={ waiting }
 						formAction={ resend.action }
+						onClick={ waitUntilExpiry }
 						loading={ resend.pending }
 						type="submit"
 					>
-						{ waiting ? 'Resend available in' : 'Resend link' }
+						{ waiting ? 'Resend available in' : 'Resend code' }
 						{ waiting && (
 							<Countdown
 								from={ 30 }
@@ -161,13 +171,10 @@ export const SignupVerify = () => {
 						) }
 					</Button>
 
-					<span>·</span>
+					<span data-dot>·</span>
 
-					<Button
-						unstyled data-link
-						onClick={ () => handleSignupFlow('join') }
-					>
-						Wrong { method }?
+					<Button unstyled data-link onClick={ goBack }>
+						{ copy.wrong }
 					</Button>
 				</div>
 			</Form>

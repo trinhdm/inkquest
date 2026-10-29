@@ -1,6 +1,13 @@
 import { z } from 'zod'
-import { describeMissing } from './signup.data'
-import { emailRule, validateWith } from '@/lib/form'
+import { describeMissing } from './helpers'
+import { emailRule, telRule, validateWith } from '@/lib/form'
+
+const passwordRule = z.string()
+	.min(1, `Password doesn't meet the requirements.`)
+	.superRefine((value, ctx) => {
+		const message = describeMissing(value)
+		if (message) ctx.addIssue({ code: 'custom', message })
+	})
 
 
 //	SignupRoot
@@ -8,20 +15,26 @@ import { emailRule, validateWith } from '@/lib/form'
 export type SignupValues =
 	z.infer<typeof signupSchema>
 
-export const signupSchema = z.object({
+const emailSignup = z.object({
+	method: z.literal('email'),
 	email: emailRule,
-	tel: z.string()
-		.refine(
-			val => /^\d{10}$/.test(val),
-			{ message: 'Please enter a valid 10-digit phone number' }
-		).optional(),
-	password: z.string()
-		.min(1, 'Password doesn’t meet the requirements.')
-		.superRefine((value, ctx) => {
-			const message = describeMissing(value)
-			if (message) ctx.addIssue({ code: 'custom', message })
-		}),
+	password: passwordRule,
 })
+
+const magicSignup = z.object({
+	method: z.literal('magic'),
+	email: emailRule,
+})
+
+const telSignup = z.object({
+	method: z.literal('tel'),
+	tel: telRule,
+})
+
+export const signupSchema = z.discriminatedUnion(
+	'method',
+	[emailSignup, telSignup, magicSignup],
+)
 
 export const validateSignup = validateWith(signupSchema)
 
@@ -32,7 +45,7 @@ export type MagicValues =
 	z.infer<typeof magicSchema>
 
 export const magicSchema = z.object({ email: emailRule })
-const validateMagic = validateWith(magicSchema)
+// const validateMagic = validateWith(magicSchema)
 
 
 //	SignupVerify
@@ -51,9 +64,3 @@ export type ResendValues =
 
 export const resendSchema = z.object({ email: emailRule })
 export const validateResend = validateWith(resendSchema)
-
-
-//	general
-
-export const validateSignupForm = (data: FormData) =>
-	data.get('intent') === 'magic' ? validateMagic(data) : validateSignup(data)

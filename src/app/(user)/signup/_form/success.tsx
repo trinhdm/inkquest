@@ -1,4 +1,5 @@
 import { useSignupCtx } from '../_utils/signup.context'
+import { capitalize } from '@/utils/helpers'
 import { Button } from '@/components/core/Button'
 import { Field } from '@/components/form/Field'
 import { Form } from '@/components/form/Form'
@@ -10,8 +11,7 @@ const FORM_ID = 'signup-success',
 
 export const SignupSuccess = () => {
 	const {
-		verifyReply: { state },
-		pageID, screen,
+		method, pageID, screen, to,
 		waitUntilExpiry,
 	} = useSignupCtx()
 
@@ -25,15 +25,15 @@ export const SignupSuccess = () => {
 		>
 			You&apos;re in. A two-minute setup tunes your feed, search, and profile.
 
-			<Form onSubmit={ waitUntilExpiry } id={ FORM_ID }>
+			<Form id={ FORM_ID } onSubmit={ waitUntilExpiry }>
 				<Field
 					readonly
-					id={ `${FIELD_ID}-email` }
-					label="Email"
+					id={ `${FIELD_ID}-to` }
+					label={ capitalize(method) }
 					layout="inline"
 				>
 					<Field.Input
-						defaultValue={ state.values.email }
+						defaultValue={ to }
 						name="email"
 						type="email"
 					/>

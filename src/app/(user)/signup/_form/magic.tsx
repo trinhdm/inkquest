@@ -12,14 +12,13 @@ const FORM_ID = 'magic',
 
 export const SignupMagic = () => {
 	const {
-		endWait,
-		handleSignupFlow,
+		endWait, goBack,
 		magic: { action, pending, state },
-		pageID, resent, screen, waiting,
+		pageID, resent, screen, to, waiting,
 		waitUntilExpiry,
 	} = useSignupCtx()
 
-	const { email } = state.values
+	// const { to } = signup.state.values
 
 	return (
 		<Section
@@ -30,7 +29,7 @@ export const SignupMagic = () => {
 			title="Check your inbox"
 		>
 			<>
-				We emailed a sign-in link to { email }. It expires in 15 minutes.
+				We emailed a sign-in link to { to }. It expires in 15 minutes.
 			</>
 
 			<Form
@@ -39,9 +38,8 @@ export const SignupMagic = () => {
 				onSubmit={ waitUntilExpiry }
 				pending={ pending }
 				state={ {
-					errors: state.errors,
-					formError: state.formError,
-					message: resent && waiting ? `We sent another link to ${email}.` : undefined,
+					...state,
+					message: resent && waiting ? `We sent another link to ${to}.` : undefined,
 				} }
 			>
 				<Field
@@ -53,7 +51,7 @@ export const SignupMagic = () => {
 					caption="Didn't arrive? Check spam, or resend below."
 				>
 					<Field.Input
-						defaultValue={ email }
+						defaultValue={ to }
 						name="email"
 						type="email"
 					/>
@@ -62,7 +60,7 @@ export const SignupMagic = () => {
 				<Button.Group hasPriority={ false }>
 					<Button
 						animate="left"
-						onClick={ () => handleSignupFlow('join') }
+						onClick={ goBack }
 						variant="ghost"
 					>
 						Back

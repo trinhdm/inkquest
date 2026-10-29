@@ -10,9 +10,8 @@ import { SignupVerify } from '../_form/verify'
 import { SIGNUP_PAGE_DATA } from '../_utils/signup.data'
 
 const SCREENS = {
+	inbox:		SignupMagic,
 	join:		SignupRoot,
-	magic:		SignupMagic,
-	phone:		SignupVerify,
 	success:	SignupSuccess,
 	verify:		SignupVerify,
 } satisfies Record<SignupScreen, ComponentType>

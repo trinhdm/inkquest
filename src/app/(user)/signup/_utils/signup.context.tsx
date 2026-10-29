@@ -1,41 +1,41 @@
 import { createPageCtx } from '@/lib/page/context'
+import type { MouseEvent, SubmitEvent, SyntheticEvent } from 'react'
 import type { FormResults } from '@/lib/form'
-import type { SignupPageData } from './signup.data'
-import type { SubmitEvent } from 'react'
+import type { SignupPageData, SIGNUP_METHODS } from './signup.data'
 
 export type SignupScreen =
-	| 'join' | 'magic' | 'phone'
-	| 'verify' | 'success'
-	// | 'otp-email' | 'otp-phone'
+	| 'join' | 'verify'
+	| 'inbox' | 'success'
 
-export type ReplyFromScreen =
-	Extract<SignupScreen, 'join' | 'magic'>
-
-export type VerifyFromScreen =
-	Extract<SignupScreen, 'join' | 'verify'>
-
-export type SendLinkScreen =
-	Extract<SignupScreen, 'magic' | 'verify'>
+export type ReplyFromStep =
+	'resend' | 'verify'
 
 export type SignupMethod =
-	'email' | 'magic' | 'tel'
+	typeof SIGNUP_METHODS[number]
+
+type WaitUntilEvent<E extends SyntheticEvent> =
+	E extends MouseEvent
+		? MouseEvent<HTMLButtonElement>
+		: E extends SubmitEvent
+			? SubmitEvent<HTMLFormElement>
+			: SyntheticEvent<HTMLElement>
 
 export interface SignupFlow {
 	endWait: () => void
-	handleSignupFlow: (next: SignupScreen) => void
+	goBack: () => void
 	handleSignupMethod: (method: SignupMethod) => void
-	waitUntilExpiry: (event: SubmitEvent<HTMLFormElement>) => void
+	waitUntilExpiry: <E extends SyntheticEvent>(event: WaitUntilEvent<E>) => void
 
 	signup: FormResults
 	magic: FormResults
 	resend: FormResults
 	verify: FormResults
 
-	formReply: FormResults
-	verifyReply: FormResults
+	reply: FormResults
 	method: SignupMethod
 	screen: SignupScreen
 	resent: boolean
+	to: string
 	waiting: boolean
 }
 
