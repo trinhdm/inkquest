@@ -1,7 +1,6 @@
 import { useSignupCtx } from '../_utils/signup.context'
 import { validateResend } from '../_utils/schema'
 import { AuthForm } from '../../_components/AuthForm'
-import { Button } from '@/components/core/Button'
 import { Field } from '@/components/form/Field'
 
 const COPY = {
@@ -112,24 +111,24 @@ export const SignupVerify = () => {
 			<AuthForm.Footer>
 				<AuthForm.Back onClick={ goBack } />
 
-				<AuthForm.Submit loading={ verify.pending }>
-					Verify
-				</AuthForm.Submit>
+				<AuthForm.Submit label="Verify" loading={ verify.pending } />
 
 				<AuthForm.Note>
 					<AuthForm.Resend
 						data-intent="resend"
+						disabled={ waiting }
 						formAction={ resend.action }
 						idx={ idx }
 						loading={ resend.pending }
-						noun="code"
 						onComplete={ endWait }
-						waiting={ waiting }
+						target="code"
 					/>
 
-					<Button unstyled data-link onClick={ goBack }>
-						{ copy.wrong }
-					</Button>
+					<AuthForm.Back
+						label={ copy.wrong }
+						onClick={ goBack }
+						role="secondary"
+					/>
 				</AuthForm.Note>
 			</AuthForm.Footer>
 		</AuthForm>

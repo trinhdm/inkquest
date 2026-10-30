@@ -44,10 +44,10 @@ export const SignupMagic = () => {
 				<AuthForm.Back onClick={ goBack } />
 
 				<AuthForm.Resend
+					disabled={ waiting }
 					idx={ idx }
 					loading={ resend.pending }
 					onComplete={ endWait }
-					waiting={ waiting }
 				/>
 			</AuthForm.Footer>
 		</AuthForm>

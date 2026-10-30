@@ -30,7 +30,7 @@ export const LoginSuccess = () => {
 			) }
 
 			<AuthForm.Footer>
-				<AuthForm.Continue href="/community/feed">Go to your feed</AuthForm.Continue>
+				<AuthForm.Continue href="/community/feed" label="Go to your feed" />
 			</AuthForm.Footer>
 		</AuthForm>
 	)

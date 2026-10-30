@@ -33,10 +33,7 @@ export const LoginForgot = () => {
 
 			<AuthForm.Footer>
 				<AuthForm.Back onClick={ () => handleLoginFlow('begin') } />
-
-				<AuthForm.Submit loading={ reset.pending }>
-					Send reset link
-				</AuthForm.Submit>
+				<AuthForm.Submit label="Send reset link" loading={ reset.pending } />
 			</AuthForm.Footer>
 		</AuthForm>
 	)

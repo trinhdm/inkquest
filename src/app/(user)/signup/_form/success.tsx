@@ -32,7 +32,7 @@ export const SignupSuccess = () => {
 			) }
 
 			<AuthForm.Footer>
-				<AuthForm.Continue href="/community/feed">Start setup</AuthForm.Continue>
+				<AuthForm.Continue href="/community/feed" label="Start setup" />
 
 				<AuthForm.Note>
 					<p>Setup takes about two minutes — styles, location, and (for artists) your shop.</p>

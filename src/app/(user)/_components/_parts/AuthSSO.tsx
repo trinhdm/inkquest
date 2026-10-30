@@ -10,15 +10,15 @@ interface AuthSSOProps
 interface ButtonSSOProps
 	extends Pick<Button.Props, 'disabled' | 'loading' | 'onClick'> {
 	brand: Icon.Social.Props['type']
-	verb: string
+	label: string
 }
 
 export const ButtonSSO = ({
 	brand,
-	verb,
+	label,
 	...props
 }: ButtonSSOProps) => {
-	const action = capitalize(verb),
+	const action = capitalize(label),
 		name = capitalize(brand)
 
 	return (

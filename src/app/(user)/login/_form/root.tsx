@@ -1,7 +1,6 @@
 import { useLoginCtx } from '../_utils/login.context'
 import { validateLoginForm } from '../_utils/schema'
 import { AuthForm } from '../../_components/AuthForm'
-import { Button } from '@/components/core/Button'
 import { Field } from '@/components/form/Field'
 import { PLACEHOLDER } from '@/lib/form'
 
@@ -13,12 +12,11 @@ export const LoginRoot = () => {
 	} = useLoginCtx()
 
 	const ForgotPass = (
-		<Button
-			unstyled data-link
+		<AuthForm.Back
+			label="Forgot password?"
 			onClick={ () => handleLoginFlow('forgot') }
-		>
-			Forgot password?
-		</Button>
+			role="secondary"
+		/>
 	)
 
 	return (
@@ -64,26 +62,24 @@ export const LoginRoot = () => {
 			</Field>
 
 			<AuthForm.Footer>
-				<AuthForm.Submit fullWidth disabled={ waiting } loading={ login.pending }>
-					Log In
-				</AuthForm.Submit>
-
-				<AuthForm.SSO
-					onClick={ () => handleLoginFlow('success') }
-					verb="Log In"
+				<AuthForm.Submit
+					fullWidth
+					disabled={ waiting }
+					label="Log In"
+					loading={ login.pending }
 				/>
 
+				<AuthForm.SSO label="Log In" onClick={ () => handleLoginFlow('success') } />
+
 				<AuthForm.Note>
-					<Button
-						unstyled data-link
+					<AuthForm.Submit
 						data-intent="magic"
 						disabled={ waiting }
 						formAction={ magic.action }
+						label="Email me a magic link instead"
 						loading={ magic.pending }
-						type="submit"
-					>
-						Email me a magic link instead
-					</Button>
+						role="secondary"
+					/>
 				</AuthForm.Note>
 			</AuthForm.Footer>
 		</AuthForm>

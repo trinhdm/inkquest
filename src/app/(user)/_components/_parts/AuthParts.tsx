@@ -1,21 +1,28 @@
-import { Children, Fragment, type ComponentPropsWithoutRef, type ReactNode } from 'react'
+import { Children, Fragment, type ReactNode } from 'react'
 import { getChildKey } from '@/lib/component/children'
 import { Button } from '@/components/core/Button'
 import { Countdown } from '@/components/data/Countdown'
 import { Icon } from '@/components/core/Icon'
 import { TIMER_DURATION } from '@/lib/form'
 import type { Route } from 'next'
-import type { AuthFormIDs } from '@/app/(user)/_utils/types'
+import type { AuthFormIDs, AuthSubmitButton } from '@/app/(user)/_utils/types'
 import type { Section } from '@/components/layout/Section'
 
-interface AuthBackProps
-	extends Pick<Button.Props, 'onClick' | 'variant'> {
-	children?: ReactNode
+const LINKABLE = {
+	'data-link': true,
+	unstyled: true,
 }
 
-interface AuthContinueProps
-	extends Pick<Button.Props, 'children'> {
+interface AuthBackProps {
+	label?: ReactNode
+	onClick: Button.Props['onClick']
+	role?: Button.Props['priority']
+	variant?: Button.Props['variant']
+}
+
+interface AuthContinueProps {
 	href: Route
+	label: ReactNode
 }
 
 interface AuthHeaderProps {
@@ -28,43 +35,52 @@ interface AuthNoteProps {
 	children: ReactNode
 }
 
-interface AuthResendProps
-	extends Pick<ComponentPropsWithoutRef<'button'>, 'formAction' | 'onClick' | 'name' | 'value'> {
+interface BaseAuthResendProps {
 	idx: AuthFormIDs
-	loading?: Button.Props['loading']
-	noun?: 'code' | 'link'
 	onComplete?: Countdown.Props['onComplete']
-	waiting: boolean
+	target?: 'code' | 'link'
+}
+
+type AuthResendProps =
+	& BaseAuthResendProps
+	& AuthSubmitButton
+
+interface BaseAuthSubmitProps {
+	label: ReactNode
+	role?: Button.Props['priority']
 }
 
 type AuthSubmitProps =
-	& Pick<Button.Props, 'children' | 'disabled' | 'fullWidth' | 'loading'>
-	& Pick<ComponentPropsWithoutRef<'button'>, 'formAction' | 'name' | 'value'>
+	& BaseAuthSubmitProps
+	& AuthSubmitButton
 
 export const AuthBack = ({
-	children = 'Back',
+	label = 'Back',
+	role = 'primary',
 	variant = 'ghost',
 	...rest
 }: AuthBackProps) => {
-	return (
-		<Button { ...rest } animate="left" variant={ variant }>
-			{ children }
-			<Button.Section left><Icon type="arrow-left" /></Button.Section>
-		</Button>
-	)
+	if (role === 'primary') {
+		return (
+			<Button { ...rest } animate="left" variant={ variant }>
+				{ label }
+				<Button.Section left><Icon type="arrow-left" /></Button.Section>
+			</Button>
+		)
+	}
+
+	return <Button { ...rest } { ...LINKABLE }>{ label }</Button>
 }
 
-//	Button.Group keeps only children named 'Button', so the action parts share that name.
-//	That is why AuthFooter matches parts by component (child.type), never by displayName.
 AuthBack.displayName = 'Button'
 
 export const AuthContinue = ({
-	children,
 	href,
+	label,
 }: AuthContinueProps) => {
 	return (
 		<Button animate="right" href={ href }>
-			{ children }
+			{ label }
 			<Button.Section right><Icon type="arrow-right" /></Button.Section>
 		</Button>
 	)
@@ -102,25 +118,24 @@ AuthNote.displayName = 'AuthNote'
 
 export const AuthResend = ({
 	idx,
-	loading,
-	noun = 'link',
 	onComplete,
-	waiting,
+	target = 'link',
 	...rest
 }: AuthResendProps) => {
+	const { disabled: waiting } = rest
+
 	return (
 		<Button
 			{ ...rest }
-			unstyled data-link
+			{ ...LINKABLE }
 			attributes={ { aria: {
 				describedby: waiting ? `${idx.timer}-text` : undefined
 			} } }
 			className="authentication__resend"
 			disabled={ waiting }
-			loading={ loading }
 			type="submit"
 		>
-			{ waiting ? 'Resend available in' : `Resend ${noun}` }
+			{ waiting ? 'Resend available in' : `Resend ${target}` }
 			{ waiting && (
 				<Countdown
 					from={ TIMER_DURATION }
@@ -135,15 +150,20 @@ export const AuthResend = ({
 AuthResend.displayName = 'Button'
 
 export const AuthSubmit = ({
-	children,
+	label,
+	role = 'primary',
 	...rest
 }: AuthSubmitProps) => {
-	return (
-		<Button { ...rest } animate="right" type="submit">
-			{ children }
-			<Button.Section right><Icon type="arrow-right" /></Button.Section>
-		</Button>
-	)
+	if (role === 'primary') {
+		return (
+			<Button { ...rest } animate="right" type="submit">
+				{ label }
+				<Button.Section right><Icon type="arrow-right" /></Button.Section>
+			</Button>
+		)
+	}
+
+	return <Button { ...rest } { ...LINKABLE } type="submit">{ label }</Button>
 }
 
 AuthSubmit.displayName = 'Button'

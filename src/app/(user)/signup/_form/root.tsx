@@ -96,14 +96,11 @@ export const SignupRoot = () => {
 				<AuthForm.Submit
 					fullWidth
 					disabled={ waiting }
+					label={ SUBMIT_LABELS[method] }
 					loading={ pending }
-					name="method"
-					value={ method }
-				>
-					{ SUBMIT_LABELS[method] }
-				</AuthForm.Submit>
+				/>
 
-				<AuthForm.SSO verb="continue" />
+				<AuthForm.SSO label="continue" />
 
 				<AuthForm.Note>
 					<p>By creating an account, you confirm you&apos;re 18+ and agree to the <Link href="/terms" data-link>Terms</Link> and <Link href="/privacy-policy" data-link>Privacy Policy</Link>.</p>

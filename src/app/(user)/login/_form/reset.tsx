@@ -1,6 +1,5 @@
 import { useLoginCtx } from '../_utils/login.context'
 import { AuthForm } from '../../_components/AuthForm'
-import { Button } from '@/components/core/Button'
 import { Field } from '@/components/form/Field'
 
 export const LoginReset = () => {
@@ -34,28 +33,26 @@ export const LoginReset = () => {
 
 			<AuthForm.Footer>
 				<AuthForm.Back
+					label="Back to log in"
 					onClick={ () => handleLoginFlow('begin') }
 					variant="solid"
-				>
-					Back to log in
-				</AuthForm.Back>
+				/>
 
 				<AuthForm.Note>
 					<AuthForm.Resend
+						disabled={ waiting }
 						idx={ idx }
 						loading={ reset.pending }
 						name="resent"
 						onComplete={ endWait }
 						value="true"
-						waiting={ waiting }
 					/>
 
-					<Button
-						unstyled data-link
+					<AuthForm.Back
+						label="Wrong email?"
 						onClick={ () => handleLoginFlow('forgot') }
-					>
-						Wrong email?
-					</Button>
+						role="secondary"
+					/>
 				</AuthForm.Note>
 			</AuthForm.Footer>
 		</AuthForm>

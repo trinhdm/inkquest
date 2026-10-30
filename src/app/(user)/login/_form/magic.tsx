@@ -35,12 +35,12 @@ export const LoginMagic = () => {
 				<AuthForm.Back onClick={ () => handleLoginFlow('begin') } />
 
 				<AuthForm.Resend
+					disabled={ waiting }
 					idx={ idx }
 					loading={ magic.pending }
 					name="resent"
 					onComplete={ endWait }
 					value="true"
-					waiting={ waiting }
 				/>
 			</AuthForm.Footer>
 		</AuthForm>
