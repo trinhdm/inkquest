@@ -133,10 +133,10 @@ button {
 
 svg {
 	font-size: var(--icon-size, var(--inkq-icon-md));
-	height: 1em;
+	height: var(--icon-size, auto);
 	transition: var(--inkq-motion-color);
 	vertical-align: middle;
-	width: 1em;
+	width: var(--icon-size, auto);
 }
 
 ol,
@@ -265,7 +265,7 @@ mark {
 	z-index: 5;
 
 	[data-loading] & {
-		cursor: progress;
+		cursor: auto;
 
 		animation:
 			fadeIn var(--duration-default) var(--easing-out) var(--duration-instant) forwards,

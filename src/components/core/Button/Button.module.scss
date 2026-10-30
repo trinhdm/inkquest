@@ -20,34 +20,33 @@
 	transition: var(--inkq-motion-colors);
 	vertical-align: middle;
 
-	&,
-	&__loader {
-		--icon-size: var(--button-icon-size, var(--inkq-icon-md));
-	}
-
-	&__label,
-	&__section {
-		transition: opacity var(--duration-gradual) var(--easing);
-	}
-
 	&__inner {
+		--icon-size: var(--button-icon-size, var(--inkq-icon-md));
+
 		align-items: center;
 		display: flex;
 		gap: var(--button-gap, var(--inkq-space-chip));
 		justify-content: center;
 		padding: var(--button-padding, var(--inkq-pad-chip));
 		position: relative;
+		transition: opacity var(--duration-default) var(--easing);
 		user-select: none;
 	}
 
-	&__loader {
-		inset: auto;
-		position: absolute;
-	}
-
+	&__indicator,
 	&__section {
 		align-items: center;
 		display: inline-flex;
+	}
+
+	&__indicator {
+		--icon-size: var(--button-indicator-size, var(--inkq-icon-md));
+
+		height: var(--icon-size);
+		inset: auto;
+		position: absolute;
+		width: var(--icon-size);
+		z-index: 5;
 	}
 
 	&::after {
@@ -93,7 +92,7 @@
 
 	&:where([data-loading]) {
 		align-items: center;
-		cursor: progress;
+		cursor: auto;
 		display: inline-flex;
 		justify-content: center;
 

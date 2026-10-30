@@ -38,6 +38,8 @@ const componentTokens = {
 			padding: token.path<UITokens<'grid'>['field']['padding']>(aliasVar, 'field', 'padding'),
 		},
 		icon: {
+			// accessible: token.path<ReturnType<LayoutTokens['grid']>['accessible']['icon']>(aliasVar, 'accessible', 'icon'),
+			accessible: token.endPath(aliasVar, 'accessible', 'icon'),
 			size: token.path<UITokens<'element'>['icon']>(aliasVar, 'icon'),
 		},
 	},

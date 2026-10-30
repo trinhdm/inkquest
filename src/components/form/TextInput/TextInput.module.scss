@@ -34,12 +34,17 @@
 		.inkq-field:where([class$="inline"]) & {
 			display: none;
 		}
+
+		&:has(>  #{$name}__toggle) {
+			--icon-size-diff: calc(.5 * (var(--inkq-accessible-icon) - var(--icon-size)));
+			margin-inline: calc(var(--field-padding-inline) - var(--icon-size-diff));
+		}
 	}
 
 	&__toggle {
-		height: var(--icon-size);
+		height: var(--inkq-accessible-icon);
 		position: relative;
-		width: var(--icon-size);
+		width: var(--inkq-accessible-icon);
 
 		&:not(:disabled):hover {
 			color: var(--inkq-color-action);
@@ -55,6 +60,7 @@
 	&__glyph {
 		display: block;
 		inset: 0;
+		margin: auto;
 		position: absolute;
 		transition: color var(--duration-default) var(--easing, ease),
 			opacity var(--duration-instant) var(--easing, ease),

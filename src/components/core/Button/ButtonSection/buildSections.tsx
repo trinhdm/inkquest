@@ -38,8 +38,6 @@ export const buildSections = ({
 		label.push(child)
 	})
 
-	const content = <span { ...styles('label') }>{ label }</span>
-
-	if (!left && !right) return content
-	return <>{ left }{ content }{ right }</>
+	if (!left && !right) return label
+	return <>{ left }<span { ...styles('label') }>{ label }</span>{ right }</>
 }

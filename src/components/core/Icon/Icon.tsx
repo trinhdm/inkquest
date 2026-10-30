@@ -16,6 +16,7 @@ const NAME = 'Icon' as const,
 const DEFAULT_PROPS = {
 	as: TAG,
 	color: 'currentColor',
+	hidden: true,
 	size: 16,
 	strokeLinecap: 'round',
 } as const

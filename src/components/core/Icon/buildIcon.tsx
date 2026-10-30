@@ -110,12 +110,8 @@ export const buildIcon = ({ props, styles, tag }: BuildIconArgs) => {
 			as={ tag }
 			fill={ keyHasValue(brandProps, 'fill') ? brandProps.fill : 'none' }
 			height={ size }
-			role="img"
 			stroke={ color }
 			width={ size }
-		>
-			<title>{ type }</title>
-			{ brandProps.children }
-		</Box>
+		/>
 	)
 }

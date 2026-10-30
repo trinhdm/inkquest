@@ -8,3 +8,7 @@
 @function shadow-focus($color) {
 	@return 0 0 0 calc(var(--space-1) - var(--form-control-border-width)) rgb(from #{$color} r g b / .25);
 }
+
+@function autofill($color) {
+	@return 0 0 0 1000px #{$color} inset;
+}

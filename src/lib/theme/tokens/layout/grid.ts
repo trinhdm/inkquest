@@ -76,6 +76,11 @@ export interface GridTokens {
 		padding: TokenSizeShape
 	}
 
+	accessible: {
+		control: TokenVariableShape
+		icon: TokenVariableShape
+	}
+
 	// paragraph: {
 	// 	gap: TokenVariableShape
 	// }
@@ -134,6 +139,11 @@ export const getGridTokens = (): GridTokens => {
 				md: base.space('3'),
 				lg: base.space('4'),
 			},
+		},
+
+		accessible: {
+			control: base.space('11'),
+			icon: base.space('6'),
 		},
 	}
 }

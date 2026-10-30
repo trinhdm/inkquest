@@ -13,6 +13,7 @@ import {
 	Flag, Mail, MailPlus, Paperclip, Pen, Phone, Send,
 	Heart, Moon, Star, Sun,
 	Printer,
+	WandSparkles,
 	// Rows3, Settings,
 } from 'lucide-react'
 
@@ -31,7 +32,7 @@ const NAVIGATION_ICON_MAP = {
 	...ARROW_ICON_MAP,
 	add: Plus,
 	close: X,
-	confirm: Check,
+	check: Check,
 	remove: Minus,
 
 	'alert-tooltip': CircleAlert,
@@ -58,7 +59,6 @@ const USER_SETTING_MAP = {
 const ACTION_MAP = {
 	attach: Paperclip,
 	block: Ban,
-	call: Phone,
 	comment: MessageCircle,
 	copy: Copy,
 	delete: Trash,
@@ -70,6 +70,7 @@ const ACTION_MAP = {
 	like: Heart,
 	notify: Bell,
 	paste: ClipboardList,
+	phone: Phone,
 	print: Printer,
 	refresh: RotateCw,
 	report: Flag,
@@ -107,6 +108,7 @@ export const ICON_MAP = {
 	rating: Star,
 	ruler: Ruler,
 	time: Clock,
+	'wand-sparkles': WandSparkles,
 	wrench: Wrench,
 }
 

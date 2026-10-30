@@ -109,19 +109,20 @@ interface ButtonSpecs {
 
 type ButtonSelectors =
 	| 'root' | 'inner'
-	| 'label' | 'icon' | 'loader'
+	| 'label' | 'icon'
+	| 'indicator' | 'loader'
 
 type ButtonTokens = {
 	root:
 		| '--button-font-size'
-		| '--button-icon-size'
-		| '--button-icon-translate'
 		| '--button-tracking'
 	inner:
 		| '--button-gap'
-		| '--button-padding'
-	loader:
 		| '--button-icon-size'
+		| '--button-icon-translate'
+		| '--button-padding'
+	indicator:
+		| '--button-indicator-size'
 }
 
 const tokens = defineTokens<ButtonSpecs>()(({ props, theme }) => {
@@ -167,16 +168,16 @@ const tokens = defineTokens<ButtonSpecs>()(({ props, theme }) => {
 	return {
 		root: {
 			'--button-font-size': buttonFontSize,
-			'--button-icon-size': buttonIconSize,
-			'--button-icon-translate': iconTranslate,
 			'--button-tracking': buttonTracking,
 		},
 		inner: {
 			'--button-gap': theme.space('chip'),
+			'--button-icon-size': buttonIconSize,
+			'--button-icon-translate': iconTranslate,
 			'--button-padding': buttonPadding,
 		},
-		loader: {
-			'--button-icon-size': `calc(.125rem + ${buttonIconSize})`,
+		indicator: {
+			'--button-indicator-size': `calc(.375rem + ${buttonIconSize})`,
 		},
 	}
 })
@@ -246,7 +247,11 @@ export const Button = polymorphic<ButtonSpecs>((_props, { useProps, useStyles, u
 
 	const innerEl = (
 		<ButtonProvider value={ ctxValues }>
-			{ (isLoading && !unstyled) && <LoaderCircle { ...styles('loader', true) } /> }
+			{ (isLoading && !unstyled) && (
+				<span { ...styles('indicator') }>
+					<LoaderCircle { ...styles('loader', true) } />
+				</span>
+			) }
 
 			<Box as="span" { ...styles('inner') }>
 				{ buildSections({

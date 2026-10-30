@@ -3,14 +3,8 @@
 	font-size: var(--icon-size);
 	margin: var(--icon-margin, 0);
 
-	&,
 	&__glyph {
-		height: 1em;
-		vertical-align: middle;
-		width: 1em;
-	}
-
-	&__glyph {
+		color: inherit;
 		font-size: inherit;
 
 		g,
