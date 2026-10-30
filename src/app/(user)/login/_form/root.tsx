@@ -13,9 +13,9 @@ export const LoginRoot = () => {
 
 	const ForgotPass = (
 		<AuthForm.Back
+			linkable
 			label="Forgot password?"
 			onClick={ () => handleLoginFlow('forgot') }
-			role="secondary"
 		/>
 	)
 
@@ -73,12 +73,12 @@ export const LoginRoot = () => {
 
 				<AuthForm.Note>
 					<AuthForm.Submit
+						linkable
 						data-intent="magic"
 						disabled={ waiting }
 						formAction={ magic.action }
 						label="Email me a magic link instead"
 						loading={ magic.pending }
-						role="secondary"
 					/>
 				</AuthForm.Note>
 			</AuthForm.Footer>

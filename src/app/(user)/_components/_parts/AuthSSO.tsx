@@ -1,19 +1,20 @@
 import { capitalize } from '@/utils/helpers'
 import { Button } from '@/components/core/Button'
 import { Icon } from '@/components/core/Icon'
+import type { SharedAuthProps } from '../../_utils/types'
+
+interface ButtonSSOProps
+	extends Omit<SharedAuthProps, 'fullWidth'> {
+	brand: Icon.Social.Props['type']
+	label: string
+}
 
 interface AuthSSOProps
 	extends Omit<ButtonSSOProps, 'brand'> {
 	hasDivider?: boolean
 }
 
-interface ButtonSSOProps
-	extends Pick<Button.Props, 'disabled' | 'loading' | 'onClick'> {
-	brand: Icon.Social.Props['type']
-	label: string
-}
-
-export const ButtonSSO = ({
+const ButtonSSO = ({
 	brand,
 	label,
 	...props
@@ -22,11 +23,7 @@ export const ButtonSSO = ({
 		name = capitalize(brand)
 
 	return (
-		<Button
-			{ ...props }
-			fullWidth
-			variant="outline"
-		>
+		<Button { ...props } fullWidth variant="outline">
 			<Button.Section><Icon type={ brand } /></Button.Section>
 			{ action } with { name }
 		</Button>
@@ -47,11 +44,7 @@ export const AuthSSO = ({
 				</div>
 			) }
 
-			<Button.Group
-				fullWidth
-				className="authentication__sso"
-				hasPriority={ false }
-			>
+			<Button.Group fullWidth hasPriority={ false }>
 				<ButtonSSO { ...props } brand="google" />
 				<ButtonSSO { ...props } brand="apple" />
 			</Button.Group>
@@ -61,10 +54,10 @@ export const AuthSSO = ({
 
 AuthSSO.displayName = 'AuthSSO'
 
-export declare namespace AuthSSO {
-	export type Props = AuthSSOProps
+declare namespace ButtonSSO {
+	export type Props = ButtonSSOProps
 }
 
-export declare namespace ButtonSSO {
-	export type Props = ButtonSSOProps
+export declare namespace AuthSSO {
+	export type Props = AuthSSOProps
 }

@@ -14,7 +14,7 @@ export interface AuthFormIDs {
 type NativeButtonProps =
 	ComponentPropsWithoutRef<'button'>
 
-type SharedAuthProps =
+export type SharedAuthProps =
 	& Pick<Button.Props, 'disabled' | 'fullWidth' | 'loading' | 'onClick'>
 
 interface BaseSubmitButton {

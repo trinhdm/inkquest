@@ -38,3 +38,9 @@ export const SOCIAL_BRANDS = [
 	'tiktok',
 	'x',
 ] as const
+
+
+export const LINKABLE = {
+	'data-link': true,
+	unstyled: true,
+}

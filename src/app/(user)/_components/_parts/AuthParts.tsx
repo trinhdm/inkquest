@@ -1,18 +1,11 @@
 import { Children, Fragment, type ReactNode } from 'react'
 import { getChildKey } from '@/lib/component/children'
-import { AuthButton } from './AuthButton'
+import { Button } from '@/components/core/Button'
+import { Countdown } from '@/components/data/Countdown'
+import { LINKABLE } from '@/utils/constants'
+import { TIMER_DURATION } from '@/lib/form'
+import type { AuthFormIDs, AuthSubmitButton } from '@/app/(user)/_utils/types'
 import type { Section } from '@/components/layout/Section'
-
-type OmitAction<T> =
-	T extends unknown ? Omit<T, 'action'> : never
-
-type ButtonAuth<K extends AuthButton.Props['action']> =
-	OmitAction<Extract<AuthButton.Props, { action: K }>>
-
-type AuthBackProps = ButtonAuth<'back'>
-type AuthContinueProps = ButtonAuth<'continue'>
-type AuthResendProps = ButtonAuth<'resend'>
-type AuthSubmitProps = ButtonAuth<'submit'>
 
 interface AuthHeaderProps {
 	children?: ReactNode
@@ -24,25 +17,17 @@ interface AuthNoteProps {
 	children: ReactNode
 }
 
-export const AuthBack = ({ label = 'Back', variant = 'ghost', ...rest }: AuthBackProps) =>
-	<AuthButton action="back" label={ label } variant={ variant } { ...rest } />
+interface BaseAuthResendProps {
+	idx: AuthFormIDs
+	onComplete?: Countdown.Props['onComplete']
+	target?: 'code' | 'link'
+}
 
-export const AuthContinue = (props: AuthContinueProps) =>
-	<AuthButton action="continue" { ...props } />
+type AuthResendProps =
+	& BaseAuthResendProps
+	& AuthSubmitButton
 
-export const AuthResend = ({ target = 'link', ...rest }: AuthResendProps) =>
-	<AuthButton action="resend" target={ target } { ...rest } />
-
-export const AuthSubmit = (props: AuthSubmitProps) =>
-	<AuthButton action="submit" { ...props } />
-
-AuthBack.displayName = 'Button'
-AuthContinue.displayName = 'Button'
-AuthResend.displayName = 'Button'
-AuthSubmit.displayName = 'Button'
-
-//	AuthForm reads this element's props and never renders it.
-//	Its body only runs when someone puts it outside AuthForm.
+//	for AuthForm to read component's props without rendering
 export const AuthHeader = (_props: AuthHeaderProps) => {
 	if (process.env.NODE_ENV !== 'production')
 		console.warn('AuthForm: AuthHeader only works as a direct child of AuthForm, so it renders nothing here.')
@@ -69,13 +54,38 @@ export const AuthNote = ({ children }: AuthNoteProps) => {
 
 AuthNote.displayName = 'AuthNote'
 
-export declare namespace AuthBack {
-	export type Props = AuthBackProps
+export const AuthResend = ({
+	idx,
+	onComplete,
+	target = 'link',
+	...rest
+}: AuthResendProps) => {
+	const { disabled: waiting } = rest
+
+	return (
+		<Button
+			{ ...rest }
+			{ ...LINKABLE }
+			attributes={ { aria: {
+				describedby: waiting ? `${idx.timer}-text` : undefined
+			} } }
+			className="authentication__resend"
+			disabled={ waiting }
+			type="submit"
+		>
+			{ waiting ? 'Resend available in' : `Resend ${target}` }
+			{ waiting && (
+				<Countdown
+					from={ TIMER_DURATION }
+					id={ idx.timer }
+					onComplete={ onComplete }
+				/>
+			) }
+		</Button>
+	)
 }
 
-export declare namespace AuthContinue {
-	export type Props = AuthContinueProps
-}
+AuthResend.displayName = 'Button'
 
 export declare namespace AuthHeader {
 	export type Props = AuthHeaderProps
@@ -87,8 +97,4 @@ export declare namespace AuthNote {
 
 export declare namespace AuthResend {
 	export type Props = AuthResendProps
-}
-
-export declare namespace AuthSubmit {
-	export type Props = AuthSubmitProps
 }

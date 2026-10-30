@@ -49,9 +49,9 @@ export const LoginReset = () => {
 					/>
 
 					<AuthForm.Back
+						linkable
 						label="Wrong email?"
 						onClick={ () => handleLoginFlow('forgot') }
-						role="secondary"
 					/>
 				</AuthForm.Note>
 			</AuthForm.Footer>

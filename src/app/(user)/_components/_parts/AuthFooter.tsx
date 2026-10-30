@@ -1,6 +1,7 @@
 import { isValidElement, Children, type ReactElement, type ReactNode } from 'react'
 import { verifyChildren } from '@/lib/component/children'
-import { AuthBack, AuthContinue, AuthNote, AuthResend, AuthSubmit } from './AuthParts'
+import { AuthBack, AuthContinue, AuthSubmit } from './AuthButton'
+import { AuthNote, AuthResend } from './AuthParts'
 import { AuthSSO } from './AuthSSO'
 import { Button } from '@/components/core/Button'
 
@@ -55,7 +56,7 @@ export const AuthFooter = ({ children }: AuthFooterProps) => {
 		: back ?? forward
 
 	return (
-		<div className="form__ctas authentication">
+		<div className="authentication">
 			{ actions }
 			{ sso }
 			{ note }

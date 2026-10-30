@@ -125,9 +125,9 @@ export const SignupVerify = () => {
 					/>
 
 					<AuthForm.Back
+						linkable
 						label={ copy.wrong }
 						onClick={ goBack }
-						role="secondary"
 					/>
 				</AuthForm.Note>
 			</AuthForm.Footer>

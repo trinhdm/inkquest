@@ -1,130 +1,96 @@
 import { Button } from '@/components/core/Button'
-import { Countdown } from '@/components/data/Countdown'
 import { Icon } from '@/components/core/Icon'
-import { TIMER_DURATION } from '@/lib/form'
+import { LINKABLE } from '@/utils/constants'
+import type { ReactNode } from 'react'
 import type { Route } from 'next'
-import type { AuthFormIDs, AuthSubmitButton } from '../../_utils/types'
+import type { AuthSubmitButton } from '../../_utils/types'
 
-const LINKABLE = {
-	'data-link': true,
-	unstyled: true,
-}
-
-type AuthButtonActions =
-	| 'back' | 'continue' | 'resend' | 'submit'
+const ARROW_SIDE = {
+	left: { left: true },
+	right: { right: true },
+} as const
 
 interface BaseAuthButtonProps {
-	action: AuthButtonActions
-	role?: Button.Props['priority']
-}
-
-interface NotResendAuth {
-	idx?: never
-	onComplete?: never
-	target?: never
-}
-
-interface AuthBackProps
-	extends NotResendAuth {
-	action: 'back'
-	href?: never
-	label?: string
-	onClick: Button.Props['onClick']
+	children: ReactNode
+	direction: keyof typeof ARROW_SIDE
+	href?: Route
+	linkable?: boolean
+	type?: 'submit'
 	variant?: Button.Props['variant']
 }
-
-interface AuthContinueProps
-	extends NotResendAuth {
-	action: 'continue'
-	href: Route
-	label: string
-	onClick?: never
-	variant?: never
-}
-
-interface AuthResendProps {
-	action: 'resend'
-	href?: never
-	idx: AuthFormIDs
-	label?: never
-	onClick?: never
-	onComplete?: Countdown.Props['onComplete']
-	target?: 'code' | 'link'
-	variant?: never
-}
-
-interface AuthSubmitProps
-	extends NotResendAuth {
-	action: 'submit'
-	href?: never
-	label: string
-	onClick?: Button.Props['onClick']
-	variant?: never
-}
-
-type AuthButtonChoices =
-	| AuthBackProps
-	| AuthContinueProps
-	| AuthResendProps
-	| AuthSubmitProps
 
 type AuthButtonProps =
 	& BaseAuthButtonProps
 	& AuthSubmitButton
-	& AuthButtonChoices
 
-export const AuthButton = ({
-	action,
-	role = 'primary',
-	...rest
-}: AuthButtonProps) => {
-	if (action === 'resend') {
-		const { disabled: waiting, idx, onComplete, target } = rest
-
-		return (
-			<Button
-				{ ...rest }
-				{ ...LINKABLE }
-				attributes={ { aria: {
-					describedby: waiting ? `${idx!.timer}-text` : undefined
-				} } }
-				className="authentication__resend"
-				disabled={ waiting }
-				type="submit"
-			>
-				{ waiting ? 'Resend available in' : `Resend ${target}` }
-				{ waiting && (
-					<Countdown
-						from={ TIMER_DURATION }
-						id={ idx!.timer }
-						onComplete={ onComplete }
-					/>
-				) }
-			</Button>
-		)
-	}
-
-	const { label, ...props } = rest
-	const direction = action === 'back' ? 'left' : 'right',
-		propsDir = { [`${direction}`]: true }
-
-	if (action === 'submit')
-		Object.assign(props, { type: 'submit' })
-
-	if (role === 'primary') {
-		return (
-			<Button { ...props } animate={ direction }>
-				{ label }
-				<Button.Section { ...propsDir }><Icon type={ `arrow-${direction}` } /></Button.Section>
-			</Button>
-		)
-	}
-
-	return <Button { ...props } { ...LINKABLE }>{ label }</Button>
+interface AuthBackProps {
+	label?: string
+	linkable?: boolean
+	onClick: Button.Props['onClick']
+	variant?: Button.Props['variant']
 }
 
-AuthButton.displayName = 'Button'
+interface AuthContinueProps {
+	href: Route
+	label: string
+}
 
-export declare namespace AuthButton {
-	export type Props = AuthButtonProps
+interface BaseAuthSubmitProps {
+	label: string
+	linkable?: boolean
+}
+
+type AuthSubmitProps =
+	& BaseAuthSubmitProps
+	& AuthSubmitButton
+
+const AuthButton = ({
+	children,
+	direction,
+	linkable,
+	...rest
+}: AuthButtonProps) => {
+	if (linkable) return <Button { ...rest } { ...LINKABLE }>{ children }</Button>
+
+	return (
+		<Button { ...rest } animate={ direction }>
+			{ children }
+			<Button.Section { ...ARROW_SIDE[direction] }>
+				<Icon type={ `arrow-${direction}` } />
+			</Button.Section>
+		</Button>
+	)
+}
+
+//	variations
+
+export const AuthBack = ({
+	label = 'Back',
+	variant = 'ghost',
+	...rest
+}: AuthBackProps) =>
+	<AuthButton { ...rest } direction="left" variant={ variant }>{ label }</AuthButton>
+
+AuthBack.displayName = 'Button'
+
+export const AuthContinue = ({ href, label }: AuthContinueProps) =>
+	<AuthButton direction="right" href={ href }>{ label }</AuthButton>
+
+AuthContinue.displayName = 'Button'
+
+export const AuthSubmit = ({ label, ...rest }: AuthSubmitProps) =>
+	<AuthButton { ...rest } direction="right" type="submit">{ label }</AuthButton>
+
+AuthSubmit.displayName = 'Button'
+
+export declare namespace AuthBack {
+	export type Props = AuthBackProps
+}
+
+export declare namespace AuthContinue {
+	export type Props = AuthContinueProps
+}
+
+export declare namespace AuthSubmit {
+	export type Props = AuthSubmitProps
 }
