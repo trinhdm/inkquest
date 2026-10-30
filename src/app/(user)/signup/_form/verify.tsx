@@ -20,9 +20,9 @@ const COPY = {
 
 export const SignupVerify = () => {
 	const {
-		destination, endWait, goBack,
-		idx, method, reply,
-		resend, verify, waiting,
+		goBack, stopWait,
+		destination, idx, method,
+		reply, resend, verify, waiting,
 	} = useSignupCtx()
 
 	const copy = COPY[method === 'phone' ? 'phone' : 'email']
@@ -120,7 +120,7 @@ export const SignupVerify = () => {
 						formAction={ resend.action }
 						idx={ idx }
 						loading={ resend.pending }
-						onComplete={ endWait }
+						onComplete={ stopWait }
 						target="code"
 					/>
 

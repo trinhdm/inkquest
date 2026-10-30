@@ -6,16 +6,16 @@ import { PLACEHOLDER } from '@/lib/form'
 
 export const LoginRoot = () => {
 	const {
-		handleLoginFlow,
-		formReply: { pending, state },
-		idx, login, magic, waiting,
+		idx, login, magic,
+		navigate, waiting,
+		reply: { pending, state },
 	} = useLoginCtx()
 
 	const ForgotPass = (
 		<AuthForm.Back
 			linkable
 			label="Forgot password?"
-			onClick={ () => handleLoginFlow('forgot') }
+			onClick={ () => navigate('forgot') }
 		/>
 	)
 
@@ -69,7 +69,7 @@ export const LoginRoot = () => {
 					loading={ login.pending }
 				/>
 
-				<AuthForm.SSO label="Log In" onClick={ () => handleLoginFlow('success') } />
+				<AuthForm.SSO label="Log In" onClick={ () => navigate('success') } />
 
 				<AuthForm.Note>
 					<AuthForm.Submit

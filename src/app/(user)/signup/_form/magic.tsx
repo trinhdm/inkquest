@@ -4,17 +4,16 @@ import { Field } from '@/components/form/Field'
 
 export const SignupMagic = () => {
 	const {
-		destination, endWait, goBack,
-		idx, method, reply,
-		resend, waiting,
-		waitUntilExpiry,
+		goBack, guardSubmit, stopWait,
+		destination, idx, method,
+		reply, resend, waiting,
 	} = useSignupCtx()
 
 	return (
 		<AuthForm
 			action={ resend.action }
 			idx={ idx }
-			onSubmit={ waitUntilExpiry }
+			onSubmit={ guardSubmit }
 			pending={ resend.pending }
 			state={ reply.state }
 		>
@@ -47,7 +46,7 @@ export const SignupMagic = () => {
 					disabled={ waiting }
 					idx={ idx }
 					loading={ resend.pending }
-					onComplete={ endWait }
+					onComplete={ stopWait }
 				/>
 			</AuthForm.Footer>
 		</AuthForm>

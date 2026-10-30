@@ -6,7 +6,7 @@ import { PLACEHOLDER } from '@/lib/form'
 
 export const LoginForgot = () => {
 	const {
-		destination, handleLoginFlow,
+		destination, goBack,
 		idx, reset,
 	} = useLoginCtx()
 
@@ -32,7 +32,7 @@ export const LoginForgot = () => {
 			</Field>
 
 			<AuthForm.Footer>
-				<AuthForm.Back onClick={ () => handleLoginFlow('begin') } />
+				<AuthForm.Back onClick={ goBack } />
 				<AuthForm.Submit label="Send reset link" loading={ reset.pending } />
 			</AuthForm.Footer>
 		</AuthForm>

@@ -1,8 +1,8 @@
 import { createPageCtx } from '@/lib/page/context'
-import type { FormResults } from '@/lib/form'
-import type { LoginPageData } from './login.data'
 import type { SubmitEvent } from 'react'
 import type { AuthFormIDs } from '../../_utils/types'
+import type { FormResults } from '@/lib/form'
+import type { LoginPageData } from './login.data'
 
 export type LoginScreen =
 	| 'begin' | 'magic'
@@ -12,18 +12,17 @@ export type LoginScreen =
 export type ReplyFromScreen =
 	Extract<LoginScreen, 'begin' | 'magic'| 'forgot'>
 
-export type SendLinkScreen =
-	Extract<LoginScreen, 'magic' | 'reset'>
-
 export interface LoginFlow {
-	endWait: () => void
-	handleLoginFlow: (next: LoginScreen) => void
-	waitUntilExpiry: (event: SubmitEvent<HTMLFormElement>) => void
+	goBack: () => void
+	guardSubmit: (event: SubmitEvent<HTMLFormElement>) => void
+	navigate: (next: LoginScreen) => void
+	restart: () => void
+	stopWait: () => void
 
 	login: FormResults
 	magic: FormResults
 	reset: FormResults
-	formReply: FormResults
+	reply: FormResults
 
 	destination: string
 	idx: AuthFormIDs

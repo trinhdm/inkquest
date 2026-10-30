@@ -4,14 +4,12 @@ import { Field } from '@/components/form/Field'
 
 export const LoginMagic = () => {
 	const {
-		destination, endWait,
-		handleLoginFlow, idx,
-		magic, waiting,
-		waitUntilExpiry,
+		goBack, guardSubmit, stopWait,
+		destination, idx, magic, waiting,
 	} = useLoginCtx()
 
 	return (
-		<AuthForm { ...magic } idx={ idx } onSubmit={ waitUntilExpiry }>
+		<AuthForm { ...magic } idx={ idx } onSubmit={ guardSubmit }>
 			<AuthForm.Header eyebrow="Magic Link" title="Check your inbox">
 				We emailed a sign-in link to { destination }. It expires in 15 minutes.
 			</AuthForm.Header>
@@ -32,14 +30,14 @@ export const LoginMagic = () => {
 			</Field>
 
 			<AuthForm.Footer>
-				<AuthForm.Back onClick={ () => handleLoginFlow('begin') } />
+				<AuthForm.Back onClick={ goBack } />
 
 				<AuthForm.Resend
 					disabled={ waiting }
 					idx={ idx }
 					loading={ magic.pending }
 					name="resent"
-					onComplete={ endWait }
+					onComplete={ stopWait }
 					value="true"
 				/>
 			</AuthForm.Footer>

@@ -15,10 +15,10 @@ export type SignupMethod =
 	typeof SIGNUP_METHODS[number]
 
 export interface SignupFlow {
-	endWait: () => void
 	goBack: () => void
-	handleSignupMethod: (method: SignupMethod) => void
-	waitUntilExpiry: (event: SubmitEvent<HTMLFormElement>) => void
+	guardSubmit: (event: SubmitEvent<HTMLFormElement>) => void
+	handleSignup: (method: SignupMethod) => void
+	stopWait: () => void
 
 	signup: FormResults
 	resend: FormResults

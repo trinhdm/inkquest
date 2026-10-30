@@ -5,13 +5,13 @@ import { Field } from '@/components/form/Field'
 export const SignupSuccess = () => {
 	const {
 		destination, idx, method,
-		waitUntilExpiry,
+		guardSubmit,
 	} = useSignupCtx()
 
 	const isPhone = method === 'phone'
 
 	return (
-		<AuthForm idx={ idx } onSubmit={ waitUntilExpiry }>
+		<AuthForm idx={ idx } onSubmit={ guardSubmit }>
 			<AuthForm.Header eyebrow="Success!" title="Account created.">
 				You&apos;re in. A two-minute setup tunes your feed, search, and profile.
 			</AuthForm.Header>

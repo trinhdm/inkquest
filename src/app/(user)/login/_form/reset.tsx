@@ -4,14 +4,14 @@ import { Field } from '@/components/form/Field'
 
 export const LoginReset = () => {
 	const {
-		destination, endWait,
-		handleLoginFlow, idx,
+		goBack, guardSubmit,
+		restart, stopWait,
+		destination, idx,
 		reset, waiting,
-		waitUntilExpiry,
 	} = useLoginCtx()
 
 	return (
-		<AuthForm { ...reset } idx={ idx } onSubmit={ waitUntilExpiry }>
+		<AuthForm { ...reset } idx={ idx } onSubmit={ guardSubmit }>
 			<AuthForm.Header eyebrow="Check your inbox" title="Reset link sent">
 				If an account exists for { destination }, a link to reset your password is on its way. It expires in 30 minutes.
 			</AuthForm.Header>
@@ -34,7 +34,7 @@ export const LoginReset = () => {
 			<AuthForm.Footer>
 				<AuthForm.Back
 					label="Back to log in"
-					onClick={ () => handleLoginFlow('begin') }
+					onClick={ restart }
 					variant="solid"
 				/>
 
@@ -44,14 +44,14 @@ export const LoginReset = () => {
 						idx={ idx }
 						loading={ reset.pending }
 						name="resent"
-						onComplete={ endWait }
+						onComplete={ stopWait }
 						value="true"
 					/>
 
 					<AuthForm.Back
 						linkable
 						label="Wrong email?"
-						onClick={ () => handleLoginFlow('forgot') }
+						onClick={ goBack }
 					/>
 				</AuthForm.Note>
 			</AuthForm.Footer>

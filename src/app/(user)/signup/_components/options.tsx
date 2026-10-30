@@ -27,7 +27,7 @@ const AUTH_OPTIONS: AuthOption[] = [
 ]
 
 export const SignupOptions = () => {
-	const { handleSignupMethod, method, signup } = useSignupCtx()
+	const { handleSignup, method, signup } = useSignupCtx()
 
 	return AUTH_OPTIONS.map(({ icon, label, name }) => (
 		method !== name && (
@@ -36,7 +36,7 @@ export const SignupOptions = () => {
 				className="authentication__option"
 				disabled={ signup.pending }
 				key={ `${name}-option` }
-				onClick={ () => handleSignupMethod(name) }
+				onClick={ () => handleSignup(name) }
 			>
 				<Button.Section><Icon size="14" type={ icon } /></Button.Section>
 				<span data-link>{ label }</span>

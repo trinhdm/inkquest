@@ -4,12 +4,12 @@ import { Field } from '@/components/form/Field'
 
 export const LoginSuccess = () => {
 	const {
-		formReply: { state },
-		idx, waitUntilExpiry,
+		guardSubmit, idx,
+		reply: { state },
 	} = useLoginCtx()
 
 	return (
-		<AuthForm idx={ idx } onSubmit={ waitUntilExpiry }>
+		<AuthForm idx={ idx } onSubmit={ guardSubmit }>
 			<AuthForm.Header eyebrow="Success!" title="Logged in.">
 				Welcome back — your feed is where you left it.
 			</AuthForm.Header>
