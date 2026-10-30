@@ -1,67 +1,102 @@
 import { useEffect, useState } from 'react'
 import { Icon } from '@/components/core/Icon'
-import { PASSWORD_RULES } from '../_utils/signup.data'
+import { PASSWORD_RULES, PASSWORD_SCORE } from '../_utils/signup.data'
 
+const SR_DELAY = 1000
 const TOTAL = PASSWORD_RULES.length
-const PW_SCORE = ['weak', 'okay', 'good', 'strong'] as const
 
 interface PasswordRulesProps {
 	value: string
 }
 
 export const PasswordRules = ({ value }: PasswordRulesProps) => {
-	const [spoken, setSpoken] = useState('')
+	const [animating, setAnimating] = useState(false)
+	const [skipping, setSkipping] = useState(false)
 
-	const met = PASSWORD_RULES.filter(rule => rule.test(value)).length
-	const summary = !value ? ''
-			: met === TOTAL ? 'All password requirements met.'
-				: `${met} of ${TOTAL} password requirements met.`
+	const [cached, setCached] = useState(0)
+	const [shown, setShown] = useState(0)
+	const [summary, setSummary] = useState('')
+
+	const met = PASSWORD_RULES.filter(rule => rule.test(value)).length,
+		score = PASSWORD_SCORE[(met || cached) - 1] ?? '-'
+
+	const empty = met === 0,
+		count = met === TOTAL ? 'All' : `${met} of ${TOTAL}`,
+		info = !!value ? `${count} password requirements met.` : ''
 
 	useEffect(() => {
-		const timer = setTimeout(() => setSpoken(summary), 1000)
+		const timer = setTimeout(() => setSummary(info), SR_DELAY)
 		return () => clearTimeout(timer)
-	}, [summary])
+	}, [info])
+
+	if (empty && shown > 0) {
+		setCached(shown)
+		setShown(0)
+		setSkipping(false)
+		setAnimating(true)
+	} else if (!animating && shown !== met) {
+		const steps = met - shown > 2
+
+		setSkipping(steps)
+		setAnimating(true)
+		setShown(steps ? met : shown + Math.sign(met - shown))
+	}
+
+	const handleBarDone = () => {
+		setAnimating(false)
+		setSkipping(false)
+		setCached(0)
+	}
 
 	return (
 		<div className="password">
-			<div className="password__checker">
-				<div className="password__strength">
+			<div
+				className="password__strength"
+				data-empty={ empty ? '' : undefined }
+				data-skip={ skipping ? '' : undefined }
+			>
+				<div
+					className="password__meter"
+					onTransitionCancel={ handleBarDone }
+					onTransitionEnd={ handleBarDone }
+					aria-hidden="true"
+				>
 					{ Array.from({ length: TOTAL }).map((_, i) => (
 						<span
-							className="password__criteria"
-							data-met={ i + 1 <= met || undefined }
+							className="password__tier"
+							data-met={ i + 1 <= shown ? '' : undefined }
 							key={ i }
 						/>
 					)) }
 				</div>
 				<div className="password__score">
-					<span>{ PW_SCORE[met - 1] ?? '-' }</span>
+					<span>{ score }</span>
 				</div>
 			</div>
 
-			<ul className="password__requirements" aria-live="polite" data-unlist>
+			<ul className="password__criteria" data-unlist>
 				{ PASSWORD_RULES.map(rule => {
-					const isMet = rule.test(value)
+					const isMet = rule.test(value),
+						status = `: has ${isMet ? '' : 'not'} met`.replace(/\s+/g, ' ').trim()
 
 					return (
 						<li
+							className="password__rule"
+							data-met={ isMet ? '' : undefined }
 							key={ rule.id }
-							className="password__requirement"
-							data-met={ isMet || undefined }
 						>
-							<span className="password__status">
+							<span className="password__feedback">
 								{ isMet && <Icon size={ 12 } type="check" /> }
 							</span>
 
 							{ rule.label }
-
-							<span className="inkq-sr">{ isMet ? ', met' : ', not met yet' }</span>
+							<span className="inkq-sr">{ status }</span>
 						</li>
 					)
 				}) }
 			</ul>
 
-			<span className="inkq-sr" role="status">{ spoken }</span>
+			<span className="inkq-sr" role="status">{ summary }</span>
 		</div>
 	)
 }

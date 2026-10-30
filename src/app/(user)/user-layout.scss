@@ -1,24 +1,20 @@
 @use '@/styles/utils' as global;
 
 @mixin pw-strength-color {
-	&:not(:has([data-met])) {
-		--pw-strength-color: transparent;
+	&:is([data-empty]) {
+		--pw-strength-color: #{global.severity(0)};
 	}
 
-	&:has([data-met]:nth-child(1)) {
-		--pw-strength-color: var(--inkq-color-danger-muted);
+	@for $i from 1 through 6 {
+		&:has(:nth-child(#{$i} of [data-met])) {
+			--pw-strength-color: #{global.severity($i)};
+		}
 	}
 
-	&:has([data-met]:nth-child(2)) {
-		--pw-strength-color: var(--inkq-color-danger-tint);
-	}
-
-	&:has([data-met]:nth-child(3)) {
-		--pw-strength-color: var(--inkq-color-warning-muted);
-	}
-
-	&:has([data-met]:nth-child(4)) {
-		--pw-strength-color: var( --inkq-color-success-muted);
+	&:has([data-met]:first-child:nth-last-child(4)) {
+		&:has(:nth-child(4 of [data-met])) {
+			--pw-strength-color: #{global.severity(5)};
+		}
 	}
 }
 
@@ -54,7 +50,6 @@
 		column-gap: var(--inkq-gutter-list);
 		display: flex;
 		font: var(--inkq-text-body-sm);
-		line-height: var(--inkq-font-leading-label);
 		max-width: var( --inkq-breakpoint-min);
 
 		[data-dot] {
@@ -84,26 +79,18 @@
 	}
 
 	&__resend {
-		color: var(--inkq-color-text-tertiary);
-		// line-height: var(--inkq-font-leading-body);
-
 		&:disabled {
 			cursor: text;
 			user-select: text;
 		}
 
-		&:has(+ time, time) {
+		&:has(time) {
 			font-weight: var(--inkq-font-weight-normal);
 			transition: color var(--duration-fast) var(--easing);
 
-			& + time,
 			time {
-				margin-left: var(--space-1);
+				margin-left: var(--inkq-space-icon);
 			}
-
-			// time {
-			// 	line-height: var(--inkq-font-leading-label);
-			// }
 		}
 	}
 
@@ -116,7 +103,7 @@
 		}
 
 		.inkq-button__inner {
-			gap: var(--space-1);
+			gap: var(--inkq-space-icon);
 		}
 
 		.inkq-icon {
@@ -128,47 +115,53 @@
 .password {
 	$name: &;
 
+	--pw-strength-color: #{global.severity(0)};
+	--pw-strength-success: #{global.severity(-1)};
+
+	--pw-tier-duration: .075s;
+	--pw-easing: var(--easing);
+
+	--pw-skip-transition: 0s var(--pw-tier-duration);
+	--pw-text-transition: calc(2 * var(--pw-tier-duration)) var(--pw-easing);
+	--pw-tier-transition: var(--pw-tier-duration) var(--pw-easing);
+
 	width: 100%;
 
-	&__checker,
-	&__requirement,
-	&__status {
+	&__feedback,
+	&__meter,
+	&__rule,
+	&__strength {
 		align-items: center;
 		display: flex;
 		position: relative;
 	}
 
-	&__checker {
+	&__strength {
 		@include pw-strength-color;
 
 		gap: var(--inkq-gutter-list);
 	}
 
 	&__score {
-		color: var(--inkq-color-text-secondary);
+		color: var(--pw-strength-color);
 		font: var(--inkq-text-control);
 		font-size: var(--inkq-font-size-caption);
-		line-height: var(--inkq-font-leading-exact);
 		letter-spacing: var(--inkq-font-tracking-prefix);
+		line-height: var(--inkq-font-leading-exact);
 		min-width: var(--space-15);
 		text-align: right;
 		text-transform: uppercase;
+		transition: color var(--pw-text-transition);
 	}
 
-	&__strength {
-		display: flex;
+	&__meter {
 		flex: 1 1 0%;
-		gap: var(--space-1);
+		gap: var(--inkq-space-icon);
 	}
 
-	&__score {
-		color: var(--pw-strength-color);
-		transition: color var(--duration-fast) var(--easing);
-	}
-
-	&__criteria {
+	&__tier {
 		background-color: var(--inkq-border);
-		border-radius: 2px;
+		border-radius: .125rem;
 		display: block;
 		flex: 1 1 0%;
 		height: 3px;
@@ -176,23 +169,37 @@
 		position: relative;
 
 		&::after {
-			background-color: var(--pw-strength-color);
+			background-color: transparent;
 			content: '';
 			display: block;
 			height: 100%;
 			position: absolute;
 			transform: translateX(-101%);
-			transition: transform .5s var(--easing);
+			transition:
+				background-color var(--pw-skip-transition),
+				transform var(--pw-tier-transition);
 			width: 100%;
 			z-index: 5;
+
+			#{$name}__strength:is([data-empty]) & {
+				transition:
+					background-color var(--pw-tier-transition),
+					transform var(--pw-skip-transition);
+			}
+
+			#{$name}__strength:is([data-skip]) & {
+				transition: background-color var(--pw-tier-transition);
+			}
 		}
 
 		&:is([data-met])::after {
+			background-color: var(--pw-strength-color);
 			transform: translateX(0);
+			transition: transform var(--pw-tier-transition);
 		}
 	}
 
-	&__requirements {
+	&__criteria {
 		color: var(--inkq-color-text-tertiary);
 		column-gap: var(--inkq-gutter-list);
 		display: grid;
@@ -200,22 +207,20 @@
 		font: var(--inkq-text-body-sm);
 		gap: var(--space-1) var(--space-3);
 		grid-template-columns: 1fr 1fr;
-		// line-height: var(--inkq-font-leading-label);
 		margin: var(--inkq-field-gap) 0 0;
 	}
 
-	&__requirement {
+	&__rule {
 		color: var(--inkq-color-text-tertiary);
 		gap: var(--inkq-gutter-list);
-		// font: var(--inkq-text-caption);
-		transition: color var(--duration-default) var(--easing);
+		transition: color var(--pw-text-transition);
 
 		&:is([data-met]) {
-			color: var(--inkq-color-success);
+			color: var(--pw-strength-success);
 		}
 	}
 
-	&__status {
+	&__feedback {
 		flex-shrink: 0;
 		height: var(--inkq-icon-sm);
 		justify-content: center;
@@ -234,7 +239,7 @@
 			display: block;
 			height: 100%;
 			position: absolute;
-			transition: opacity var(--duration-fast) var(--easing);
+			transition: opacity var(--pw-text-transition);
 			width: 100%;
 		}
 
@@ -242,17 +247,17 @@
 			border-color: var(--inkq-border-strong);
 			z-index: 0;
 
-			#{$name}__requirement:is([data-met]) & {
+			#{$name}__rule:is([data-met]) & {
 				opacity: 0;
 			}
 		}
 
 		&::after {
-			border-color: var(--inkq-color-success);
+			border-color: var(--pw-strength-success);
 			opacity: 0;
 			z-index: 1;
 
-			#{$name}__requirement:is([data-met]) & {
+			#{$name}__rule:is([data-met]) & {
 				opacity: .5;
 			}
 		}

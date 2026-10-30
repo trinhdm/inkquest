@@ -1,4 +1,4 @@
-import { useState} from 'react'
+import { useState } from 'react'
 import { useForm, useFormHistory, useOnReply } from '@/hooks/form'
 import { getAuthFormIDs } from '../../_utils/helpers'
 import { initFormState } from '@/lib/form'
@@ -53,7 +53,7 @@ export const useLoginFlow = ({ id: pageID }: LoginPageData): LoginFlow => {
 			pending: loginForm.pending || magicForm.pending,
 		},
 		destination: resetEmail ?? reply.state.values.email ?? '',
-		idx: getAuthFormIDs(pageID, screen),
+		idx: getAuthFormIDs(pageID, shown),
 		screen: shown,
 		waiting,
 	}

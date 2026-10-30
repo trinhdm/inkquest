@@ -1,3 +1,6 @@
+@use "sass:list";
+@use 'sass:map';
+@use 'sass:meta';
 
 //	colors
 
@@ -11,4 +14,29 @@
 
 @function autofill($color) {
 	@return 0 0 0 1000px #{$color} inset;
+}
+
+@function severity($tier) {
+	$base: transparent;
+	$color: $base;
+
+	$tiers: (
+		0: $base,
+		1: var(--inkq-color-danger-muted),
+		2: var(--inkq-color-danger-tint),
+		3: var(--inkq-color-warning-muted),
+		4: var(--inkq-color-warning-active),
+		5: var( --inkq-color-success-muted),
+		6: var( --inkq-color-success),
+	);
+
+	@if meta.type-of($tier) == 'number' {
+		@if map.has-key($tiers, $tier) {
+			$color: map.get($tiers, $tier);
+		} @else if $tier < 0 {							//	i.e. `$tier: -1` for last value
+			$color: list.nth(map.values($tiers), $tier);
+		}
+	}
+
+	@return $color
 }

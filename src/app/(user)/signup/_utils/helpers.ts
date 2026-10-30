@@ -9,7 +9,7 @@ export const describeMissing = (value: string) => {
 	const missing = PASSWORD_RULES.filter(rule => !rule.test(value))
 	if (!missing.length) return undefined
 
-	return `Your password needs ${listFormat.format(
+	return `Password needs ${listFormat.format(
 		missing.map(({ label }) => label.toLowerCase())
 	)}.`
 }

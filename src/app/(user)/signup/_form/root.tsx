@@ -31,6 +31,7 @@ export const SignupRoot = () => {
 	return (
 		<AuthForm
 			action={ action }
+			feedback="eager"
 			idx={ idx }
 			pending={ pending }
 			state={ state }
@@ -72,7 +73,7 @@ export const SignupRoot = () => {
 
 			{ method === 'email' && (
 				<>
-					<input hidden autoComplete="username" name="username" ng-hide="true" type="text" />
+					<input hidden autoComplete="username" name="username" type="text" />
 
 					<Field
 						required
@@ -87,6 +88,7 @@ export const SignupRoot = () => {
 							onChange={ event => setPassword(event.currentTarget.value) }
 							placeholder="Your password"
 							type="password"
+							value={ password }
 						/>
 					</Field>
 				</>

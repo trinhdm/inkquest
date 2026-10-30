@@ -44,7 +44,7 @@ export const AuthNote = ({ children }: AuthNoteProps) => {
 		<div className="authentication__note">
 			{ items.map((item, i) => (
 				<Fragment key={ getChildKey(item, i) }>
-					{ i > 0 && <span data-dot>·</span> }
+					{ i > 0 && <span aria-hidden data-dot>·</span> }
 					{ item }
 				</Fragment>
 			)) }

@@ -1,12 +1,16 @@
 import { z } from 'zod'
 import { describeMissing } from './helpers'
 import { emailRule, telRule, validateWith } from '@/lib/form'
-import { SIGNUP_METHODS } from './signup.data'
+import { SEQUENCE_MIN, SIGNUP_METHODS } from './signup.data'
 
 const passwordRule = z.string()
-	.min(1, `Password doesn't meet the requirements.`)
+	.min(1, `Enter a password.`)
 	.superRefine((value, ctx) => {
-		const message = describeMissing(value)
+		const isShort = value.length < SEQUENCE_MIN
+		const message = isShort
+			? `Password doesn't meet the requirements.`
+			: describeMissing(value)
+
 		if (message) ctx.addIssue({ code: 'custom', message })
 	})
 
