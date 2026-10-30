@@ -1,8 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { artistSchema, clientSchema } from '../_utils/schema'
-import { sendArtistSupport, sendClientSupport } from '../_utils/actions'
+import { useForm } from '@/hooks/form'
+import { initFormState } from '@/lib/form'
+import { supportArtist, supportClient } from '../_utils/actions'
 import { Grid } from '@/components/layout/Grid'
 import { Section } from '@/components/layout/Section'
 import { Sidebar } from '@/components/layout/Sidebar'
@@ -12,6 +13,9 @@ import { ARTIST_SUPPORT, CLIENT_SUPPORT, EMAIL_GROUPS } from '../_utils/data'
 
 export const SupportBase = () => {
 	const pageID = 'support'
+
+	const artistForm = useForm(supportArtist, initFormState),
+		clientForm = useForm(supportClient, initFormState)
 
 	return (
 		<>
@@ -38,18 +42,16 @@ export const SupportBase = () => {
 
 							<Tab.Panel>
 								<SupportForm
-									action={ sendClientSupport }
-									id="client-form"
-									schema={ clientSchema }
+									{ ...clientForm }
+									id="form-client"
 									topics={ CLIENT_SUPPORT }
 								/>
 							</Tab.Panel>
 
 							<Tab.Panel>
 								<SupportForm
-									action={ sendArtistSupport }
-									id="artist-form"
-									schema={ artistSchema }
+									{ ...artistForm }
+									id="form-artist"
 									topics={ ARTIST_SUPPORT }
 								/>
 							</Tab.Panel>

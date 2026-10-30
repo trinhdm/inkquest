@@ -22,14 +22,16 @@ interface FormActionConfig<T> {
 
 export const action = <S extends z.ZodType>(schema: S, config?: FormActionConfig<z.infer<S>>) =>
 	async (_prev: FormState, data: FormData): Promise<FormState> => {
-		const names = config?.names ?? ['email'],
-			values = pickValues(data, names),
+		const names = config?.names,
+			values = !!names?.length ? pickValues(data, names) : {},
 			base = { errors: {}, values }
 
 		try {
 			const result = schema.safeParse(Object.fromEntries(data))
 
-			if (!result.success) return { errors: showMessage(result.error), values }
+			if (!result.success)
+				return { ...base, errors: showMessage(result.error) }
+
 			await pause(ACTION_DELAY)
 
 			for (const { check, ...feedback } of config?.conditions ?? [])

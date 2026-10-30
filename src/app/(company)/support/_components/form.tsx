@@ -1,65 +1,45 @@
-import {
-	useActionState, useState,
-	type SubmitEvent,
-} from 'react'
-
-import {
-	initFormState, showMessage,
-	PLACEHOLDER_EMAIL, type FormState,
-} from '@/lib/form'
-
 import { Button } from '@/components/core/Button'
 import { Field } from '@/components/form/Field'
 import { Form } from '@/components/form/Form'
 import { Grid } from '@/components/layout/Grid'
-import type { z } from 'zod'
+import { PLACEHOLDER, type FormResults } from '@/lib/form'
 import type { SupportTopic } from '../_utils/types'
 
-interface SupportFormProps {
-	action: (prev: FormState, data: FormData) => Promise<FormState>
+interface SupportFormProps
+	extends FormResults {
 	id: string
-	schema: z.ZodType
 	topics: readonly SupportTopic[]
 }
 
 export const SupportForm = ({
 	action,
 	id,
-	schema,
+	pending,
+	state,
 	topics,
 }: SupportFormProps) => {
-	const [state, formAction, pending] = useActionState(action, initFormState)
-	const [clientErrors, setClientErrors] = useState<FormState['errors'] | null>(null)
-
-	const checkForm = (event: SubmitEvent<HTMLFormElement>) => {
-		const result = schema.safeParse(Object.fromEntries(new FormData(event.currentTarget)))
-		if (result.success) return setClientErrors(null)
-
-		event.preventDefault()
-		setClientErrors(showMessage(result.error))
-	}
-
 	const fieldID = `${id}-field`,
 		topic = state.values.topic ?? topics[0].value
 
+	const itemProps = { as: Grid.Item, required: true },
+		thinProps = { ...itemProps, span: 1 },
+		wideProps = { ...itemProps, span: 2 }
+
 	return (
 		<Form
-			action={ formAction }
+			action={ action }
 			columns={ 2 }
 			id={ id }
-			onSubmit={ checkForm }
 			pending={ pending }
 			state={ state }
 		>
 			<Field.Group
-				required
-				as={ Grid.Item }
+				{ ...wideProps }
 				className="form-choices"
 				id={ `${id}-choices` }
 				labelPosition="last"
 				layout="button"
 				legend="What's it about?"
-				span={ 2 }
 			>
 				{ topics.map(({ value, ...option }) => (
 					<Field
@@ -77,42 +57,36 @@ export const SupportForm = ({
 			</Field.Group>
 
 			<Field
-				required
-				as={ Grid.Item }
+				{ ...thinProps }
 				id={ `${fieldID}-name` }
 				label="Name"
-				span={ 1 }
 			>
 				<Field.Input
 					autoComplete="name"
 					defaultValue={ state.values.name }
 					name="name"
-					placeholder="John Doe"
+					placeholder={ PLACEHOLDER.name }
 				/>
 			</Field>
 
 			<Field
-				required
-				as={ Grid.Item }
+				{ ...thinProps }
 				id={ `${fieldID}-email` }
 				label="Email"
-				span={ 1 }
 			>
 				<Field.Input
 					autoComplete="email"
 					defaultValue={ state.values.email }
 					name="email"
-					placeholder={ PLACEHOLDER_EMAIL }
+					placeholder={ PLACEHOLDER.email }
 					type="email"
 				/>
 			</Field>
 
 			<Field
-				required
-				as={ Grid.Item }
+				{ ...wideProps }
 				id={ `${fieldID}-message` }
 				label="Message"
-				span={ 2 }
 			>
 				<Field.Textarea
 					defaultValue={ state.values.message }
@@ -122,10 +96,10 @@ export const SupportForm = ({
 			</Field>
 
 			<Field
-				as={ Grid.Item }
+				{ ...wideProps }
 				id={ `${fieldID}-screenshots` }
 				label="Screenshots"
-				span={ 2 }
+				required={ false }
 			>
 				<Field.Textarea
 					defaultValue={ state.values.screenshots }

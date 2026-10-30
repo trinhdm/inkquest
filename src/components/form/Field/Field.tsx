@@ -16,7 +16,7 @@ import { useFormCtx, type Form } from '../Form'
 import { calcInputBox, type InputPropsList } from '../utils'
 import { defineTokens } from '@/lib/component/tokens'
 import { extractOthers } from '@/hooks/useProps'
-import { filterChildren } from '@/lib/component/children'
+import { filterChildren, withInlineWrap } from '@/lib/component/children'
 import { getFormErrors, getIcon } from './utils'
 import { polymorphic } from '@/lib/component/factory'
 import { toKebabCase } from '@/utils/helpers'
@@ -59,7 +59,7 @@ interface BaseFieldProps {
 	loading?: boolean
 	readonly?: boolean
 	required?: boolean
-	type?: Field.Choice.Types | Field.Input.Types
+	type?: ChoiceInput.Types | TextInput.Types
 }
 
 interface FieldDefaultLayout {
@@ -282,13 +282,13 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 	)
 
 	const captionEl = caption && (
-		<span { ...styles('caption') } id={ idx.info }>{ caption }</span>
+		<div { ...styles('caption') } id={ idx.info }>{ withInlineWrap(caption) }</div>
 	)
 
 	const errorEl = hasError && (
 		<span { ...styles('error') } id={ idx.error }>
 			<span { ...styles('prefix', { global: { sr: true } }) }>Error:&nbsp;</span>
-			{ error }
+			{ withInlineWrap(error) }
 		</span>
 	)
 
@@ -306,14 +306,17 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 		)
 	}
 
-	let infoEl = <div { ...styles('info') }>{ captionEl }{ errorEl }</div>
 	const isFirst = !labelPosition || labelPosition === 'first',
 		isLast = labelPosition === 'last'
+
+	const infoInline = !!(captionEl || errorEl) && (
+		<div { ...styles('info') }>{ captionEl }{ errorEl }</div>
+	)
 
 	if (layout === 'inline') {
 		return (
 			<Box { ...sharedProps } as={ as }>
-				{ isFirst && infoEl }
+				{ isFirst && infoInline }
 
 				<div { ...styles('container') }>
 					{ labelEl }
@@ -322,12 +325,14 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 					</FieldProvider>
 				</div>
 
-				{ isLast && infoEl }
+				{ isLast && infoInline }
 			</Box>
 		)
 	}
 
-	infoEl = <div { ...styles('info') }>{ labelEl }{ errorEl }</div>
+	const infoEl = !!(labelEl || errorEl) && (
+		<div { ...styles('info') }>{ labelEl }{ errorEl }</div>
+	)
 
 	return (
 		<Box { ...sharedProps } as={ as }>

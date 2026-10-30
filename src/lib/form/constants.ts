@@ -1,9 +1,9 @@
 
-export const PLACEHOLDER_EMAIL = 'name@example.com'
-export const PLACEHOLDER_TEL = '(123) 456-7890'
-
-export const ACTION_DELAY = 800
-export const BASE_ERROR = 'Something went wrong. Try again.'
+export const PLACEHOLDER = {
+	name: 'John Doe',
+	email: 'name@example.com',
+	tel: '(123) 456-7890',
+} as const
 
 export const MOCK_DATA = {
 	failEmail: 'fail@example.com',
@@ -12,3 +12,7 @@ export const MOCK_DATA = {
 	wrongCode: '000000',
 	expiredCode: '111111',
 } as const
+
+export const ACTION_DELAY = 800
+export const BASE_ERROR = 'Something went wrong. Try again.'
+export const TIMER_DURATION = 30

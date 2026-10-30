@@ -11,5 +11,5 @@ const config = {
 	onSuccess: () => ({ message: THANKS, values: {} }),
 }
 
-export const sendClientSupport = action(clientSchema, config)
-export const sendArtistSupport = action(artistSchema, config)
+export const supportClient = action(clientSchema, config)
+export const supportArtist = action(artistSchema, config)

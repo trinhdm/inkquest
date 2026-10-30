@@ -165,7 +165,6 @@ export const Form = polymorphic<FormSpecs>((_props, { useProps, useStyles }) => 
 
 		onSubmit?.(event)
 	}
-
 	const reply = isLocal ? {} : { formError, message }
 	const text = pending ? pendingMessage
 		: reply.formError ?? reply.message
@@ -173,6 +172,7 @@ export const Form = polymorphic<FormSpecs>((_props, { useProps, useStyles }) => 
 		: reply.formError ? 'error'
 			: reply.message ? 'success'
 				: undefined
+	const keyKind = kind ? `${kind}-${attempt}` : ''
 
 	return (
 		<Box
@@ -194,8 +194,8 @@ export const Form = polymorphic<FormSpecs>((_props, { useProps, useStyles }) => 
 			<p { ...styles('status') } role="status">
 				{ !!text && (
 					<span { ...styles('message') } data-kind={ kind } key={ attempt }>
-						{ kind === 'error' && <CircleAlert aria-hidden /> }
-						{ kind === 'success' && <CircleCheck aria-hidden /> }
+						{ kind === 'error' && <CircleAlert key={ keyKind} /> }
+						{ kind === 'success' && <CircleCheck key={ keyKind } /> }
 						{ text }
 					</span>
 				) }

@@ -121,6 +121,7 @@ export const TextInput = polymorphic<TextInputSpecs>((_props, { useProps, useSty
 							} } }
 							disabled={ !!disabled }
 							onClick={ handleShown }
+							role="switch"
 						>
 							<Eye { ...styles('glyph', { selector: 'open' }) } />
 							<EyeClosed { ...styles('glyph', { selector: 'closed' }) } />

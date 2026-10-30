@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { emailRule } from '@/lib/form'
 
 export const CLIENT_TOPICS = ['general', 'booking', 'payments'] as const
 
@@ -10,7 +11,7 @@ export const ARTIST_TOPICS = [
 const MIN_CHAR = 50
 
 const contact = {
-	email: z.email('Enter a valid email address.'),
+	email: emailRule,
 	message: z.string().trim().min(MIN_CHAR, `Tell us a bit more - ${MIN_CHAR} characters minimum.`),
 	name: z.string().trim().min(1, 'Enter your name.'),
 	screenshots: z.string().trim().optional(),
