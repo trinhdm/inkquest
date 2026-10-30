@@ -16,6 +16,7 @@ type NativeButtonProps =
 
 type SharedAuthProps =
 	& Pick<Button.Props, 'disabled' | 'fullWidth' | 'loading' | 'onClick'>
+
 interface BaseSubmitButton {
 	'data-intent'?: never
 	formAction?: never
