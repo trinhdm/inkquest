@@ -1,6 +1,6 @@
 import { isValidElement, Children, type ReactElement, type ReactNode } from 'react'
 import { verifyChildren } from '@/lib/component/children'
-import { AuthBack, AuthContinue, AuthSubmit } from './AuthButton'
+import { AuthBack, AuthContinue, AuthSubmit } from './AuthButtons'
 import { AuthNote, AuthResend } from './AuthParts'
 import { AuthSSO } from './AuthSSO'
 import { Button } from '@/components/core/Button'
