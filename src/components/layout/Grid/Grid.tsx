@@ -3,7 +3,7 @@ import { extractOthers } from '@/hooks/useProps'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import { GridItem } from './GridItem'
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import type { ConfigOptions } from '@/lib/theme/types/theme.types'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import type { UnpackArray } from '@/types/utils'
@@ -26,7 +26,7 @@ interface BaseGridProps {
 }
 
 interface ColumnsGridProps {
-	columns?: number
+	columns?: CSSProperties['gridTemplateColumns']
 	equalWidth?: boolean
 	gap?: Exclude<UnpackArray<GridGapOptions>, Lowercase<typeof NAME>>
 	layout?: 'default'
@@ -73,25 +73,26 @@ type GridTokens = {
 const tokens = defineTokens<GridSpecs>()(({ props, theme }) => {
 	const { columns, equalWidth, gap, layout } = props
 
-	const gridCols = [], gridWidth = 'minmax(0, 1fr)',
-		 gridGap = ['grid'],
+	const gridGap = ['grid']
+	const hasNumCols = typeof columns === 'number' && columns > 0,
 		isLayoutSidebar = layout === 'sidebar'
 
 	if (isLayoutSidebar) gridGap.push('xl')
 	else if (gap) gridGap.push(gap)
 
-	if (!!(columns && columns > 0))
-		gridCols.push(columns)
-	else if (isLayoutSidebar)
-		gridCols.push(4)
-	else
-		gridCols.push('auto-fit')
+	let gridCount: number | string = 'auto-fit'
 
-	gridCols.push(gridWidth)
+	if (isLayoutSidebar) gridCount = 4
+	else if (hasNumCols) gridCount = columns
 
-	const gridTemplate = (typeof equalWidth === 'boolean' && !!equalWidth)
-		? `repeat(${gridCols.join(', ')})`
-		: gridCols.join(' ')
+	const isEqualWidth = typeof equalWidth === 'boolean' && !!equalWidth
+	const gridWidth = !isEqualWidth && hasNumCols
+		? 'auto'
+		: 'minmax(0, 1fr)'
+
+	const gridTemplate = typeof columns === 'string' && !!columns.trim()
+		? columns
+		: `repeat(${gridCount}, ${gridWidth})`
 
 	return {
 		root: {
@@ -112,7 +113,9 @@ export const Grid = polymorphic<GridSpecs>((_props, { useProps, useStyles }) => 
 	} = props
 
 	const others = extractOthers(rest)
-	const clsx = { selector: { [`${layout}`]: layout !== 'default' } }
+	const clsx = {
+		selector: { [`${layout}`]: !!layout && layout !== 'default' },
+	}
 
 	return (
 		<Box

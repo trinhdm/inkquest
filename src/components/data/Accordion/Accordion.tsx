@@ -149,11 +149,13 @@ export const Accordion = polymorphic<AccordionSpecs>((_props, { useProps, useSty
 		layout, order, size, unstyled,
 	])
 
-	const layoutClass = { [`${layout}`]: layout !== 'default' }
+	const clsx = {
+		selector: { [`${layout}`]: !!layout && layout !== 'default' },
+	}
 
 	return (
 		<Box
-			{ ...styles('root', { selector: layoutClass }) }
+			{ ...styles('root', clsx) }
 			{ ...others }
 			as={ as }
 			attributes={ { data: {

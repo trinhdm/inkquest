@@ -15,15 +15,20 @@ interface VerifySubcomponentsConfig {
 	parentName: string
 }
 
-const labelChild = (child: ReactNode) => {
+const labelChild = (child: ReactNode): string => {
 	if (typeof child === 'string') return child.trim()
 	else if (!isValidElement(child)) return `text '${String(child).trim().slice(0, 24)}'`
 	else if (typeof child.type === 'string') return `<${child.type}>`
 	return (child.type as ComponentType).displayName ?? 'unnamed component'
 }
 
-const labelChildren = (children: ReactNode) =>
-	(Array.isArray(children) ? children.map(labelChild).join(', ') : `${children}`).trim()
+const labelChildren = (children: ReactNode): string => {
+	const labels = Array.isArray(children)
+		? children.map(labelChild)
+		: [`${children}`]
+
+	return [...new Set(labels)].join(', ').trim()
+}
 
 export const verifyChildren = ({
 	children,
@@ -45,7 +50,7 @@ export const verifyChildren = ({
 		const { childName } = name,
 			list = Array.isArray(childName) ? [...childName] : [childName]
 
-		childNames = ` ${list.map(labelChild).join(', ')}`
+		childNames = ` ${[...new Set(list)].map(labelChild).join(', ').trim()}`
 		foundText += childNames
 	}
 

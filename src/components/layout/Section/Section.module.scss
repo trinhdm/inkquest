@@ -12,6 +12,8 @@
 
 	&__eyebrow {
 		--reveal-duration-lead: .3s;
+
+		@include global.eyebrow;
 	}
 
 	&__title {

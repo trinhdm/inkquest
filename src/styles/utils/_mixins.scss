@@ -11,7 +11,7 @@
 		label: var(--inkq-font-size-label),
 	);
 
-	@if $size and meta.type-of($size) == 'string' {
+	@if meta.type-of($size) == 'string' {
 		$fontSize: map.get($fontSizes, $size);
 
 		@if $fontSize {
@@ -274,7 +274,7 @@
 	$rail-size: 2px;
 	$rail-transition: var(--duration-gradual) var(--easing-out) var(--duration-fast);
 
-	@if $config and meta.type-of($config) == 'map' {
+	@if meta.type-of($config) == 'map' {
 		@if map.has-key($config, 'color') {
 			$rail-color: map.get($config, 'color');
 		}

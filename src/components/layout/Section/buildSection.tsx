@@ -43,7 +43,7 @@ const buildHeader = (
 
 	if (!!eyebrow) {
 		const tagline = (
-			<span key={ `${id}-eyebrow` } { ...styles('eyebrow', true) } { ...reveal.next() }>
+			<span key={ `${id}-eyebrow` } { ...styles('eyebrow') } { ...reveal.next() }>
 				{ eyebrow }
 			</span>
 		)
