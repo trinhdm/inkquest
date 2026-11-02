@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { usePasswordMeter, METER_CSS } from '../_utils/usePasswordMeter'
 import { Icon } from '@/components/core/Icon'
 import { PASSWORD_RULES, PASSWORD_SCORE } from '../_utils/signup.data'
 
@@ -10,17 +11,13 @@ interface PasswordCriteriaProps {
 }
 
 export const PasswordCriteria = ({ value }: PasswordCriteriaProps) => {
-	const [animating, setAnimating] = useState(false)
-	const [skipping, setSkipping] = useState(false)
-
-	const [cached, setCached] = useState(0)
-	const [shown, setShown] = useState(0)
 	const [summary, setSummary] = useState('')
 
 	const met = PASSWORD_RULES.filter(rule => rule.test(value)).length,
-		score = PASSWORD_SCORE[(met || cached) - 1] ?? ''
+		{ filled, level, skipping } = usePasswordMeter(met)
 
 	const empty = met === 0,
+		score = level ? PASSWORD_SCORE[level - 1] : '',
 		count = met === TOTAL ? 'All' : `${met} of ${TOTAL}`,
 		info = !!value ? `${count} password requirements met.` : ''
 
@@ -29,42 +26,19 @@ export const PasswordCriteria = ({ value }: PasswordCriteriaProps) => {
 		return () => clearTimeout(timer)
 	}, [info])
 
-	if (empty && shown > 0) {
-		setCached(shown)
-		setShown(0)
-		setSkipping(false)
-		setAnimating(true)
-	} else if (!animating && shown !== met) {
-		const steps = met - shown > 2
-
-		setSkipping(steps)
-		setAnimating(true)
-		setShown(steps ? met : shown + Math.sign(met - shown))
-	}
-
-	const handleBarDone = () => {
-		setAnimating(false)
-		setSkipping(false)
-		setCached(0)
-	}
-
 	return (
-		<div className="password">
+		<div className="password" style={ METER_CSS }>
 			<div
 				aria-hidden="true"
 				className="password__strength"
 				data-empty={ empty ? '' : undefined }
 				data-skip={ skipping ? '' : undefined }
 			>
-				<div
-					className="password__meter"
-					onTransitionCancel={ handleBarDone }
-					onTransitionEnd={ handleBarDone }
-				>
+				<div className="password__meter">
 					{ Array.from({ length: TOTAL }).map((_, i) => (
 						<span
 							className="password__tier"
-							data-met={ i + 1 <= shown ? '' : undefined }
+							data-met={ i < filled ? '' : undefined }
 							key={ i }
 						/>
 					)) }
@@ -77,7 +51,7 @@ export const PasswordCriteria = ({ value }: PasswordCriteriaProps) => {
 			<ul className="password__criteria" data-unlist>
 				{ PASSWORD_RULES.map(rule => {
 					const isMet = rule.test(value),
-						status = `: has ${isMet ? '' : 'not'} met`.replace(/\s+/g, ' ').trim()
+						status = `: ${isMet ? 'has met' : 'has not met'}`
 
 					return (
 						<li

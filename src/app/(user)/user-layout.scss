@@ -118,9 +118,7 @@
 	--pw-strength-color: #{global.severity(0)};
 	--pw-strength-success: #{global.severity(-1)};
 
-	--pw-tier-duration: .075s;
 	--pw-easing: var(--easing);
-
 	--pw-skip-transition: 0s var(--pw-tier-duration);
 	--pw-text-transition: calc(2 * var(--pw-tier-duration)) var(--pw-easing);
 	--pw-tier-transition: var(--pw-tier-duration) var(--pw-easing);
@@ -148,6 +146,7 @@
 		font-size: var(--inkq-font-size-caption);
 		letter-spacing: var(--inkq-font-tracking-prefix);
 		line-height: var(--inkq-font-leading-exact);
+		min-height: 1lh;
 		min-width: var(--space-15);
 		text-align: right;
 		text-transform: uppercase;
