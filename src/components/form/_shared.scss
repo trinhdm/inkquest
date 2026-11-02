@@ -96,7 +96,6 @@
 		color: var(--inkq-color-placeholder);
 	}
 
-
 	&:-webkit-autofill,
 	&:autofill {
 		--form-autofill-transition: background-color 9999s ease-in-out 0s,
@@ -113,7 +112,10 @@
 		}
 
 		&:is(:active, :focus, :hover) {
-			box-shadow: global.autofill(var(--form-control-background-active));
+			$autofill-mix: (var(--form-control-background-active), var(--form-control-background));
+			--form-control-autofill: #{global.to-mix($autofill-mix, 25%)};
+
+			box-shadow: global.autofill(var(--form-control-autofill));
 		}
 	}
 }
