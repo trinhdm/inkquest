@@ -33,6 +33,7 @@ export const LoginReset = () => {
 
 			<AuthForm.Footer>
 				<AuthForm.Back
+					disabled={ reset.pending }
 					label="Back to log in"
 					onClick={ restart }
 					variant="solid"
@@ -50,6 +51,7 @@ export const LoginReset = () => {
 
 					<AuthForm.Back
 						linkable
+						disabled={ reset.pending }
 						label="Wrong email?"
 						onClick={ goBack }
 					/>

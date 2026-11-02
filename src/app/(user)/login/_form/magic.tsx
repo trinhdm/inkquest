@@ -30,7 +30,7 @@ export const LoginMagic = () => {
 			</Field>
 
 			<AuthForm.Footer>
-				<AuthForm.Back onClick={ goBack } />
+				<AuthForm.Back disabled={ magic.pending } onClick={ goBack } />
 
 				<AuthForm.Resend
 					disabled={ waiting }

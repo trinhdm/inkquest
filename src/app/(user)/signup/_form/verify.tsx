@@ -126,6 +126,7 @@ export const SignupVerify = () => {
 
 					<AuthForm.Back
 						linkable
+						disabled={ reply.pending }
 						label={ copy.wrong }
 						onClick={ goBack }
 					/>

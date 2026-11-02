@@ -26,13 +26,13 @@ export const LoginForgot = () => {
 					autoComplete="email"
 					defaultValue={ destination }
 					name="email"
-					placeholder={  PLACEHOLDER.email }
+					placeholder={ PLACEHOLDER.email }
 					type="email"
 				/>
 			</Field>
 
 			<AuthForm.Footer>
-				<AuthForm.Back onClick={ goBack } />
+				<AuthForm.Back disabled={ reset.pending } onClick={ goBack } />
 				<AuthForm.Submit label="Send reset link" loading={ reset.pending } />
 			</AuthForm.Footer>
 		</AuthForm>

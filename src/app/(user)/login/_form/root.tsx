@@ -6,14 +6,14 @@ import { PLACEHOLDER } from '@/lib/form'
 
 export const LoginRoot = () => {
 	const {
-		idx, login, magic,
-		navigate, waiting,
-		reply: { pending, state },
+		destination, idx, login,
+		magic, navigate, reply,
 	} = useLoginCtx()
 
 	const ForgotPass = (
 		<AuthForm.Back
 			linkable
+			disabled={ reply.pending }
 			label="Forgot password?"
 			onClick={ () => navigate('forgot') }
 		/>
@@ -23,8 +23,8 @@ export const LoginRoot = () => {
 		<AuthForm
 			action={ login.action }
 			idx={ idx }
-			pending={ pending }
-			state={ state }
+			pending={ reply.pending }
+			state={ reply.state }
 			validate={ validateLoginForm }
 		>
 			<AuthForm.Header eyebrow="Log In" title="Welcome back.">
@@ -33,13 +33,13 @@ export const LoginRoot = () => {
 
 			<Field
 				required
-				disabled={ pending }
+				disabled={ reply.pending }
 				id={ `${idx.field}-email` }
 				label="Email"
 			>
 				<Field.Input
 					autoComplete="email"
-					defaultValue={ state.values.email }
+					defaultValue={ destination }
 					name="email"
 					placeholder={ PLACEHOLDER.email }
 					type="email"
@@ -48,10 +48,10 @@ export const LoginRoot = () => {
 
 			<Field
 				required
-				disabled={ pending }
+				caption={ ForgotPass }
+				disabled={ reply.pending }
 				id={ `${idx.field}-password` }
 				label="Password"
-				caption={ ForgotPass }
 			>
 				<Field.Input
 					autoComplete="current-password"
@@ -64,18 +64,20 @@ export const LoginRoot = () => {
 			<AuthForm.Footer>
 				<AuthForm.Submit
 					fullWidth
-					disabled={ waiting }
 					label="Log In"
 					loading={ login.pending }
 				/>
 
-				<AuthForm.SSO label="Log In" onClick={ () => navigate('success') } />
+				<AuthForm.SSO
+					disabled={ reply.pending }
+					label="Log In"
+					onClick={ () => navigate('success') }
+				/>
 
 				<AuthForm.Note>
 					<AuthForm.Submit
 						linkable
 						data-intent="magic"
-						disabled={ waiting }
 						formAction={ magic.action }
 						label="Email me a magic link instead"
 						loading={ magic.pending }
