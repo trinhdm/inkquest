@@ -1,3 +1,4 @@
+import type { FormResults } from '@/lib/form'
 
 export const getAuthFormIDs = <T extends string>(
 	pageID: string,
@@ -7,4 +8,9 @@ export const getAuthFormIDs = <T extends string>(
 	form: `form-${screen}`,
 	section: `${pageID}-${screen}`,
 	timer: `${screen}-timer`,
+})
+
+export const omitMessage = (form: FormResults): FormResults => ({
+	...form,
+	state: { ...form.state, message: undefined },
 })

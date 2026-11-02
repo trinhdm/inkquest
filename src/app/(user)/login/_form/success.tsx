@@ -3,10 +3,7 @@ import { AuthForm } from '../../_components/AuthForm'
 import { Field } from '@/components/form/Field'
 
 export const LoginSuccess = () => {
-	const {
-		guardSubmit, idx,
-		reply: { state },
-	} = useLoginCtx()
+	const { destination, guardSubmit, idx } = useLoginCtx()
 
 	return (
 		<AuthForm idx={ idx } onSubmit={ guardSubmit }>
@@ -14,7 +11,7 @@ export const LoginSuccess = () => {
 				Welcome back — your feed is where you left it.
 			</AuthForm.Header>
 
-			{ !!state.values.email && (
+			{ !!destination && (
 				<Field
 					readonly
 					id={ `${idx.field}-email` }
@@ -22,7 +19,7 @@ export const LoginSuccess = () => {
 					layout="inline"
 				>
 					<Field.Input
-						defaultValue={ state.values.email }
+						defaultValue={ destination }
 						name="email"
 						type="email"
 					/>

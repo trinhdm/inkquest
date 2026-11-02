@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { useForm, useFormHistory, useOnReply } from '@/hooks/form'
-import { getAuthFormIDs } from '../../_utils/helpers'
-import { initFormState } from '@/lib/form'
+import { getAuthFormIDs, omitMessage } from '../../_utils/helpers'
+import { initFormState, type FormResults } from '@/lib/form'
 import { login, magicLogin, requestReset } from '../_utils/actions'
-import type { LoginFlow, LoginScreen, ReplyFromScreen } from './login.context'
+import type { LoginFlow, LoginScreen, ReplyFromStep } from './login.context'
 import type { LoginPageData } from './login.data'
 
 export const useLoginFlow = ({ id: pageID }: LoginPageData): LoginFlow => {
@@ -13,18 +13,11 @@ export const useLoginFlow = ({ id: pageID }: LoginPageData): LoginFlow => {
 		restart, stopWait, waiting,
 	} = useFormHistory<LoginScreen>('begin')
 
-	const [replyFrom, setReplyFrom] = useState<ReplyFromScreen>('begin')
+	const [replyFrom, setReplyFrom] = useState<ReplyFromStep>('begin')
 
 	const loginForm = useForm(login, initFormState)
 	const magicForm = useForm(magicLogin, initFormState)
 	const resetForm = useForm(requestReset, initFormState)
-
-	const reply = replyFrom === 'magic' ? magicForm : loginForm,
-		shown = loginForm.state.success ? 'success' : screen
-
-	const resetEmail = screen === 'forgot' || screen === 'reset'
-		? resetForm.state.values.email
-		: undefined
 
 	useOnReply(loginForm.state, () => setReplyFrom('begin'))
 
@@ -34,7 +27,22 @@ export const useLoginFlow = ({ id: pageID }: LoginPageData): LoginFlow => {
 	})
 
 	useOnReply(resetForm.state, state => {
+		setReplyFrom('reset')
 		if (state.success) navigate('reset', { wait: true })
+	})
+
+	const replies = {
+		begin: loginForm,
+		magic: magicForm,
+		reset: resetForm,
+	} satisfies Record<ReplyFromStep, FormResults>
+
+	const replyForm = replies[replyFrom],
+		shown = loginForm.state.success ? 'success' : screen
+
+	const reply = omitMessage({
+		...replyForm,
+		pending: loginForm.pending || magicForm.pending,
 	})
 
 	return {
@@ -46,13 +54,10 @@ export const useLoginFlow = ({ id: pageID }: LoginPageData): LoginFlow => {
 
 		login: loginForm,
 		magic: magicForm,
-		reset: resetForm,
+		reset: screen === 'reset' ? resetForm : omitMessage(resetForm),
+		reply,
 
-		reply: {
-			...reply,
-			pending: loginForm.pending || magicForm.pending,
-		},
-		destination: resetEmail ?? reply.state.values.email ?? '',
+		destination: screen === 'success' ? '' : replyForm.state.values.email ?? '',
 		idx: getAuthFormIDs(pageID, shown),
 		screen: shown,
 		waiting,

@@ -9,8 +9,8 @@ export type LoginScreen =
 	| 'forgot' | 'reset'
 	| 'success'
 
-export type ReplyFromScreen =
-	Extract<LoginScreen, 'begin' | 'magic'| 'forgot'>
+export type ReplyFromStep =
+	Extract<LoginScreen, 'begin' | 'magic'| 'reset'>
 
 export interface LoginFlow {
 	goBack: () => void
