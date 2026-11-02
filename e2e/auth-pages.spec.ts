@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 
-// /login and /signup (src/app/(user)/{login,signup}/_form/*) are multi-screen flows rendered by one
+// /login and /signup (src/app/(auth)/{login,signup}/_form/*) are multi-screen flows rendered by one
 // page each. Every screen is a `Section layout="content-form"`, whose title is an <h2>
 // (buildSection.tsx: only `hero*` layouts get an <h1>), so neither page has an <h1>.
 //

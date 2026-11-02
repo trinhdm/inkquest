@@ -11,7 +11,7 @@ import { expect, test } from '@playwright/test'
 // /terms (renamed from /terms-conditions, which now 404s) takes its <h1> from
 // `hero.heading` in terms.data.ts rather than the page `title`.
 const LEGAL_PAGES = {
-	'/cookies': 'Cookies',
+	'/cookies': 'Cookie Policy',
 	'/privacy-policy': 'Privacy Policy',
 	'/terms': 'Terms of Service',
 } as const

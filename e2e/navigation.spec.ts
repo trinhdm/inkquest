@@ -2,10 +2,11 @@ import { expect, test } from '@playwright/test'
 
 // src/app/layout.tsx (the root layout) renders only <ScriptInjector/> + <AppProvider/> for
 // every route in the app - no header, no footer. The <Header/>+<Footer/> pair is mounted by
-// six segment layouts instead:
+// seven segment layouts instead:
+//   - src/app/(auth)/layout.tsx, for /login, /signup
 //   - src/app/(company)/layout.tsx, for /about, /careers, /faqs, /press, /support
 //   - src/app/(legal)/layout.tsx, for /cookies, /privacy-policy, /terms
-//   - src/app/(user)/layout.tsx, for /login, /signup, /profile, /settings, /messages
+//   - src/app/(user)/layout.tsx, for /profile, /settings, /messages
 //   - src/app/discover/layout.tsx, for /discover/artists and /discover/style
 //   - src/app/marketplace/layout.tsx, for /marketplace
 //   - src/app/community/layout.tsx, for the five non-redirecting /community/* pages
