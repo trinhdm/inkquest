@@ -1,7 +1,6 @@
 import { Footer } from '@/components/navigation/Footer'
 import { Header } from '@/components/navigation/Header'
 import type { ReactNode } from 'react'
-import './user-layout.scss'
 
 export default function UserLayout({
 	children,

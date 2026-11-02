@@ -4,7 +4,7 @@ import { Button } from '@/components/core/Button'
 import { Countdown } from '@/components/data/Countdown'
 import { LINKABLE } from '@/utils/constants'
 import { TIMER_DURATION } from '@/lib/form'
-import type { AuthFormIDs, AuthSubmitButton } from '@/app/(user)/_utils/types'
+import type { AuthFormIDs, AuthSubmitButton } from '../../_utils/types'
 import type { Section } from '@/components/layout/Section'
 
 interface AuthHeaderProps {

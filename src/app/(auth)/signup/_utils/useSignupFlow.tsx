@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useForm, useFormHistory, useOnReply } from '@/hooks/form'
 import { getAuthFormIDs } from '../../_utils/helpers'
 import { initFormState, type FormResults } from '@/lib/form'
-import { resend, signup, verify } from '../_utils/actions'
+import { resend, signup, verify } from './actions'
 import type { SignupPageData } from './signup.data'
 
 import type {

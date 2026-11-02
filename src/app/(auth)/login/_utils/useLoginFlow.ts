@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useForm, useFormHistory, useOnReply } from '@/hooks/form'
 import { getAuthFormIDs, omitMessage } from '../../_utils/helpers'
 import { initFormState, type FormResults } from '@/lib/form'
-import { login, magicLogin, requestReset } from '../_utils/actions'
+import { login, magicLogin, requestReset } from './actions'
 import type { LoginFlow, LoginScreen, ReplyFromStep } from './login.context'
 import type { LoginPageData } from './login.data'
 
