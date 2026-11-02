@@ -26,7 +26,7 @@ const AUTH_OPTIONS: AuthOption[] = [
 	},
 ]
 
-export const SignupOptions = () => {
+export const AuthOptions = () => {
 	const { handleSignup, method, signup } = useSignupCtx()
 
 	return AUTH_OPTIONS.map(({ icon, label, name }) => (
@@ -45,4 +45,4 @@ export const SignupOptions = () => {
 	))
 }
 
-SignupOptions.displayName = 'SignupOptions'
+AuthOptions.displayName = 'AuthOptions'

@@ -2,10 +2,8 @@ import Link from 'next/link'
 import { useSignupCtx, type SignupMethod } from '../_utils/signup.context'
 import { validateSignup } from '../_utils/schema'
 import { AuthForm } from '../../_components/AuthForm'
-import { Field } from '@/components/form/Field'
+import { ContactField } from '../_components/ContactField'
 import { PasswordField } from '../_components/PasswordField'
-import { SignupOptions } from '../_components/options'
-import { PLACEHOLDER } from '@/lib/form'
 
 const SUBMIT_LABELS = {
 	email:	'Create account',
@@ -18,9 +16,6 @@ export const SignupRoot = () => {
 		idx, method,
 		signup: { action, pending, state },
 	} = useSignupCtx()
-
-	const isPhoneAuth = method === 'phone',
-		type = isPhoneAuth ? 'tel' : 'email'
 
 	return (
 		<AuthForm
@@ -36,24 +31,7 @@ export const SignupRoot = () => {
 			</AuthForm.Header>
 
 			<input name="method" type="hidden" value={ method } />
-
-			<Field
-				required
-				disabled={ pending }
-				id={ `${idx.field}-${method}` }
-				label={ isPhoneAuth ? 'Phone number' : 'Email' }
-				caption={ <SignupOptions /> }
-			>
-				<Field.Input
-					autoComplete={ type }
-					defaultValue={ state.values[type] }
-					key={ type }
-					name={ type }
-					placeholder={ PLACEHOLDER[type] }
-					type={ type }
-				/>
-			</Field>
-
+			<ContactField />
 			<PasswordField />
 
 			<AuthForm.Footer>
