@@ -31,11 +31,10 @@ const SUBCOMPONENTS = {
 
 type AuthFormArgs =
 	& Partial<FormResults>
-	& Pick<Form.Props, 'onSubmit' | 'validate'>
+	& Pick<Form.Props, 'children' | 'feedback' | 'onSubmit' | 'validate'>
 
 interface AuthFormProps
 	extends AuthFormArgs {
-	children: Form.Props['children']
 	idx: AuthFormIDs
 }
 
@@ -72,6 +71,7 @@ const sortAuthSlots = (children: ReactNode) => {
 export const AuthFormRoot = ({
 	action,
 	children,
+	feedback,
 	idx,
 	onSubmit,
 	pending,
@@ -93,6 +93,7 @@ export const AuthFormRoot = ({
 
 			<Form
 				action={ action }
+				feedback={ feedback }
 				id={ idx.form }
 				onSubmit={ onSubmit }
 				pending={ pending }

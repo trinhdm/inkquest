@@ -3,7 +3,7 @@ import { Icon } from '@/components/core/Icon'
 import { LINKABLE } from '@/utils/constants'
 import type { ReactNode } from 'react'
 import type { Route } from 'next'
-import type { AuthSubmitButton } from '../../_utils/types'
+import type { AuthSubmitButton, RootActionButton } from '../../_utils/types'
 
 const ARROW_SIDE = {
 	left: { left: true },
@@ -23,12 +23,16 @@ type AuthButtonProps =
 	& BaseAuthButtonProps
 	& AuthSubmitButton
 
-interface AuthBackProps {
+interface BaseAuthBackProps {
 	label?: string
 	linkable?: boolean
 	onClick: Button.Props['onClick']
 	variant?: Button.Props['variant']
 }
+
+type AuthBackProps =
+	& BaseAuthBackProps
+	& Pick<RootActionButton, 'disabled' | 'loading'>
 
 interface AuthContinueProps {
 	href: Route

@@ -14,16 +14,16 @@ export interface AuthFormIDs {
 type NativeButtonProps =
 	ComponentPropsWithoutRef<'button'>
 
-export type SharedAuthProps =
+export type RootActionButton =
 	& Pick<Button.Props, 'disabled' | 'fullWidth' | 'loading' | 'onClick'>
 
-interface BaseSubmitButton {
+interface SubmitActionButton {
 	'data-intent'?: never
 	formAction?: never
 	name?: never
 	value?: never
 }
-interface SubmitActionButton {
+interface FormActionButton {
 	'data-intent': string
 	formAction: NativeButtonProps['formAction']
 	name?: never
@@ -38,10 +38,10 @@ interface ServerActionButton {
 }
 
 type AuthButtonTypes =
-	| BaseSubmitButton
 	| SubmitActionButton
+	| FormActionButton
 	| ServerActionButton
 
 export type AuthSubmitButton =
-	& SharedAuthProps
+	& RootActionButton
 	& AuthButtonTypes

@@ -1,10 +1,10 @@
 import { capitalize } from '@/utils/helpers'
 import { Button } from '@/components/core/Button'
 import { Icon } from '@/components/core/Icon'
-import type { SharedAuthProps } from '../../_utils/types'
+import type { RootActionButton } from '../../_utils/types'
 
 interface ButtonSSOProps
-	extends Omit<SharedAuthProps, 'fullWidth'> {
+	extends Omit<RootActionButton, 'fullWidth'> {
 	brand: Icon.Social.Props['type']
 	label: string
 }

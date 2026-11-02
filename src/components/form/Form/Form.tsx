@@ -22,6 +22,7 @@ const NAME = 'Form' as const,
 const DEFAULT_PROPS = {
 	as: TAG,
 	columns: 1,
+	feedback: 'lazy',
 	mountFocus: true,
 	shiftFocus: true,
 	state: {
@@ -44,6 +45,7 @@ const NO_ERRORS: FormContext['errors'] = {}
 interface FormProps {
 	children: ReactNode
 	columns?: Grid.Props['columns']
+	feedback?: 'eager' | 'lazy'
 	mountFocus?: boolean
 	onChange?: ChangeEventHandler<HTMLFormElement>
 	onSubmit?: SubmitEventHandler<HTMLFormElement>
@@ -94,10 +96,9 @@ export const Form = polymorphic<FormSpecs>((_props, { useProps, useStyles }) => 
 	const styles = useStyles({ props })
 
 	const {
-		children, columns,
-		mountFocus, shiftFocus,
-		onChange, onSubmit,
-		pending, pendingMessage,
+		children, columns, feedback,
+		mountFocus, onChange, onSubmit,
+		pending, pendingMessage, shiftFocus,
 		state: { errors, formError, message },
 		validate,
 		...rest
@@ -133,9 +134,12 @@ export const Form = polymorphic<FormSpecs>((_props, { useProps, useStyles }) => 
 			current = name ? shown[name] : undefined
 
 		if (!name || !current || !validate) return
-		if (validate(data)[name] === current) return
 
-		setLocal({ errors: { ...shown, [name]: undefined }, from: errors })
+		const next = validate(data)[name]
+		if (next === current) return
+
+		const fieldErr = { eager: next, lazy: undefined }[feedback]
+		setLocal({ errors: { ...shown, [name]: fieldErr }, from: errors })
 	}
 
 	const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
@@ -165,6 +169,7 @@ export const Form = polymorphic<FormSpecs>((_props, { useProps, useStyles }) => 
 
 		onSubmit?.(event)
 	}
+
 	const reply = isLocal ? {} : { formError, message }
 	const text = pending ? pendingMessage
 		: reply.formError ?? reply.message
