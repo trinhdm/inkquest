@@ -5,11 +5,11 @@ import { PASSWORD_RULES, PASSWORD_SCORE } from '../_utils/signup.data'
 const SR_DELAY = 1000
 const TOTAL = PASSWORD_RULES.length
 
-interface PasswordRulesProps {
+interface PasswordCriteriaProps {
 	value: string
 }
 
-export const PasswordRules = ({ value }: PasswordRulesProps) => {
+export const PasswordCriteria = ({ value }: PasswordCriteriaProps) => {
 	const [animating, setAnimating] = useState(false)
 	const [skipping, setSkipping] = useState(false)
 
@@ -18,7 +18,7 @@ export const PasswordRules = ({ value }: PasswordRulesProps) => {
 	const [summary, setSummary] = useState('')
 
 	const met = PASSWORD_RULES.filter(rule => rule.test(value)).length,
-		score = PASSWORD_SCORE[(met || cached) - 1] ?? '-'
+		score = PASSWORD_SCORE[(met || cached) - 1] ?? ''
 
 	const empty = met === 0,
 		count = met === TOTAL ? 'All' : `${met} of ${TOTAL}`,
@@ -51,6 +51,7 @@ export const PasswordRules = ({ value }: PasswordRulesProps) => {
 	return (
 		<div className="password">
 			<div
+				aria-hidden="true"
 				className="password__strength"
 				data-empty={ empty ? '' : undefined }
 				data-skip={ skipping ? '' : undefined }
@@ -59,7 +60,6 @@ export const PasswordRules = ({ value }: PasswordRulesProps) => {
 					className="password__meter"
 					onTransitionCancel={ handleBarDone }
 					onTransitionEnd={ handleBarDone }
-					aria-hidden="true"
 				>
 					{ Array.from({ length: TOTAL }).map((_, i) => (
 						<span
@@ -101,4 +101,4 @@ export const PasswordRules = ({ value }: PasswordRulesProps) => {
 	)
 }
 
-PasswordRules.displayName = 'PasswordRules'
+PasswordCriteria.displayName = 'PasswordCriteria'

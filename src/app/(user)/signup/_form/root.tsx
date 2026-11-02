@@ -1,10 +1,9 @@
 import Link from 'next/link'
-import { useState } from 'react'
 import { useSignupCtx, type SignupMethod } from '../_utils/signup.context'
 import { validateSignup } from '../_utils/schema'
 import { AuthForm } from '../../_components/AuthForm'
 import { Field } from '@/components/form/Field'
-import { PasswordRules } from '../_components/password'
+import { PasswordField } from '../_components/PasswordField'
 import { SignupOptions } from '../_components/options'
 import { PLACEHOLDER } from '@/lib/form'
 
@@ -16,17 +15,12 @@ const SUBMIT_LABELS = {
 
 export const SignupRoot = () => {
 	const {
-		idx, method, waiting,
+		idx, method,
 		signup: { action, pending, state },
 	} = useSignupCtx()
 
-	const [password, setPassword] = useState('')
-	const [lastState, setLastState] = useState(state)
-
-	if (state !== lastState) {
-		setLastState(state)
-		setPassword('')
-	}
+	const isPhoneAuth = method === 'phone',
+		type = isPhoneAuth ? 'tel' : 'email'
 
 	return (
 		<AuthForm
@@ -47,57 +41,24 @@ export const SignupRoot = () => {
 				required
 				disabled={ pending }
 				id={ `${idx.field}-${method}` }
-				label={ method === 'phone' ? 'Phone number' : 'Email' }
+				label={ isPhoneAuth ? 'Phone number' : 'Email' }
 				caption={ <SignupOptions /> }
 			>
-				{ method === 'phone' ? (
-					<Field.Input
-						autoComplete="tel"
-						defaultValue={ state.values.tel }
-						key="tel"
-						name="tel"
-						placeholder={ PLACEHOLDER.tel }
-						type="tel"
-					/>
-				) : (
-					<Field.Input
-						autoComplete="email"
-						defaultValue={ state.values.email }
-						key="email"
-						name="email"
-						placeholder={ PLACEHOLDER.email }
-						type="email"
-					/>
-				) }
+				<Field.Input
+					autoComplete={ type }
+					defaultValue={ state.values[type] }
+					key={ type }
+					name={ type }
+					placeholder={ PLACEHOLDER[type] }
+					type={ type }
+				/>
 			</Field>
 
-			{ method === 'email' && (
-				<>
-					<input hidden autoComplete="username" name="username" type="text" />
-
-					<Field
-						required
-						disabled={ pending }
-						id={ `${idx.field}-password` }
-						label="Password"
-						caption={ <PasswordRules value={ password } /> }
-					>
-						<Field.Input
-							autoComplete="new-password"
-							name="password"
-							onChange={ event => setPassword(event.currentTarget.value) }
-							placeholder="Your password"
-							type="password"
-							value={ password }
-						/>
-					</Field>
-				</>
-			) }
+			<PasswordField />
 
 			<AuthForm.Footer>
 				<AuthForm.Submit
 					fullWidth
-					disabled={ waiting }
 					label={ SUBMIT_LABELS[method] }
 					loading={ pending }
 				/>

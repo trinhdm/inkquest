@@ -3,7 +3,7 @@ import type { BasePageData } from '@/types/shared'
 
 export const SIGNUP_METHODS = ['email', 'magic', 'phone'] as const
 
-export const SEQUENCE_MIN = 4
+export const SEQUENCE_CHECK_MIN = 4
 
 export const CODE_EXPIRY_SECONDS = 10 * 60
 export const RESEND_COOLDOWN_SECONDS = 30
@@ -24,7 +24,7 @@ export const PASSWORD_RULES = [
 		id: 'nonsequential',
 		label: `No sequences (e.g., "abc")`,
 		test: (value: string) => {
-			if (value.length < SEQUENCE_MIN) return false
+			if (value.length < SEQUENCE_CHECK_MIN) return false
 			for (let i = 0; i < value.length - 2; i++) {
 				const c1 = value.charCodeAt(i),
 					c2 = value.charCodeAt(i + 1),
