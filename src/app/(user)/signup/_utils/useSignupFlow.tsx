@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useForm, useFormHistory, useOnReply } from '@/hooks/form'
 import { getAuthFormIDs } from '../../_utils/helpers'
-import { initFormState } from '@/lib/form'
+import { initFormState, type FormResults } from '@/lib/form'
 import { resend, signup, verify } from '../_utils/actions'
 import type { SignupPageData } from './signup.data'
 
@@ -40,21 +40,22 @@ export const useSignupFlow = ({ id: pageID }: SignupPageData): SignupFlow => {
 		if (state.success) navigate('success')
 	})
 
-	let reply = {
+	const replies = {
+		resend: resendForm,
+		verify: verifyForm,
+	} satisfies Record<ReplyFromStep, FormResults>
+
+	const reply = {
 		...verifyForm,
 		pending: verifyForm.pending || resendForm.pending,
-		state: initFormState,
-	}
-
-	switch (replyFrom) {
-		case 'resend': reply = resendForm; break
-		case 'verify': reply = verifyForm; break
+		state: replyFrom ? replies[replyFrom].state : initFormState,
 	}
 
 	return {
 		goBack: back,
 		guardSubmit: event => guard(event, { when: screen === 'success' }),
 		handleSignup: setMethod,
+		navigate,
 		stopWait,
 
 		signup: signupForm,

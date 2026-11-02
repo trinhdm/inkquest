@@ -18,6 +18,7 @@ export interface SignupFlow {
 	goBack: () => void
 	guardSubmit: (event: SubmitEvent<HTMLFormElement>) => void
 	handleSignup: (method: SignupMethod) => void
+	navigate: (next: SignupScreen) => void
 	stopWait: () => void
 
 	signup: FormResults

@@ -11,6 +11,7 @@ export const RESEND_COOLDOWN_SECONDS = 30
 export interface PasswordCriteria {
 	readonly id: string
 	readonly label: string
+	readonly error?: string
 	readonly test: (value: string) => boolean
 }
 
@@ -18,11 +19,13 @@ export const PASSWORD_RULES = [
 	{
 		id: 'length',
 		label: '6+ characters',
+		error: 'at least 6 characters',
 		test: (value: string) => value.length >= 6,
 	},
 	{
 		id: 'nonsequential',
 		label: `No sequences (e.g., "abc")`,
+		error: 'no sequential characters',
 		test: (value: string) => {
 			if (value.length < SEQUENCE_CHECK_MIN) return false
 			for (let i = 0; i < value.length - 2; i++) {
@@ -37,11 +40,13 @@ export const PASSWORD_RULES = [
 	{
 		id: 'uppercase',
 		label: 'One uppercase letter',
+		error: 'an uppercase letter',
 		test: (value: string) => /[A-Z]/.test(value),
 	},
 	{
 		id: 'lowercase',
 		label: 'One lowercase letter',
+		error: 'a lowercase letter',
 		test: (value: string) => /[a-z]/.test(value),
 	},
 	{
@@ -56,9 +61,7 @@ export const PASSWORD_RULES = [
 	},
 ] as const satisfies readonly PasswordCriteria[]
 
-const createScoreList = syncLengthTo(PASSWORD_RULES)
-
-export const PASSWORD_SCORE = createScoreList([
+export const PASSWORD_SCORE = syncLengthTo(PASSWORD_RULES)([
 	'weak', 'fair', 'moderate',
 	'good', 'strong', 'optimal',
 ])

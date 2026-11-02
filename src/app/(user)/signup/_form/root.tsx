@@ -13,7 +13,7 @@ const SUBMIT_LABELS = {
 
 export const SignupRoot = () => {
 	const {
-		idx, method,
+		idx, method, navigate,
 		signup: { action, pending, state },
 	} = useSignupCtx()
 
@@ -41,7 +41,11 @@ export const SignupRoot = () => {
 					loading={ pending }
 				/>
 
-				<AuthForm.SSO label="continue" />
+				<AuthForm.SSO
+					disabled={ pending }
+					label="continue"
+					onClick={ () => navigate('success') }
+				/>
 
 				<AuthForm.Note>
 					<p>By creating an account, you confirm you&apos;re 18+ and agree to the <Link href="/terms" data-link>Terms</Link> and <Link href="/privacy-policy" data-link>Privacy Policy</Link>.</p>
