@@ -17,7 +17,7 @@ describe('Footer.Area', () => {
 	// its attached name on `Footer`. `reset()` and `getDefaultProps()` both
 	// key off `NAME`, so this must stay `'Footer.Area'` — `reset('FooterArea')`
 	// would silently be a no-op and leak registry state between tests.
-	reset('Footer.Area', 'Menu', 'MenuItem')
+	reset('Footer.Area', 'Menu', 'Menu.Item', 'Menu.Label')
 
 	it('renders its children', () => {
 		render(
@@ -44,7 +44,7 @@ describe('Footer.Area', () => {
 			</Footer.Area>
 		)
 		const menu = screen.getByRole('menubar')
-		expect(within(menu).getByRole('menuitem', { name: 'Marketplace' })).toBeInTheDocument()
+		expect(within(menu).getByRole('menuitem', { name: 'Browse work' })).toBeInTheDocument()
 	})
 
 	it('labels a group with its category when one is given', () => {
@@ -55,7 +55,7 @@ describe('Footer.Area', () => {
 	it('omits the category label entirely when a group has none', () => {
 		render(<Footer.Area items={ [{ routes: ['/marketplace'] }] } />)
 		expect(screen.queryByText('Discover')).not.toBeInTheDocument()
-		expect(screen.getByRole('menuitem', { name: 'Marketplace' })).toBeInTheDocument()
+		expect(screen.getByRole('menuitem', { name: 'Browse work' })).toBeInTheDocument()
 	})
 
 	it('renders one group per items entry', () => {
@@ -74,7 +74,7 @@ describe('Footer.Area', () => {
 		(usePathname as jest.Mock).mockReturnValue('/marketplace')
 		render(<Footer.Area items={ [{ category: 'Discover', routes: ['/marketplace'] }] } />)
 
-		const link = screen.getByRole('menuitem', { name: 'Marketplace' })
+		const link = screen.getByRole('menuitem', { name: 'Browse work' })
 		expect(link).toBeInTheDocument()
 		expect(link).not.toHaveAttribute('aria-current')
 		expect(link.closest('li')).not.toHaveAttribute('data-current')

@@ -7,7 +7,7 @@ import { Subnav } from './Subnav'
 // `Menu`/`filterNavigation` exactly like `Navbar`, so no router mock is needed.
 
 describe('Subnav', () => {
-	reset('Subnav', 'Menu', 'MenuItem')
+	reset('Subnav', 'Menu', 'Menu.Item', 'Menu.Label')
 
 	it('renders as the registered default tag (div)', () => {
 		const defaults = getDefaultProps<Subnav.Props & { as: string }>('Subnav')
@@ -17,8 +17,9 @@ describe('Subnav', () => {
 	})
 
 	it('labels the section with the first matching item\'s own label', () => {
+		// "Marketplace" has no route of its own, so the first item to match is its child
 		render(<Subnav routes={ [NavRoutes.MARKETPLACE] } />)
-		expect(screen.getByText('Marketplace', { selector: 'span' })).toBeInTheDocument()
+		expect(screen.getByText('Browse work', { selector: 'span' })).toBeInTheDocument()
 	})
 
 	it('renders the matching items as a flattened menu (hasDropdowns=false)', () => {

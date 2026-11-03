@@ -46,8 +46,8 @@ const COMMUNITY_ROUTES = [
 
 // A route that appears NOWHERE in `NAVIGATION_DATA` — unlike every real `NavRoute`
 // (all of them are used somewhere in the tree, several only as a child of a
-// route-less parent like `User`, which still surfaces via `filterNavigation`'s
-// flattening branch; see the `NoMatchingRoutes` story below), this one guarantees a
+// parent whose own route is not in the list, like `User`, which still surfaces via
+// `filterNavigation`'s flattening branch; see the `NoMatchingRoutes` story below), this one guarantees a
 // genuinely empty filtered result. Cast because `NavRoute` is a closed union of the
 // real app routes.
 const UNMATCHED_ROUTE = '/does-not-exist' as NavRoute
@@ -141,10 +141,11 @@ export const Default: Story = {
  * before rendering ANYTHING — root included — via its own `if (!navitems.length)
  * return null` guard, unlike `Navbar`'s narrower per-column guard).
  *
- * `NavRoutes.SETTINGS` (`/settings`) is deliberately NOT used here even though it
- * "matches nothing" at the top level: it's a real child of the route-less `User` item,
- * and `filterNavigation`'s recursive `filterNavitems` FLATTENS a route-less parent's
- * own matching children to the top level whenever `submenu` is non-empty (`else if
+ * `NavRoutes.USER_SETTINGS` (`/settings`) is deliberately NOT used here even though it
+ * "matches nothing" at the top level: it's a real child of the `User` item (whose own
+ * route, `/profile`, is not in the list), and `filterNavigation`'s recursive
+ * `filterNavitems` FLATTENS an unmatched parent's own matching children to the top
+ * level whenever `submenu` is non-empty (`else if
  * (submenu) list.push(...submenu)`) — so `routes: [SETTINGS]` actually renders a
  * `Settings` item, not nothing. Every real `NavRoute` is used somewhere in the tree
  * this same way, so a genuinely unmatched fixture needs a route that isn't a

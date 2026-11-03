@@ -1,4 +1,4 @@
-import { capitalize, toKebabCase } from '../strings'
+import { capitalize, toKebabCase, toSlug } from '../strings'
 
 describe('capitalize', () => {
 	it('uppercases the first letter of a lowercase word', () => {
@@ -54,5 +54,40 @@ describe('toKebabCase', () => {
 
 	it('keeps a dot that is not followed by an uppercase letter', () => {
 		expect(toKebabCase('St. Louis')).toBe('st. -louis')
+	})
+})
+
+describe('toSlug', () => {
+	it('lowercases and joins words with a dash', () => {
+		expect(toSlug('Browse Work')).toBe('browse-work')
+	})
+
+	it('lowercases an all-caps acronym without splitting it', () => {
+		expect(toSlug('FAQs')).toBe('faqs')
+	})
+
+	it('drops accents rather than the letter', () => {
+		expect(toSlug('Café')).toBe('cafe')
+	})
+
+	it('collapses each run of non-alphanumerics into a single dash', () => {
+		expect(toSlug('St. Louis -- Missouri')).toBe('st-louis-missouri')
+	})
+
+	it('trims leading and trailing dashes', () => {
+		expect(toSlug('  --Hello, World!--  ')).toBe('hello-world')
+	})
+
+	it('keeps digits', () => {
+		expect(toSlug('Top 10 Artists')).toBe('top-10-artists')
+	})
+
+	it('does not split camelCase, unlike toKebabCase', () => {
+		expect(toSlug('camelCase')).toBe('camelcase')
+	})
+
+	it('returns an empty string when nothing alphanumeric remains', () => {
+		expect(toSlug('!!! ---')).toBe('')
+		expect(toSlug('')).toBe('')
 	})
 })

@@ -29,7 +29,8 @@ const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 // meaningful `Default` therefore needs an EXPLICIT, representative `routes` list.
 // This one includes `Discover`'s and `Community`'s own children (unlike
 // `FilteredRoutes`' narrower `HEADER_GLOBAL_NAV` list), so at least one dropdown trigger
-// survives the filter.
+// survives the filter. `Marketplace` has no route of its own, so it is never kept
+// itself: its only child, `Browse work` (`/marketplace`), is hoisted to the top level.
 const DEFAULT_ROUTES = [
 	NavRoutes.DISCOVER, NavRoutes.DISCOVER_STYLE,
 	NavRoutes.MARKETPLACE,
@@ -37,12 +38,28 @@ const DEFAULT_ROUTES = [
 ]
 
 // A route that appears NOWHERE in `NAVIGATION_DATA` — unlike every real `NavRoute`
-// (all 22 of them are used somewhere in the tree, several only as a child of a
-// route-less parent like `User`, which still surfaces via `filterNavigation`'s
-// flattening branch; see the `NoMatchingRoutes` story below), this one guarantees a
-// genuinely empty filtered result. Cast because `NavRoute` is a closed union of the
-// real app routes.
+// (all of them are used somewhere in the tree, several only as a child of a
+// parent whose own route is not in the list, like `User`, which still surfaces via
+// `filterNavigation`'s flattening branch; see the `NoMatchingRoutes` story below), this
+// one guarantees a genuinely empty filtered result. Cast because `NavRoute` is a closed
+// union of the real app routes.
 const UNMATCHED_ROUTE = '/does-not-exist' as NavRoute
+
+// `Navbar` renders TWO menus: the main navigation built from `routes` (the one given the
+// semantic `inkq-navbar__menu` class through `styles('menu')`), and a second user menu in
+// the third column (an `Avatar` trigger, no `className`). It is always there, so a bare
+// `getByRole('menubar')` or `getAllByRole('button')` would pick it up. Every query about
+// the main navigation is scoped to the first menu instead. The user menu has no stories
+// yet.
+const MAIN_MENU_SELECTOR = '.inkq-navbar__menu'
+
+const queryMainMenu = (root: HTMLElement) => root.querySelector<HTMLElement>(MAIN_MENU_SELECTOR)
+
+const getMainMenu = (root: HTMLElement) => {
+	const menu = queryMainMenu(root)
+	if (!menu) throw new Error(`${ MAIN_MENU_SELECTOR } is not in the canvas`)
+	return menu
+}
 
 // `Navbar.Props` (the `declare namespace` export) is just the raw `NavbarProps`
 // interface — it doesn't include `as`/`unstyled`/`attributes`/etc., which only
@@ -58,16 +75,27 @@ const meta: Meta<NavbarStoryProps> = {
 	title: 'Navigation/Navbar',
 	// Full-bleed bar: centering it in the canvas misrepresents the layout, so
 	// every story overrides the global `layout: 'centered'` default.
-	parameters: { layout: 'padded' },
+	// `Navbar.tsx` calls `usePathname()` (`next/navigation`) unconditionally
+	// (`pathname.slice(1)`), and `@storybook/nextjs-vite` only provides the App Router
+	// context that hook reads when `parameters.nextjs.appDirectory` is truthy — without
+	// it the pathname is `null` and the component throws. So every story in this file
+	// gets it from here; `LoginPath`/`SignupPath` override the pathname.
+	parameters: {
+		layout: 'padded',
+		nextjs: {
+			appDirectory: true,
+			navigation: { pathname: NavRoutes.HOME },
+		},
+	},
 	argTypes: {
 		routes: {
 			control: 'multi-select',
 			options: Object.values(NavRoutes),
-			description: 'Allow-list handed to `filterNavigation(routes)`. `Navbar` passes only `routes` — leaving `layout` at `\'dropdown\'`, `isEmptyReturn` at `true` and `navitems` at `NAVIGATION_DATA` — so omitted/empty means NO items render at all (see `NoRoutes`), not "the full tree". A route-less parent (`User`) is never itself kept, but its OWN matching children still surface, FLATTENED to the top level, if any of ITS children match (see `NoMatchingRoutes`).',
+			description: 'Allow-list handed to `filterNavigation(routes)`. `Navbar` passes only `routes` — leaving `layout` at `\'dropdown\'`, `isEmptyReturn` at `true` and `navitems` at `NAVIGATION_DATA` — so omitted/empty means NO items render at all (see `NoRoutes`), not "the full tree". A parent whose own route is not in the list (`Marketplace`, which has none, or `User`) is never itself kept, but its OWN matching children still surface, FLATTENED to the top level, if any of ITS children match (see `NoMatchingRoutes`). This prop only drives the main navigation; the user menu `Navbar` renders next to the auth buttons is built from the `User` routes instead.',
 		},
 		as: {
 			control: false,
-			description: '`Navbar.tsx` destructures `as` and passes it to its root `<Box>` (`as={ as }`), so the rendered tag genuinely changes — see `AsElement`. Note `Navbar` also hardcodes `role="navigation"` on that same root `<Box>`, independent of `as` — that\'s the only reason `getAllByRole(\'navigation\')` still resolves the `as="div"`/`as="section"` cases in `AsElement`, which otherwise carry no implicit navigation landmark role.',
+			description: '`Navbar.tsx` destructures `as` and passes it to its root `<Box>` (`as={ as }`), so the rendered tag genuinely changes — see `AsElement`. `Navbar` also sets `role={ as === \'nav\' ? undefined : \'navigation\' }` on that same root `<Box>`: a real `<nav>` relies on its implicit landmark role and carries no `role` attribute, while any other tag gets an explicit `role="navigation"` — that\'s the only reason `getAllByRole(\'navigation\')` resolves the `as="div"`/`as="section"` cases in `AsElement`, which otherwise carry no implicit navigation landmark role.',
 		},
 		unstyled: {
 			control: 'boolean',
@@ -84,8 +112,11 @@ export default meta
 /**
  * `DEFAULT_ROUTES` includes `Discover`'s and `Community`'s own children, so both
  * survive `filterNavigation` WITH a non-empty `menu` and render a dropdown trigger;
- * `Marketplace` has no children at all and stays a plain link. 3 top-level entries,
- * 2 dropdown triggers (`Discover`, `Community`).
+ * `Marketplace` has no route, so it is replaced by its only child, `Browse work`, which
+ * stays a plain link. 3 top-level entries, 2 dropdown triggers (`Discover`, `Community`).
+ *
+ * `Navbar` also renders a second, user menu in the third column. These assertions are
+ * scoped to the main navigation menu so that menu doesn't count towards them.
  *
  * Note: `Navbar` passes `{ ...styles('menu') }` (a `className`/`style` pair)
  * to `<Menu>`. `Menu.tsx` destructures `className` out of its own props, so it is
@@ -105,8 +136,12 @@ export const Default: Story = {
 
 		await expect(nav.tagName).toBe('NAV')
 
-		const menubar = within(nav).getByRole('menubar')
-		await expect(within(menubar).getAllByRole('menuitem')).toHaveLength(3)
+		// Closed dropdown submenus are mounted but hidden by CSS, so only the top
+		// level counts here.
+		const menubar = getMainMenu(canvasElement)
+		await expect(within(menubar).getAllByRole('menuitem').map(item => item.textContent)).toEqual([
+			'Discover', 'Browse work', 'Community',
+		])
 		await expect(within(menubar).getAllByRole('button')).toHaveLength(2)
 
 		// The two `Button.Group` auth buttons. `Navbar.tsx` now renders both
@@ -122,10 +157,9 @@ export const Default: Story = {
 		// falls back to the link's own text content when there's no explicit
 		// `aria-label`. With both auth buttons now links, the only remaining
 		// `button`-role elements on the bar are the 2 dropdown triggers
-		// asserted just above.
+		// asserted just above (the user menu's own trigger is outside the main menu).
 		await expect(canvas.getByRole('link', { name: 'Log in' })).toBeInTheDocument()
 		await expect(canvas.getByRole('link', { name: 'Sign up' })).toBeInTheDocument()
-		await expect(canvas.getAllByRole('button')).toHaveLength(2)
 	},
 }
 
@@ -133,9 +167,9 @@ export const Default: Story = {
  * `Navbar.tsx` calls `usePathname()` (`next/navigation`) and, on `/login`, swaps the
  * `Button.Group` of auth buttons for a `tip` `<span>` ("New to Inkquest?") plus ONE
  * outline `Button` linking to `/signup`. `@storybook/nextjs-vite` only supplies the
- * App Router pathname context when `parameters.nextjs.appDirectory` is truthy, so
- * this story (and `SignupPath`) set it per story, leaving every other story in this
- * file on its existing (un-mocked) pathname.
+ * App Router pathname context when `parameters.nextjs.appDirectory` is truthy; the meta
+ * sets that for every story (at `/`), and this story (and `SignupPath`) override only
+ * the pathname.
  */
 export const LoginPath: Story = {
 	parameters: { nextjs: { appDirectory: true, navigation: { pathname: '/login' } } },
@@ -178,8 +212,9 @@ export const SignupPath: Story = {
  * Edge case: NO `routes` at all. `filterNavigation`'s `isEmptyReturn` defaults to
  * `true`, and `Navbar.tsx` never overrides it, so `!routes?.length` short-circuits to
  * an EMPTY array — not "the full tree". `Navbar` guards its middle column with
- * `!!navitems.length`, so no `<Menu>` renders at all; only the logo column and the
- * auth buttons remain.
+ * `!!navitems.length`, so no main `<Menu>` renders at all; only the logo column, the
+ * auth buttons and the separate user menu remain (the user menu is not part of this
+ * story's subject, so it is not asserted on).
  */
 export const NoRoutes: Story = {
 	args: { routes: undefined },
@@ -187,13 +222,10 @@ export const NoRoutes: Story = {
 		const canvas = within(canvasElement)
 
 		await expect(canvas.getByRole('navigation')).toBeInTheDocument()
-		await expect(canvas.queryByRole('menubar')).not.toBeInTheDocument()
+		await expect(queryMainMenu(canvasElement)).toBeNull()
 
 		// The two auth buttons carry `href` (see `Default`'s play function),
-		// so they render as `<a>`s with an implicit `link` role, not `button`
-		// — with no menu rendered, there's no `button`-role element left on
-		// the bar at all.
-		await expect(canvas.queryAllByRole('button')).toHaveLength(0)
+		// so they render as `<a>`s with an implicit `link` role, not `button`.
 		await expect(canvas.getByRole('link', { name: 'Log in' })).toBeInTheDocument()
 		await expect(canvas.getByRole('link', { name: 'Sign up' })).toBeInTheDocument()
 	},
@@ -206,52 +238,63 @@ export const NoRoutes: Story = {
  * `'dropdown'` layout, `filterNavigation`'s inner `filterNavitems` computes each
  * item's `submenu` as `item.menu && filterNavitems(item.menu, routes)`: `Discover`
  * and `Community` both HAD a `menu` array, so they get filtered down to `[]`
- * (all their children's routes are excluded); `Marketplace` had no `menu` at
- * all, so it alone gets `undefined`. Either way `MenuItem.tsx` gates its
- * dropdown trigger on `isDropdown = !!menu?.length`, so both `[]` and
- * `undefined` render as a plain link — the assertions below hold regardless.
+ * (all their children's routes are excluded); `Marketplace` has no route, so it is
+ * never kept itself and is replaced by its only child, `Browse work`
+ * (`/marketplace`), which has no `menu` and so gets `undefined`. Either way
+ * `MenuItem.tsx` gates its dropdown trigger on `isDropdown = !!menu?.length`, so both
+ * `[]` and `undefined` render as a plain link — the assertions below hold regardless.
  */
 export const FilteredRoutes: Story = {
 	args: { routes: HEADER_GLOBAL_NAV },
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement),
-			menubar = canvas.getByRole('menubar'),
+			menubar = getMainMenu(canvasElement),
 			items = within(menubar).getAllByRole('menuitem')
 
 		await expect(items.map(item => item.textContent)).toEqual([
-			'Discover', 'Marketplace', 'Community',
+			'Discover', 'Browse work', 'Community',
 		])
 
-		// `Discover`'s only child (`/discover/style`) isn't in the allow-list, so
-		// the item is flattened to a plain link — no trigger anywhere. Combined
-		// with the two auth buttons now carrying `href` (see `Default`'s play
-		// function) and rendering as `<a>`s, there's no `button`-role element
-		// left on the bar at all.
+		// `Discover`'s children (`/discover/artists`, `/discover/style`) aren't in the
+		// allow-list, so the item is flattened to a plain link — no trigger anywhere in
+		// the main menu. The two auth buttons carry `href` (see `Default`'s play
+		// function) and render as `<a>`s.
 		await expect(within(menubar).queryAllByRole('button')).toHaveLength(0)
-		await expect(canvas.queryAllByRole('button')).toHaveLength(0)
 		await expect(canvas.getByRole('link', { name: 'Log in' })).toBeInTheDocument()
 		await expect(canvas.getByRole('link', { name: 'Sign up' })).toBeInTheDocument()
 	},
 }
 
+/**
+ * `Marketplace` has no route of its own, so the single route `/marketplace` keeps only its
+ * child `Browse work`, hoisted to the top level: one plain link, no trigger.
+ */
 export const SingleRoute: Story = {
 	args: { routes: [NavRoutes.MARKETPLACE] },
+	play: async ({ canvasElement }) => {
+		const menubar = getMainMenu(canvasElement),
+			items = within(menubar).getAllByRole('menuitem')
+
+		await expect(items.map(item => item.textContent)).toEqual(['Browse work'])
+		await expect(items[0]).toHaveAttribute('href', NavRoutes.MARKETPLACE)
+		await expect(within(menubar).queryAllByRole('button')).toHaveLength(0)
+	},
 }
 
 /**
  * Edge case: `routes` that match NOTHING anywhere in `NAVIGATION_DATA`.
  * `filterNavigation` returns `[]`, and `Navbar` guards the menu with
- * `!!navitems.length`, so the `<Menu>` is not rendered at all — only the logo column
- * and the auth buttons remain.
+ * `!!navitems.length`, so the main `<Menu>` is not rendered at all — only the logo
+ * column, the auth buttons and the separate user menu remain.
  *
- * `NavRoutes.SETTINGS` (`/settings`) is deliberately NOT used here even though it
- * "matches nothing" at the TOP level: it's a real child of the route-less `User` item,
- * and `filterNavigation`'s recursive `filterNavitems` FLATTENS a route-less parent's
- * own matching children to the top level whenever `submenu` is non-empty (`else if
- * (submenu) list.push(...submenu)`) — so `routes: [SETTINGS]` actually renders ONE
- * menu item (`Settings`), not zero. Every real `NavRoute` is used somewhere in the
- * tree this same way, so a genuinely unmatched fixture needs a route that isn't a
- * `NavRoute` at all (`UNMATCHED_ROUTE`).
+ * `NavRoutes.USER_SETTINGS` (`/settings`) is deliberately NOT used here even though it
+ * "matches nothing" at the TOP level: it's a real child of the `User` item (whose own
+ * route, `/profile`, is not in the list), and `filterNavigation`'s recursive
+ * `filterNavitems` FLATTENS an unmatched parent's own matching children to the top
+ * level whenever `submenu` is non-empty (`else if (submenu) list.push(...submenu)`) —
+ * so `routes: [USER_SETTINGS]` actually renders ONE menu item (`Settings`), not zero.
+ * Every real `NavRoute` is used somewhere in the tree this same way, so a genuinely
+ * unmatched fixture needs a route that isn't a `NavRoute` at all (`UNMATCHED_ROUTE`).
  */
 export const NoMatchingRoutes: Story = {
 	args: { routes: [UNMATCHED_ROUTE] },
@@ -259,14 +302,10 @@ export const NoMatchingRoutes: Story = {
 		const canvas = within(canvasElement)
 
 		await expect(canvas.getByRole('navigation')).toBeInTheDocument()
-		await expect(canvas.queryByRole('menubar')).not.toBeInTheDocument()
-		await expect(canvas.queryAllByRole('menuitem')).toHaveLength(0)
+		await expect(queryMainMenu(canvasElement)).toBeNull()
 
 		// The two auth buttons carry `href` (see `Default`'s play function), so
-		// they render as `<a>`s with an implicit `link` role, not `button` —
-		// with no menu rendered, there's no `button`-role element left on the
-		// bar at all.
-		await expect(canvas.queryAllByRole('button')).toHaveLength(0)
+		// they render as `<a>`s with an implicit `link` role, not `button`.
 		await expect(canvas.getByRole('link', { name: 'Log in' })).toBeInTheDocument()
 		await expect(canvas.getByRole('link', { name: 'Sign up' })).toBeInTheDocument()
 	},
@@ -274,10 +313,12 @@ export const NoMatchingRoutes: Story = {
 
 /**
  * `Navbar.tsx` destructures `as` and passes it to its root `<Box>` (`as={ as }`),
- * so the rendered tag genuinely changes. `Navbar` also hardcodes `role="navigation"`
- * on that same root `<Box>`, independent of `as` — that's the ONLY reason
- * `getAllByRole('navigation')` resolves the `as="div"`/`as="section"` cases
- * below, since neither tag carries an implicit navigation landmark role.
+ * so the rendered tag genuinely changes. `Navbar` also sets
+ * `role={ as === 'nav' ? undefined : 'navigation' }` on that same root `<Box>`: the real
+ * `<nav>` relies on its implicit landmark role and has NO `role` attribute, while the
+ * `div` and `section` get an explicit `role="navigation"` — that's the ONLY reason
+ * `getAllByRole('navigation')` resolves them, since neither tag carries an implicit
+ * navigation landmark role.
  */
 export const AsElement: Story = {
 	render: (args) => (
@@ -304,6 +345,11 @@ export const AsElement: Story = {
 		await expect(asNav.tagName).toBe('NAV')
 		await expect(asDiv.tagName).toBe('DIV')
 		await expect(asSection.tagName).toBe('SECTION')
+
+		// The `<nav>` is a landmark by itself; only the other tags need the explicit role.
+		await expect(asNav).not.toHaveAttribute('role')
+		await expect(asDiv).toHaveAttribute('role', 'navigation')
+		await expect(asSection).toHaveAttribute('role', 'navigation')
 	},
 }
 

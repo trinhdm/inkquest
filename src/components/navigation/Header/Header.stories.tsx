@@ -32,6 +32,22 @@ const ROOT_SELECTOR = '.inkq-header'
 // `Subnav.stories.tsx`'s own `LABEL_SELECTOR` convention) to disambiguate the two.
 const SUBNAV_LABEL_SELECTOR = '.inkq-subnav__label'
 
+// `Navbar` renders TWO menus: the main navigation (given the semantic `inkq-navbar__menu`
+// class) and a separate user menu with an `Avatar` trigger. `Subnav` renders one more
+// (`inkq-subnav__menu`) inside its own `inkq-subnav` root. Counting every `menubar` or
+// `menuitem` in a `Header` therefore picks up the user menu, so queries about the main
+// navigation and the subnav are scoped to these two. The user menu has no stories yet.
+const NAVBAR_MENU_SELECTOR = '.inkq-navbar__menu',
+	SUBNAV_SELECTOR = '.inkq-subnav'
+
+const queryPart = (root: HTMLElement, selector: string) => root.querySelector<HTMLElement>(selector)
+
+const getPart = (root: HTMLElement, selector: string) => {
+	const part = queryPart(root, selector)
+	if (!part) throw new Error(`${ selector } is not in the canvas`)
+	return part
+}
+
 // An explicit 4-route `/community` list (matches `Subnav.stories.tsx`'s own fixture).
 // Note this is NOT what the app ships: `src/app/community/layout.tsx` passes
 // `routes: ['/community']` and keeps a 4-route list only as a comment. Used here to
@@ -110,10 +126,17 @@ export const Default: Story = {
 		await expect(canvas.getByRole('navigation')).toBeInTheDocument()
 		await expect(canvas.getByText('Community', { selector: SUBNAV_LABEL_SELECTOR })).toBeInTheDocument()
 
-		// One `menubar` from `Navbar` (`HEADER_GLOBAL_NAV`'s 3 routes), one from
-		// `Subnav` (the flattened `Community` children).
-		await expect(canvas.getAllByRole('menubar')).toHaveLength(2)
-		await expect(canvas.getByRole('menuitem', { name: 'Events' })).toBeInTheDocument()
+		// The main `Navbar` menu (`HEADER_GLOBAL_NAV`'s routes; `Marketplace` has no
+		// route of its own, so its child `Browse work` is hoisted), and the `Subnav`
+		// menu (the flattened `Community` children).
+		const navbarMenu = getPart(canvasElement, NAVBAR_MENU_SELECTOR),
+			subnav = getPart(canvasElement, SUBNAV_SELECTOR)
+
+		await expect(within(navbarMenu).getAllByRole('menuitem').map(item => item.textContent)).toEqual([
+			'Discover', 'Browse work', 'Community',
+		])
+		await expect(within(subnav).getByRole('menubar')).toBeInTheDocument()
+		await expect(within(subnav).getByRole('menuitem', { name: 'Events' })).toBeInTheDocument()
 	},
 }
 
@@ -132,10 +155,14 @@ export const PathnameFallback: Story = {
 		const canvas = within(canvasElement)
 
 		await expect(canvas.getByText('Community', { selector: SUBNAV_LABEL_SELECTOR })).toBeInTheDocument()
-		await expect(canvas.getAllByRole('menubar')).toHaveLength(2)
-		await expect(canvas.getByRole('menuitem', { name: 'Events' })).toBeInTheDocument()
-		await expect(canvas.getByRole('menuitem', { name: 'Feed' })).toBeInTheDocument()
-		await expect(canvas.getByRole('menuitem', { name: 'Spotlights' })).toBeInTheDocument()
+
+		const subnav = getPart(canvasElement, SUBNAV_SELECTOR)
+
+		await expect(queryPart(canvasElement, NAVBAR_MENU_SELECTOR)).not.toBeNull()
+		await expect(within(subnav).getByRole('menubar')).toBeInTheDocument()
+		await expect(within(subnav).getByRole('menuitem', { name: 'Events' })).toBeInTheDocument()
+		await expect(within(subnav).getByRole('menuitem', { name: 'Feed' })).toBeInTheDocument()
+		await expect(within(subnav).getByRole('menuitem', { name: 'Spotlights' })).toBeInTheDocument()
 	},
 }
 
@@ -154,7 +181,8 @@ export const NoSubnav: Story = {
 		const canvas = within(canvasElement)
 
 		await expect(canvas.getByRole('navigation')).toBeInTheDocument()
-		await expect(canvas.getAllByRole('menubar')).toHaveLength(1)
+		await expect(queryPart(canvasElement, NAVBAR_MENU_SELECTOR)).not.toBeNull()
+		await expect(queryPart(canvasElement, SUBNAV_SELECTOR)).toBeNull()
 		await expect(canvas.queryByText('Community', { selector: SUBNAV_LABEL_SELECTOR })).not.toBeInTheDocument()
 	},
 }
@@ -190,17 +218,22 @@ export const NullParts: Story = {
 
 		const [navbarNull, subnavNull, neitherNull, bothNull] = roots
 
+		// With no `Navbar` there is no user menu either, so the subnav's is the only
+		// `menubar` left.
 		await expect(within(navbarNull).queryByRole('navigation')).not.toBeInTheDocument()
 		await expect(within(navbarNull).getByText('Community', { selector: SUBNAV_LABEL_SELECTOR })).toBeInTheDocument()
+		await expect(queryPart(navbarNull, NAVBAR_MENU_SELECTOR)).toBeNull()
 		await expect(within(navbarNull).getAllByRole('menubar')).toHaveLength(1)
 
 		await expect(within(subnavNull).getByRole('navigation')).toBeInTheDocument()
 		await expect(within(subnavNull).queryByText('Community', { selector: SUBNAV_LABEL_SELECTOR })).not.toBeInTheDocument()
-		await expect(within(subnavNull).getAllByRole('menubar')).toHaveLength(1)
+		await expect(queryPart(subnavNull, NAVBAR_MENU_SELECTOR)).not.toBeNull()
+		await expect(queryPart(subnavNull, SUBNAV_SELECTOR)).toBeNull()
 
 		await expect(within(neitherNull).getByRole('navigation')).toBeInTheDocument()
 		await expect(within(neitherNull).getByText('Community', { selector: SUBNAV_LABEL_SELECTOR })).toBeInTheDocument()
-		await expect(within(neitherNull).getAllByRole('menubar')).toHaveLength(2)
+		await expect(queryPart(neitherNull, NAVBAR_MENU_SELECTOR)).not.toBeNull()
+		await expect(queryPart(neitherNull, SUBNAV_SELECTOR)).not.toBeNull()
 
 		await expect(within(bothNull).queryByRole('navigation')).not.toBeInTheDocument()
 		await expect(within(bothNull).queryAllByRole('menubar')).toHaveLength(0)
@@ -214,11 +247,10 @@ export const NullParts: Story = {
 export const CustomNavbarRoutes: Story = {
 	args: { navbar: { routes: [NavRoutes.MARKETPLACE] } },
 	play: async ({ canvasElement }) => {
-		const canvas = within(canvasElement),
-			nav = canvas.getByRole('navigation'),
-			navItems = within(nav).getAllByRole('menuitem')
+		// `Marketplace` has no route of its own, so its child `Browse work` stands in for it.
+		const navItems = within(getPart(canvasElement, NAVBAR_MENU_SELECTOR)).getAllByRole('menuitem')
 
-		await expect(navItems.map(item => item.textContent)).toEqual(['Marketplace'])
+		await expect(navItems.map(item => item.textContent)).toEqual(['Browse work'])
 	},
 }
 

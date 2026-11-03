@@ -7,7 +7,7 @@ describe('Footer', () => {
 	// `Footer` always renders `Footer.Area` (info + legal), which in turn
 	// renders `Logo`, `Icon` (social links), and `Menu`/`MenuItem` — all real
 	// factory components whose registries need resetting alongside `Footer`'s own.
-	reset('Footer', 'Footer.Area', 'Logo', 'Icon', 'Menu', 'MenuItem')
+	reset('Footer', 'Footer.Area', 'Logo', 'Icon', 'Menu', 'Menu.Item', 'Menu.Label')
 
 	it('renders the tagline', () => {
 		render(<Footer />)
