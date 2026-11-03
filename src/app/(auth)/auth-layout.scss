@@ -25,7 +25,7 @@
 	flex-direction: column;
 	grid-gap: var(--inkq-gutter-content);
 
-	&__label span {
+	&__divider > span {
 		@include global.caption;
 
 		align-items: center;
@@ -72,7 +72,8 @@
 			}
 		}
 
-		#login-begin & {
+		#login-begin &,
+		#logout-done & {
 			justify-content: center;
 			max-width: none;
 		}
@@ -92,6 +93,46 @@
 				margin-left: var(--inkq-space-icon);
 			}
 		}
+	}
+
+	&__account,
+	&__details {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+	}
+
+	&__account {
+		background-color: var(--inkq-background-card);
+		border-radius: var(--inkq-border-radius-lg);
+		border: 1px solid var(--inkq-border);
+		gap: var(--inkq-space-group-lg);
+		padding: var(--inkq-stack-gap-kicker);
+	}
+
+	&__info {
+		align-items: center;
+		column-gap: var(--inkq-gutter-item);
+		display: flex;
+
+		span:not(#{$name}__initials) {
+			color: var(--inkq-color-text-tertiary);
+			font: var(--inkq-text-body-sm);
+			overflow-wrap: anywhere;
+		}
+	}
+
+	&__initials {
+		align-items: center;
+		background-color: var(--inkq-background-card-hover);
+		border-radius: var(--inkq-border-radius-pill);
+		display: flex;
+		flex-shrink: 0;
+		font-weight: var(--inkq-font-weight-bold);
+		height: 2.5rem;
+		justify-content: center;
+		overflow: hidden;
+		width: 2.5rem;
 	}
 
 	&__option {

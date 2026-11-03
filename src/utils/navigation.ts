@@ -23,8 +23,9 @@ export enum NavRoutes {
 	LEGAL_TERMS = '/terms',
 	PROFILE = '/profile',
 	SETTINGS = '/settings',
-	LOGIN = '/login',
 	SIGNUP = '/signup',
+	LOGIN = '/login',
+	LOGOUT = '/logout',
 }
 
 // checks if slugs exist
@@ -49,8 +50,9 @@ export const NAV_ROUTES = {
 	LEGAL_TERMS: '/terms',
 	PROFILE: '/profile',
 	SETTINGS: '/settings',
-	LOGIN: '/login',
 	SIGNUP: '/signup',
+	LOGIN: '/login',
+	LOGOUT: '/logout',
 } as const satisfies Record<`${keyof typeof NavRoutes}`, Route>
 
 export type NavRoute = `${NavRoutes}`
@@ -130,12 +132,16 @@ export const NAVIGATION_DATA: NavigationItem[] = [
 		],
 	},
 	{
+		label: 'Sign up',
+		route: NavRoutes.SIGNUP,
+	},
+	{
 		label: 'Log in',
 		route: NavRoutes.LOGIN,
 	},
 	{
-		label: 'Sign up',
-		route: NavRoutes.SIGNUP,
+		label: 'Log out',
+		route: NavRoutes.LOGOUT,
 	},
 ]
 

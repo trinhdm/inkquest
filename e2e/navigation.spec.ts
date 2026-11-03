@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test'
 // src/app/layout.tsx (the root layout) renders only <ScriptInjector/> + <AppProvider/> for
 // every route in the app - no header, no footer. The <Header/>+<Footer/> pair is mounted by
 // seven segment layouts instead:
-//   - src/app/(auth)/layout.tsx, for /login, /signup
+//   - src/app/(auth)/layout.tsx, for /login, /logout, /signup
 //   - src/app/(company)/layout.tsx, for /about, /careers, /faqs, /press, /support
 //   - src/app/(legal)/layout.tsx, for /cookies, /privacy-policy, /terms
 //   - src/app/(user)/layout.tsx, for /profile, /settings, /messages
@@ -32,6 +32,7 @@ const CHROME_ROUTES = [
 	'/privacy-policy',
 	'/terms',
 	'/login',
+	'/logout',
 	'/signup',
 	'/profile',
 	'/settings',
