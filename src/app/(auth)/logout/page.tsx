@@ -1,6 +1,7 @@
 import { getRememberedAccount } from '../_utils/account'
 import { LogoutBase } from './_components'
-import { LOGOUT_PAGE_DATA, MOCK_ACCOUNT } from './_utils/data'
+import { LOGOUT_PAGE_DATA } from './_utils/data'
+import { MOCK_ACCOUNT } from '@/utils/constants'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {

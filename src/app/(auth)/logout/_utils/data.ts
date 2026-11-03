@@ -1,11 +1,5 @@
 import type { BasePageData } from '@/types/shared'
 
-//	mock: there are no sessions yet, so the signed-in account is hard-coded
-export const MOCK_ACCOUNT = {
-	email: 'scout.finch@gmail.com',
-	name: 'Scout Finch',
-}
-
 export interface LogoutPageData
 	extends BasePageData {}
 

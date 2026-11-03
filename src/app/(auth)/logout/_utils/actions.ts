@@ -3,7 +3,7 @@
 import { redirect } from 'next/navigation'
 import { forgetRememberedAccount, rememberAccount } from '../../_utils/account'
 import { NavRoutes } from '@/utils/navigation'
-import { MOCK_ACCOUNT } from './data'
+import { MOCK_ACCOUNT } from '@/utils/constants'
 
 export const logout = async () => {
 	await rememberAccount(MOCK_ACCOUNT)
