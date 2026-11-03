@@ -2,11 +2,12 @@ import Link from 'next/link'
 import { extractOthers } from '@/hooks/useProps'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
+import type { ReactNode } from 'react'
 import type { NavigationItem } from '@/utils/navigation'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from '../Menu.module.scss'
 
-const NAME = 'MenuLabel' as const,
+const NAME = 'Menu.Label' as const,
 	TAG = 'span' as const
 
 const DEFAULT_PROPS = {
@@ -16,7 +17,8 @@ const DEFAULT_PROPS = {
 
 interface MenuLabelProps {
 	isActive?: boolean
-	item: NavigationItem
+	label: ReactNode
+	route?: NavigationItem['route']
 }
 
 interface MenuLabelSpecs {
@@ -36,8 +38,8 @@ export const MenuLabel = polymorphic<MenuLabelSpecs>((_props, { useProps, useSty
 	const styles = useStyles({ name: 'menu-item', props })
 
 	const {
-		as, children,
-		isActive, item,
+		as, children, isActive,
+		label, route,
 		...rest
 	} = props
 
@@ -49,17 +51,19 @@ export const MenuLabel = polymorphic<MenuLabelSpecs>((_props, { useProps, useSty
 		role: 'menuitem',
 	}
 
-	if (item.route) {
+	if (route) {
 		return (
 			<Box
 				{ ...sharedProps }
 				as={ Link }
-				attributes={ { aria: { current: isActive ? 'page' : undefined } } }
-				href={ item.route }
+				attributes={ { aria: {
+					current: isActive ? 'page' : undefined,
+				} } }
+				href={ route }
 				scroll={ true }
 				shallow={ false }
 			>
-				{ item.label }
+				{ label }
 			</Box>
 		)
 	}
@@ -70,7 +74,7 @@ export const MenuLabel = polymorphic<MenuLabelSpecs>((_props, { useProps, useSty
 			as={ as }
 			tabIndex={ -1 }
 		>
-			{ item.label }
+			{ label }
 		</Box>
 	)
 }, { name: NAME, classes })

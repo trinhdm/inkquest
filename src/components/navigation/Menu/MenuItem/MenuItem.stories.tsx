@@ -1,7 +1,7 @@
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { getDefaultProps } from '@/hooks/useProps'
 import { MenuItem } from './MenuItem'
-import { NavRoutes, NAVIGATION_DATA, type NavigationItem } from '@/utils/navigation'
+import { NavRoutes, NAVIGATION_DATA } from '@/utils/navigation'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
@@ -40,15 +40,23 @@ const MenubarWrapper = ({ children }: { children: ReactNode }) => (
 	</ul>
 )
 
-// The `User` entry is the most useful dropdown fixture: it has a `menu` but
-// NO `route`, so `MenuLabel` renders a plain `<span>` rather than a focusable
-// `<a>` — which makes the dropdown trigger `<button>` the FIRST (and only)
-// tabbable node in the canvas, giving deterministic focus assertions.
-const USER_ITEM = NAVIGATION_DATA.find((item): item is NavigationItem => item.label === 'User')!
+// Dropdown fixtures read from `NAVIGATION_DATA`, so they can't drift from the app's tree.
+// `Company` has a `menu` but NO `route`, so its label is a plain `<span>` rather than a link
+// (a link inside the trigger button would navigate on click). `Legal` is a second routeless
+// parent, for stories that need two dropdowns with distinct ids. `User` HAS a `route`.
+// Every dropdown label is a single word, because `toKebabCase` keeps spaces in the id.
+const findItem = (label: string) => NAVIGATION_DATA.find(item => item.label === label)!
 
-// `toKebabCase('User')` → `user`; `MenuItem` derives both ids from that.
-const USER_TRIGGER_ID = 'user-dropdown-trigger',
-	USER_MENU_ID = 'user-menu-list'
+const COMPANY_MENU = findItem('Company').menu!,
+	LEGAL_MENU = findItem('Legal').menu!,
+	USER_ITEM = findItem('User')
+
+// With no `id`, `MenuItem` passes `dropdown-${ toKebabCase(label) }` to `Menu.Dropdown` (`id ??
+// ...`), which builds the trigger and submenu ids from it. `toKebabCase('Company')` →
+// `company`. An explicit `id` replaces the derived one (see the `Id` story).
+const COMPANY_DROPDOWN_ID = 'dropdown-company',
+	COMPANY_TRIGGER_ID = `${ COMPANY_DROPDOWN_ID }-trigger`,
+	COMPANY_MENU_ID = `${ COMPANY_DROPDOWN_ID }-menu`
 
 // `MenuItem.Props` (the `declare namespace` export) is just the raw
 // `MenuItemProps` interface — it doesn't include `as`/`unstyled`/`attributes`/
@@ -62,29 +70,33 @@ type Story = StoryObj<MenuItemStoryProps>
 
 const meta: Meta<MenuItemStoryProps> = {
 	component: MenuItem,
-	title: 'Navigation/Menu/MenuItem',
+	title: 'Navigation/Menu/Menu.Item',
 	decorators: [(Story) => <MenubarWrapper><Story /></MenubarWrapper>],
 	argTypes: {
 		as: {
 			control: 'select',
 			options: ['li', 'div'],
-			description: 'Part of `PolymorphicProps`. `MenuItem.tsx` destructures `as` and applies it to the root of every branch (leaf, flattened, dropdown); the registered default is `li`. See the `AsElement` story.',
+			description: 'Part of `PolymorphicProps`. `MenuItem.tsx` destructures `as` and applies it to the root of every branch (leaf, flattened) and hands it to `Menu.Dropdown` for the dropdown branch; the registered default is `li`. See the `AsElement` story.',
 		},
 		depth: {
 			control: 'number',
-			description: 'Optional (`depth?: number` in `MenuItemProps`) with NO registered default (`DEFAULT_PROPS` only sets `as`/`hasDropdowns`); these stories pass `0` explicitly. Used to compute the nested submenu\'s own `depth` (`depth + 1`) when a dropdown opens — and when `depth` is not a number, the nested `Menu` receives `undefined` and falls back to its own registered default of `0`. `Menu.tsx` (not `MenuItem` itself) also reads its OWN `depth` prop to gate the orientation-driven module class to depth 0 only.',
+			description: 'Optional (`depth?: number` in `MenuItemProps`) with NO registered default (`DEFAULT_PROPS` only sets `as`/`hasDropdowns`); these stories pass `0` explicitly. Handed to `Menu.Dropdown`, which gives its nested `Menu` `depth + 1` — and when `depth` is not a number, the nested `Menu` receives `undefined` and falls back to its own registered default of `0`. `Menu.tsx` (not `MenuItem` itself) reads its OWN `depth` prop to gate the orientation-driven module class to depth 0 only.',
 		},
 		hasDropdowns: {
 			control: 'boolean',
-			description: 'Selects between `MenuItem`\'s two dropdown render branches when `menu` is present: `true` (the registered default, so `undefined` behaves as `true`) renders the label plus a trigger `<button>` and a nested `Menu`; `false` returns a flat ARRAY of the children\'s `<li>`s (the item\'s own label is dropped). Has no effect when `menu` is absent.',
+			description: 'Selects between `MenuItem`\'s two dropdown render branches when `menu` is present: `true` (the registered default, so `undefined` behaves as `true`) renders a `Menu.Dropdown`, a trigger `<button>` holding the label plus an always-mounted nested `Menu`; `false` returns a flat ARRAY of the children\'s `<li>`s (the item\'s own label is dropped). Has no effect when `menu` is absent.',
 		},
 		active: {
 			control: 'text',
-			description: 'Typed `NavigationItem[\'route\'] | null`. `MenuItem.tsx`\'s own `isCurrentRoute` (`!!item.route && item.route === active`) treats `null` and `undefined` IDENTICALLY — neither can ever `===` a real route string, so both simply fail the match, same as any other non-matching string. The two are only distinguished one level up, in `Menu.tsx`: a route string or `null` is used AS-IS; `undefined` is replaced with `usePathname()` before ever reaching `MenuItem`. So from `MenuItem`\'s own perspective there is no pathname fallback to skip — that distinction belongs to `Menu.tsx`\'s `ActiveFromPathname` story, not here. Drives `data-current` on the wrapping `<li>` and `aria-current="page"` on the rendered label. An item with no `route` can never match. See `ActiveItem`/`ActiveItemFlattened`.',
+			description: 'Typed `NavigationItem[\'route\'] | null`. `MenuItem.tsx`\'s own `isCurrentRoute` (`!!item.route && item.route === active`) treats `null` and `undefined` IDENTICALLY — neither can ever `===` a real route string, so both simply fail the match, same as any other non-matching string. The two are only distinguished one level up, in `Menu.tsx`: a route string or `null` is used AS-IS; `undefined` is replaced with `usePathname()` before ever reaching `MenuItem`. So from `MenuItem`\'s own perspective there is no pathname fallback to skip — that distinction belongs to `Menu.tsx`\'s `ActiveFromPathname` story, not here. Drives `data-current` on the wrapping `<li>` and `aria-current="page"` on the rendered label; on a dropdown, `data-current` lands on the dropdown\'s root `<li>`. The same value is handed to the dropdown\'s nested `Menu`. An item with no `route` can never match. See `ActiveItem`/`ActiveDropdown`/`ActiveItemFlattened`.',
+		},
+		id: {
+			control: 'text',
+			description: 'Only used by the dropdown branch, where it becomes the `Menu.Dropdown` `id` (`id ?? `dropdown-${ toKebabCase(label) }``); the trigger and nested submenu ids (`-trigger`, `-menu`) are built from it. An explicit `id` therefore overrides the derived one. Leaf and flattened items drop it. `Menu` sets it for each of its items as `${ id }-${ toKebabCase(item.label) }` when it has an `id` of its own. See the `Id` story.',
 		},
 		label: {
 			control: 'text',
-			description: 'Required. Rendered via a `<MenuLabel>` element (`MenuLabel/MenuLabel.tsx`) as either an `<a role="menuitem">` (when `route` is set) or a `<span role="menuitem" tabIndex={-1}>` (when it isn\'t) — `MenuLabel`\'s `sharedProps` sets `role: \'menuitem\'` unconditionally, before branching on `route`, so both forms are reachable via `getByRole(\'menuitem\')`. The `<span>` form\'s `tabIndex={-1}` keeps it out of the natural Tab order (only programmatically focusable), so it\'s still not itself a real Tab stop — but it IS reachable via `ArrowDown`/`ArrowUp` cycling when it\'s a submenu item (see `KeyboardFocusRouteless`). See also the `Leaf`/`DropdownTrigger` stories.',
+			description: 'Required. Rendered via a `<MenuLabel>` element (`MenuLabel/MenuLabel.tsx`) as either an `<a role="menuitem">` (when `route` is set) or a `<span role="menuitem" tabIndex={-1}>` (when it isn\'t) — `MenuLabel`\'s `sharedProps` sets `role: \'menuitem\'` unconditionally, before branching on `route`, so both forms are reachable via `getByRole(\'menuitem\')`. In a dropdown the label sits INSIDE the trigger button. The `<span>` form\'s `tabIndex={-1}` keeps it out of the natural Tab order. A `trigger` replaces it. For a dropdown, `label` also supplies the `id` (`dropdown-${ toKebabCase(label) }`). See also the `Leaf`/`DropdownTrigger` stories.',
 		},
 		menu: {
 			control: 'object',
@@ -95,13 +107,17 @@ const meta: Meta<MenuItemStoryProps> = {
 			options: [undefined, ...Object.values(NavRoutes)],
 			description: 'When set, `MenuLabel` renders an `<a href>` (via `next/link`) instead of a `<span tabIndex={-1}>` that\'s excluded from the natural Tab order.',
 		},
+		trigger: {
+			control: false,
+			description: 'A `ReactNode` that replaces `label` as the content of the item\'s `MenuLabel` (`trigger ?? label`), in the leaf and dropdown branches. In the dropdown branch the caret is shown only when that content is a string (`hasCaret = typeof (trigger ?? label) === \'string\'`), so a non-string trigger drops it. It does not change the derived dropdown `id`, which still comes from `label`. The flattened branch ignores it. See the `Trigger` story.',
+		},
 		unstyled: {
 			control: 'boolean',
 			description: 'Comes from `FactoryContract` (via `_PolymorphicContract`), not `MenuItem`\'s own props. On `MenuItem`\'s own `styles(...)` calls it drops the CSS-module hash and config classes; and because `unstyled` reaches the root `<Box>` through `others`, the root also loses non-state `data-*` attributes — including the `data-current` marker `MenuItem` sets (`current` is not one of the state keys `buildAttributes.ts` keeps). The semantic base class (`inkq-menu-item`) is still emitted, unless an inherited semantic `className` replaces it (e.g. `inkq-navbar__menu-item` under `Navbar`).',
 		},
 	},
 	args: {
-		...getDefaultProps<MenuItem.Props>('MenuItem'),
+		...getDefaultProps<MenuItem.Props>('Menu.Item'),
 		depth: 0,
 		label: 'Home',
 		route: NavRoutes.HOME,
@@ -167,61 +183,70 @@ export const Leaf: Story = {
 /**
  * `MenuItem.tsx`'s `isDropdown && !hasDropdowns` branch:
  * returns an ARRAY of the children's own `<li>`s — the parent item's own
- * label (`User`) is never rendered at all, and there's no trigger `<button>`.
+ * label (`Company`) is never rendered at all, and there's no trigger `<button>`.
  */
 export const FlattenedDropdown: Story = {
 	args: {
 		hasDropdowns: false,
-		label: 'User',
+		label: 'Company',
 		route: undefined,
-		menu: USER_ITEM.menu,
+		menu: COMPANY_MENU,
 	},
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement),
 			items = canvas.getAllByRole('menuitem')
 
-		await expect(items.map(item => item.textContent)).toEqual(['Profile', 'Settings'])
-		await expect(canvas.queryByRole('menuitem', { name: 'User' })).not.toBeInTheDocument()
+		await expect(items.map(item => item.textContent)).toEqual(COMPANY_MENU.map(({ label }) => label))
+		await expect(canvas.queryByRole('menuitem', { name: 'Company' })).not.toBeInTheDocument()
 		await expect(canvas.queryByRole('button')).not.toBeInTheDocument()
 	},
 }
 
 /**
- * `MenuItem.tsx`'s `isDropdown && hasDropdowns` branch,
- * closed by default: the item's own label PLUS an `unstyled` `Button` trigger
- * carrying `aria-controls`/`aria-expanded`/`aria-haspopup`, and an
- * `aria-hidden` caret `Icon`. The nested `Menu` is only mounted while open
- * (`{ isOpen && ... }`), so it's entirely absent from the DOM here. IDs are
- * derived from `toKebabCase('User')` → `user`.
+ * `MenuItem.tsx`'s `isDropdown && hasDropdowns` branch, closed by default: it renders a
+ * `Menu.Dropdown` with `id="dropdown-company"` (derived from `toKebabCase('Company')`
+ * because no `id` is passed), the item's
+ * own label (as a `MenuLabel` element) and a caret because the label is a string.
  *
- * Note: `User`'s own label has no `route`, so — per the live `MenuLabel`
- * source — it renders via the no-`route` branch as a `<span>`. `sharedProps`
- * sets `role: 'menuitem'` unconditionally before that branch runs, though, so
- * the `<span>` still carries `role="menuitem"` and is reachable via
- * `getByRole('menuitem', { name: 'User' })`.
+ * The label sits INSIDE the `unstyled` `Button` trigger, which carries
+ * `aria-controls`/`aria-expanded`/`aria-haspopup` and the `-trigger` id. The nested `Menu` is
+ * ALWAYS mounted (`dropdown-company-menu`); it is hidden by CSS until `data-open` is set, so
+ * its items are in the DOM but out of reach for role queries.
  *
- * The caret is `<Icon hidden type=... />`: `buildIcon` (`core/Icon/buildIcon.tsx`)
- * builds its `attributes.aria` from the `hidden` prop (plus a `${type} icon`
- * label) for both the lucide and brand branches, so the caret genuinely IS
- * `aria-hidden="true"`.
+ * Note: `Company`'s own label has no `route`, so — per the live `MenuLabel` source — it
+ * renders via the no-`route` branch as a `<span>`. `sharedProps` sets `role: 'menuitem'`
+ * unconditionally before that branch runs, though, so the `<span>` still carries
+ * `role="menuitem"` and is reachable via `getByRole('menuitem', { name: 'Company' })`.
+ *
+ * The caret is `<Icon type="caret-down" />`; `Icon` registers `hidden: true`, so it is
+ * `aria-hidden` and has no role to query it by.
+ *
+ * Opening, closing and keyboard behaviour belong to `Menu.Dropdown`; see its stories.
  */
 export const DropdownTrigger: Story = {
 	args: {
 		hasDropdowns: true,
-		label: 'User',
+		label: 'Company',
 		route: undefined,
-		menu: USER_ITEM.menu,
+		menu: COMPANY_MENU,
 	},
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement),
-			label = canvas.getByRole('menuitem', { name: 'User' }),
-			trigger = canvas.getByRole('button')
+			label = canvas.getByRole('menuitem', { name: 'Company' }),
+			trigger = canvas.getByRole('button'),
+			root = canvasElement.querySelector(`#${ COMPANY_DROPDOWN_ID }`),
+			submenu = canvasElement.querySelector(`#${ COMPANY_MENU_ID }`)
 
 		await expect(label.tagName).toBe('SPAN')
+		await expect(trigger).toContainElement(label)
 
-		await expect(trigger).toHaveAttribute('id', USER_TRIGGER_ID)
+		await expect(root).not.toBeNull()
+		await expect(root).toHaveAttribute('role', 'none')
+		await expect(root?.tagName).toBe('LI')
+
+		await expect(trigger).toHaveAttribute('id', COMPANY_TRIGGER_ID)
 		await expect(trigger).toHaveAttribute('type', 'button')
-		await expect(trigger).toHaveAttribute('aria-controls', USER_MENU_ID)
+		await expect(trigger).toHaveAttribute('aria-controls', COMPANY_MENU_ID)
 		await expect(trigger).toHaveAttribute('aria-haspopup', 'true')
 		await expect(trigger).toHaveAttribute('aria-expanded', 'false')
 
@@ -234,19 +259,21 @@ export const DropdownTrigger: Story = {
 		await expect(icon).not.toBeNull()
 		await expect(icon).toBeInTheDocument()
 
-		// NOT `canvas.queryByRole('menubar')` — the meta-level `MenubarWrapper`
-		// decorator's OWN `<ul role="menubar">` always satisfies that query
-		// regardless of whether the nested dropdown `Menu` is mounted, so a bare
-		// role query can't tell "no nested menu" apart from "just the decorator's
-		// wrapper". Scope to the nested menu's own id instead.
-		await expect(canvasElement.querySelector(`#${ USER_MENU_ID }`)).not.toBeInTheDocument()
-		await expect(canvas.queryByText('Profile')).not.toBeInTheDocument()
+		// Mounted but closed: present in the DOM (positive control), no `data-open`, and
+		// its items are out of reach for role queries once CSS hides it.
+		await expect(submenu).not.toBeNull()
+		await expect(submenu).toHaveAttribute('aria-labelledby', COMPANY_TRIGGER_ID)
+		await expect(submenu).not.toHaveAttribute('data-open')
+		await expect(within(submenu as HTMLElement).getByText(COMPANY_MENU[0].label)).toBeInTheDocument()
+		await waitFor(() => expect(canvas.queryByRole('menuitem', { name: COMPANY_MENU[0].label })).not.toBeInTheDocument())
 	},
 }
 
 /**
  * `hasDropdowns` rendered both ways side by side, for a direct visual/DOM
- * comparison of the two dropdown branches.
+ * comparison of the two dropdown branches. The `true` group's submenu is mounted but closed,
+ * so its items are out of reach for role queries and the child items found by role are the
+ * flattened ones from the `false` group.
  */
 export const HasDropdowns: Story = {
 	parameters: { controls: { exclude: ['hasDropdowns'] } },
@@ -257,28 +284,128 @@ export const HasDropdowns: Story = {
 					<MenuItem
 						{ ...args }
 						hasDropdowns={ hasDropdowns }
-						label="User"
+						label="Company"
 						route={ undefined }
-						menu={ USER_ITEM.menu }
+						menu={ COMPANY_MENU }
 					/>
 				</Group>
 			)) }
 		</Row>
 	),
 	play: async ({ canvasElement }) => {
-		const canvas = within(canvasElement)
+		const canvas = within(canvasElement),
+			childNames = COMPANY_MENU.map(({ label }) => label)
 
-		// `hasDropdowns: true` → label + trigger button, no flattened children yet.
-		// `User`'s label has no `route`, so (per the live `MenuLabel` source, see
-		// the `DropdownTrigger` story) it renders as a `<span role="menuitem">` —
-		// still reachable via `getByRole('menuitem')`, since that role is set
-		// unconditionally.
-		await expect(canvas.getByRole('menuitem', { name: 'User' })).toBeInTheDocument()
+		// `hasDropdowns: true` → label + trigger button. `Company`'s label has no
+		// `route`, so (per the live `MenuLabel` source, see the `DropdownTrigger` story) it
+		// renders as a `<span role="menuitem">` — still reachable via `getByRole('menuitem')`,
+		// since that role is set unconditionally.
+		await expect(canvas.getByRole('menuitem', { name: 'Company' })).toBeInTheDocument()
 		await expect(canvas.getByRole('button')).toBeInTheDocument()
 
-		// `hasDropdowns: false` → flattened children, no trigger, no `User` label.
-		await expect(canvas.getByRole('menuitem', { name: 'Profile' })).toBeInTheDocument()
-		await expect(canvas.getByRole('menuitem', { name: 'Settings' })).toBeInTheDocument()
+		// `hasDropdowns: false` → flattened children, no trigger, no `Company` label.
+		await waitFor(() => expect(canvas.getAllByRole('menuitem')).toHaveLength(childNames.length + 1))
+		for (const name of childNames)
+			await expect(canvas.getByRole('menuitem', { name })).toBeInTheDocument()
+	},
+}
+
+/**
+ * `trigger` replaces the content of the item's `MenuLabel` (`trigger ?? label`) in the leaf
+ * and dropdown branches. In the dropdown branch the caret depends on what the content is:
+ * a string keeps it, anything else drops it. The derived dropdown `id` still comes from `label`.
+ *
+ * Three groups: a leaf with a node trigger, a dropdown with a node trigger (no caret) and a
+ * dropdown with a string trigger (caret). The two dropdowns use different labels so their
+ * ids don't collide.
+ */
+export const Trigger: Story = {
+	parameters: { controls: { exclude: ['label', 'menu', 'route', 'trigger'] } },
+	render: (args) => (
+		<Row>
+			<Group label="leaf, trigger: node">
+				<MenuItem
+					{ ...args }
+					label="Home"
+					menu={ undefined }
+					route={ NavRoutes.HOME }
+					trigger={ <span>Leaf trigger</span> }
+				/>
+			</Group>
+			<Group label="dropdown, trigger: node">
+				<MenuItem
+					{ ...args }
+					label="Company"
+					menu={ COMPANY_MENU }
+					route={ undefined }
+					trigger={ <span>Node trigger</span> }
+				/>
+			</Group>
+			<Group label="dropdown, trigger: string">
+				<MenuItem
+					{ ...args }
+					label="Legal"
+					menu={ LEGAL_MENU }
+					route={ undefined }
+					trigger="String trigger"
+				/>
+			</Group>
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement)
+
+		// Leaf: the label is replaced, the route is kept.
+		const leaf = canvas.getByRole('menuitem', { name: 'Leaf trigger' })
+		await expect(leaf.tagName).toBe('A')
+		await expect(leaf).toHaveAttribute('href', NavRoutes.HOME)
+		await expect(canvas.queryByRole('menuitem', { name: 'Home' })).not.toBeInTheDocument()
+
+		// Dropdown with a node trigger: label replaced, no caret, id still from `label`.
+		const nodeTrigger = canvas.getByRole('menuitem', { name: 'Node trigger' }).closest('button')
+		await expect(nodeTrigger).not.toBeNull()
+		await expect(nodeTrigger).toHaveAttribute('id', 'dropdown-company-trigger')
+		await expect(nodeTrigger?.querySelector('svg')).toBeNull()
+		await expect(canvas.queryByRole('menuitem', { name: 'Company' })).not.toBeInTheDocument()
+
+		// Dropdown with a string trigger: label replaced, caret kept.
+		const stringTrigger = canvas.getByRole('menuitem', { name: 'String trigger' }).closest('button')
+		await expect(stringTrigger).not.toBeNull()
+		await expect(stringTrigger).toHaveAttribute('id', 'dropdown-legal-trigger')
+		await expect(stringTrigger?.querySelector('svg')).not.toBeNull()
+		await expect(canvas.queryByRole('menuitem', { name: 'Legal' })).not.toBeInTheDocument()
+	},
+}
+
+/**
+ * An explicit `id` overrides the derived `dropdown-${ toKebabCase(label) }` in the dropdown
+ * branch: the root, trigger and submenu ids are built from it (`custom`, `custom-trigger`,
+ * `custom-menu`), and nothing is left with the derived `dropdown-company` id. A leaf item
+ * drops the `id` entirely.
+ */
+export const Id: Story = {
+	parameters: { controls: { exclude: ['id', 'label', 'menu', 'route'] } },
+	render: (args) => (
+		<Row>
+			<Group label="dropdown, id: custom">
+				<MenuItem { ...args } id="custom" label="Company" menu={ COMPANY_MENU } route={ undefined } />
+			</Group>
+			<Group label="leaf, id: ignored">
+				<MenuItem { ...args } id="ignored" label="Home" menu={ undefined } route={ NavRoutes.HOME } />
+			</Group>
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const trigger = canvasElement.querySelector('#custom-trigger')
+
+		await expect(canvasElement.querySelector('#custom')?.tagName).toBe('LI')
+		await expect(trigger).not.toBeNull()
+		await expect(trigger).toHaveAttribute('aria-controls', 'custom-menu')
+		await expect(canvasElement.querySelector('#custom-menu')).toHaveAttribute('aria-labelledby', 'custom-trigger')
+
+		await expect(canvasElement.querySelector(`#${ COMPANY_DROPDOWN_ID }`)).toBeNull()
+
+		await expect(canvasElement.querySelector('#ignored')).toBeNull()
 	},
 }
 
@@ -348,328 +475,59 @@ export const ActiveItem: Story = {
 }
 
 /**
+ * A dropdown whose own `route` is the active one: `MenuItem` hands its `attributes`
+ * (carrying `data-current`) to `Menu.Dropdown`, which puts them on the dropdown's ROOT `<li>`,
+ * while the label inside the trigger gets `aria-current="page"`. `User` is the fixture
+ * because it is the dropdown with a `route` (`/profile`); nothing is clicked here.
+ */
+export const ActiveDropdown: Story = {
+	parameters: { controls: { exclude: ['active', 'label', 'menu', 'route'] } },
+	args: {
+		active: NavRoutes.USER_PROFILE,
+		label: 'User',
+		route: USER_ITEM.route,
+		menu: USER_ITEM.menu,
+	},
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			label = canvas.getByRole('menuitem', { name: 'User' }),
+			root = canvasElement.querySelector('#dropdown-user')
+
+		await expect(label).toHaveAttribute('aria-current', 'page')
+		await expect(root).not.toBeNull()
+		await expect(root).toHaveAttribute('data-current')
+		await expect(label.closest('li')).toBe(root)
+	},
+}
+
+/**
  * The flattened branch ((b), `isDropdown && !hasDropdowns`) evaluates each
- * child independently — only `Settings` matches here, not `Profile`, even
+ * child independently — only `FAQs` matches here, not `About`, even
  * though both are rendered from the SAME `menu?.map(...)` call.
  */
 export const ActiveItemFlattened: Story = {
 	args: {
-		active: NavRoutes.USER_SETTINGS,
+		active: NavRoutes.COMPANY_FAQS,
 		hasDropdowns: false,
-		label: 'User',
+		label: 'Company',
 		route: undefined,
-		menu: USER_ITEM.menu,
+		menu: COMPANY_MENU,
 	},
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement),
-			profile = canvas.getByRole('menuitem', { name: 'Profile' }),
-			settings = canvas.getByRole('menuitem', { name: 'Settings' })
-		await expect(profile.closest('li')).not.toHaveAttribute('data-current')
-		await expect(settings.closest('li')).toHaveAttribute('data-current')
-		await expect(settings).toHaveAttribute('aria-current', 'page')
+			about = canvas.getByRole('menuitem', { name: 'About' }),
+			faqs = canvas.getByRole('menuitem', { name: 'FAQs' })
+		await expect(about.closest('li')).not.toHaveAttribute('data-current')
+		await expect(faqs.closest('li')).toHaveAttribute('data-current')
+		await expect(faqs).toHaveAttribute('aria-current', 'page')
 	},
 }
 
-/**
- * Pointer-driven toggling of the dropdown trigger.
- *
- * IMPORTANT: the item also opens on `mouseenter` (`MenuItem.tsx`'s
- * `handleMouseEnter`), and any real pointer click is preceded by a pointer
- * move onto the element — so a click can never be observed opening a closed
- * item via the mouse. `userEvent.setup()` is used here (rather than the
- * per-call direct API) precisely so pointer position PERSISTS between steps:
- * the hover fires once, and each subsequent click is a pure toggle.
- */
-export const Clickable: Story = {
-	args: {
-		hasDropdowns: true,
-		label: 'User',
-		route: undefined,
-		menu: USER_ITEM.menu,
-	},
-	play: async ({ canvasElement }) => {
-		const canvas = within(canvasElement),
-			user = userEvent.setup(),
-			trigger = canvas.getByRole('button')
-
-		await expect(trigger).toHaveAttribute('aria-expanded', 'false')
-
-		await user.hover(trigger)
-		await expect(trigger).toHaveAttribute('aria-expanded', 'true')
-		await expect(await canvas.findByRole('menuitem', { name: 'Profile' })).toBeInTheDocument()
-
-		// `handleToggle` inverts whatever the hover left behind.
-		await user.click(trigger)
-		await expect(trigger).toHaveAttribute('aria-expanded', 'false')
-		await expect(canvas.queryByRole('menuitem', { name: 'Profile' })).not.toBeInTheDocument()
-
-		await user.click(trigger)
-		await expect(trigger).toHaveAttribute('aria-expanded', 'true')
-		await expect(await canvas.findByRole('menuitem', { name: 'Settings' })).toBeInTheDocument()
-
-		await user.click(trigger)
-		await expect(trigger).toHaveAttribute('aria-expanded', 'false')
-	},
-}
-
-/**
- * Hover opens immediately; leaving closes only after a 300ms `setTimeout`
- * (`MenuItem.tsx`'s `handleMouseLeave`), which is why the post-`unhover`
- * assertion is wrapped in `waitFor` rather than asserted synchronously.
- */
-export const HoverToOpen: Story = {
-	args: {
-		hasDropdowns: true,
-		label: 'User',
-		route: undefined,
-		menu: USER_ITEM.menu,
-	},
-	play: async ({ canvasElement }) => {
-		const canvas = within(canvasElement),
-			user = userEvent.setup(),
-			trigger = canvas.getByRole('button')
-
-		await expect(trigger).toHaveAttribute('aria-expanded', 'false')
-
-		await user.hover(trigger)
-		await expect(trigger).toHaveAttribute('aria-expanded', 'true')
-		await expect(await canvas.findByRole('menuitem', { name: 'Profile' })).toBeInTheDocument()
-
-		await user.unhover(trigger)
-
-		await waitFor(
-			() => expect(trigger).toHaveAttribute('aria-expanded', 'false'),
-			{ timeout: 2000 }
-		)
-		await expect(canvas.queryByRole('menuitem', { name: 'Profile' })).not.toBeInTheDocument()
-	},
-}
-
-/**
- * `useOutsideClick` (subscribed on `document` for `mousedown`/`touchstart`)
- * calls `handleToggle` only while `hasDropdowns && isDropdown && isOpen`, so
- * a click anywhere outside the item closes it.
- *
- * Opened with the keyboard on purpose: opening by hover would leave the
- * pointer inside the item, and moving it out to the outside button would ALSO
- * start the 300ms mouse-leave timer, making it ambiguous which mechanism did
- * the closing.
- */
-export const OutsideClick: Story = {
-	args: {
-		hasDropdowns: true,
-		label: 'User',
-		route: undefined,
-		menu: USER_ITEM.menu,
-	},
-	// The meta-level decorator already wraps this story in a single
-	// `<ul role="menubar">` — rather than nesting a second one (which would
-	// also put the "outside" trigger inside a menubar context), the outside
-	// trigger is rendered as a plain sibling `<li>` within that same list.
-	render: (args) => (
-		<>
-			<MenuItem { ...args } />
-			<li><button type="button">Outside</button></li>
-		</>
-	),
-	play: async ({ canvasElement }) => {
-		const canvas = within(canvasElement),
-			outside = canvas.getByRole('button', { name: 'Outside' }),
-			// Two `role="button"` elements exist in THIS story (the trigger plus
-			// the plain "Outside" sibling), so role alone is ambiguous — but the
-			// trigger's accessible name isn't a stable thing to filter on either
-			// (see `Menu.stories.tsx`'s `DropdownItems` quirk note), so it's
-			// identified here by elimination against the one button already
-			// queried by its own stable, real name instead.
-			trigger = canvas.getAllByRole('button').find(button => button !== outside)!
-
-		// Focus assertions first — a click would focus the trigger and make a
-		// later `tab()` move focus away instead of onto it.
-		await userEvent.tab()
-		await expect(trigger).toHaveFocus()
-
-		await userEvent.keyboard('{Enter}')
-		await waitFor(() => expect(trigger).toHaveAttribute('aria-expanded', 'true'))
-		await expect(await canvas.findByRole('menuitem', { name: 'Profile' })).toBeInTheDocument()
-
-		await userEvent.click(outside)
-
-		await waitFor(() => expect(trigger).toHaveAttribute('aria-expanded', 'false'))
-		await expect(canvas.queryByRole('menuitem', { name: 'Profile' })).not.toBeInTheDocument()
-	},
-}
-
-/**
- * The trigger is a real `<button>` (`Button` with `unstyled`), so both Enter
- * and Space activate it via the browser's own native button-activation
- * behavior. The `User` fixture has no `route`, so its label is a plain
- * `<span role="menuitem" tabIndex={-1}>` (see the `DropdownTrigger` story's
- * note) — it carries the role but is excluded from the natural Tab order, so
- * the trigger is the first tab stop in the canvas.
- *
- * IMPORTANT, verified against the live `handleKeyDown` implementation: Enter
- * is ALSO one of the keys the wrapping `<li>`'s own `onKeyDown` treats as an
- * "open" key while closed (alongside `ArrowDown`/Space) — and opening via
- * THAT path moves focus to the first nested `[role="menuitem"]` a tick later
- * (`requestAnimationFrame`), same as the `KeyboardFocus` story. So after
- * pressing Enter, focus is no longer on the trigger — the trigger must be
- * refocused explicitly before the follow-up Space (or querying/asserting
- * `toHaveFocus()` on it) makes sense.
- *
- * HARDENING NOTE: every `aria-expanded` check immediately following a
- * keyboard action below is wrapped in `waitFor` rather than asserted bare —
- * this story was observed to fail intermittently (pass on one run, fail the
- * next) when asserted synchronously, almost certainly racing the same
- * `requestAnimationFrame` focus shift (and/or React's commit timing) rather
- * than a real behavioral difference between runs.
- */
-export const KeyboardActivation: Story = {
-	args: {
-		hasDropdowns: true,
-		label: 'User',
-		route: undefined,
-		menu: USER_ITEM.menu,
-	},
-	play: async ({ canvasElement }) => {
-		const canvas = within(canvasElement),
-			trigger = canvas.getByRole('button')
-
-		await expect(trigger).not.toHaveFocus()
-
-		await userEvent.tab()
-		await expect(trigger).toHaveFocus()
-
-		await userEvent.keyboard('{Enter}')
-		await waitFor(() => expect(trigger).toHaveAttribute('aria-expanded', 'true'))
-		await expect(await canvas.findByRole('menuitem', { name: 'Profile' })).toBeInTheDocument()
-
-		// Enter's `<li>`-level "open" handling shifted focus to `Profile` —
-		// refocus the trigger explicitly rather than assuming it kept focus.
-		trigger.focus()
-		await expect(trigger).toHaveFocus()
-
-		await userEvent.keyboard(' ')
-		await waitFor(() => expect(trigger).toHaveAttribute('aria-expanded', 'false'))
-		await expect(canvas.queryByRole('menuitem', { name: 'Profile' })).not.toBeInTheDocument()
-
-		// Explicit blur rather than tabbing away: where a further `tab()` lands
-		// is browser/environment-dependent and not worth asserting on.
-		trigger.blur()
-		await expect(trigger).not.toHaveFocus()
-	},
-}
-
-/**
- * Pure focus mechanics inside an OPEN dropdown: `ArrowDown` (while closed)
- * both opens the dropdown AND moves focus straight to the first submenu item,
- * via a `getSubmenuItems()` helper scoped to `':scope > [role="none"] >
- * [role="menuitem"]'` inside the nested `[role="menubar"]` — direct children
- * only, so the item's OWN label is never part of its own cycle, and any
- * grandchild dropdowns aren't swept in either. Once open, `ArrowDown`/
- * `ArrowUp` cycle through that same list and correctly WRAP at both ends
- * (`(currentIndex + step + items.length) % items.length`). `Escape` closes
- * the dropdown and returns focus to the trigger (`':scope > button'`), and
- * `Tab` closes it without moving focus itself.
- */
-export const KeyboardFocus: Story = {
-	args: {
-		hasDropdowns: true,
-		label: 'User',
-		route: undefined,
-		menu: USER_ITEM.menu,
-	},
-	play: async ({ canvasElement }) => {
-		const canvas = within(canvasElement),
-			trigger = canvas.getByRole('button')
-
-		await userEvent.tab()
-		await expect(trigger).toHaveFocus()
-
-		// `ArrowDown` on the closed trigger opens it AND focuses the first item.
-		await userEvent.keyboard('{ArrowDown}')
-		await waitFor(() => expect(trigger).toHaveAttribute('aria-expanded', 'true'))
-
-		const profile = await canvas.findByRole('menuitem', { name: 'Profile' }),
-			settings = canvas.getByRole('menuitem', { name: 'Settings' })
-
-		await waitFor(() => expect(profile).toHaveFocus())
-
-		await userEvent.keyboard('{ArrowDown}')
-		await waitFor(() => expect(settings).toHaveFocus())
-
-		// From the LAST item, `ArrowDown` wraps around to the FIRST.
-		await userEvent.keyboard('{ArrowDown}')
-		await waitFor(() => expect(profile).toHaveFocus())
-
-		// From the FIRST item, `ArrowUp` wraps backward to the LAST.
-		await userEvent.keyboard('{ArrowUp}')
-		await waitFor(() => expect(settings).toHaveFocus())
-
-		await userEvent.keyboard('{Escape}')
-		await waitFor(() => expect(trigger).toHaveAttribute('aria-expanded', 'false'))
-		await waitFor(() => expect(trigger).toHaveFocus())
-
-		// `Tab` closes without moving focus (the browser handles the actual move).
-		await userEvent.keyboard('{Enter}')
-		await waitFor(() => expect(trigger).toHaveAttribute('aria-expanded', 'true'))
-		await canvas.findByRole('menuitem', { name: 'Profile' })
-
-		await userEvent.keyboard('{Tab}')
-		await waitFor(() => expect(trigger).toHaveAttribute('aria-expanded', 'false'))
-	},
-}
-
-/**
- * Route-less submenu items are excluded from the natural Tab order — their
- * `<span>` gets `tabIndex={-1}` rather than being a native tab stop — but
- * that same `tabIndex={-1}` is exactly what makes them PROGRAMMATICALLY
- * focusable: `getSubmenuItems()` matches them via `role="menuitem"`
- * regardless of tag, so `ArrowDown`/`ArrowUp` cycling reaches a route-less
- * item just like a real `<a>` one — something that wasn't possible before
- * `tabIndex={-1}` was added (a plain `<span>` with no `tabindex` can't
- * receive focus via `.focus()` in a real browser).
- */
-export const KeyboardFocusRouteless: Story = {
-	args: {
-		hasDropdowns: true,
-		label: 'User',
-		route: undefined,
-		menu: [
-			{ label: 'No Route' },
-			{ label: 'Settings', route: NavRoutes.USER_SETTINGS },
-		],
-	},
-	play: async ({ canvasElement }) => {
-		const canvas = within(canvasElement),
-			trigger = canvas.getByRole('button')
-
-		await userEvent.tab()
-		await expect(trigger).toHaveFocus()
-
-		await userEvent.keyboard('{ArrowDown}')
-		await waitFor(() => expect(trigger).toHaveAttribute('aria-expanded', 'true'))
-
-		const noRoute = await canvas.findByRole('menuitem', { name: 'No Route' }),
-			settings = canvas.getByRole('menuitem', { name: 'Settings' })
-
-		// Opening focuses the first submenu item — route-less or not.
-		await waitFor(() => expect(noRoute).toHaveFocus())
-		await expect(noRoute.tagName).toBe('SPAN')
-
-		await userEvent.keyboard('{ArrowDown}')
-		await waitFor(() => expect(settings).toHaveFocus())
-
-		// Wraps back to the route-less item, same as any other submenu item.
-		await userEvent.keyboard('{ArrowDown}')
-		await waitFor(() => expect(noRoute).toHaveFocus())
-	},
-}
-
-// `MenuItem` destructures `as` and puts it in the `sharedProps` that all three
-// of its returns build on, so the root tag follows the prop in every branch:
-// the leaf branch (`!isDropdown`), the flattened branch (`!hasDropdowns`, one
-// root per child), and the dropdown branch. Each group below renders one
-// branch with `as="li"` (the registered default) and `as="div"`.
+// `MenuItem` destructures `as` and puts it in the `sharedProps` that its leaf and
+// flattened returns build on, and hands it to `Menu.Dropdown` for the dropdown return, so the
+// root tag follows the prop in every branch: the leaf branch (`!isDropdown`), the flattened
+// branch (`!hasDropdowns`, one root per child), and the dropdown branch. Each group below
+// renders one branch with `as="li"` (the registered default) and `as="div"`.
 const AS_OPTIONS = ['li', 'div'] as const
 
 export const AsElement: Story = {
@@ -701,7 +559,7 @@ export const AsElement: Story = {
 						hasDropdowns
 						label={ `dropdown-${ as }` }
 						route={ undefined }
-						menu={ USER_ITEM.menu }
+						menu={ COMPANY_MENU }
 					/>
 				</Group>
 			)) }

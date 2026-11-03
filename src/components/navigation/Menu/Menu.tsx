@@ -1,8 +1,10 @@
 import { usePathname } from 'next/navigation'
 import { extractOthers } from '@/hooks/useProps'
 import { polymorphic } from '@/lib/component/factory'
+import { toKebabCase } from '@/utils/helpers'
 import { Box } from '@/components/polymorphic/Box'
 import { MenuItem } from './MenuItem'
+import type { ReactNode } from 'react'
 import type { NavigationItem } from '@/utils/navigation'
 import type { Orientation } from '@/types/shared'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
@@ -18,11 +20,12 @@ const DEFAULT_PROPS = {
 } as const
 
 interface MenuProps {
-	active?: NavigationItem['route'] | null
+	active?: NavigationItem['route']
 	depth?: number
 	hasDropdowns?: boolean
 	items: NavigationItem['menu']
 	orientation?: Orientation
+	trigger?: ReactNode
 }
 
 interface MenuSpecs {
@@ -43,20 +46,17 @@ export const Menu = polymorphic<MenuSpecs>((_props, { useProps, useStyles }) => 
 	const styles = useStyles({ props })
 
 	const {
-		active,
-		as,
-		className,
-		depth,
-		hasDropdowns,
-		items,
-		orientation,
+		active, as, className,
+		depth, hasDropdowns, id,
+		items, orientation, trigger,
 		...rest
 	} = props
 
 	const others = extractOthers(rest)
 
+	const isSurface = depth === 0
 	const clsx = {
-		module: { [`${orientation}`]: (depth === 0 && !!orientation) || null },
+		module: { [`${orientation}`]: (isSurface && !!orientation) || null },
 	}
 
 	const currentRoute = typeof active === 'string' || active === null
@@ -68,16 +68,19 @@ export const Menu = polymorphic<MenuSpecs>((_props, { useProps, useStyles }) => 
 			{ ...styles('root', clsx) }
 			{ ...others }
 			as={ as }
+			id={ id }
 			role="menubar"
 		>
 			{ items?.map(item => (
 				<MenuItem
-					key={ item.label }
+					{ ...item }
 					active={ currentRoute }
 					className={ className }
 					depth={ depth }
 					hasDropdowns={ hasDropdowns }
-					{ ...item }
+					id={ id && `${id}-${toKebabCase(item.label)}` }
+					key={ item.label }
+					trigger={ trigger }
 				/>
 			)) }
 		</Box>

@@ -1,12 +1,12 @@
 import { expect, userEvent, within } from 'storybook/test'
 import { getDefaultProps } from '@/hooks/useProps'
 import { MenuLabel } from './MenuLabel'
-import { NavRoutes, type NavigationItem } from '@/utils/navigation'
+import { NavRoutes } from '@/utils/navigation'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import moduleClasses from '../Menu.module.scss'
 
-// `MenuLabel` is NOT attached to `Menu` (`Menu.tsx` only wires `MenuItem`), so it is
+// `Menu.Label` is NOT attached to `Menu` (`Menu.tsx` has no `subcomponents`), so it is
 // imported from its own folder, same as `MenuItem.stories.tsx` imports `MenuItem`.
 //
 // Its only enumerable props are the boolean `isActive` and the polymorphic `as`, so
@@ -16,8 +16,11 @@ const BOOLEAN_OPTIONS = [true, false] as const
 // `as` only takes effect on the route-less branch (see the `AsElement` story).
 const AS_OPTIONS = ['span', 'div', 'p'] as const
 
-const ROUTED_ITEM: NavigationItem = { label: 'Marketplace', route: NavRoutes.MARKETPLACE }
-const ROUTELESS_ITEM: NavigationItem = { label: 'User' }
+// `label` + `route` are the whole data shape (`item` is gone). The route-less set names
+// `route: undefined` explicitly, so spreading it over `args` (which carry the routed
+// default) really does clear the route.
+const ROUTED = { label: 'Marketplace', route: NavRoutes.MARKETPLACE },
+	ROUTELESS = { label: 'Company', route: undefined }
 
 // Each group is an `<li role="none">`, the structure a real `menuitem` lives in. The
 // meta-level decorator below supplies the single `role="menubar"` list.
@@ -41,7 +44,7 @@ const menuLabel = (args: MenuLabelStoryProps) => <MenuLabel { ...args } />
 
 const meta: Meta<MenuLabelStoryProps> = {
 	component: MenuLabel,
-	title: 'Navigation/Menu/MenuLabel',
+	title: 'Navigation/Menu/Menu.Label',
 	decorators: [
 		(Story) => (
 			<ul role="menubar" style={ { display: 'flex', gap: 48, flexWrap: 'wrap', listStyle: 'none', margin: 0, padding: 0 } }>
@@ -57,15 +60,20 @@ const meta: Meta<MenuLabelStoryProps> = {
 		},
 		children: {
 			control: false,
-			description: 'Accepted through `PolymorphicProps` but IGNORED: both branches render `item.label`. See the `IgnoresChildren` story.',
+			description: 'Accepted through `PolymorphicProps` but IGNORED: both branches render `label`. See the `IgnoresChildren` story.',
 		},
 		isActive: {
 			control: 'boolean',
 			description: 'Registered default is `false`. On the route branch it sets `aria-current="page"`; the route-less branch never exposes `aria-current`. It is not reflected as a DOM attribute. See the `IsActive` story.',
 		},
-		item: {
-			control: 'object',
-			description: 'Required `NavigationItem`. With a `route`, `MenuLabel` renders `next/link` with `href`, `scroll={ true }` and `shallow={ false }` (the last two are `Link` props, not DOM attributes, so no story asserts them); without one it renders its own `as` with `tabIndex={ -1 }`. Both set `role="menuitem"` and use `item.label` as content. `item.menu` is not read here. See the `Route` story.',
+		label: {
+			control: 'text',
+			description: 'Required `ReactNode`, the content of the label on both branches. `MenuItem` passes its `trigger ?? label` here, so it can be a string or an element (an avatar, for instance). See the `NodeLabel` story.',
+		},
+		route: {
+			control: 'select',
+			options: [undefined, ...Object.values(NavRoutes)],
+			description: 'Picks the branch. With a `route`, `MenuLabel` renders `next/link` with `href`, `scroll={ true }` and `shallow={ false }` (the last two are `Link` props, not DOM attributes, so no story asserts them); without one it renders its own `as` with `tabIndex={ -1 }`. Both set `role="menuitem"`. See the `Route` story.',
 		},
 		unstyled: {
 			control: 'boolean',
@@ -73,8 +81,8 @@ const meta: Meta<MenuLabelStoryProps> = {
 		},
 	},
 	args: {
-		...getDefaultProps<MenuLabel.Props>('MenuLabel'),
-		item: ROUTED_ITEM,
+		...getDefaultProps<MenuLabel.Props>('Menu.Label'),
+		...ROUTED,
 	},
 	render: (args) => <li role="none">{ menuLabel(args) }</li>,
 }
@@ -83,7 +91,7 @@ export default meta
 
 /**
  * With a `route`, the label is a `next/link` anchor: a focusable `<a href>` with
- * `role="menuitem"`, showing `item.label`.
+ * `role="menuitem"`, showing `label`.
  */
 export const Default: Story = {
 	play: async ({ canvasElement }) => {
@@ -98,27 +106,27 @@ export const Default: Story = {
 }
 
 /**
- * The branch is picked by `item.route`: set, it is a link; unset, it is a plain
+ * The branch is picked by `route`: set, it is a link; unset, it is a plain
  * `as` element with `tabIndex={ -1 }` and no `href`. `scroll` and `shallow` are
- * passed to `Link` on the route branch, but they are not DOM attributes, so they
- * are not asserted here.
+ * passed to `Link` on the route branch, but they are not DOM attributes, so
+ * they are not asserted here.
  */
 export const Route: Story = {
-	parameters: { controls: { exclude: ['item'] } },
+	parameters: { controls: { exclude: ['label', 'route'] } },
 	render: (args) => (
 		<>
 			<Group label="route: set">
-				{ menuLabel({ ...args, item: ROUTED_ITEM }) }
+				{ menuLabel({ ...args, ...ROUTED }) }
 			</Group>
 			<Group label="route: undefined">
-				{ menuLabel({ ...args, item: ROUTELESS_ITEM }) }
+				{ menuLabel({ ...args, ...ROUTELESS }) }
 			</Group>
 		</>
 	),
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement),
 			routed = canvas.getByRole('menuitem', { name: 'Marketplace' }),
-			routeless = canvas.getByRole('menuitem', { name: 'User' })
+			routeless = canvas.getByRole('menuitem', { name: 'Company' })
 
 		await expect(routed.tagName).toBe('A')
 		await expect(routed).toHaveAttribute('href', NavRoutes.MARKETPLACE)
@@ -136,13 +144,13 @@ export const Route: Story = {
  * even when active. `isActive` itself never reaches the DOM.
  */
 export const IsActive: Story = {
-	parameters: { controls: { exclude: ['isActive'] } },
+	parameters: { controls: { exclude: ['isActive', 'label', 'route'] } },
 	render: (args) => (
 		<>
 			{ BOOLEAN_OPTIONS.map(isActive => (
 				<Group key={ String(isActive) } label={ String(isActive) }>
-					{ menuLabel({ ...args, isActive, item: { ...ROUTED_ITEM, label: `Routed (${isActive})` } }) }
-					{ menuLabel({ ...args, isActive, item: { label: `Route-less (${isActive})` } }) }
+					{ menuLabel({ ...args, ...ROUTED, isActive, label: `Routed (${isActive})` }) }
+					{ menuLabel({ ...args, ...ROUTELESS, isActive, label: `Route-less (${isActive})` }) }
 				</Group>
 			)) }
 		</>
@@ -166,16 +174,16 @@ export const IsActive: Story = {
  * root is always the `next/link` anchor, so `as` has no effect there.
  */
 export const AsElement: Story = {
-	parameters: { controls: { exclude: ['as'] } },
+	parameters: { controls: { exclude: ['as', 'label', 'route'] } },
 	render: (args) => (
 		<>
 			{ AS_OPTIONS.map(as => (
 				<Group key={ as } label={ `route-less, as="${as}"` }>
-					{ menuLabel({ ...args, as, item: { label: `as-${as}` } }) }
+					{ menuLabel({ ...args, ...ROUTELESS, as, label: `as-${as}` }) }
 				</Group>
 			)) }
 			<Group label='route set, as="div"'>
-				{ menuLabel({ ...args, as: 'div', item: { ...ROUTED_ITEM, label: 'as-ignored' } }) }
+				{ menuLabel({ ...args, ...ROUTED, as: 'div', label: 'as-ignored' }) }
 			</Group>
 		</>
 	),
@@ -193,18 +201,48 @@ export const AsElement: Story = {
 }
 
 /**
- * Edge case: `children` are ignored on both branches; the content is always
- * `item.label`.
+ * `label` is a `ReactNode`, not just a string (`MenuItem` hands it `trigger ?? label`, so an
+ * avatar or icon can land here). An element label is rendered inside the label element on
+ * both branches, and still provides its text as the accessible name.
  */
-export const IgnoresChildren: Story = {
-	parameters: { controls: { exclude: ['children', 'item'] } },
+export const NodeLabel: Story = {
+	parameters: { controls: { exclude: ['label', 'route'] } },
 	render: (args) => (
 		<>
 			<Group label="route: set">
-				<MenuLabel { ...args } item={ ROUTED_ITEM }>Ignored child</MenuLabel>
+				{ menuLabel({ ...args, ...ROUTED, label: <strong>Rich routed</strong> }) }
 			</Group>
 			<Group label="route: undefined">
-				<MenuLabel { ...args } item={ ROUTELESS_ITEM }>Ignored child</MenuLabel>
+				{ menuLabel({ ...args, ...ROUTELESS, label: <strong>Rich route-less</strong> }) }
+			</Group>
+		</>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			routed = canvas.getByRole('menuitem', { name: 'Rich routed' }),
+			routeless = canvas.getByRole('menuitem', { name: 'Rich route-less' })
+
+		await expect(routed.tagName).toBe('A')
+		await expect(routed.querySelector('strong')).not.toBeNull()
+
+		await expect(routeless.tagName).toBe('SPAN')
+		await expect(routeless.querySelector('strong')).not.toBeNull()
+	},
+}
+
+/**
+ * Edge case: `children` are ignored on both branches; the content is always
+ * `label`.
+ */
+export const IgnoresChildren: Story = {
+	parameters: { controls: { exclude: ['children', 'label', 'route'] } },
+	render: (args) => (
+		<>
+			<Group label="route: set">
+				<MenuLabel { ...args } { ...ROUTED }>Ignored child</MenuLabel>
+			</Group>
+			<Group label="route: undefined">
+				<MenuLabel { ...args } { ...ROUTELESS }>Ignored child</MenuLabel>
 			</Group>
 		</>
 	),
@@ -212,7 +250,7 @@ export const IgnoresChildren: Story = {
 		const canvas = within(canvasElement)
 
 		await expect(canvas.getByRole('menuitem', { name: 'Marketplace' })).toHaveTextContent('Marketplace')
-		await expect(canvas.getByRole('menuitem', { name: 'User' })).toHaveTextContent('User')
+		await expect(canvas.getByRole('menuitem', { name: 'Company' })).toHaveTextContent('Company')
 		await expect(canvas.queryByText('Ignored child')).not.toBeInTheDocument()
 	},
 }
@@ -220,24 +258,24 @@ export const IgnoresChildren: Story = {
 /**
  * Pure focus mechanics. Only the link is a Tab stop; the route-less element has
  * `tabIndex={ -1 }`, so it is skipped by Tab but can still be focused
- * programmatically (which is how `Menu`'s arrow-key cycling reaches it). The
+ * programmatically (which is how `Menu.Dropdown`'s arrow-key cycling reaches it). The
  * route-less group comes first, so a Tab that skipped it proves the point.
  */
 export const KeyboardFocus: Story = {
-	parameters: { controls: { exclude: ['item'] } },
+	parameters: { controls: { exclude: ['label', 'route'] } },
 	render: (args) => (
 		<>
 			<Group label="route: undefined">
-				{ menuLabel({ ...args, item: ROUTELESS_ITEM }) }
+				{ menuLabel({ ...args, ...ROUTELESS }) }
 			</Group>
 			<Group label="route: set">
-				{ menuLabel({ ...args, item: ROUTED_ITEM }) }
+				{ menuLabel({ ...args, ...ROUTED }) }
 			</Group>
 		</>
 	),
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement),
-			routeless = canvas.getByRole('menuitem', { name: 'User' }),
+			routeless = canvas.getByRole('menuitem', { name: 'Company' }),
 			routed = canvas.getByRole('menuitem', { name: 'Marketplace' })
 
 		await expect(routed).not.toHaveFocus()
@@ -261,12 +299,12 @@ export const KeyboardFocus: Story = {
  * CSS-module hash.
  */
 export const Unstyled: Story = {
-	parameters: { controls: { exclude: ['unstyled', 'item'] } },
+	parameters: { controls: { exclude: ['unstyled', 'label', 'route'] } },
 	render: (args) => (
 		<>
 			{ BOOLEAN_OPTIONS.map(unstyled => (
 				<Group key={ String(unstyled) } label={ String(unstyled) }>
-					{ menuLabel({ ...args, item: { ...ROUTED_ITEM, label: `unstyled=${unstyled}` }, unstyled }) }
+					{ menuLabel({ ...args, ...ROUTED, label: `unstyled=${unstyled}`, unstyled }) }
 				</Group>
 			)) }
 		</>
