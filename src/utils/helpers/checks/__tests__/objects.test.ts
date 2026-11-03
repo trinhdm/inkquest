@@ -1,4 +1,4 @@
-import { isObject, keyHasValue } from '../objects'
+import { isKeyOf, isObject, keyHasValue } from '../objects'
 
 describe('isObject', () => {
 	it('returns true for a plain object literal', () => {
@@ -32,6 +32,24 @@ describe('isObject', () => {
 	it('returns false for a class instance whose constructor is not Object', () => {
 		class Custom {}
 		expect(isObject(new Custom())).toBe(false)
+	})
+})
+
+describe('isKeyOf', () => {
+	it('returns true for an own key', () => {
+		expect(isKeyOf({ login: 'a', signup: 'b' }, 'login')).toBe(true)
+	})
+
+	it('returns false for a missing key', () => {
+		expect(isKeyOf({ login: 'a', signup: 'b' }, 'discover')).toBe(false)
+	})
+
+	it('returns false for an inherited key, since only own keys count', () => {
+		expect(isKeyOf({ login: 'a' }, 'toString')).toBe(false)
+	})
+
+	it('returns true for an own key whose value is undefined, unlike keyHasValue', () => {
+		expect(isKeyOf({ active: undefined }, 'active')).toBe(true)
 	})
 })
 

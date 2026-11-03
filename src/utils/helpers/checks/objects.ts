@@ -5,6 +5,9 @@ import type { OneKeyOf } from '@/types/utils'
 export const isObject = <T extends Record<string, any>>(target: unknown): target is T =>
 	!!target && target?.constructor === Object && !Array.isArray(target)
 
+export const isKeyOf = <T extends object>(obj: T, key: PropertyKey): key is keyof T =>
+	Object.hasOwn(obj, key)
+
 type WithKeyValue<T, K extends PropertyKey> =
 	T extends unknown
 		? T & { [P in K]: P extends keyof T ? NonNullable<T[P]> : unknown }
@@ -27,10 +30,10 @@ function hasKeyWithValue(
 	if (isObject(entry)) ([k, v] = Object.entries(entry)[0])
 	else k = String(entry)
 
-	if (!isObject(obj) || !Object.hasOwn(obj, k))
+	if (!isObject(obj) || !isKeyOf(obj, k))
 		return false
 
-	return k in obj && (v === null ? !!obj[k] : obj[k] === v)
+	return v === null ? !!obj[k] : obj[k] === v
 }
 
 export const keyHasValue = hasKeyWithValue
