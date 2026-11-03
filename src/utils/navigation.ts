@@ -75,6 +75,7 @@ export const NAV_ROUTES = {
 export type NavRoute = `${NavRoutes}`
 
 export interface NavigationItem {
+	action?: () => void | Promise<void>
 	label: string
 	menu?: NavigationItem[]
 	route?: NavRoute | null

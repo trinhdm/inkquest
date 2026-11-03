@@ -40,12 +40,12 @@ describe('Menu.Label', () => {
 			expect(screen.queryByText('Ignored')).not.toBeInTheDocument()
 		})
 
-		it('renders a React element passed as the label inside the menuitem', () => {
-			render(<MenuLabel label={ <em data-testid="custom">Custom label</em> } />)
+		it('renders `trigger` in place of the label text', () => {
+			render(<MenuLabel label="User" trigger={ <em data-testid="custom">Custom</em> } />)
 
 			const label = screen.getByRole('menuitem')
-			expect(screen.getByTestId('custom')).toHaveTextContent('Custom label')
 			expect(label).toContainElement(screen.getByTestId('custom'))
+			expect(label).not.toHaveTextContent('User')
 		})
 	})
 
@@ -58,12 +58,22 @@ describe('Menu.Label', () => {
 			expect(link).toHaveAttribute('href', '/marketplace')
 		})
 
-		it('renders a React element label inside the link', () => {
-			render(<MenuLabel label={ <strong data-testid="custom">Shop</strong> } route="/marketplace" />)
+		it('renders `trigger` inside the link, which is still named after the label', () => {
+			render(<MenuLabel label="User" route="/profile" trigger={ <strong data-testid="custom">DT</strong> } />)
 
-			const link = screen.getByRole('menuitem', { name: 'Shop' })
+			const link = screen.getByRole('menuitem', { name: 'User' })
 			expect(link.tagName).toBe('A')
+			expect(link).toHaveAttribute('href', '/profile')
+			expect(link).toHaveAttribute('aria-label', 'User')
 			expect(link).toContainElement(screen.getByTestId('custom'))
+		})
+
+		it('adds no aria-label when the content is the plain string label', () => {
+			render(<MenuLabel label="Marketplace" route="/marketplace" />)
+
+			const link = screen.getByRole('menuitem', { name: 'Marketplace' })
+			expect(link).toHaveAttribute('href', '/marketplace')
+			expect(link).not.toHaveAttribute('aria-label')
 		})
 
 		it('marks the link as the current page when active', () => {

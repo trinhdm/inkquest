@@ -221,7 +221,7 @@ describe('filterNavigation - regression coverage for the fixed in-app navigation
 		expect(result.find(item => item.label === 'User')).toBeUndefined()
 	})
 
-	it('surfaces the nested routes correctly when the caller passes the full route list, confirming the recursion itself is sound', () => {
+	it('keeps every nested menu entry (Discover\'s Artists and Styles, Community\'s Your Lineup) when the caller passes the full route list', () => {
 		const fullRouteList = Object.values(NavRoutes) as NavRoute[]
 		const result = filterNavigation(fullRouteList, 'dropdown', true, NAVIGATION_DATA)
 		const discover = result.find(item => item.route === NavRoutes.DISCOVER)
@@ -229,18 +229,42 @@ describe('filterNavigation - regression coverage for the fixed in-app navigation
 		const events = community?.menu?.find(item => item.route === NavRoutes.COMMUNITY_EVENTS)
 
 		expect(discover?.menu).toEqual([
-			{ label: 'Your Style', route: NavRoutes.DISCOVER_STYLE, menu: undefined },
+			{ label: 'Artists', route: NavRoutes.DISCOVER_ARTISTS, menu: undefined },
+			{ label: 'Styles', route: NavRoutes.DISCOVER_STYLE, menu: undefined },
 		])
 		expect(events?.menu).toEqual([
 			{ label: 'Your Lineup', route: NavRoutes.COMMUNITY_EVENTS_LINEUP, menu: undefined },
 		])
 	})
 
-	it('now surfaces Profile/Settings by hoisting them out of the routeless "User" parent when their routes are requested', () => {
-		const result = filterNavigation([NavRoutes.USER_PROFILE, NavRoutes.USER_SETTINGS], 'dropdown', true, NAVIGATION_DATA)
+	it('hoists all requested children of a routeless parent onto the top level and drops the parent itself', () => {
+		const fixture: NavigationItem[] = [
+			{
+				label: 'Account',
+				menu: [
+					{ label: 'Profile', route: NavRoutes.USER_PROFILE },
+					{ label: 'Settings', route: NavRoutes.USER_SETTINGS },
+					{ label: 'Messages', route: NavRoutes.USER_MESSAGES },
+				],
+			},
+		]
+
+		const result = filterNavigation([NavRoutes.USER_PROFILE, NavRoutes.USER_SETTINGS], 'dropdown', true, fixture)
 
 		expect(result.map(item => item.label)).toEqual(['Profile', 'Settings'])
-		expect(result.find(item => item.label === 'User')).toBeUndefined()
+		expect(result.find(item => item.label === 'Account')).toBeUndefined()
+	})
+
+	it('keeps a parent that has its own route (like "User") as itself, with only the requested children in its menu, instead of hoisting them', () => {
+		const result = filterNavigation([NavRoutes.USER_PROFILE, NavRoutes.USER_SETTINGS], 'dropdown', true, NAVIGATION_DATA)
+
+		expect(result).toEqual([
+			{
+				label: 'User',
+				route: NavRoutes.USER_PROFILE,
+				menu: [{ label: 'Settings', route: NavRoutes.USER_SETTINGS, menu: undefined }],
+			},
+		])
 	})
 })
 

@@ -1,3 +1,5 @@
+@use '@/styles/utils' as global;
+
 .inkq-menu {
 	$name: &;
 
@@ -62,8 +64,10 @@
 			position: relative;
 		}
 
-		&__inner {
-			column-gap: var(--inkq-space-icon);
+		&--hidden:not(:focus-visible) {
+			@media (hover: hover) {
+				@include global.hidden;
+			}
 		}
 	}
 
@@ -71,7 +75,7 @@
 		transform: none;
 		transition: transform var(--duration-fast) var(--easing-out);
 
-		#{$name}:where([class$="open"]) & {
+		#{$name}:where([data-open]) > #{$name}__trigger & {
 			color: var(--inkq-color-link-hover);
 			transform: rotate(180deg);
 		}
@@ -92,11 +96,14 @@
 		transition: var(--dropdown-transition);
 		z-index: 2;
 
-		& > .inkq-menu-item {
+		.inkq-menu-item {
 			justify-content: space-between;
-			padding: var(--inkq-pad-chip);
 			text-align: left;
 			width: 100%;
+
+			&__label {
+				padding: var(--inkq-pad-chip);
+			}
 
 			&::after {
 				background-color: var(--inkq-background-card-hover);
@@ -116,14 +123,14 @@
 				opacity: 1;
 			}
 		}
+	}
 
-		&:not([data-open]) {
-			opacity: 0;
-			pointer-events: none;
-			transform: translateY(var(--inkq-gutter-list));
-			transition: var(--dropdown-transition),
-				visibility 0s linear var(--dropdown-duration);
-			visibility: hidden;
-		}
+	&:not([data-open]) > .inkq-menu {
+		opacity: 0;
+		pointer-events: none;
+		transform: translateY(var(--inkq-gutter-list));
+		transition: var(--dropdown-transition),
+			visibility 0s linear var(--dropdown-duration);
+		visibility: hidden;
 	}
 }

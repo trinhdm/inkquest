@@ -1,14 +1,15 @@
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { getDefaultProps } from '@/hooks/useProps'
 import { MenuDropdown } from './MenuDropdown'
+import { MenuLabel } from '../MenuLabel'
 import { NavRoutes, NAVIGATION_DATA } from '@/utils/navigation'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import moduleClasses from '../Menu.module.scss'
 
 // `Menu.Dropdown` is NOT attached to `Menu` (`Menu.tsx` has no `subcomponents`), so it is
-// imported from its own folder. `MenuItem` is what mounts it in the app; these stories drive
-// it directly.
+// imported from its own folder. `MenuItem` is what mounts it in the app (handing it a
+// `Menu.Label` element as `trigger`); these stories drive it directly.
 //
 // Its only enumerable props are the boolean `hasCaret` and the polymorphic `as`, so the option
 // lists stay local instead of living in a shared `options.story.ts`.
@@ -17,15 +18,18 @@ const BOOLEAN_OPTIONS = [true, false] as const
 // Root tags exercised by the `AsElement` story. `li` is the registered default.
 const AS_OPTIONS = ['li', 'div'] as const
 
-// `Company` is the dropdown fixture: it has a `menu` but NO `route`, so a plain-string label
-// is not a link, and none of its five children is itself a dropdown. That keeps every click,
-// hover and keyboard story free of navigation and of nested triggers. Read from
-// `NAVIGATION_DATA` so the fixture can't drift from the app's own nav tree.
-const COMPANY_MENU = NAVIGATION_DATA.find(item => item.label === 'Company')!.menu!
+const findItem = (label: string) => NAVIGATION_DATA.find(item => item.label === label)!
 
-// `MenuItem` passes `id ?? `dropdown-${ toKebabCase(label) }``; the trigger and submenu ids
-// are built from it inside `MenuDropdown`. Driven directly, the id is whatever is passed;
-// this one is the label-derived form. Single-word label, so the id has no space.
+// `Company` is the dropdown fixture: it has a `menu` but NO `route`, so its label is a plain
+// `<span>`, and none of its five children is itself a dropdown. That keeps the click, hover
+// and keyboard stories free of navigation. `Discover` has a `route`, for the story that needs
+// a label which is a link. Read from `NAVIGATION_DATA` so the fixtures can't drift.
+const COMPANY_MENU = findItem('Company').menu!,
+	DISCOVER_ITEM = findItem('Discover')
+
+// `MenuItem` passes `id ?? `dropdown-${ toSlug(label) }``; the caret button and submenu ids are
+// built from it inside `MenuDropdown`. Driven directly, the id is whatever is passed; this one
+// is the label-derived form.
 const DROPDOWN_ID = 'dropdown-company',
 	TRIGGER_ID = `${ DROPDOWN_ID }-trigger`,
 	MENU_ID = `${ DROPDOWN_ID }-menu`
@@ -69,16 +73,23 @@ const getById = (root: HTMLElement, id: string) => {
 	return element
 }
 
-// The nested `Menu` is ALWAYS mounted, so its open state is read off the DOM, not from
-// whether it exists: `data-open` on the submenu `ul` plus `aria-expanded` on the trigger.
-const expectOpen = async (canvasElement: HTMLElement, trigger: HTMLElement) => {
+// The caret button gets a `--hidden` modifier (a hashed CSS-module class, hence the substring
+// match) when its caret is hidden. In a real browser the CSS visually hides it on hover
+// devices unless it has keyboard focus; it stays in the accessibility tree and keeps working.
+const hasHiddenCaret = (button: Element) =>
+	Array.from(button.classList).some(c => c.includes('trigger--hidden'))
+
+// The nested `Menu` is ALWAYS mounted, so open state is read off the DOM, not from whether it
+// exists: `data-open` on the dropdown's own `li` (the CSS shows the submenu from that) plus
+// `aria-expanded` on the caret button.
+const expectOpen = async (trigger: HTMLElement) => {
 	await waitFor(() => expect(trigger).toHaveAttribute('aria-expanded', 'true'))
-	await expect(getById(canvasElement, MENU_ID)).toHaveAttribute('data-open')
+	await expect(trigger.closest('li')).toHaveAttribute('data-open')
 }
 
-const expectClosed = async (canvasElement: HTMLElement, trigger: HTMLElement) => {
+const expectClosed = async (trigger: HTMLElement) => {
 	await waitFor(() => expect(trigger).toHaveAttribute('aria-expanded', 'false'))
-	await expect(getById(canvasElement, MENU_ID)).not.toHaveAttribute('data-open')
+	await expect(trigger.closest('li')).not.toHaveAttribute('data-open')
 }
 
 // `Menu.module.scss` hides a closed submenu with `visibility: hidden`, and on CLOSE it delays
@@ -119,31 +130,35 @@ const meta: Meta<MenuDropdownStoryProps> = {
 		},
 		attributes: {
 			control: 'object',
-			description: 'Escape-hatch attributes (`data`, `aria`) applied to the ROOT `li`, not to the trigger or the submenu. See the `Attributes` story.',
+			description: 'Escape-hatch attributes (`data`, `aria`) merged onto the ROOT `li`, alongside the `data-open` it sets itself; not applied to the caret button or the submenu. See the `Attributes` story.',
+		},
+		className: {
+			control: false,
+			description: 'Forwarded to the nested `Menu`, which passes it on to its items (`MenuItem` uses it to inherit a semantic class such as `inkq-navbar__menu-item`). No story asserts on it.',
 		},
 		depth: {
 			control: 'number',
-			description: 'Nesting level of this dropdown. When it is a number, the nested `Menu` gets `depth + 1`; otherwise it gets `undefined` and falls back to its own registered default of `0`. No story asserts on it: its only visible effect is gating `Menu`\'s `orientation` class, which the nested `Menu` here never receives.',
+			description: 'Nesting level of this dropdown. It decides the keyboard rules: a dropdown with a truthy `depth` is NESTED (inside another dropdown\'s submenu), where `ArrowRight` opens it and `ArrowLeft` also closes it; at depth `0` or `undefined` it is top-level, where `ArrowDown` opens it. When `depth` is a number, the nested `Menu` gets `depth + 1`; otherwise it gets `undefined` and falls back to its own registered default of `0`. These stories pass `0` unless they test nesting. See the `KeyboardNested` story.',
 		},
 		hasCaret: {
 			control: 'boolean',
-			description: 'Registered default `true`. Renders a `caret-down` `Icon` after the label inside the trigger button. The caret is always `caret-down`; open state is not shown by swapping the icon. See the `HasCaret` story.',
+			description: 'No registered default. A boolean decides whether the caret is shown; when omitted it is shown only if the content (`trigger ?? label`) is a string, so an element `trigger` hides it unless `hasCaret` is `true` (the stories pass `true`; `MenuItem` passes `trigger === undefined`). The caret button is ALWAYS rendered; a hidden caret gets a `--hidden` modifier that CSS-hides it on hover devices unless it has keyboard focus (it stays visible on touch devices) and it still opens the dropdown. The icon is always `caret-down`; only the open dropdown\'s own caret rotates. See the `HasCaret` and `HiddenCaretInteraction` stories.',
 		},
 		id: {
 			control: 'text',
-			description: 'Required. Becomes the root `li`\'s `id`; the trigger gets `${ id }-trigger` and the nested submenu gets `${ id }-menu`, which the trigger\'s `aria-controls` and the submenu\'s `aria-labelledby` point at. The nested submenu is a `Menu` given `id={ `${ id }-menu` }`, so `Menu` prefixes any dropdown nested inside it with that (`${ id }-menu-events`, …). `MenuItem` passes its own `id` (set by `Menu` as `${ menuId }-${ toKebabCase(label) }` when the `Menu` has one), falling back to `dropdown-${ toKebabCase(label) }`. `toKebabCase` keeps spaces, so use a single-word label when deriving it.',
+			description: 'Required. Becomes the root `li`\'s `id`; the caret button gets `${ id }-trigger` and the nested submenu gets `${ id }-menu`, which the button\'s `aria-controls` and the submenu\'s `aria-labelledby` point at. The submenu is a `Menu` given that `id`, so it prefixes any dropdown nested inside it (`${ id }-menu-events`, …). `MenuItem` passes its own `id` (set by `Menu` as `${ menuId }-${ toSlug(label) }` when the `Menu` has one), falling back to `dropdown-${ toSlug(label) }`.',
 		},
 		label: {
 			control: 'text',
-			description: 'Required `ReactNode`, rendered INSIDE the trigger `<button>` (`MenuItem` passes a `Menu.Label` element). A string label is the trigger\'s accessible name.',
+			description: 'Required string. Names the caret button (`aria-label="${ label } submenu"`) and is what the dropdown shows when no `trigger` is given (a string, so the caret is shown by default).',
 		},
 		menu: {
 			control: 'object',
-			description: 'Required `NavigationItem[]` handed to the nested `Menu` as `items`. May be empty: the trigger still renders, and the submenu is an empty list. See the `EmptyMenu` story.',
+			description: 'Required `NavigationItem[]` handed to the nested `Menu` as `items`. May be empty: the caret button still renders, and the submenu is an empty list. See the `EmptyMenu` story.',
 		},
 		trigger: {
 			control: false,
-			description: 'Part of the props shape (picked from `MenuItem`\'s props) but not read by `MenuDropdown`: it is destructured and dropped. A caller sets what the trigger shows through `label` and `hasCaret`; `MenuItem` is where `trigger` replaces the label.',
+			description: 'A `ReactNode` rendered as the dropdown\'s content INSTEAD of `label`, before the caret button (`MenuItem` passes a `Menu.Label` element: a link, or a `span` without a `route`). It sits beside the caret button, never inside it. Keyboard focus moves back to this element\'s first `menuitem` when the dropdown closes with `Escape` or `ArrowLeft`.',
 		},
 		unstyled: {
 			control: 'boolean',
@@ -152,24 +167,27 @@ const meta: Meta<MenuDropdownStoryProps> = {
 	},
 	args: {
 		...getDefaultProps<MenuDropdown.Props>('Menu.Dropdown'),
+		depth: 0,
+		hasCaret: true,
 		id: DROPDOWN_ID,
 		label: 'Company',
 		menu: COMPANY_MENU,
+		trigger: <MenuLabel label="Company" />,
 	},
 }
 
 export default meta
 
 /**
- * The closed baseline. The root is a `li role="none"` with the given `id`. The trigger is an
- * `unstyled` `Button` that CONTAINS the label and the caret, and carries `aria-controls`,
- * `aria-haspopup` and `aria-expanded="false"`. The nested `Menu` is already in the DOM
- * (positive control: its items are there as text) but is not open: no `data-open`, and CSS
- * hides it, so its items are not reachable by role.
+ * The closed baseline. The root is a `li role="none"` with the given `id` and no `data-open`.
+ * Its children are, in order: the label (here a route-less `Menu.Label` `span`), a SEPARATE
+ * caret `Button`, and the nested `Menu`; nothing interactive is inside the button.
  *
- * Quirk: the trigger's own `attributes` bag is applied after `Button` spreads its own, so the
- * trigger keeps these aria attributes but loses `Button`'s derived `aria-label`; its
- * accessible name comes from its content.
+ * The button is an `unstyled` `Button` named `Company submenu` that carries `aria-controls`,
+ * `aria-haspopup` and `aria-expanded="false"`, and contains the `caret-down` `Icon`. The
+ * submenu is already in the DOM (positive control: its items are there as text) but not open,
+ * and CSS hides it, so its items are not reachable by role. It is labelled by the button
+ * (`aria-labelledby`).
  *
  * The caret is `<Icon type="caret-down" />`; `Icon` registers `hidden: true`, so the glyph is
  * `aria-hidden` and has no role to query it by (hence a CSS selector).
@@ -177,20 +195,26 @@ export default meta
 export const Default: Story = {
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement),
-			trigger = canvas.getByRole('button'),
+			label = canvas.getByRole('menuitem', { name: 'Company' }),
+			trigger = canvas.getByRole('button', { name: 'Company submenu' }),
 			root = getById(canvasElement, DROPDOWN_ID),
 			submenu = getById(canvasElement, MENU_ID)
 
 		await expect(root.tagName).toBe('LI')
 		await expect(root).toHaveAttribute('role', 'none')
+		await expect(root).not.toHaveAttribute('data-open')
+
+		await expect(label.tagName).toBe('SPAN')
+		await expect(label.parentElement).toBe(root)
+		await expect(trigger).not.toContainElement(label)
+		await expect(label.nextElementSibling).toBe(trigger)
+		await expect(trigger.nextElementSibling).toBe(submenu)
 
 		await expect(trigger).toHaveAttribute('id', TRIGGER_ID)
 		await expect(trigger).toHaveAttribute('type', 'button')
 		await expect(trigger).toHaveAttribute('aria-controls', MENU_ID)
 		await expect(trigger).toHaveAttribute('aria-haspopup', 'true')
 		await expect(trigger).toHaveAttribute('aria-expanded', 'false')
-
-		await expect(within(trigger).getByText('Company')).toBeInTheDocument()
 
 		const icon = trigger.querySelector('svg')
 		await expect(icon).not.toBeNull()
@@ -199,7 +223,6 @@ export const Default: Story = {
 		await expect(submenu.tagName).toBe('UL')
 		await expect(submenu).toHaveAttribute('role', 'menubar')
 		await expect(submenu).toHaveAttribute('aria-labelledby', TRIGGER_ID)
-		await expect(submenu).not.toHaveAttribute('data-open')
 		await expect(within(submenu).getByText(FIRST_ITEM)).toBeInTheDocument()
 
 		await expectItemsHidden(canvasElement)
@@ -207,9 +230,11 @@ export const Default: Story = {
 }
 
 /**
- * `hasCaret` rendered both ways. `true` (the registered default) puts a `caret-down` icon
- * after the label inside the trigger; `false` leaves the label alone. The ids carry the value
- * so the two dropdowns don't collide.
+ * `hasCaret` rendered both ways. The caret button is rendered in BOTH (named
+ * `Company submenu`, holding the icon), so assistive tech and keyboard users always have it.
+ * `true` shows it; `false` adds the `--hidden` modifier, which hides it visually on hover
+ * devices unless it has keyboard focus. The ids carry the value so the two dropdowns don't
+ * collide.
  */
 export const HasCaret: Story = {
 	parameters: { controls: { exclude: ['hasCaret', 'id'] } },
@@ -224,14 +249,57 @@ export const HasCaret: Story = {
 	),
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement),
-			[withCaret, withoutCaret] = canvas.getAllByRole('button')
+			[withCaret, withoutCaret] = canvas.getAllByRole('button', { name: 'Company submenu' })
 
-		await expect(within(withCaret).getByText('Company')).toBeInTheDocument()
+		await expect(hasHiddenCaret(withCaret)).toBe(false)
+		await expect(hasHiddenCaret(withoutCaret)).toBe(true)
+
+		// The button and its icon are there either way.
 		await expect(withCaret.querySelector('svg')).not.toBeNull()
+		await expect(withoutCaret.querySelector('svg')).not.toBeNull()
+	},
+}
 
-		// Positive control: the trigger rendered with its label, only the glyph is missing.
-		await expect(within(withoutCaret).getByText('Company')).toBeInTheDocument()
-		await expect(withoutCaret.querySelector('svg')).toBeNull()
+/**
+ * A hidden caret (`hasCaret: false`) is only hidden visually: the button is still in the Tab
+ * order and still opens and closes the dropdown, by keyboard and by click.
+ *
+ * Keyboard first: Tab lands on the caret (the label `span` is `tabIndex={ -1 }`), Enter opens
+ * the dropdown, and Space then closes it through the button's native activation. The click
+ * steps use the element's own `click()` because a pointer click is always preceded by the
+ * `mouseenter` that already opens the dropdown (see `ClickToOpen`).
+ */
+export const HiddenCaretInteraction: Story = {
+	args: { hasCaret: false },
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			trigger = canvas.getByRole('button', { name: 'Company submenu' })
+
+		await expect(hasHiddenCaret(trigger)).toBe(true)
+
+		await userEvent.tab()
+		await expect(trigger).toHaveFocus()
+
+		await userEvent.keyboard('{Enter}')
+		await expectOpen(trigger)
+
+		// Enter's open handling moves focus to the first item on the next frame; wait for it
+		// before refocusing the caret by hand, so the frame can't take focus back afterwards.
+		const first = await canvas.findByRole('menuitem', { name: FIRST_ITEM })
+		await waitFor(() => expect(first).toHaveFocus())
+
+		trigger.focus()
+		await userEvent.keyboard(' ')
+		await expectClosed(trigger)
+		await expectItemsHidden(canvasElement)
+
+		trigger.blur()
+
+		trigger.click()
+		await expectOpen(trigger)
+
+		trigger.click()
+		await expectClosed(trigger)
 	},
 }
 
@@ -260,9 +328,9 @@ export const AsElement: Story = {
 }
 
 /**
- * `attributes` lands on the ROOT `li`. `data-current` is the hook `MenuItem` sets on a
- * dropdown whose own `route` is the active one; here it is forced on by hand. The trigger
- * and the submenu don't receive it.
+ * `attributes` lands on the ROOT `li` (merged with the `data-open` the dropdown sets itself).
+ * `data-current` is the hook `MenuItem` sets on a dropdown whose own `route` is the active
+ * one; here it is forced on by hand. The caret button doesn't receive it.
  */
 export const Attributes: Story = {
 	parameters: { controls: { exclude: ['attributes', 'id'] } },
@@ -306,7 +374,7 @@ export const Active: Story = {
 			trigger = canvas.getByRole('button')
 
 		await user.hover(trigger)
-		await expectOpen(canvasElement, trigger)
+		await expectOpen(trigger)
 
 		const match = await canvas.findByRole('menuitem', { name: 'FAQs' }),
 			other = canvas.getByRole('menuitem', { name: FIRST_ITEM })
@@ -319,9 +387,9 @@ export const Active: Story = {
 }
 
 /**
- * Edge case: `menu` is required but may be empty. The trigger renders as usual and the
- * submenu is an empty list. Opening it with `ArrowDown` has nothing to focus, so focus
- * stays on the trigger.
+ * Edge case: `menu` is required but may be empty. The caret button renders as usual and the
+ * submenu is an empty list. Opening it with `ArrowDown` has nothing to focus, so focus stays
+ * on the button.
  */
 export const EmptyMenu: Story = {
 	args: { menu: [] },
@@ -336,7 +404,7 @@ export const EmptyMenu: Story = {
 		await expect(trigger).toHaveFocus()
 
 		await userEvent.keyboard('{ArrowDown}')
-		await expectOpen(canvasElement, trigger)
+		await expectOpen(trigger)
 
 		// Give the `requestAnimationFrame` focus call time to run (and find nothing).
 		await sleep(100)
@@ -345,7 +413,7 @@ export const EmptyMenu: Story = {
 }
 
 /**
- * Pointer-driven toggling.
+ * Pointer-driven toggling of the caret button.
  *
  * IMPORTANT: the root also opens on `mouseenter`, and any real pointer click is preceded by a
  * pointer move onto the element — so a click can never be observed opening a closed dropdown
@@ -359,24 +427,24 @@ export const ClickToOpen: Story = {
 			user = userEvent.setup(),
 			trigger = canvas.getByRole('button')
 
-		await expectClosed(canvasElement, trigger)
+		await expectClosed(trigger)
 
 		// Moving the pointer onto the dropdown opens it before the click lands.
 		await user.hover(trigger)
-		await expectOpen(canvasElement, trigger)
+		await expectOpen(trigger)
 		await expectItemsVisible(canvasElement)
 
 		// `handleToggle` inverts whatever the hover left behind.
 		await user.click(trigger)
-		await expectClosed(canvasElement, trigger)
+		await expectClosed(trigger)
 		await expectItemsHidden(canvasElement)
 
 		await user.click(trigger)
-		await expectOpen(canvasElement, trigger)
+		await expectOpen(trigger)
 		await expectItemsVisible(canvasElement)
 
 		await user.click(trigger)
-		await expectClosed(canvasElement, trigger)
+		await expectClosed(trigger)
 	},
 }
 
@@ -402,18 +470,18 @@ export const OutsideClick: Story = {
 			trigger = getById(canvasElement, TRIGGER_ID),
 			outside = canvas.getByRole('button', { name: 'Outside' })
 
-		// Focus assertions first — a click would focus the trigger and make a later `tab()`
+		// Focus assertions first — a click would focus the caret and make a later `tab()`
 		// move focus away instead of onto it.
 		await userEvent.tab()
 		await expect(trigger).toHaveFocus()
 
 		await userEvent.keyboard('{Enter}')
-		await expectOpen(canvasElement, trigger)
+		await expectOpen(trigger)
 		await expectItemsVisible(canvasElement)
 
 		await userEvent.click(outside)
 
-		await expectClosed(canvasElement, trigger)
+		await expectClosed(trigger)
 		await expectItemsHidden(canvasElement)
 	},
 }
@@ -430,10 +498,10 @@ export const HoverToOpen: Story = {
 			user = userEvent.setup(),
 			trigger = canvas.getByRole('button')
 
-		await expectClosed(canvasElement, trigger)
+		await expectClosed(trigger)
 
 		await user.hover(trigger)
-		await expectOpen(canvasElement, trigger)
+		await expectOpen(trigger)
 		await expectItemsVisible(canvasElement)
 
 		await user.unhover(trigger)
@@ -445,7 +513,7 @@ export const HoverToOpen: Story = {
 			() => expect(trigger).toHaveAttribute('aria-expanded', 'false'),
 			{ timeout: 2000 },
 		)
-		await expectClosed(canvasElement, trigger)
+		await expectClosed(trigger)
 		await expectItemsHidden(canvasElement)
 	},
 }
@@ -462,26 +530,27 @@ export const HoverReentry: Story = {
 			trigger = canvas.getByRole('button')
 
 		await user.hover(trigger)
-		await expectOpen(canvasElement, trigger)
+		await expectOpen(trigger)
 
 		await user.unhover(trigger)
 		await user.hover(trigger)
 
 		// Comfortably past the 300ms the cancelled timer would have needed.
 		await sleep(600)
-		await expectOpen(canvasElement, trigger)
+		await expectOpen(trigger)
 		await expectItemsVisible(canvasElement)
 	},
 }
 
 /**
- * The trigger is a real `<button>` (`Button` with `unstyled`), and the first Tab stop in the
- * canvas: the label is a plain string and the closed submenu is `visibility: hidden`, so
- * nothing else is focusable. Enter opens it through the root's own `onKeyDown` (which also
- * moves focus to the first item on the next animation frame); Space then closes it through
- * the button's native activation.
+ * The caret is a real `<button>` (`Button` with `unstyled`) and the first Tab stop in the
+ * canvas: the label is a route-less `span` with `tabIndex={ -1 }`, and the closed submenu is
+ * `visibility: hidden`, so nothing else is focusable. While the dropdown is closed and focus is
+ * not on a link, Enter opens it through the root's own `onKeyDown` (which also moves focus to
+ * the first item on the next animation frame); Space then closes it through the button's native
+ * activation.
  *
- * The focus move is awaited before the trigger is refocused by hand: otherwise the pending
+ * The focus move is awaited before the caret is refocused by hand: otherwise the pending
  * `requestAnimationFrame` could land after the refocus and take focus back.
  */
 export const KeyboardActivation: Story = {
@@ -495,7 +564,7 @@ export const KeyboardActivation: Story = {
 		await expect(trigger).toHaveFocus()
 
 		await userEvent.keyboard('{Enter}')
-		await expectOpen(canvasElement, trigger)
+		await expectOpen(trigger)
 
 		const first = await canvas.findByRole('menuitem', { name: FIRST_ITEM })
 		await waitFor(() => expect(first).toHaveFocus())
@@ -504,11 +573,11 @@ export const KeyboardActivation: Story = {
 		await expect(trigger).toHaveFocus()
 
 		await userEvent.keyboard(' ')
-		await expectClosed(canvasElement, trigger)
+		await expectClosed(trigger)
 		await expectItemsHidden(canvasElement)
 
 		await userEvent.keyboard('{Enter}')
-		await expectOpen(canvasElement, trigger)
+		await expectOpen(trigger)
 
 		// Explicit blur rather than tabbing away: where a further `tab()` lands is
 		// browser/environment-dependent and not worth asserting on.
@@ -518,13 +587,56 @@ export const KeyboardActivation: Story = {
 }
 
 /**
- * Pure focus mechanics inside the dropdown. `ArrowDown` on the closed trigger opens it AND
- * moves focus to the first item (`getSubmenuItems`, scoped to
+ * When the label is a LINK, Enter on it does what a link does and does not open the dropdown:
+ * the open keys while closed are only `ArrowDown` (top level) plus Space and Enter when focus
+ * is NOT on a link. So Enter leaves the `keydown` un-prevented (the browser follows the link;
+ * Storybook's Next router mock means nothing really navigates) and the dropdown stays closed,
+ * whereas `ArrowDown` on the same link still opens it.
+ */
+export const KeyboardOnLink: Story = {
+	args: {
+		id: 'dropdown-discover',
+		label: DISCOVER_ITEM.label,
+		menu: DISCOVER_ITEM.menu!,
+		trigger: <MenuLabel label={ DISCOVER_ITEM.label } route={ DISCOVER_ITEM.route } />,
+	},
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			link = canvas.getByRole('menuitem', { name: 'Discover' }),
+			trigger = canvas.getByRole('button', { name: 'Discover submenu' })
+
+		await expect(link.tagName).toBe('A')
+
+		// The link comes before the caret button, so it is the first Tab stop.
+		await userEvent.tab()
+		await expect(link).toHaveFocus()
+
+		let prevented: boolean | undefined
+		const record = (event: KeyboardEvent) => {
+			if (event.key === 'Enter') prevented = event.defaultPrevented
+		}
+
+		canvasElement.ownerDocument.addEventListener('keydown', record)
+		await userEvent.keyboard('{Enter}')
+		canvasElement.ownerDocument.removeEventListener('keydown', record)
+
+		// Give a (wrongly) handled Enter time to open the dropdown before asserting it did not.
+		await sleep(150)
+		await expect(prevented).toBe(false)
+		await expectClosed(trigger)
+
+		await userEvent.keyboard('{ArrowDown}')
+		await expectOpen(trigger)
+	},
+}
+
+/**
+ * Pure focus mechanics inside a top-level dropdown. `ArrowDown` on the closed caret opens it
+ * AND moves focus to the first item (`getSubmenuItems`, scoped to
  * `':scope > [role="none"] > [role="menuitem"]'` inside the nested menubar). Once open,
- * `ArrowDown` and `ArrowUp` cycle through that list and wrap at both ends.
- *
- * Note: that selector only matches direct children that are plain labels, so a nested
- * dropdown's trigger isn't reachable by arrow keys yet; the `Company` fixture has none.
+ * `ArrowDown` and `ArrowUp` cycle through that list and wrap at both ends. Because a nested
+ * dropdown's label is itself a direct `menuitem` of its `li`, it is part of the cycle too
+ * (see `Menu`'s `KeyboardNestedLabels` story).
  */
 export const KeyboardArrowNavigation: Story = {
 	play: async ({ canvasElement }) => {
@@ -535,7 +647,7 @@ export const KeyboardArrowNavigation: Story = {
 		await expect(trigger).toHaveFocus()
 
 		await userEvent.keyboard('{ArrowDown}')
-		await expectOpen(canvasElement, trigger)
+		await expectOpen(trigger)
 
 		const first = await canvas.findByRole('menuitem', { name: FIRST_ITEM }),
 			second = canvas.getByRole('menuitem', { name: SECOND_ITEM }),
@@ -580,7 +692,7 @@ export const KeyboardRouteless: Story = {
 		await expect(trigger).toHaveFocus()
 
 		await userEvent.keyboard('{ArrowDown}')
-		await expectOpen(canvasElement, trigger)
+		await expectOpen(trigger)
 
 		const overview = await canvas.findByRole('menuitem', { name: 'Overview' }),
 			settings = canvas.getByRole('menuitem', { name: 'Settings' })
@@ -599,27 +711,59 @@ export const KeyboardRouteless: Story = {
 }
 
 /**
- * `Escape` while open closes the dropdown and returns focus to the trigger
- * (`':scope > button'`), even though focus was inside the submenu.
+ * A NESTED dropdown (truthy `depth`, as inside another dropdown's submenu) has its own keys:
+ * `ArrowDown` does not open it (the event is left for the parent menu), `ArrowRight` does and
+ * focuses the first item, and `ArrowLeft` closes it and puts focus back on its label.
+ */
+export const KeyboardNested: Story = {
+	args: { depth: 1 },
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			label = canvas.getByRole('menuitem', { name: 'Company' }),
+			trigger = canvas.getByRole('button')
+
+		label.focus()
+		await expect(label).toHaveFocus()
+
+		await userEvent.keyboard('{ArrowDown}')
+		await sleep(100)
+		await expectClosed(trigger)
+
+		await userEvent.keyboard('{ArrowRight}')
+		await expectOpen(trigger)
+
+		const first = await canvas.findByRole('menuitem', { name: FIRST_ITEM })
+		await waitFor(() => expect(first).toHaveFocus())
+
+		await userEvent.keyboard('{ArrowLeft}')
+		await expectClosed(trigger)
+		await waitFor(() => expect(label).toHaveFocus())
+	},
+}
+
+/**
+ * `Escape` while open closes the dropdown and returns focus to its LABEL (the first
+ * `menuitem` child of the root), even though focus was inside the submenu.
  */
 export const KeyboardEscape: Story = {
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement),
+			label = canvas.getByRole('menuitem', { name: 'Company' }),
 			trigger = canvas.getByRole('button')
 
 		await userEvent.tab()
 		await expect(trigger).toHaveFocus()
 
 		await userEvent.keyboard('{ArrowDown}')
-		await expectOpen(canvasElement, trigger)
+		await expectOpen(trigger)
 
 		const first = await canvas.findByRole('menuitem', { name: FIRST_ITEM })
 		await waitFor(() => expect(first).toHaveFocus())
 
 		await userEvent.keyboard('{Escape}')
 
-		await expectClosed(canvasElement, trigger)
-		await waitFor(() => expect(trigger).toHaveFocus())
+		await expectClosed(trigger)
+		await waitFor(() => expect(label).toHaveFocus())
 		await expectItemsHidden(canvasElement)
 	},
 }
@@ -637,14 +781,14 @@ export const KeyboardTab: Story = {
 		await expect(trigger).toHaveFocus()
 
 		await userEvent.keyboard('{Enter}')
-		await expectOpen(canvasElement, trigger)
+		await expectOpen(trigger)
 
 		const first = await canvas.findByRole('menuitem', { name: FIRST_ITEM })
 		await waitFor(() => expect(first).toHaveFocus())
 
 		await userEvent.keyboard('{Tab}')
 
-		await expectClosed(canvasElement, trigger)
+		await expectClosed(trigger)
 	},
 }
 

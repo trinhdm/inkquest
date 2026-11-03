@@ -1,11 +1,11 @@
 import { usePathname } from 'next/navigation'
 import { extractOthers } from '@/hooks/useProps'
 import { polymorphic } from '@/lib/component/factory'
-import { toKebabCase } from '@/utils/helpers'
+import { isKeyOf, toSlug } from '@/utils/helpers'
 import { Box } from '@/components/polymorphic/Box'
 import { MenuItem } from './MenuItem'
 import type { ReactNode } from 'react'
-import type { NavigationItem } from '@/utils/navigation'
+import type { NavigationItem, NavRoute } from '@/utils/navigation'
 import type { Orientation } from '@/types/shared'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Menu.module.scss'
@@ -25,7 +25,7 @@ interface MenuProps {
 	hasDropdowns?: boolean
 	items: NavigationItem['menu']
 	orientation?: Orientation
-	trigger?: ReactNode
+	triggers?: Partial<Record<NavRoute, ReactNode>>
 }
 
 interface MenuSpecs {
@@ -48,15 +48,15 @@ export const Menu = polymorphic<MenuSpecs>((_props, { useProps, useStyles }) => 
 	const {
 		active, as, className,
 		depth, hasDropdowns, id,
-		items, orientation, trigger,
+		items, orientation, triggers,
 		...rest
 	} = props
 
 	const others = extractOthers(rest)
+	const isSurface = depth === 0 && !!orientation
 
-	const isSurface = depth === 0
 	const clsx = {
-		module: { [`${orientation}`]: (isSurface && !!orientation) || null },
+		module: { [`${orientation}`]: isSurface || null },
 	}
 
 	const currentRoute = typeof active === 'string' || active === null
@@ -71,18 +71,26 @@ export const Menu = polymorphic<MenuSpecs>((_props, { useProps, useStyles }) => 
 			id={ id }
 			role="menubar"
 		>
-			{ items?.map(item => (
-				<MenuItem
-					{ ...item }
-					active={ currentRoute }
-					className={ className }
-					depth={ depth }
-					hasDropdowns={ hasDropdowns }
-					id={ id && `${id}-${toKebabCase(item.label)}` }
-					key={ item.label }
-					trigger={ trigger }
-				/>
-			)) }
+			{ items?.map(item => {
+				const { label, route } = item,
+					itemID = id && `${id}-${toSlug(label)}`
+
+				const hasTrigger = !!(triggers && route && isKeyOf(triggers, route)),
+					trigger = hasTrigger ? triggers[route] : undefined
+
+				return (
+					<MenuItem
+						{ ...item }
+						active={ currentRoute }
+						className={ className }
+						depth={ depth }
+						hasDropdowns={ hasDropdowns }
+						id={ itemID }
+						key={ label }
+						trigger={ trigger }
+					/>
+				)
+			}) }
 		</Box>
 	)
 }, { name: NAME, classes })

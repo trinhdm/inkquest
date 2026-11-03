@@ -41,22 +41,27 @@ const MenubarWrapper = ({ children }: { children: ReactNode }) => (
 )
 
 // Dropdown fixtures read from `NAVIGATION_DATA`, so they can't drift from the app's tree.
-// `Company` has a `menu` but NO `route`, so its label is a plain `<span>` rather than a link
-// (a link inside the trigger button would navigate on click). `Legal` is a second routeless
-// parent, for stories that need two dropdowns with distinct ids. `User` HAS a `route`.
-// Every dropdown label is a single word, because `toKebabCase` keeps spaces in the id.
+// `Company` has a `menu` but NO `route`, so its label is a plain `<span>` rather than a link.
+// `Legal` is a second routeless parent, for stories that need two dropdowns with distinct
+// ids. `User` HAS a `route`, so its label is a link.
 const findItem = (label: string) => NAVIGATION_DATA.find(item => item.label === label)!
 
 const COMPANY_MENU = findItem('Company').menu!,
 	LEGAL_MENU = findItem('Legal').menu!,
 	USER_ITEM = findItem('User')
 
-// With no `id`, `MenuItem` passes `dropdown-${ toKebabCase(label) }` to `Menu.Dropdown` (`id ??
-// ...`), which builds the trigger and submenu ids from it. `toKebabCase('Company')` →
+// With no `id`, `MenuItem` passes `dropdown-${ toSlug(label) }` to `Menu.Dropdown` (`id ??
+// ...`), which builds the caret button and submenu ids from it. `toSlug('Company')` →
 // `company`. An explicit `id` replaces the derived one (see the `Id` story).
 const COMPANY_DROPDOWN_ID = 'dropdown-company',
 	COMPANY_TRIGGER_ID = `${ COMPANY_DROPDOWN_ID }-trigger`,
 	COMPANY_MENU_ID = `${ COMPANY_DROPDOWN_ID }-menu`
+
+// The caret button gets a `--hidden` modifier (a hashed CSS-module class, hence the substring
+// match) when its caret is hidden. In a real browser the CSS visually hides it on hover
+// devices unless it has keyboard focus; it stays in the accessibility tree and keeps working.
+const hasHiddenCaret = (button: Element) =>
+	Array.from(button.classList).some(c => c.includes('trigger--hidden'))
 
 // `MenuItem.Props` (the `declare namespace` export) is just the raw
 // `MenuItemProps` interface — it doesn't include `as`/`unstyled`/`attributes`/
@@ -84,7 +89,7 @@ const meta: Meta<MenuItemStoryProps> = {
 		},
 		hasDropdowns: {
 			control: 'boolean',
-			description: 'Selects between `MenuItem`\'s two dropdown render branches when `menu` is present: `true` (the registered default, so `undefined` behaves as `true`) renders a `Menu.Dropdown`, a trigger `<button>` holding the label plus an always-mounted nested `Menu`; `false` returns a flat ARRAY of the children\'s `<li>`s (the item\'s own label is dropped). Has no effect when `menu` is absent.',
+			description: 'Selects between `MenuItem`\'s two dropdown render branches when `menu` is present: `true` (the registered default, so `undefined` behaves as `true`) renders a `Menu.Dropdown`: the label, a separate caret `<button>` beside it and an always-mounted nested `Menu`; `false` returns a flat ARRAY of the children\'s `<li>`s (the item\'s own label is dropped). Has no effect when `menu` is absent.',
 		},
 		active: {
 			control: 'text',
@@ -92,11 +97,11 @@ const meta: Meta<MenuItemStoryProps> = {
 		},
 		id: {
 			control: 'text',
-			description: 'Only used by the dropdown branch, where it becomes the `Menu.Dropdown` `id` (`id ?? `dropdown-${ toKebabCase(label) }``); the trigger and nested submenu ids (`-trigger`, `-menu`) are built from it. An explicit `id` therefore overrides the derived one. Leaf and flattened items drop it. `Menu` sets it for each of its items as `${ id }-${ toKebabCase(item.label) }` when it has an `id` of its own. See the `Id` story.',
+			description: 'Only used by the dropdown branch, where it becomes the `Menu.Dropdown` `id` (`id ?? `dropdown-${ toSlug(label) }``); the caret button and nested submenu ids (`-trigger`, `-menu`) are built from it. An explicit `id` therefore overrides the derived one. Plain and flattened items render no id. `Menu` sets it for each of its items as `${ id }-${ toSlug(item.label) }` when it has an `id` of its own. See the `Id` story.',
 		},
 		label: {
 			control: 'text',
-			description: 'Required. Rendered via a `<MenuLabel>` element (`MenuLabel/MenuLabel.tsx`) as either an `<a role="menuitem">` (when `route` is set) or a `<span role="menuitem" tabIndex={-1}>` (when it isn\'t) — `MenuLabel`\'s `sharedProps` sets `role: \'menuitem\'` unconditionally, before branching on `route`, so both forms are reachable via `getByRole(\'menuitem\')`. In a dropdown the label sits INSIDE the trigger button. The `<span>` form\'s `tabIndex={-1}` keeps it out of the natural Tab order. A `trigger` replaces it. For a dropdown, `label` also supplies the `id` (`dropdown-${ toKebabCase(label) }`). See also the `Leaf`/`DropdownTrigger` stories.',
+			description: 'Required. Rendered via a `<MenuLabel>` element (`MenuLabel/MenuLabel.tsx`) as either an `<a role="menuitem">` (when `route` is set) or a `<span role="menuitem" tabIndex={-1}>` (when it isn\'t) — `MenuLabel`\'s `sharedProps` sets `role: \'menuitem\'` unconditionally, before branching on `route`, so both forms are reachable via `getByRole(\'menuitem\')`. In a dropdown it is the first child of the dropdown\'s `li`, beside the caret button (never inside it). The `<span>` form\'s `tabIndex={-1}` keeps it out of the natural Tab order. A `trigger` replaces its content (a routed label keeps `label` as its accessible name then). For a dropdown, `label` also names the caret button (`${ label } submenu`) and supplies the derived `id` (`dropdown-${ toSlug(label) }`). See also the `Leaf`/`DropdownTrigger` stories.',
 		},
 		menu: {
 			control: 'object',
@@ -109,7 +114,7 @@ const meta: Meta<MenuItemStoryProps> = {
 		},
 		trigger: {
 			control: false,
-			description: 'A `ReactNode` that replaces `label` as the content of the item\'s `MenuLabel` (`trigger ?? label`), in the leaf and dropdown branches. In the dropdown branch the caret is shown only when that content is a string (`hasCaret = typeof (trigger ?? label) === \'string\'`), so a non-string trigger drops it. It does not change the derived dropdown `id`, which still comes from `label`. The flattened branch ignores it. See the `Trigger` story.',
+			description: 'A `ReactNode` that replaces `label` as the content of the item\'s `MenuLabel` (`trigger ?? label`), in the leaf and dropdown branches. A routed label with a non-text trigger gets `aria-label={ label }`, so it keeps its name. In the dropdown branch `hasCaret` is `trigger === undefined`, so ANY trigger hides the caret: the caret button is still rendered (named `${ label } submenu`) and works, it is just CSS-hidden on hover devices unless focused. It does not change the derived dropdown `id`, which still comes from `label`. The flattened branch ignores it. See the `Trigger` story.',
 		},
 		unstyled: {
 			control: 'boolean',
@@ -183,7 +188,7 @@ export const Leaf: Story = {
 /**
  * `MenuItem.tsx`'s `isDropdown && !hasDropdowns` branch:
  * returns an ARRAY of the children's own `<li>`s — the parent item's own
- * label (`Company`) is never rendered at all, and there's no trigger `<button>`.
+ * label (`Company`) is never rendered at all, and there's no caret `<button>`.
  */
 export const FlattenedDropdown: Story = {
 	args: {
@@ -204,14 +209,15 @@ export const FlattenedDropdown: Story = {
 
 /**
  * `MenuItem.tsx`'s `isDropdown && hasDropdowns` branch, closed by default: it renders a
- * `Menu.Dropdown` with `id="dropdown-company"` (derived from `toKebabCase('Company')`
- * because no `id` is passed), the item's
- * own label (as a `MenuLabel` element) and a caret because the label is a string.
+ * `Menu.Dropdown` with `id="dropdown-company"` (derived from `toSlug('Company')` because no
+ * `id` is passed). Its `li` holds the item's own label (a `MenuLabel` element), then a
+ * SEPARATE caret `Button` named `Company submenu` (shown, because there is no `trigger`),
+ * then the nested `Menu`.
  *
- * The label sits INSIDE the `unstyled` `Button` trigger, which carries
- * `aria-controls`/`aria-expanded`/`aria-haspopup` and the `-trigger` id. The nested `Menu` is
- * ALWAYS mounted (`dropdown-company-menu`); it is hidden by CSS until `data-open` is set, so
- * its items are in the DOM but out of reach for role queries.
+ * The caret button is `unstyled` and carries `aria-controls`/`aria-expanded`/`aria-haspopup`
+ * and the `-trigger` id; nothing interactive sits inside it. The nested `Menu` is ALWAYS
+ * mounted (`dropdown-company-menu`); it is hidden by CSS until `data-open` is set on the
+ * dropdown's `li`, so its items are in the DOM but out of reach for role queries.
  *
  * Note: `Company`'s own label has no `route`, so — per the live `MenuLabel` source — it
  * renders via the no-`route` branch as a `<span>`. `sharedProps` sets `role: 'menuitem'`
@@ -233,17 +239,20 @@ export const DropdownTrigger: Story = {
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement),
 			label = canvas.getByRole('menuitem', { name: 'Company' }),
-			trigger = canvas.getByRole('button'),
+			trigger = canvas.getByRole('button', { name: 'Company submenu' }),
 			root = canvasElement.querySelector(`#${ COMPANY_DROPDOWN_ID }`),
 			submenu = canvasElement.querySelector(`#${ COMPANY_MENU_ID }`)
 
 		await expect(label.tagName).toBe('SPAN')
-		await expect(trigger).toContainElement(label)
+		await expect(trigger).not.toContainElement(label)
 
 		await expect(root).not.toBeNull()
 		await expect(root).toHaveAttribute('role', 'none')
+		await expect(root).toContainElement(label)
+		await expect(root).not.toHaveAttribute('data-open')
 		await expect(root?.tagName).toBe('LI')
 
+		await expect(hasHiddenCaret(trigger)).toBe(false)
 		await expect(trigger).toHaveAttribute('id', COMPANY_TRIGGER_ID)
 		await expect(trigger).toHaveAttribute('type', 'button')
 		await expect(trigger).toHaveAttribute('aria-controls', COMPANY_MENU_ID)
@@ -296,7 +305,7 @@ export const HasDropdowns: Story = {
 		const canvas = within(canvasElement),
 			childNames = COMPANY_MENU.map(({ label }) => label)
 
-		// `hasDropdowns: true` → label + trigger button. `Company`'s label has no
+		// `hasDropdowns: true` → label + caret button. `Company`'s label has no
 		// `route`, so (per the live `MenuLabel` source, see the `DropdownTrigger` story) it
 		// renders as a `<span role="menuitem">` — still reachable via `getByRole('menuitem')`,
 		// since that role is set unconditionally.
@@ -312,12 +321,15 @@ export const HasDropdowns: Story = {
 
 /**
  * `trigger` replaces the content of the item's `MenuLabel` (`trigger ?? label`) in the leaf
- * and dropdown branches. In the dropdown branch the caret depends on what the content is:
- * a string keeps it, anything else drops it. The derived dropdown `id` still comes from `label`.
+ * and dropdown branches. A routed label with a non-text trigger keeps `label` as its
+ * accessible name (`aria-label`); a route-less one, or a string trigger, is named by its new
+ * content. In the dropdown branch ANY trigger hides the caret (`hasCaret = trigger ===
+ * undefined`): the caret button is still rendered, named from `label` (`Company submenu`),
+ * with the `--hidden` modifier. The derived dropdown `id` still comes from `label`.
  *
- * Three groups: a leaf with a node trigger, a dropdown with a node trigger (no caret) and a
- * dropdown with a string trigger (caret). The two dropdowns use different labels so their
- * ids don't collide.
+ * Four groups: a leaf with a node trigger, a route-less dropdown with a node trigger, a
+ * route-less dropdown with a string trigger and a routed dropdown with a node trigger (the
+ * avatar case). The dropdowns use different labels so their ids don't collide.
  */
 export const Trigger: Story = {
 	parameters: { controls: { exclude: ['label', 'menu', 'route', 'trigger'] } },
@@ -350,36 +362,53 @@ export const Trigger: Story = {
 					trigger="String trigger"
 				/>
 			</Group>
+			<Group label="dropdown, route set, trigger: node">
+				<MenuItem
+					{ ...args }
+					label="User"
+					menu={ USER_ITEM.menu }
+					route={ USER_ITEM.route }
+					trigger={ <span>DT</span> }
+				/>
+			</Group>
 		</Row>
 	),
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement)
 
-		// Leaf: the label is replaced, the route is kept.
-		const leaf = canvas.getByRole('menuitem', { name: 'Leaf trigger' })
+		// Leaf: the content is replaced, the route is kept, and the link keeps its name.
+		const leaf = canvas.getByRole('menuitem', { name: 'Home' })
 		await expect(leaf.tagName).toBe('A')
 		await expect(leaf).toHaveAttribute('href', NavRoutes.HOME)
-		await expect(canvas.queryByRole('menuitem', { name: 'Home' })).not.toBeInTheDocument()
+		await expect(leaf).toHaveTextContent('Leaf trigger')
 
-		// Dropdown with a node trigger: label replaced, no caret, id still from `label`.
-		const nodeTrigger = canvas.getByRole('menuitem', { name: 'Node trigger' }).closest('button')
-		await expect(nodeTrigger).not.toBeNull()
-		await expect(nodeTrigger).toHaveAttribute('id', 'dropdown-company-trigger')
-		await expect(nodeTrigger?.querySelector('svg')).toBeNull()
+		// Route-less dropdown with a node trigger: content replaced, caret hidden, id from `label`.
+		const nodeLabel = canvas.getByRole('menuitem', { name: 'Node trigger' }),
+			nodeCaret = canvas.getByRole('button', { name: 'Company submenu' })
+		await expect(nodeLabel.tagName).toBe('SPAN')
+		await expect(nodeCaret).toHaveAttribute('id', 'dropdown-company-trigger')
+		await expect(hasHiddenCaret(nodeCaret)).toBe(true)
 		await expect(canvas.queryByRole('menuitem', { name: 'Company' })).not.toBeInTheDocument()
 
-		// Dropdown with a string trigger: label replaced, caret kept.
-		const stringTrigger = canvas.getByRole('menuitem', { name: 'String trigger' }).closest('button')
-		await expect(stringTrigger).not.toBeNull()
-		await expect(stringTrigger).toHaveAttribute('id', 'dropdown-legal-trigger')
-		await expect(stringTrigger?.querySelector('svg')).not.toBeNull()
+		// Route-less dropdown with a string trigger: the caret is hidden for a string too.
+		const stringCaret = canvas.getByRole('button', { name: 'Legal submenu' })
+		await expect(canvas.getByRole('menuitem', { name: 'String trigger' })).toBeInTheDocument()
+		await expect(stringCaret).toHaveAttribute('id', 'dropdown-legal-trigger')
+		await expect(hasHiddenCaret(stringCaret)).toBe(true)
 		await expect(canvas.queryByRole('menuitem', { name: 'Legal' })).not.toBeInTheDocument()
+
+		// Routed dropdown with a node trigger: still the `User` link, showing the node.
+		const userLabel = canvas.getByRole('menuitem', { name: 'User' })
+		await expect(userLabel.tagName).toBe('A')
+		await expect(userLabel).toHaveAttribute('href', NavRoutes.USER_PROFILE)
+		await expect(userLabel).toHaveTextContent('DT')
+		await expect(hasHiddenCaret(canvas.getByRole('button', { name: 'User submenu' }))).toBe(true)
 	},
 }
 
 /**
- * An explicit `id` overrides the derived `dropdown-${ toKebabCase(label) }` in the dropdown
- * branch: the root, trigger and submenu ids are built from it (`custom`, `custom-trigger`,
+ * An explicit `id` overrides the derived `dropdown-${ toSlug(label) }` in the dropdown
+ * branch: the root, caret button and submenu ids are built from it (`custom`, `custom-trigger`,
  * `custom-menu`), and nothing is left with the derived `dropdown-company` id. A leaf item
  * drops the `id` entirely.
  */
@@ -477,8 +506,8 @@ export const ActiveItem: Story = {
 /**
  * A dropdown whose own `route` is the active one: `MenuItem` hands its `attributes`
  * (carrying `data-current`) to `Menu.Dropdown`, which puts them on the dropdown's ROOT `<li>`,
- * while the label inside the trigger gets `aria-current="page"`. `User` is the fixture
- * because it is the dropdown with a `route` (`/profile`); nothing is clicked here.
+ * while the label link next to the caret button gets `aria-current="page"`. `User` is the
+ * fixture because it is the dropdown with a `route` (`/profile`); nothing is clicked here.
  */
 export const ActiveDropdown: Story = {
 	parameters: { controls: { exclude: ['active', 'label', 'menu', 'route'] } },

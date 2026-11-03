@@ -1,10 +1,10 @@
 import {
 	useEffect, useRef, useState,
 	type KeyboardEventHandler, type MouseEventHandler,
-	type ReactNode,
 } from 'react'
 
 import { useOutsideClick } from '@/hooks/useOutsideClick'
+import { deepMerge } from '@/utils/helpers'
 import { extractOthers } from '@/hooks/useProps'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
@@ -17,19 +17,20 @@ import type { RequireSome } from '@/types/utils'
 import classes from '../Menu.module.scss'
 
 const NAME = 'Menu.Dropdown' as const,
-	TAG = 'li' as const,
-	MENUITEM_SELECTOR = ':scope > [role="none"] > [role="menuitem"]'
+	TAG = 'li' as const
+
+const MENUITEM_SELECTOR = '[role="menuitem"]',
+	MENU_ITEMS_SELECTOR = `:scope > ${MENUITEM_SELECTOR}`,
+	SUBMENU_ITEMS_SELECTOR = `:scope > [role="none"] > ${MENUITEM_SELECTOR}`
 
 const DEFAULT_PROPS = {
 	as: TAG,
-	hasCaret: true,
 } as const
 
 interface MenuDropdownProps
-	extends RequireSome<Pick<MenuItem.Props, 'active' | 'depth' | 'menu'>, 'menu'> {
+	extends RequireSome<Omit<MenuItem.Props, 'action' | 'hasDropdowns' | 'route'>, 'menu'> {
 	hasCaret?: boolean
 	id: string
-	label: ReactNode
 }
 
 interface MenuDropdownSpecs {
@@ -48,7 +49,7 @@ type MenuDropdownSelectors =
 const getSubmenuItems = (root: HTMLLIElement | null) =>
 	Array.from(
 		root?.querySelector('[role="menubar"]')
-			?.querySelectorAll<HTMLElement>(MENUITEM_SELECTOR) ?? []
+			?.querySelectorAll<HTMLElement>(SUBMENU_ITEMS_SELECTOR) ?? []
 	)
 
 export const MenuDropdown = polymorphic<MenuDropdownSpecs>((_props, { useProps, useStyles }) => {
@@ -57,12 +58,13 @@ export const MenuDropdown = polymorphic<MenuDropdownSpecs>((_props, { useProps, 
 
 	const {
 		active, as, attributes,
-		depth, hasCaret, id,
-		label, menu,
+		className, depth, hasCaret,
+		id, label, menu, trigger,
 		...rest
 	} = props
 
 	const others = extractOthers(rest)
+	const isNested = !!depth
 
 	const [isOpen, setIsOpen] = useState(false)
 	const itemRef = useRef<HTMLLIElement>(null)
@@ -91,20 +93,38 @@ export const MenuDropdown = polymorphic<MenuDropdownSpecs>((_props, { useProps, 
 	}
 
 	const handleKeyDown: KeyboardEventHandler<HTMLLIElement> = event => {
-		const { key }  = event
+		const { key } = event,
+			onLink = event.target instanceof HTMLAnchorElement,
+			item = itemRef.current
+
+		const closeKeys = ['Escape', ...(isNested ? ['ArrowLeft'] : [])],
+			openKeys = [isNested ? 'ArrowRight' : 'ArrowDown', ...(onLink ? [] : [' ', 'Enter'])]
+
+		const closes = closeKeys.includes(key),
+			opens = openKeys.includes(key)
 
 		if (!isOpen) {
-			if (key === 'ArrowDown' || key === 'Enter' || key === ' ') {
-				event.preventDefault()
-				event.stopPropagation()
-				setIsOpen(true)
-				requestAnimationFrame(() => getSubmenuItems(itemRef.current)[0]?.focus())
-			}
+			if (!opens) return
+
+			event.preventDefault()
+			event.stopPropagation()
+
+			setIsOpen(true)
+			requestAnimationFrame(() => getSubmenuItems(item)[0]?.focus())
 			return
 		}
 
-		const items = getSubmenuItems(itemRef.current),
-			currentIndex = items.findIndex(item => item === document.activeElement)
+		if (closes) {
+			event.stopPropagation()
+
+			setIsOpen(false)
+			item?.querySelector<HTMLElement>(MENU_ITEMS_SELECTOR)?.focus()
+			return
+		}
+
+		const submenu = getSubmenuItems(item),
+			current = submenu.findIndex(el => el === document.activeElement),
+			total = submenu.length
 
 		switch (key) {
 			case 'ArrowDown':
@@ -112,26 +132,28 @@ export const MenuDropdown = polymorphic<MenuDropdownSpecs>((_props, { useProps, 
 				event.preventDefault()
 				event.stopPropagation()
 
-				if (!items.length) return
+				if (!total) return
 
 				const step = key === 'ArrowDown' ? 1 : -1
-				const nextIndex = currentIndex === -1
-					? (step === 1 ? 0 : items.length - 1)
-					: (currentIndex + step + items.length) % items.length
+				const next = current === -1
+					? (step === 1 ? 0 : total - 1)
+					: (current + step + total) % total
 
-				items[nextIndex]?.focus()
+				submenu[next]?.focus()
 				break
 			}
-			case 'Escape':
-				event.stopPropagation()
-				setIsOpen(false)
-				itemRef.current?.querySelector<HTMLElement>(':scope > button')?.focus()
-				break
 			case 'Tab':
 				setIsOpen(false)
 				break
 		}
 	}
+
+	const content = trigger ?? label,
+		showCaret = typeof hasCaret === 'boolean'
+			? hasCaret : typeof content === 'string'
+
+	const baseAttrs = attributes ?? {},
+		dataAttrs = { data: { open: isOpen || undefined } }
 
 	const menuID = `${id}-menu`,
 		triggerID = `${id}-trigger`
@@ -141,35 +163,37 @@ export const MenuDropdown = polymorphic<MenuDropdownSpecs>((_props, { useProps, 
 			{ ...styles('root') }
 			{ ...others }
 			as={ as }
-			attributes={ attributes }
+			attributes={ deepMerge(baseAttrs, dataAttrs) }
 			id={ id }
-			ref={ itemRef }
 			onKeyDown={ handleKeyDown }
 			onMouseEnter={ handleMouseEnter }
 			onMouseLeave={ handleMouseLeave }
+			ref={ itemRef }
 			role="none"
 		>
+			{ content }
+
 			<Button
-				{ ...styles('trigger', { selector: { open: isOpen } }) }
+				{ ...styles('trigger', { selector: { hidden: !showCaret } }) }
 				unstyled
 				attributes={ { aria: {
 					controls: menuID,
 					expanded: isOpen,
 					haspopup: 'true',
+					label: `${label} submenu`,
 				} } }
 				id={ triggerID }
 				onClick={ handleToggle }
 			>
-				{ label }
-				{ hasCaret && <Icon { ...styles('icon') } type="caret-down" /> }
+				<Icon { ...styles('icon') } type="caret-down" />
 			</Button>
 
 			<Menu
 				active={ active }
-				attributes={ {
-					aria: { labelledby: triggerID },
-					data: { open: isOpen || undefined },
-				} }
+				attributes={ { aria: {
+					labelledby: triggerID,
+				} } }
+				className={ className }
 				depth={ typeof depth === 'number' ? depth + 1 : undefined }
 				id={ menuID }
 				items={ menu }

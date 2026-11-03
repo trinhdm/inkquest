@@ -2,8 +2,7 @@ import Link from 'next/link'
 import { extractOthers } from '@/hooks/useProps'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
-import type { ReactNode } from 'react'
-import type { NavigationItem } from '@/utils/navigation'
+import type { MenuItem } from '../MenuItem'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from '../Menu.module.scss'
 
@@ -15,10 +14,9 @@ const DEFAULT_PROPS = {
 	isActive: false,
 } as const
 
-interface MenuLabelProps {
+interface MenuLabelProps
+	extends Pick<MenuItem.Props, 'action' | 'label' | 'route' | 'trigger'> {
 	isActive?: boolean
-	label: ReactNode
-	route?: NavigationItem['route']
 }
 
 interface MenuLabelSpecs {
@@ -39,11 +37,12 @@ export const MenuLabel = polymorphic<MenuLabelSpecs>((_props, { useProps, useSty
 
 	const {
 		as, children, isActive,
-		label, route,
+		label, route, trigger,
 		...rest
 	} = props
 
 	const others = extractOthers(rest)
+	const content = trigger ?? label
 
 	const sharedProps = {
 		...styles('label'),
@@ -58,12 +57,13 @@ export const MenuLabel = polymorphic<MenuLabelSpecs>((_props, { useProps, useSty
 				as={ Link }
 				attributes={ { aria: {
 					current: isActive ? 'page' : undefined,
+					label: typeof content === 'string' ? undefined : label,
 				} } }
 				href={ route }
 				scroll={ true }
 				shallow={ false }
 			>
-				{ label }
+				{ content }
 			</Box>
 		)
 	}
@@ -74,7 +74,7 @@ export const MenuLabel = polymorphic<MenuLabelSpecs>((_props, { useProps, useSty
 			as={ as }
 			tabIndex={ -1 }
 		>
-			{ label }
+			{ content }
 		</Box>
 	)
 }, { name: NAME, classes })

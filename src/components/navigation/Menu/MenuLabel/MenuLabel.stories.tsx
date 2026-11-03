@@ -60,7 +60,7 @@ const meta: Meta<MenuLabelStoryProps> = {
 		},
 		children: {
 			control: false,
-			description: 'Accepted through `PolymorphicProps` but IGNORED: both branches render `label`. See the `IgnoresChildren` story.',
+			description: 'Accepted through `PolymorphicProps` but IGNORED: both branches render `trigger ?? label`. See the `IgnoresChildren` story.',
 		},
 		isActive: {
 			control: 'boolean',
@@ -68,7 +68,11 @@ const meta: Meta<MenuLabelStoryProps> = {
 		},
 		label: {
 			control: 'text',
-			description: 'Required `ReactNode`, the content of the label on both branches. `MenuItem` passes its `trigger ?? label` here, so it can be a string or an element (an avatar, for instance). See the `NodeLabel` story.',
+			description: 'Required string. The content of the label on both branches unless a `trigger` replaces it, and, on the route branch, its accessible name when the content is not text (see `trigger`).',
+		},
+		trigger: {
+			control: false,
+			description: 'A `ReactNode` rendered INSTEAD of `label` on both branches (`trigger ?? label`); `MenuItem` passes it through. On the route branch, when the content is not a string, `aria-label={ label }` is added so an avatar link is still named by `label`. A string trigger gets no `aria-label`; the route-less branch never does. See the `Trigger` story.',
 		},
 		route: {
 			control: 'select',
@@ -201,38 +205,59 @@ export const AsElement: Story = {
 }
 
 /**
- * `label` is a `ReactNode`, not just a string (`MenuItem` hands it `trigger ?? label`, so an
- * avatar or icon can land here). An element label is rendered inside the label element on
- * both branches, and still provides its text as the accessible name.
+ * `trigger` is rendered instead of `label` (`MenuItem` passes an avatar or icon this way), on
+ * both branches. The accessible name differs by branch: a ROUTED label with a non-text
+ * trigger gets `aria-label={ label }`, so the avatar link is still named `label`; a routed
+ * label with a string trigger and a route-less label are named by their content, and neither
+ * gets an `aria-label`. Four groups: routed + node, routed + string, route-less + node and no
+ * trigger (the plain `label`).
  */
-export const NodeLabel: Story = {
-	parameters: { controls: { exclude: ['label', 'route'] } },
+export const Trigger: Story = {
+	parameters: { controls: { exclude: ['label', 'route', 'trigger'] } },
 	render: (args) => (
 		<>
-			<Group label="route: set">
-				{ menuLabel({ ...args, ...ROUTED, label: <strong>Rich routed</strong> }) }
+			<Group label="route: set, trigger: node">
+				{ menuLabel({ ...args, ...ROUTED, trigger: <span>DT</span> }) }
 			</Group>
-			<Group label="route: undefined">
-				{ menuLabel({ ...args, ...ROUTELESS, label: <strong>Rich route-less</strong> }) }
+			<Group label="route: set, trigger: string">
+				{ menuLabel({ ...args, ...ROUTED, label: 'Shop', trigger: 'Browse' }) }
+			</Group>
+			<Group label="route: undefined, trigger: node">
+				{ menuLabel({ ...args, ...ROUTELESS, trigger: <strong>Rich route-less</strong> }) }
+			</Group>
+			<Group label="trigger: undefined">
+				{ menuLabel({ ...args, ...ROUTED, label: 'Plain', trigger: undefined }) }
 			</Group>
 		</>
 	),
 	play: async ({ canvasElement }) => {
-		const canvas = within(canvasElement),
-			routed = canvas.getByRole('menuitem', { name: 'Rich routed' }),
-			routeless = canvas.getByRole('menuitem', { name: 'Rich route-less' })
+		const canvas = within(canvasElement)
 
-		await expect(routed.tagName).toBe('A')
-		await expect(routed.querySelector('strong')).not.toBeNull()
+		// Routed + node: named by `label` (via `aria-label`), showing the node.
+		const routedNode = canvas.getByRole('menuitem', { name: 'Marketplace' })
+		await expect(routedNode.tagName).toBe('A')
+		await expect(routedNode).toHaveAttribute('aria-label', 'Marketplace')
+		await expect(routedNode).toHaveTextContent('DT')
 
-		await expect(routeless.tagName).toBe('SPAN')
-		await expect(routeless.querySelector('strong')).not.toBeNull()
+		// Routed + string: the string is both the content and the name.
+		const routedString = canvas.getByRole('menuitem', { name: 'Browse' })
+		await expect(routedString.tagName).toBe('A')
+		await expect(routedString).not.toHaveAttribute('aria-label')
+		await expect(canvas.queryByRole('menuitem', { name: 'Shop' })).not.toBeInTheDocument()
+
+		// Route-less + node: named by its content, never `aria-label`.
+		const routelessNode = canvas.getByRole('menuitem', { name: 'Rich route-less' })
+		await expect(routelessNode.tagName).toBe('SPAN')
+		await expect(routelessNode).not.toHaveAttribute('aria-label')
+		await expect(routelessNode.querySelector('strong')).not.toBeNull()
+
+		await expect(canvas.getByRole('menuitem', { name: 'Plain' })).not.toHaveAttribute('aria-label')
 	},
 }
 
 /**
  * Edge case: `children` are ignored on both branches; the content is always
- * `label`.
+ * `trigger ?? label` (here `label`, as no `trigger` is set).
  */
 export const IgnoresChildren: Story = {
 	parameters: { controls: { exclude: ['children', 'label', 'route'] } },

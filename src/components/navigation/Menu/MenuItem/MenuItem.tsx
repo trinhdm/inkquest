@@ -1,9 +1,10 @@
+import { deepMerge, toSlug } from '@/utils/helpers'
 import { extractOthers } from '@/hooks/useProps'
 import { polymorphic } from '@/lib/component/factory'
-import { toKebabCase } from '@/utils/helpers'
 import { Box } from '@/components/polymorphic/Box'
 import { MenuDropdown } from '../MenuDropdown'
 import { MenuLabel } from '../MenuLabel'
+import type { ReactNode } from 'react'
 import type { Menu } from '../Menu'
 import type { NavigationItem } from '@/utils/navigation'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
@@ -20,7 +21,9 @@ const DEFAULT_PROPS = {
 interface MenuItemProps
 	extends
 		NavigationItem,
-		Pick<Menu.Props, 'active' | 'depth' | 'hasDropdowns' | 'trigger'> {}
+		Pick<Menu.Props, 'active' | 'depth' | 'hasDropdowns'> {
+	trigger?: ReactNode
+}
 
 interface MenuItemSpecs {
 	defaults: {
@@ -46,25 +49,29 @@ export const MenuItem = polymorphic<MenuItemSpecs>((_props, { useProps, useStyle
 
 	const {
 		active, as, attributes,
-		depth, hasDropdowns, id,
-		label, menu, route, trigger,
+		className, depth,
+		hasDropdowns, id, label,
+		menu, route, trigger,
 		...rest
 	} = props
 
 	const others = extractOthers(rest)
-	const isDropdown = !!menu?.length
-
-	const setAttributes = (isCurrent: boolean) => ({
-		...attributes,
-		data: {
-			...attributes?.data,
-			current: isCurrent || attributes?.data?.current || null,
-		},
-	})
-
 	const isActive = isCurrentRoute(route, active),
-		itemLabel = trigger ?? label,
-		labelEl = <MenuLabel isActive={ isActive } label={ itemLabel } route={ route } />
+		isDropdown = !!menu?.length
+
+	const setAttributes = (isCurrent: boolean) => {
+		const dataAttrs = { data: { current: isCurrent || attributes?.data?.current || null } }
+		return deepMerge(attributes ?? {}, dataAttrs)
+	}
+
+	const labelEl = (
+		<MenuLabel
+			isActive={ isActive }
+			label={ label }
+			route={ route }
+			trigger={ trigger }
+		/>
+	)
 
 	const sharedProps = {
 		...styles('root'),
@@ -102,12 +109,13 @@ export const MenuItem = polymorphic<MenuItemSpecs>((_props, { useProps, useStyle
 			active={ active }
 			as={ as }
 			attributes={ setAttributes(isActive) }
+			className={ className }
 			depth={ depth }
-			hasCaret={ typeof itemLabel === 'string' }
-			id={ id ?? `dropdown-${toKebabCase(label)}` }
-			label={ labelEl }
+			hasCaret={ trigger === undefined }
+			id={ id ?? `dropdown-${toSlug(label)}` }
+			label={ label }
 			menu={ menu }
-			trigger={ trigger }
+			trigger={ labelEl }
 		/>
 	)
 }, { name: NAME, classes })

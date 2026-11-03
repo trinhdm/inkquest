@@ -1,6 +1,6 @@
 import { usePathname } from 'next/navigation'
 import { getDefaultProps } from '@/hooks/useProps'
-import { render, reset, screen, within } from '@/tests/test-utils'
+import { act, fireEvent, render, reset, screen } from '@/tests/test-utils'
 import { Menu } from './Menu'
 import { NAVIGATION_DATA, type NavigationItem } from '@/utils/navigation'
 
@@ -61,43 +61,78 @@ describe('Menu', () => {
 	})
 
 	it('keeps a default dropdown\'s submenu in the DOM with no data-open until it is opened', () => {
-		render(
+		const { container } = render(
 			<Menu items={ [
 				{ label: 'Community', route: '/community', menu: [{ label: 'Feed', route: '/community/feed' }] },
 			] } />
 		)
 
 		// positive control: the nested menubar and its item are rendered
-		const submenu = screen.getByRole('menubar', { name: 'Community' })
+		const root = container.querySelector('li#dropdown-community')!
+		expect(screen.getByRole('menubar', { name: 'Community submenu' })).toBeInTheDocument()
 		expect(screen.getByRole('menuitem', { name: 'Feed' })).toBeInTheDocument()
 
-		expect(submenu).not.toHaveAttribute('data-open')
+		expect(root).not.toHaveAttribute('data-open')
 		expect(screen.getByRole('button')).toHaveAttribute('aria-expanded', 'false')
+
+		fireEvent.click(screen.getByRole('button'))
+
+		expect(root).toHaveAttribute('data-open')
+		expect(screen.getByRole('button')).toHaveAttribute('aria-expanded', 'true')
+		expect(screen.getByRole('menubar', { name: 'Community submenu' })).not.toHaveAttribute('data-open')
 	})
 
-	describe('trigger', () => {
-		it('replaces the label of a one-item menu and drops the caret', () => {
-			render(
-				<Menu
-					items={ [{ label: 'User', menu: [{ label: 'Settings', route: '/settings' }] }] }
-					trigger={ <b data-testid="avatar">Me</b> }
-				/>
-			)
+	describe('triggers', () => {
+		const items: NavigationItem['menu'] = [
+			{ label: 'User', route: '/profile', menu: [{ label: 'Settings', route: '/settings' }] },
+			{ label: 'Discover', route: '/discover', menu: [{ label: 'Artists', route: '/discover/artists' }] },
+			{ label: 'Login', route: '/login' },
+		]
 
-			const button = screen.getByRole('button')
-			expect(within(button).getByTestId('avatar')).toBeInTheDocument()
-			expect(within(button).queryByText('User')).not.toBeInTheDocument()
-			expect(button.querySelector('svg')).not.toBeInTheDocument()
-			// the submenu still renders its own items
-			expect(screen.getByRole('menuitem', { name: 'Settings' })).toBeInTheDocument()
+		const renderTriggered = () =>
+			render(<Menu items={ items } triggers={ { '/profile': <b data-testid="avatar">DT</b> } } />)
+
+		it('renders the node for the item whose route is a key', () => {
+			renderTriggered()
+
+			const link = screen.getByRole('menuitem', { name: 'User' })
+			expect(link).toContainElement(screen.getByTestId('avatar'))
+			expect(link).not.toHaveTextContent('User')
 		})
 
-		it('keeps the caret and the label when no trigger is given', () => {
-			render(<Menu items={ [{ label: 'User', menu: [{ label: 'Settings', route: '/settings' }] }] } />)
+		it('names the triggered link after the item label', () => {
+			renderTriggered()
+			expect(screen.getByRole('menuitem', { name: 'User' })).toHaveAttribute('aria-label', 'User')
+		})
 
-			const button = screen.getByRole('button')
-			expect(within(button).getByText('User')).toBeInTheDocument()
-			expect(button.querySelector('svg')).toBeInTheDocument()
+		it('lets every other item keep its own label, dropdown or leaf', () => {
+			renderTriggered()
+
+			expect(screen.getByRole('menuitem', { name: 'Discover' })).toHaveTextContent('Discover')
+			expect(screen.getByRole('menuitem', { name: 'Login' })).toHaveTextContent('Login')
+			expect(screen.getAllByTestId('avatar')).toHaveLength(1)
+		})
+
+		it('hides the caret of the triggered item only', () => {
+			renderTriggered()
+
+			expect(screen.getByRole('button', { name: 'User submenu' }).className).toContain('hidden')
+			expect(screen.getByRole('button', { name: 'Discover submenu' }).className).not.toContain('hidden')
+		})
+
+		it('also swaps the content of a leaf item', () => {
+			render(<Menu items={ items } triggers={ { '/login': <b data-testid="icon">in</b> } } />)
+
+			const link = screen.getByRole('menuitem', { name: 'Login' })
+			expect(link).toContainElement(screen.getByTestId('icon'))
+			expect(link).toHaveAttribute('href', '/login')
+		})
+
+		it('ignores a trigger whose route matches no item, with a positive control', () => {
+			render(<Menu items={ items } triggers={ { '/terms': <b data-testid="avatar">DT</b> } } />)
+
+			expect(screen.getByRole('menuitem', { name: 'User' })).toHaveTextContent('User')
+			expect(screen.queryByTestId('avatar')).not.toBeInTheDocument()
 		})
 	})
 
@@ -159,7 +194,7 @@ describe('Menu', () => {
 			expect(screen.getByRole('menubar')).not.toHaveAttribute('id')
 		})
 
-		it('prefixes each dropdown with `${ id }-${ kebab(label) }`, with matching trigger and submenu ids', () => {
+		it('prefixes each dropdown with `${ id }-${ slug(label) }`, with matching trigger and submenu ids', () => {
 			const { container } = render(<Menu id="main" items={ pick('Discover') } />)
 
 			expect(container.querySelector('li#main-discover')).toBeInTheDocument()
@@ -191,6 +226,59 @@ describe('Menu', () => {
 			expect(container.querySelector('button#main-community-menu-events-trigger')).toBeInTheDocument()
 			expect(container.querySelector('ul#main-community-menu-events-menu')).toBeInTheDocument()
 			expect(container.querySelector('li#main-community-menu-feed')).toBeInTheDocument()
+		})
+
+		it('slugs a multi-word dropdown label into its ids', () => {
+			const { container } = render(
+				<Menu id="main" items={ [{ label: 'Browse Work', menu: [{ label: 'Prints', route: '/marketplace' }] }] } />
+			)
+
+			expect(container.querySelector('li#main-browse-work')).toBeInTheDocument()
+			expect(container.querySelector('button#main-browse-work-trigger')).toBeInTheDocument()
+			expect(container.querySelector('ul#main-browse-work-menu')).toBeInTheDocument()
+		})
+
+		it('renders no id on plain items, even when the menu has one', () => {
+			const { container } = render(<Menu id="main" items={ leafItems } />)
+
+			// positive control: the items and the root rendered
+			expect(container.querySelectorAll('li[role="none"]')).toHaveLength(2)
+			expect(container.querySelector('ul#main')).toBeInTheDocument()
+			expect(container.querySelectorAll('[id]')).toHaveLength(1)
+		})
+
+		it('keeps ids unique across a flattened menu, where only the root has an id', () => {
+			const { container } = render(<Menu hasDropdowns={ false } id="main" items={ pick('Discover', 'Community') } />)
+
+			expect(container.querySelectorAll('li[role="none"]').length).toBeGreaterThan(2)
+			const ids = Array.from(container.querySelectorAll('[id]'), el => el.id)
+			expect(ids).toEqual(['main'])
+		})
+
+		it('keeps ids unique across two menus given different ids', () => {
+			const { container } = render(
+				<>
+					<Menu id="first" items={ pick('Discover', 'Community') } />
+					<Menu id="second" items={ pick('Discover', 'Community') } />
+				</>
+			)
+
+			const ids = Array.from(container.querySelectorAll('[id]'), el => el.id)
+			expect(ids.length).toBeGreaterThan(8)
+			expect(new Set(ids).size).toBe(ids.length)
+		})
+
+		it('names every caret button after its label, and the submenu it controls is labelled by it', () => {
+			const { container } = render(<Menu id="main" items={ pick('Community') } />)
+
+			const carets = Array.from(container.querySelectorAll<HTMLElement>('button[aria-controls]'))
+			expect(carets.map(c => c.getAttribute('aria-label'))).toEqual([
+				'Community submenu', 'Events submenu', 'Feed submenu',
+			])
+			carets.forEach(caret => {
+				expect(document.getElementById(caret.getAttribute('aria-controls')!))
+					.toHaveAttribute('aria-labelledby', caret.id)
+			})
 		})
 
 		it('keeps nested dropdown ids unique and correctly wired, with an id', () => {
@@ -258,6 +346,79 @@ describe('Menu', () => {
 			const menubar = screen.getByRole('menubar')
 			expect(menubar.tagName).toBe('DIV')
 			expect(screen.getAllByRole('menuitem')).toHaveLength(2)
+		})
+	})
+
+	describe('keyboard navigation through nested dropdowns', () => {
+		const community = NAVIGATION_DATA.filter(item => item.label === 'Community')
+
+		const link = (name: string) => screen.getByRole('menuitem', { name })
+		const openCommunity = () => {
+			render(<Menu items={ community } />)
+			fireEvent.click(screen.getByRole('button', { name: 'Community submenu' }))
+		}
+		const communityItem = () => document.getElementById('dropdown-community')!
+
+		beforeEach(() => jest.useFakeTimers())
+		afterEach(() => jest.useRealTimers())
+
+		it('reaches the labels of nested dropdowns (Events, Feed) as well as Spotlights, wrapping around', () => {
+			openCommunity()
+
+			const order: string[] = []
+			for (let i = 0; i < 4; i++) {
+				fireEvent.keyDown(communityItem(), { key: 'ArrowDown' })
+				order.push(document.activeElement?.textContent ?? '')
+			}
+
+			expect(order).toEqual(['Events', 'Feed', 'Spotlights', 'Events'])
+		})
+
+		it('moves to the next sibling when ArrowDown is pressed on a closed nested dropdown\'s link', () => {
+			openCommunity()
+			link('Events').focus()
+
+			fireEvent.keyDown(link('Events'), { key: 'ArrowDown' })
+
+			expect(link('Feed')).toHaveFocus()
+			// positive control: the nested dropdown did not open itself
+			expect(screen.getByRole('button', { name: 'Events submenu' })).toHaveAttribute('aria-expanded', 'false')
+		})
+
+		it('closes the parent on Escape pressed on a closed nested dropdown, focusing the parent link', () => {
+			openCommunity()
+			link('Events').focus()
+
+			fireEvent.keyDown(link('Events'), { key: 'Escape' })
+
+			expect(screen.getByRole('button', { name: 'Community submenu' })).toHaveAttribute('aria-expanded', 'false')
+			expect(link('Community')).toHaveFocus()
+		})
+
+		it('opens a nested dropdown on ArrowRight and focuses its first item', () => {
+			openCommunity()
+			link('Events').focus()
+
+			fireEvent.keyDown(link('Events'), { key: 'ArrowRight' })
+			act(() => { jest.runOnlyPendingTimers() })
+
+			expect(screen.getByRole('button', { name: 'Events submenu' })).toHaveAttribute('aria-expanded', 'true')
+			expect(link('Your Lineup')).toHaveFocus()
+			// the parent stays open
+			expect(screen.getByRole('button', { name: 'Community submenu' })).toHaveAttribute('aria-expanded', 'true')
+		})
+
+		it('closes only the nested dropdown on ArrowLeft and refocuses its link', () => {
+			openCommunity()
+			link('Events').focus()
+			fireEvent.keyDown(link('Events'), { key: 'ArrowRight' })
+			act(() => { jest.runOnlyPendingTimers() })
+
+			fireEvent.keyDown(link('Your Lineup'), { key: 'ArrowLeft' })
+
+			expect(screen.getByRole('button', { name: 'Events submenu' })).toHaveAttribute('aria-expanded', 'false')
+			expect(link('Events')).toHaveFocus()
+			expect(screen.getByRole('button', { name: 'Community submenu' })).toHaveAttribute('aria-expanded', 'true')
 		})
 	})
 })

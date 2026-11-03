@@ -114,6 +114,15 @@ describe('Menu.Item', () => {
 			expect(container.querySelectorAll('li[role="none"]')).toHaveLength(2)
 		})
 
+		it('renders no id on flattened items, even when one is given', () => {
+			const { container } = render(
+				<MenuItem id="custom" label="Community" route="/community" menu={ menu } hasDropdowns={ false } />
+			)
+
+			expect(container.querySelectorAll('li[role="none"]')).toHaveLength(2)
+			expect(container.querySelector('[id]')).not.toBeInTheDocument()
+		})
+
 		it('does not render the parent item\'s own label, only its children', () => {
 			render(<MenuItem label="Community" route="/community" menu={ menu } hasDropdowns={ false } />)
 			expect(screen.queryByRole('menuitem', { name: 'Community' })).not.toBeInTheDocument()
@@ -144,11 +153,19 @@ describe('Menu.Item', () => {
 			expect(submenu).toHaveAttribute('aria-labelledby', 'dropdown-community-trigger')
 		})
 
-		it('renders the parent label inside the trigger button', () => {
-			renderDropdown()
+		it('renders the parent label as a link beside the caret button, not inside it', () => {
+			const { container } = renderDropdown()
 
-			const trigger = screen.getByRole('button')
-			expect(within(trigger).getByRole('menuitem', { name: 'Community' })).toHaveAttribute('href', '/community')
+			const link = screen.getByRole('menuitem', { name: 'Community' })
+			expect(link).toHaveAttribute('href', '/community')
+			expect(link.closest('button')).not.toBeInTheDocument()
+			expect(screen.getByRole('button')).not.toContainElement(link)
+			expect(container.querySelector('button a, a button')).not.toBeInTheDocument()
+		})
+
+		it('names the caret button after the label', () => {
+			renderDropdown()
+			expect(screen.getByRole('button', { name: 'Community submenu' })).toBeInTheDocument()
 		})
 
 		it('keeps the submenu items in the DOM while closed, with the root as an li[role="none"]', () => {
@@ -160,18 +177,32 @@ describe('Menu.Item', () => {
 			expect(container.querySelector('li#dropdown-community')).toHaveAttribute('role', 'none')
 		})
 
-		it('shows the caret icon for a string label', () => {
+		it('shows the caret for a string label', () => {
 			renderDropdown()
-			expect(screen.getByRole('button').querySelector('svg')).toBeInTheDocument()
+
+			const caret = screen.getByRole('button')
+			expect(caret.querySelector('svg')).toBeInTheDocument()
+			expect(caret.className).not.toContain('hidden')
 		})
 
-		it('replaces the label with `trigger` and drops the caret', () => {
+		it('replaces the label with `trigger`, keeps the link named after the label, and hides the caret', () => {
 			renderDropdown({ trigger: <b data-testid="avatar">Me</b> })
 
-			const trigger = screen.getByRole('button')
-			expect(within(trigger).getByTestId('avatar')).toBeInTheDocument()
-			expect(within(trigger).queryByText('Community')).not.toBeInTheDocument()
-			expect(trigger.querySelector('svg')).not.toBeInTheDocument()
+			const link = screen.getByRole('menuitem', { name: 'Community' })
+			expect(link).toContainElement(screen.getByTestId('avatar'))
+			expect(link).toHaveAttribute('aria-label', 'Community')
+
+			// the caret button is still there and still works, only its hidden modifier is set
+			const caret = screen.getByRole('button', { name: 'Community submenu' })
+			expect(caret.className).toContain('hidden')
+			expect(caret.querySelector('svg')).toBeInTheDocument()
+		})
+
+		it('slugs a multi-word label into the ids', () => {
+			renderDropdown({ label: 'Browse Work', route: undefined })
+
+			expect(screen.getByRole('button')).toHaveAttribute('id', 'dropdown-browse-work-trigger')
+			expect(screen.getByRole('menubar')).toHaveAttribute('id', 'dropdown-browse-work-menu')
 		})
 
 		it('still derives the ids from `label` when `trigger` replaces what is shown', () => {
@@ -194,7 +225,10 @@ describe('Menu.Item', () => {
 
 		it('marks the dropdown li current when `active` matches the parent route', () => {
 			const { container } = renderDropdown({ active: '/community' })
+
 			expect(container.querySelector('li#dropdown-community')).toHaveAttribute('data-current')
+			// the submenu list never takes the parent's current marker
+			expect(screen.getByRole('menubar')).not.toHaveAttribute('data-current')
 		})
 
 		it('does not mark the dropdown li current for a different `active`, with a positive control', () => {
