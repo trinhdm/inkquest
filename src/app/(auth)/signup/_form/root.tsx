@@ -41,7 +41,8 @@ export const SignupRoot = () => {
 					loading={ pending }
 				/>
 
-				<AuthForm.SSO
+				<AuthForm.Alternate
+					as="SSO"
 					disabled={ pending }
 					label="continue"
 					onClick={ () => navigate('success') }

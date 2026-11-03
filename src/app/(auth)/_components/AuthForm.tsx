@@ -5,9 +5,9 @@ import {
 } from 'react'
 
 import {
-	AuthBack, AuthContinue, AuthFooter,
-	AuthHeader, AuthNote, AuthResend,
-	AuthSSO, AuthSubmit,
+	AuthAlternate, AuthBack, AuthContinue,
+	AuthFooter, AuthHeader, AuthNote,
+	AuthResend, AuthSubmit,
 } from './_parts'
 
 import { verifyChildren } from '@/lib/component/children'
@@ -19,13 +19,13 @@ import type { FormResults } from '@/lib/form'
 const NAME = 'AuthForm' as const
 
 const SUBCOMPONENTS = {
+	Alternate:	AuthAlternate,
 	Back:		AuthBack,
 	Continue:	AuthContinue,
 	Footer:		AuthFooter,
 	Header:		AuthHeader,
 	Note:		AuthNote,
 	Resend:		AuthResend,
-	SSO:		AuthSSO,
 	Submit:		AuthSubmit,
 } as const
 

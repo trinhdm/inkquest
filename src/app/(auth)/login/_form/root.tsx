@@ -68,7 +68,8 @@ export const LoginRoot = () => {
 					loading={ login.pending }
 				/>
 
-				<AuthForm.SSO
+				<AuthForm.Alternate
+					as="SSO"
 					disabled={ reply.pending }
 					label="Log In"
 					onClick={ () => navigate('success') }

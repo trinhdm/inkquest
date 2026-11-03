@@ -11,11 +11,11 @@ export interface AuthFormIDs {
 //	`data-intent` + `formAction` is only needed when one form has
 //	two or more submit buttons that do different jobs
 
-type NativeButtonProps =
+export type NativeButtonProps =
 	ComponentPropsWithoutRef<'button'>
 
 export type RootActionButton =
-	& Pick<Button.Props, 'disabled' | 'fullWidth' | 'loading' | 'onClick'>
+	Pick<Button.Props, 'disabled' | 'fullWidth' | 'loading' | 'onClick'>
 
 interface SubmitActionButton {
 	'data-intent'?: never

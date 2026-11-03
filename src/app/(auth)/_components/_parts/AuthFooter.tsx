@@ -1,16 +1,16 @@
 import { isValidElement, Children, type ReactElement, type ReactNode } from 'react'
 import { verifyChildren } from '@/lib/component/children'
+import { AuthAlternate } from './AuthAlternate'
 import { AuthBack, AuthContinue, AuthSubmit } from './AuthButtons'
 import { AuthNote, AuthResend } from './AuthParts'
-import { AuthSSO } from './AuthSSO'
 import { Button } from '@/components/core/Button'
 
 const NAME = 'AuthFooter' as const
 const FORWARD_ACTIONS: unknown[] = [AuthContinue, AuthResend, AuthSubmit]
 
 type FooterSlot =
-	| 'back' | 'forward'
-	| 'note' | 'sso'
+	| 'alternate' | 'back'
+	| 'forward' | 'note'
 
 type FooterSlots =
 	Partial<Record<FooterSlot, ReactElement>>
@@ -22,9 +22,9 @@ interface AuthFooterProps {
 const getSlot = (child: ReactElement): FooterSlot | undefined => {
 	const { type } = child
 
+	if (type === AuthAlternate) return 'alternate'
 	if (type === AuthBack) return 'back'
 	if (type === AuthNote) return 'note'
-	if (type === AuthSSO) return 'sso'
 	if (FORWARD_ACTIONS.includes(type)) return 'forward'
 	return undefined
 }
@@ -49,7 +49,7 @@ const sortSlots = (children: ReactNode): FooterSlots => {
 }
 
 export const AuthFooter = ({ children }: AuthFooterProps) => {
-	const { back, forward, note, sso } = sortSlots(children)
+	const { alternate, back, forward, note } = sortSlots(children)
 
 	const actions = back && forward
 		? <Button.Group hasPriority={ false }>{ back }{ forward }</Button.Group>
@@ -58,7 +58,7 @@ export const AuthFooter = ({ children }: AuthFooterProps) => {
 	return (
 		<div className="authentication">
 			{ actions }
-			{ sso }
+			{ alternate }
 			{ note }
 		</div>
 	)
