@@ -89,7 +89,7 @@ const AuthAlternatives = (props: AuthAlternateChoices) => {
 			<Button { ...rest } { ...SHARED_ALT } type="submit">
 				Use a different account
 			</Button>
-			<Button { ...rest } { ...SHARED_ALT } href={ NavRoutes.SIGNUP }>
+			<Button { ...rest } { ...SHARED_ALT } href={ NavRoutes.AUTH_SIGNUP }>
 				Create an account
 			</Button>
 		</>

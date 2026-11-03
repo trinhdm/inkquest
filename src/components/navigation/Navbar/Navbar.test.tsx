@@ -54,7 +54,7 @@ describe('Navbar', () => {
 	})
 
 	it('hoists Profile/Settings out of the routeless "User" parent onto the menu when their routes are explicitly requested', () => {
-		render(<Navbar routes={ [NavRoutes.HOME, NavRoutes.PROFILE, NavRoutes.SETTINGS] } />)
+		render(<Navbar routes={ [NavRoutes.HOME, NavRoutes.USER_PROFILE, NavRoutes.USER_SETTINGS] } />)
 
 		expect(screen.getByRole('menuitem', { name: 'Home' })).toBeInTheDocument()
 		expect(screen.getByRole('menuitem', { name: 'Profile' })).toBeInTheDocument()

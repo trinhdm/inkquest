@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/core/Button'
 import { Grid } from '@/components/layout/Grid'
+import { NavRoutes } from '@/utils/navigation'
 import { Section } from '@/components/layout/Section'
 import { Sidebar } from '@/components/layout/Sidebar'
 
@@ -21,7 +22,7 @@ export default function CommunityEvents() {
 				</>
 
 				<Section.Footer>
-					<Button href="/community/events" variant="outline">
+					<Button href={ NavRoutes.COMMUNITY_EVENTS_NEW } variant="outline">
 						Post an event
 					</Button>
 				</Section.Footer>
@@ -37,7 +38,7 @@ export default function CommunityEvents() {
 						<div>
 							<div>
 								Your Lineup
-								<Link href="/community/events/lineup">See All</Link>
+								<Link href={ NavRoutes.COMMUNITY_EVENTS_LINEUP }>See All</Link>
 							</div>
 						</div>
 						<div>

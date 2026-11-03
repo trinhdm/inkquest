@@ -1,15 +1,17 @@
 'use client'
 
+import { usePathname } from 'next/navigation'
 import { extractOthers } from '@/hooks/useProps'
-import { filterNavigation, type NavRoute } from '@/utils/navigation'
+import { filterNavigation, NavRoutes } from '@/utils/navigation'
+import { isKeyOf } from '@/utils/helpers'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import { Button } from '@/components/core/Button'
 import { Logo } from '../Logo'
 import { Menu } from '../Menu'
+import type { NavRoute } from '@/utils/navigation'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Navbar.module.scss'
-import { usePathname } from 'next/navigation'
 
 const NAME = 'Navbar' as const,
 	TAG = 'nav' as const
@@ -17,6 +19,23 @@ const NAME = 'Navbar' as const,
 const DEFAULT_PROPS = {
 	as: TAG,
 } as const
+
+const NAV_AUTH = {
+	login: {
+		button: {
+			label: 'Sign up',
+			url: NavRoutes.AUTH_SIGNUP,
+		},
+		tip: 'New to Inkquest?',
+	},
+	signup: {
+		button: {
+			label: 'Login',
+			url: NavRoutes.AUTH_LOGIN,
+		},
+		tip: 'Already have an account?',
+	},
+} as const satisfies Record<'login' | 'signup', NavAuthGroup>
 
 interface NavbarProps {
 	routes?: readonly NavRoute[]
@@ -35,25 +54,36 @@ type NavbarSelectors =
 	| 'root' | 'wrapper' | 'inner'
 	| 'col' | 'menu' | 'buttons' | 'tip'
 
+interface NavAuthGroup {
+	button: {
+		label: string
+		url: string
+	}
+	tip: string
+}
+
 export const Navbar = polymorphic<NavbarSpecs>((_props, { useProps, useStyles }) => {
 	const pathname = usePathname()
 	const props = useProps(_props)
 	const styles = useStyles({ props })
 
 	const { as, routes, ...rest } = props
-
 	const others = extractOthers(rest)
-	const navitems = filterNavigation(routes)
 
-	const isLoginPath = pathname === '/login',
-		isSignupPath = pathname === '/signup'
+	const slug = pathname.slice(1),
+		menuItems = filterNavigation(routes)
+
+	const isLoginPath = pathname === NavRoutes.AUTH_LOGIN,
+		isSignupPath = pathname === NavRoutes.AUTH_SIGNUP,
+		isAuthPath = (isLoginPath || isSignupPath) && isKeyOf(NAV_AUTH, slug)
+
+	const authData = isAuthPath ? NAV_AUTH[slug] : undefined
 
 	return (
 		<Box
 			{ ...styles('root') }
 			{ ...others }
 			as={ as }
-			role="navigation"
 		>
 			<div { ...styles('wrapper', true) }>
 				<div { ...styles('inner') }>
@@ -61,32 +91,32 @@ export const Navbar = polymorphic<NavbarSpecs>((_props, { useProps, useStyles })
 						<Logo width={ 124 } />
 					</div>
 
-					{ !!navitems.length && (
+					{ !!menuItems.length && (
 						<div { ...styles('col') }>
-							<Menu items={ navitems } { ...styles('menu') } />
+							<Menu items={ menuItems } { ...styles('menu') } />
 						</div>
 					) }
 
 					<div { ...styles('col') }>
-						{ (isLoginPath || isSignupPath) && (
+						{ authData && (
 							<>
 								<span { ...styles('tip') }>
-									{ isLoginPath ? 'New to Inkquest?' : 'Already have an account?' }
+									{ authData.tip }
 								</span>
 								<Button
-									href={ isLoginPath ? '/signup' : '/login' }
+									href={ authData.button.url }
 									size="sm"
 									variant="outline"
 								>
-									{ isLoginPath ? 'Sign up' : 'Login' }
+									{ authData.button.label }
 								</Button>
 							</>
 						) }
 
-						{ (!isLoginPath && !isSignupPath) && (
+						{ !isAuthPath && (
 							<Button.Group { ...styles('buttons') } hasPriority={ false } size="sm">
-								<Button href="/login" variant="text">Log in</Button>
-								<Button href="/signup">Sign up</Button>
+								<Button href={ NavRoutes.AUTH_LOGIN } variant="text">Log in</Button>
+								<Button href={ NavRoutes.AUTH_SIGNUP }>Sign up</Button>
 							</Button.Group>
 						) }
 					</div>

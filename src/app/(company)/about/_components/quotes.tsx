@@ -1,5 +1,6 @@
 import { Button } from '@/components/core/Button'
 import { Grid } from '@/components/layout/Grid'
+import { NavRoutes } from '@/utils/navigation'
 import { Section } from '@/components/layout/Section'
 import { PRESS_QUOTES } from '../_utils/about.data'
 
@@ -24,7 +25,9 @@ export const AboutQuotes = () => {
 			</Grid>
 
 			<Section.Footer>
-				<Button href="/press" variant="outline">See all press mentions</Button>
+				<Button href={ NavRoutes.COMPANY_PRESS } variant="outline">
+					See all press mentions
+				</Button>
 			</Section.Footer>
 		</Section>
 )

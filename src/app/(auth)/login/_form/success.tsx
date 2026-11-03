@@ -1,6 +1,7 @@
 import { useLoginCtx } from '../_utils/login.context'
 import { AuthForm } from '../../_components/AuthForm'
 import { Field } from '@/components/form/Field'
+import { NavRoutes } from '@/utils/navigation'
 
 export const LoginSuccess = () => {
 	const { destination, guardSubmit, idx } = useLoginCtx()
@@ -27,7 +28,7 @@ export const LoginSuccess = () => {
 			) }
 
 			<AuthForm.Footer>
-				<AuthForm.Continue href="/community/feed" label="Go to your feed" />
+				<AuthForm.Continue href={ NavRoutes.COMMUNITY_FEED } label="Go to your feed" />
 			</AuthForm.Footer>
 		</AuthForm>
 	)

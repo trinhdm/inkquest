@@ -354,7 +354,7 @@ export const ActiveItem: Story = {
  */
 export const ActiveItemFlattened: Story = {
 	args: {
-		active: NavRoutes.SETTINGS,
+		active: NavRoutes.USER_SETTINGS,
 		hasDropdowns: false,
 		label: 'User',
 		route: undefined,
@@ -636,7 +636,7 @@ export const KeyboardFocusRouteless: Story = {
 		route: undefined,
 		menu: [
 			{ label: 'No Route' },
-			{ label: 'Settings', route: NavRoutes.SETTINGS },
+			{ label: 'Settings', route: NavRoutes.USER_SETTINGS },
 		],
 	},
 	play: async ({ canvasElement }) => {
@@ -689,7 +689,7 @@ export const AsElement: Story = {
 						hasDropdowns={ false }
 						label="Parent"
 						route={ undefined }
-						menu={ [{ label: `flattened-${ as }`, route: NavRoutes.SETTINGS }] }
+						menu={ [{ label: `flattened-${ as }`, route: NavRoutes.USER_SETTINGS }] }
 					/>
 				</Group>
 			)) }

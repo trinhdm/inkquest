@@ -5,6 +5,7 @@ import { useForm } from '@/hooks/form'
 import { initFormState } from '@/lib/form'
 import { supportArtist, supportClient } from '../_utils/actions'
 import { Grid } from '@/components/layout/Grid'
+import { NavRoutes } from '@/utils/navigation'
 import { Section } from '@/components/layout/Section'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { SupportForm } from './form'
@@ -26,7 +27,7 @@ export const SupportBase = () => {
 				title="Talk to a human."
 			>
 				<>
-					Pick who you are and what it&apos;s about — we&apos;ll route it to the right person. Quick question? The <Link href="/faqs" data-cta>FAQs</Link> might already have it.
+					Pick who you are and what it&apos;s about — we&apos;ll route it to the right person. Quick question? The <Link href={ NavRoutes.COMPANY_FAQS } data-cta>FAQs</Link> might already have it.
 				</>
 			</Section>
 

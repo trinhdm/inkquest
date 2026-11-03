@@ -1,6 +1,9 @@
-import { filterNavigation, listRoutesWithSlug, NAV_ROUTES, NAVIGATION_DATA, NavRoutes, SOCIALS_NAV } from '../navigation'
-import type { NavigationItem, NavRoute } from '../navigation'
+import {
+	filterNavigation, listRoutesWithSlug, NavRoutes,
+	NAV_ROUTES, NAVIGATION_DATA, SOCIALS_NAV,
+} from '../navigation'
 import { SOCIAL_BRANDS } from '../constants'
+import type { NavigationItem, NavRoute } from '../navigation'
 
 describe('filterNavigation - short-circuit behavior', () => {
 	it('returns an empty array when routes is undefined (default isEmptyReturn)', () => {
@@ -25,7 +28,7 @@ describe('filterNavigation - flat filtering', () => {
 	const navitems: NavigationItem[] = [
 		{ label: 'Home', route: NavRoutes.HOME },
 		{ label: 'Marketplace', route: NavRoutes.MARKETPLACE },
-		{ label: 'Login', route: NavRoutes.LOGIN },
+		{ label: 'Login', route: NavRoutes.AUTH_LOGIN },
 	]
 
 	it('keeps only items whose route is included in the routes list', () => {
@@ -34,7 +37,7 @@ describe('filterNavigation - flat filtering', () => {
 	})
 
 	it('preserves the original ordering of the surviving items', () => {
-		const result = filterNavigation([NavRoutes.LOGIN, NavRoutes.HOME], 'dropdown', true, navitems)
+		const result = filterNavigation([NavRoutes.AUTH_LOGIN, NavRoutes.HOME], 'dropdown', true, navitems)
 		expect(result.map(item => item.label)).toEqual(['Home', 'Login'])
 	})
 
@@ -45,11 +48,11 @@ describe('filterNavigation - flat filtering', () => {
 	it('hoists a routeless item\'s matching submenu into the result instead of dropping it', () => {
 		const withRouteless: NavigationItem[] = [
 			...navitems,
-			{ label: 'User', menu: [{ label: 'Profile', route: NavRoutes.PROFILE }] },
+			{ label: 'User', menu: [{ label: 'Profile', route: NavRoutes.USER_PROFILE }] },
 		]
 
-		const result = filterNavigation([NavRoutes.PROFILE], 'dropdown', true, withRouteless)
-		expect(result).toEqual([{ label: 'Profile', route: NavRoutes.PROFILE, menu: undefined }])
+		const result = filterNavigation([NavRoutes.USER_PROFILE], 'dropdown', true, withRouteless)
+		expect(result).toEqual([{ label: 'Profile', route: NavRoutes.USER_PROFILE, menu: undefined }])
 	})
 })
 
@@ -177,11 +180,11 @@ describe('filterNavigation - breadcrumbs layout', () => {
 
 	it('still hoists a routeless parent\'s matching submenu since hoisting is independent of layout', () => {
 		const withRouteless: NavigationItem[] = [
-			{ label: 'User', menu: [{ label: 'Profile', route: NavRoutes.PROFILE }] },
+			{ label: 'User', menu: [{ label: 'Profile', route: NavRoutes.USER_PROFILE }] },
 		]
 
-		const result = filterNavigation([NavRoutes.PROFILE], 'breadcrumbs', true, withRouteless)
-		expect(result).toEqual([{ label: 'Profile', route: NavRoutes.PROFILE, menu: undefined }])
+		const result = filterNavigation([NavRoutes.USER_PROFILE], 'breadcrumbs', true, withRouteless)
+		expect(result).toEqual([{ label: 'Profile', route: NavRoutes.USER_PROFILE, menu: undefined }])
 	})
 })
 
@@ -195,8 +198,8 @@ describe('filterNavigation - regression coverage for the fixed in-app navigation
 		NavRoutes.DISCOVER,
 		NavRoutes.MARKETPLACE,
 		NavRoutes.COMMUNITY,
-		NavRoutes.LOGIN,
-		NavRoutes.SIGNUP,
+		NavRoutes.AUTH_LOGIN,
+		NavRoutes.AUTH_SIGNUP,
 	]
 
 	it('drops /discover/style from Discover\'s menu since only /discover is in the routes list (child route not hoisted onto a matched parent)', () => {
@@ -234,7 +237,7 @@ describe('filterNavigation - regression coverage for the fixed in-app navigation
 	})
 
 	it('now surfaces Profile/Settings by hoisting them out of the routeless "User" parent when their routes are requested', () => {
-		const result = filterNavigation([NavRoutes.PROFILE, NavRoutes.SETTINGS], 'dropdown', true, NAVIGATION_DATA)
+		const result = filterNavigation([NavRoutes.USER_PROFILE, NavRoutes.USER_SETTINGS], 'dropdown', true, NAVIGATION_DATA)
 
 		expect(result.map(item => item.label)).toEqual(['Profile', 'Settings'])
 		expect(result.find(item => item.label === 'User')).toBeUndefined()
@@ -287,12 +290,12 @@ describe('listRoutesWithSlug', () => {
 		const navitems: NavigationItem[] = [
 			{
 				label: 'User',
-				menu: [{ label: 'Profile', route: NavRoutes.PROFILE }],
+				menu: [{ label: 'Profile', route: NavRoutes.USER_PROFILE }],
 			},
 		]
 
-		const result = listRoutesWithSlug(NavRoutes.PROFILE, Infinity, navitems)
-		expect(result).toEqual([NavRoutes.PROFILE])
+		const result = listRoutesWithSlug(NavRoutes.USER_PROFILE, Infinity, navitems)
+		expect(result).toEqual([NavRoutes.USER_PROFILE])
 	})
 
 	it('returns an empty array when no top-level item matches the slug\'s subdirectory', () => {

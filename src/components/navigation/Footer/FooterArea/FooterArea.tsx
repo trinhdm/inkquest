@@ -1,5 +1,3 @@
-'use client'
-
 import { extractOthers } from '@/hooks/useProps'
 import { filterNavigation, type NavigationGroup } from '@/utils/navigation'
 import { polymorphic } from '@/lib/component/factory'

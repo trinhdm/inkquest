@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/core/Button'
 import { Grid } from '@/components/layout/Grid'
+import { NavRoutes } from '@/utils/navigation'
 import { Section } from '@/components/layout/Section'
 
 export default function CommunitySpotlights() {
@@ -19,7 +20,7 @@ export default function CommunitySpotlights() {
 				Interviews, studio visits, and craft talk from the artists you follow. New issue every Thursday.
 
 				<Section.Footer>
-					<Button href="/community/spotlights" variant="outline">
+					<Button href={ NavRoutes.COMMUNITY_SPOTLIGHTS_NEW } variant="outline">
 						Pitch a story
 					</Button>
 				</Section.Footer>
@@ -33,7 +34,7 @@ export default function CommunitySpotlights() {
 
 				<div>filter bar</div>
 				<Grid>
-					<Link href="/community/spotlights">spotlight card</Link>
+					<Link href={ NavRoutes.COMMUNITY_SPOTLIGHTS }>spotlight card</Link>
 				</Grid>
 			</Section>
 		</>

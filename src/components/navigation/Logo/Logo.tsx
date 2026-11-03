@@ -5,6 +5,7 @@ import { extractOthers } from '@/hooks/useProps'
 import { isExternalLink, keyHasValue } from '@/utils/helpers'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
+import { NavRoutes } from '@/utils/navigation'
 import { COMPANY_NAME } from '@/utils/constants'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import type { Route } from 'next'
@@ -16,7 +17,7 @@ const NAME = 'Logo' as const,
 const DEFAULT_PROPS = {
 	alt: `${COMPANY_NAME} Logo`,
 	as: TAG,
-	href: '/',
+	href: NavRoutes.HOME,
 	loading: 'eager',
 	type: 'wordmark',
 	width: 124,

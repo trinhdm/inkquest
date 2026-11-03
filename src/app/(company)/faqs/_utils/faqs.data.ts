@@ -1,3 +1,4 @@
+import { NavRoutes } from '@/utils/navigation'
 import type { Field } from '@/components/form/Field'
 import type { BasePageData, PageDataItem } from '@/types/shared'
 
@@ -182,13 +183,13 @@ export const FAQS_PAGE_DATA: FaqsPageData = {
 			placeholder: 'Search all FAQs…',
 		},
 		empty: 'Nothing here yet. Check back soon.',
-		error: `Try a different word, or <a href="/messages">ask us</a> directly and we'll answer.`,
+		error: `Try a different word, or <a href=${NavRoutes.COMPANY_SUPPORT}>ask us</a> directly and we'll answer.`,
 	},
 	hero: {
 		id: 'hero',
 		eyebrow: 'Company · FAQs',
 		heading: 'Questions, answered.',
-		body: `Everything about bidding, booking, verification, and payouts — for clients, artists, and studios. Can't find it? <a href="/messages">Message us</a>.`
+		body: `Everything about bidding, booking, verification, and payouts — for clients, artists, and studios. Can't find it? <a href=${NavRoutes.COMPANY_SUPPORT}>Message us</a>.`
 	},
 	footer: {
 		id: 'footer',
@@ -199,12 +200,12 @@ export const FAQS_PAGE_DATA: FaqsPageData = {
 			{
 				id: 'btn_ticket',
 				label: 'Open ticket',
-				url: '/careers',
+				url: NavRoutes.COMPANY_SUPPORT,
 			},
 			{
 				id: 'btn_email',
 				label: 'Email support',
-				url: '/careers',
+				url: NavRoutes.COMPANY_SUPPORT,
 			},
 		],
 	},

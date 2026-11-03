@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers'
 import { z } from 'zod'
+import { NavRoutes } from '@/utils/navigation'
 
 const COOKIE = 'inkq_last_account',
 	MAX_AGE = 60 * 60 * 24 * 30
@@ -16,7 +17,7 @@ export const rememberAccount = async (account: RememberedAccount) => {
 	(await cookies()).set(COOKIE, JSON.stringify(account), {
 		httpOnly: true,
 		maxAge: MAX_AGE,
-		path: '/',
+		path: NavRoutes.HOME,
 		sameSite: 'lax',
 		secure: process.env.NODE_ENV === 'production',
 	})

@@ -1,3 +1,4 @@
+import { NavRoutes } from '@/utils/navigation'
 import type { ArtistSupportTopic, ClientSupportTopic } from './types'
 import type { BasePageData } from '@/types/shared'
 
@@ -86,6 +87,6 @@ export const SUPPORT_PAGE_DATA = {
 		id: 'hero',
 		eyebrow: 'Contact',
 		heading: 'Talk to a human.',
-		body: `Pick who you are and what it's about — we'll route it to the right person. Quick question? The <Link href="/faqs" data-cta>FAQs</Link> might already have it.`,
+		body: `Pick who you are and what it's about — we'll route it to the right person. Quick question? The <Link href=${NavRoutes.COMPANY_FAQS} data-cta>FAQs</Link> might already have it.`,
 	},
 }

@@ -1,6 +1,7 @@
 import { useSignupCtx } from '../_utils/signup.context'
 import { AuthForm } from '../../_components/AuthForm'
 import { Field } from '@/components/form/Field'
+import { NavRoutes } from '@/utils/navigation'
 
 export const SignupSuccess = () => {
 	const {
@@ -32,7 +33,7 @@ export const SignupSuccess = () => {
 			) }
 
 			<AuthForm.Footer>
-				<AuthForm.Continue href="/community/feed" label="Start setup" />
+				<AuthForm.Continue href={ NavRoutes.USER_ONBOARDING } label="Start setup" />
 
 				<AuthForm.Note>
 					<p>Setup takes about two minutes — styles, location, and (for artists) your shop.</p>

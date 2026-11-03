@@ -6,14 +6,18 @@ import type { Orientation, SocialBrand } from '@/types/shared'
 export enum NavRoutes {
 	HOME = '/',
 	DISCOVER = '/discover',
+	DISCOVER_ARTISTS = '/discover/artists',
 	DISCOVER_STYLE = '/discover/style',
 	MARKETPLACE = '/marketplace',
 	COMMUNITY = '/community',
 	COMMUNITY_EVENTS = '/community/events',
 	COMMUNITY_EVENTS_LINEUP = '/community/events/lineup',
+	COMMUNITY_EVENTS_NEW = '/community/events/new',
 	COMMUNITY_FEED = '/community/feed',
 	COMMUNITY_FEED_CIRCLE = '/community/feed/circle',
+	COMMUNITY_FEED_NEW = '/community/feed/new',
 	COMMUNITY_SPOTLIGHTS = '/community/spotlights',
+	COMMUNITY_SPOTLIGHTS_NEW = '/community/spotlights/new',
 	COMPANY_ABOUT = '/about',
 	COMPANY_CAREERS = '/careers',
 	COMPANY_FAQS = '/faqs',
@@ -22,26 +26,33 @@ export enum NavRoutes {
 	LEGAL_COOKIES = '/cookies',
 	LEGAL_PRIVACY = '/privacy-policy',
 	LEGAL_TERMS = '/terms',
-	PROFILE = '/profile',
-	MESSAGES = '/messages',
-	SETTINGS = '/settings',
-	SIGNUP = '/signup',
-	LOGIN = '/login',
-	LOGOUT = '/logout',
+	USER_COLLECTIONS = '/collections',
+	USER_MESSAGES = '/messages',
+	USER_NOTIFICATIONS = '/notifications',
+	USER_ONBOARDING = '/onboarding',
+	USER_PROFILE = '/profile',
+	USER_SETTINGS = '/settings',
+	AUTH_LOGIN = '/login',
+	AUTH_LOGOUT = '/logout',
+	AUTH_SIGNUP = '/signup',
 }
 
 //	checks if slugs exist
 export const NAV_ROUTES = {
 	HOME: '/',
 	DISCOVER: '/discover',
+	DISCOVER_ARTISTS: '/discover/artists',
 	DISCOVER_STYLE: '/discover/style',
 	MARKETPLACE: '/marketplace',
 	COMMUNITY: '/community',
 	COMMUNITY_EVENTS: '/community/events',
 	COMMUNITY_EVENTS_LINEUP: '/community/events/lineup',
+	COMMUNITY_EVENTS_NEW: '/community/events/new',
 	COMMUNITY_FEED: '/community/feed',
 	COMMUNITY_FEED_CIRCLE: '/community/feed/circle',
+	COMMUNITY_FEED_NEW: '/community/feed/new',
 	COMMUNITY_SPOTLIGHTS: '/community/spotlights',
+	COMMUNITY_SPOTLIGHTS_NEW: '/community/spotlights/new',
 	COMPANY_ABOUT: '/about',
 	COMPANY_CAREERS: '/careers',
 	COMPANY_FAQS: '/faqs',
@@ -50,12 +61,15 @@ export const NAV_ROUTES = {
 	LEGAL_COOKIES: '/cookies',
 	LEGAL_PRIVACY: '/privacy-policy',
 	LEGAL_TERMS: '/terms',
-	PROFILE: '/profile',
-	MESSAGES: '/messages',
-	SETTINGS: '/settings',
-	SIGNUP: '/signup',
-	LOGIN: '/login',
-	LOGOUT: '/logout',
+	USER_COLLECTIONS: '/collections',
+	USER_PROFILE: '/profile',
+	USER_NOTIFICATIONS: '/notifications',
+	USER_MESSAGES: '/messages',
+	USER_ONBOARDING: '/onboarding',
+	USER_SETTINGS: '/settings',
+	AUTH_LOGIN: '/login',
+	AUTH_LOGOUT: '/logout',
+	AUTH_SIGNUP: '/signup',
 } as const satisfies Record<`${keyof typeof NavRoutes}`, Route>
 
 export type NavRoute = `${NavRoutes}`
@@ -63,7 +77,7 @@ export type NavRoute = `${NavRoutes}`
 export interface NavigationItem {
 	label: string
 	menu?: NavigationItem[]
-	route?: NavRoute
+	route?: NavRoute | null
 }
 
 export interface NavigationGroup<T extends string = string> {
@@ -81,7 +95,8 @@ export const NAVIGATION_DATA: NavigationItem[] = [
 		label: 'Discover',
 		route: NavRoutes.DISCOVER,
 		menu: [
-			{ label: 'Your Style', route: NavRoutes.DISCOVER_STYLE },
+			{ label: 'Artists', route: NavRoutes.DISCOVER_ARTISTS },
+			{ label: 'Styles', route: NavRoutes.DISCOVER_STYLE },
 		],
 	},
 	{
@@ -113,17 +128,21 @@ export const NAVIGATION_DATA: NavigationItem[] = [
 	},
 	{
 		label: 'User',
+		route: NavRoutes.USER_PROFILE,
 		menu: [
-			{ label: 'Profile', route: NavRoutes.PROFILE },
-			{ label: 'Settings', route: NavRoutes.SETTINGS },
+			{ label: 'Notifications', route: NavRoutes.USER_NOTIFICATIONS },
+			{ label: 'Messages', route: NavRoutes.USER_MESSAGES },
+			{ label: 'Collections', route: NavRoutes.USER_COLLECTIONS },
+			{ label: 'Settings', route: NavRoutes.USER_SETTINGS },
+			{ label: 'Sign out', route: NavRoutes.AUTH_LOGOUT, },
 		],
 	},
 	{
 		label: 'Company',
 		menu: [
 			{ label: 'About', route: NavRoutes.COMPANY_ABOUT },
-			{ label: 'Careers', route: NavRoutes.COMPANY_CAREERS },
 			{ label: 'FAQs', route: NavRoutes.COMPANY_FAQS },
+			{ label: 'Careers', route: NavRoutes.COMPANY_CAREERS },
 			{ label: 'Press', route: NavRoutes.COMPANY_PRESS },
 			{ label: 'Support', route: NavRoutes.COMPANY_SUPPORT },
 		],
@@ -138,60 +157,25 @@ export const NAVIGATION_DATA: NavigationItem[] = [
 	},
 	{
 		label: 'Sign up',
-		route: NavRoutes.SIGNUP,
+		route: NavRoutes.AUTH_SIGNUP,
 	},
 	{
 		label: 'Log in',
-		route: NavRoutes.LOGIN,
-	},
-	{
-		label: 'Log out',
-		route: NavRoutes.LOGOUT,
+		route: NavRoutes.AUTH_LOGIN,
 	},
 ] as const
 
-const listLabelRoutes = (
-	label: string,
-	maxDepth: number = Infinity,
-	navitems: NavigationItem[] = NAVIGATION_DATA,
-): NavRoute[] => {
-	const parent = navitems.find(item => (label === item.label) && keyHasValue(item, 'menu')),
-		target = parent?.menu
-
-	if (!target) return []
-
-	const filterRoutes = (items: NavigationItem[], depth: number): NavRoute[] =>
-		items.reduce<NavRoute[]>((acc, item) => {
-			let routes: NavRoute[] = []
-
-			if (depth <= maxDepth) {
-				if (item.route) routes.push(item.route)
-
-				if (!!item.menu?.length) {
-					const nestedRoutes = filterRoutes(item.menu, depth + 1)
-					routes = [...routes, ...nestedRoutes]
-				}
-			}
-
-			acc.push(...new Set(routes))
-			return acc
-		}, [])
-
-	const routes = filterRoutes(target, 0)
-	return parent.route ? [parent.route, ...routes] : routes
-}
-
-export const listRoutesWithSlug = (
-	slug: NavRoute,
-	maxDepth: number = Infinity,
-	navitems: NavigationItem[] = NAVIGATION_DATA,
+const collectRoutes = (
+	items: NavigationItem[],
+	maxDepth: number,
+	isMatch: (route: NavRoute) => boolean = () => true,
 ): NavRoute[] => {
 	const filterRoutes = (items: NavigationItem[], depth: number): NavRoute[] =>
 		items.reduce<NavRoute[]>((acc, item) => {
 			let routes: NavRoute[] = []
 
 			if (depth <= maxDepth) {
-				if (item.route?.includes(slug))
+				if (item.route && isMatch(item.route))
 					routes.push(item.route)
 
 				if (!!item.menu?.length) {
@@ -204,18 +188,33 @@ export const listRoutesWithSlug = (
 			return acc
 		}, [])
 
+	return filterRoutes(items, 0)
+}
+
+const inDirectory = (dir: string, route?: NavigationItem['route']) =>
+	!!route?.startsWith(`/${dir}`)
+
+export const listRoutesInLabel = (
+	label: string,
+	maxDepth: number = Infinity,
+	navitems: NavigationItem[] = NAVIGATION_DATA,
+): NavRoute[] => {
+	const parent = navitems.find(item => (label === item.label) && keyHasValue(item, 'menu'))
+	return parent ? collectRoutes([parent], maxDepth) : []
+}
+
+export const listRoutesWithSlug = (
+	slug: NavRoute,
+	maxDepth: number = Infinity,
+	navitems: NavigationItem[] = NAVIGATION_DATA,
+): NavRoute[] => {
 	const [subdir] = slug.split('/').filter(Boolean)
-	const list = navitems.filter(item => {
-		const { menu, route } = item
-		if (route) return route?.startsWith(`/${subdir}`)
 
-		if (!!menu?.length) {
-			const subitem = menu.find(sub => sub.route?.startsWith(`/${subdir}`))
-			if (subitem) return item
-		}
-	})
+	const list = navitems.filter(({ menu, route }) => route
+		? inDirectory(subdir, route)
+		: !!menu?.some(sub => inDirectory(subdir, sub.route)))
 
-	return filterRoutes(list, 0)
+	return collectRoutes(list, maxDepth, route => route.includes(slug))
 }
 
 export const filterNavigation = (
@@ -253,16 +252,16 @@ export const filterNavigation = (
 	return filterNavitems(navitems, routes)
 }
 
-const getNavigationGroup = <T extends string = string>(
+export const getNavigationGroup = <T extends string = string>(
 	label: string,
-	maxDepth: number = 1,
+	maxItems?: number,
 ): NavigationGroup<T> => {
-	const routes = listLabelRoutes(label, maxDepth)
+	const routes = listRoutesInLabel(label, 1)
 	if (!routes.length) return {} as NavigationGroup<T>
 
 	return {
 		category: label,
-		routes,
+		routes: !!maxItems ? routes.slice(0, maxItems) : routes,
 	}
 }
 
@@ -281,11 +280,11 @@ export const FOOTER_GLOBAL_NAV: FooterNavGroup[] = [
 	getNavigationGroup('Discover'),
 	getNavigationGroup('Marketplace'),
 	getNavigationGroup('Community'),
-	getNavigationGroup('Company'),
+	getNavigationGroup('Company', 4),
 	{
 		location: 'legal',
 		orientation: 'horizontal',
-		routes: listLabelRoutes('Legal').slice(0, 3),
+		routes: listRoutesInLabel('Legal').slice(0, 3),
 	},
 ] as const
 

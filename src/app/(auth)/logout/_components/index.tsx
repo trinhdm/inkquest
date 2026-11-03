@@ -5,6 +5,7 @@ import { getAuthFormIDs, getFirstName } from '../../_utils/helpers'
 import { switchAccount } from '../_utils/actions'
 import { AuthForm } from '../../_components/AuthForm'
 import { Avatar } from '@/components/core/Avatar'
+import { NavRoutes } from '@/utils/navigation'
 import type { RememberedAccount } from '../../_utils/account'
 
 const IDX = getAuthFormIDs('logout', 'done')
@@ -35,7 +36,7 @@ export const LogoutBase = ({ account }: LogoutBaseProps) => {
 
 						<AuthForm.Continue
 							fullWidth
-							href="/login"
+							href={ NavRoutes.AUTH_LOGIN }
 							label={ firstName ? `Continue as ${firstName}` : 'Continue' }
 						/>
 					</div>
@@ -46,7 +47,7 @@ export const LogoutBase = ({ account }: LogoutBaseProps) => {
 				<AuthForm.Alternate as="auth" hasDivider={ !!account } />
 
 				<AuthForm.Note>
-					<p><Link href="/" data-link>Back to home</Link></p>
+					<p><Link href={ NavRoutes.HOME } data-link>Back to home</Link></p>
 				</AuthForm.Note>
 			</AuthForm.Footer>
 		</AuthForm>

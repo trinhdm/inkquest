@@ -3,6 +3,7 @@ import { useSignupCtx, type SignupMethod } from '../_utils/signup.context'
 import { validateSignup } from '../_utils/schema'
 import { AuthForm } from '../../_components/AuthForm'
 import { ContactField } from '../_components/ContactField'
+import { NavRoutes } from '@/utils/navigation'
 import { PasswordField } from '../_components/PasswordField'
 
 const SUBMIT_LABELS = {
@@ -49,7 +50,7 @@ export const SignupRoot = () => {
 				/>
 
 				<AuthForm.Note>
-					<p>By creating an account, you confirm you&apos;re 18+ and agree to the <Link href="/terms" data-link>Terms</Link> and <Link href="/privacy-policy" data-link>Privacy Policy</Link>.</p>
+					<p>By creating an account, you confirm you&apos;re 18+ and agree to the <Link href={ NavRoutes.LEGAL_TERMS } data-link>Terms</Link> and <Link href={ NavRoutes.LEGAL_PRIVACY } data-link>Privacy Policy</Link>.</p>
 				</AuthForm.Note>
 			</AuthForm.Footer>
 		</AuthForm>

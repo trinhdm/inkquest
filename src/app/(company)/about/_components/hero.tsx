@@ -1,4 +1,5 @@
 import { Button } from '@/components/core/Button'
+import { NavRoutes } from '@/utils/navigation'
 import { Section } from '@/components/layout/Section'
 
 export const AboutHero = () => {
@@ -14,8 +15,8 @@ export const AboutHero = () => {
 			Inkquest is a marketplace and community connecting tattoo artists with clients — search by style and distance, bid on flash designs and open slots, and book directly.
 
 			<Section.Footer>
-				<Button href="/discover">Find your artist</Button>
-				<Button href="/careers">See open roles</Button>
+				<Button href={ NavRoutes.DISCOVER_ARTISTS }>Find your artist</Button>
+				<Button href={ NavRoutes.COMPANY_CAREERS }>See open roles</Button>
 			</Section.Footer>
 		</Section>
 	)

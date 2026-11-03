@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/core/Button'
 import { Grid } from '@/components/layout/Grid'
+import { NavRoutes } from '@/utils/navigation'
 import { Section } from '@/components/layout/Section'
 import { Sidebar } from '@/components/layout/Sidebar'
 
@@ -22,7 +23,7 @@ export default function CommunityFeed() {
 				</>
 
 				<Section.Footer>
-					<Button href="/careers" variant="outline">
+					<Button href={ NavRoutes.COMMUNITY_FEED_NEW } variant="outline">
 						Share a post
 					</Button>
 				</Section.Footer>
@@ -37,7 +38,7 @@ export default function CommunityFeed() {
 						<div>
 							<div>
 								Your Circle
-								<Link href="/community/feed/circle">See All</Link>
+								<Link href={ NavRoutes.COMMUNITY_FEED_CIRCLE }>See All</Link>
 							</div>
 						</div>
 						<div>
