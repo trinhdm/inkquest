@@ -1,0 +1,23 @@
+@use '@/styles/utils' as global;
+@use '../shared' as shared;
+
+.inkq-code-input {
+	$name: &;
+
+	column-gap: var(--inkq-gutter-list);
+	display: inline-flex;
+	max-width: 100%;
+
+	&__box {
+		@include shared.form-control-text;
+
+		border-radius: var(--inkq-border-radius-lg);
+		color: var(--inkq-color-text);
+		font: var(--inkq-text-h4);
+		// font-size: max(1rem, 16px);
+		height: var(--space-12);
+		padding: 0;
+		text-align: center;
+		width: var(--space-11);
+	}
+}

@@ -4,7 +4,7 @@ import { Field } from '../Field'
 import { Form } from '../../Form'
 
 describe('Field.Group', () => {
-	reset('Field', 'Field.Group', 'Group', 'TextInput', 'NumberInput', 'Textarea', 'Choice', 'Form', 'Grid', 'Grid.Item')
+	reset('Field', 'Field.Group', 'Group', 'TextInput', 'Textarea', 'CodeInput', 'Choice', 'Form', 'Grid', 'Grid.Item')
 
 	let warn: jest.SpyInstance
 
@@ -67,7 +67,7 @@ describe('Field.Group', () => {
 			render(
 				<Field.Group legend="Contact" required>
 					<Field id="a" label="First"><Field.Input name="a" /></Field>
-					<Field id="b" label="Count"><Field.Number name="b" type="number" /></Field>
+					<Field id="b" label="Count"><Field.Code name="b" type="number" /></Field>
 					<Field id="c" label="Notes"><Field.Textarea name="c" /></Field>
 					<Field id="d" label="Agree"><Field.Choice name="d" type="checkbox" value="1" /></Field>
 				</Field.Group>

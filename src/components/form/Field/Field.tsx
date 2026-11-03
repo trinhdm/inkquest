@@ -22,8 +22,8 @@ import { polymorphic } from '@/lib/component/factory'
 import { toKebabCase } from '@/utils/helpers'
 import { Box } from '@/components/polymorphic/Box'
 import { Choice as ChoiceInput } from '../Choice'
+import { CodeInput } from '../CodeInput'
 import { FieldGroup } from './FieldGroup'
-import { NumberInput } from '../NumberInput'
 import { Textarea as TextareaInput } from '../Textarea'
 import { TextInput } from '../TextInput'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
@@ -41,9 +41,9 @@ const DEFAULT_PROPS = {
 
 export const SUBCOMPONENTS = {
 	Choice: ChoiceInput,
+	Code: CodeInput,
 	Group: FieldGroup,
 	Input: TextInput,
-	Number: NumberInput,
 	Textarea: TextareaInput,
 	// Upload: FileUpload,
 } as const
@@ -371,15 +371,15 @@ export declare namespace Field {
 		export type Types = ChoiceInput.Types
 	}
 
+	export namespace Code {
+		export type Props = CodeInput.Props
+		export type Specs = CodeInput.Specs
+	}
+
 	export namespace Input {
 		export type Props = TextInput.Props
 		export type Specs = TextInput.Specs
 		export type Types = TextInput.Types
-	}
-
-	export namespace Number {
-		export type Props = NumberInput.Props
-		export type Specs = NumberInput.Specs
 	}
 
 	export namespace Textarea {

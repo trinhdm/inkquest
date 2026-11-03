@@ -16,7 +16,6 @@ export type FlattenInputTokens =
 
 type InputSpecsList = {
 	input: Field.Input.Specs
-	number: Field.Number.Specs
 	textarea: Field.Textarea.Specs
 		& { tokens: { root: FlattenInputTokens } }
 }

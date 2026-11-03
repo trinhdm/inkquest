@@ -4,7 +4,7 @@ import { render, reset, screen } from '@/tests/test-utils'
 import { Field } from './Field'
 
 describe('Field', () => {
-	reset('Field', 'Field.Group', 'TextInput', 'NumberInput', 'Textarea', 'Choice')
+	reset('Field', 'Field.Group', 'TextInput', 'Textarea', 'CodeInput', 'Choice')
 
 	let warn: jest.SpyInstance
 
@@ -204,7 +204,7 @@ describe('Field', () => {
 		it('reaches a number input, a textarea and a choice with required and disabled', () => {
 			render(
 				<>
-					<Field id="n" label="Num" required disabled><Field.Number name="n" type="number" /></Field>
+					<Field id="n" label="Num" required disabled><Field.Code name="n" type="number" /></Field>
 					<Field id="t" label="Text" required disabled><Field.Textarea name="t" /></Field>
 					<Field id="c" label="Check" required disabled><Field.Choice name="c" type="checkbox" value="1" /></Field>
 				</>
@@ -221,7 +221,7 @@ describe('Field', () => {
 		it('makes a number input and a textarea read only', () => {
 			render(
 				<>
-					<Field id="n" label="Num" readonly><Field.Number name="n" type="number" /></Field>
+					<Field id="n" label="Num" readonly><Field.Code name="n" type="number" /></Field>
 					<Field id="t" label="Text" readonly><Field.Textarea name="t" /></Field>
 				</>
 			)

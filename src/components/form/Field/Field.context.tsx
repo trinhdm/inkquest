@@ -48,6 +48,36 @@ interface SharedFieldProps
 		Pick<Field.Props, SharedFieldProp>,
 		Pick<AnimationOptions, 'unstyled'> {}
 
+const FIELD_CONTEXT_BASE = {
+	aria: {
+		busy: undefined,
+		describedby: undefined,
+		invalid: undefined,
+		labelledby: undefined,
+		required: undefined,
+	},
+	clsx: {
+		selector: {
+			button: false,
+			inline: false,
+			error: false,
+		},
+	},
+	disabled: undefined,
+	hasError: false,
+	icon: null,
+	idx: {
+		control: 'control',
+		error: 'error',
+		info: 'info',
+		label: 'label',
+	},
+	layout: undefined,
+	loader: undefined,
+	readonly: undefined,
+	required: undefined,
+} satisfies FieldContext
+
 export interface FieldContext
 	extends SharedFieldProps {
 	aria: FieldAria
@@ -66,7 +96,7 @@ export const {
 	RootProvider: FieldProvider,
 	useRootCtx: useFieldCtx,
 	useRootProps: useFieldProps,
-} = createCompoundCtx<FieldContext, 'Field'>('Field')
+} = createCompoundCtx<FieldContext, 'Field'>('Field', FIELD_CONTEXT_BASE)
 
 const SHARED_PROPS = [
 	'size',
