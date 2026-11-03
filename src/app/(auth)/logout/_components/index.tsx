@@ -6,12 +6,12 @@ import { switchAccount } from '../_utils/actions'
 import { AuthForm } from '../../_components/AuthForm'
 import { Avatar } from '@/components/core/Avatar'
 import { NavRoutes } from '@/utils/navigation'
-import type { RememberedAccount } from '../../_utils/account'
+import type { AccountValues } from '../../_utils/schema'
 
 const IDX = getAuthFormIDs('logout', 'done')
 
 interface LogoutBaseProps {
-	account: RememberedAccount | null
+	account: AccountValues | null
 }
 
 export const LogoutBase = ({ account }: LogoutBaseProps) => {

@@ -1,5 +1,5 @@
+import type { AccountValues } from './schema'
 import type { FormResults } from '@/lib/form'
-import type { RememberedAccount } from './account'
 
 export const getAuthFormIDs = <T extends string>(
 	pageID: string,
@@ -18,5 +18,5 @@ export const omitMessage = (form: FormResults): FormResults => ({
 
 //	parse account details
 
-export const getFirstName = ({ name }: RememberedAccount) =>
+export const getFirstName = ({ name }: AccountValues) =>
 	name?.trim().split(/\s+/)[0]

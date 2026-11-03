@@ -9,7 +9,7 @@ import { LoginReset } from '../_form/reset'
 import { LoginRoot } from '../_form/root'
 import { LoginSuccess } from '../_form/success'
 import { LOGIN_PAGE_DATA } from '../_utils/login.data'
-import type { RememberedAccount } from '../../_utils/account'
+import type { AccountValues } from '../../_utils/schema'
 
 const SCREENS = {
 	begin:		LoginRoot,
@@ -20,7 +20,7 @@ const SCREENS = {
 } satisfies Record<LoginScreen, ComponentType>
 
 interface LoginBaseProps {
-	account: RememberedAccount | null
+	account: AccountValues | null
 }
 
 export const LoginBase = ({ account }: LoginBaseProps) => {

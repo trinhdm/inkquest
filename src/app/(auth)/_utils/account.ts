@@ -1,19 +1,11 @@
 import { cookies } from 'next/headers'
-import { z } from 'zod'
+import { accountSchema, type AccountValues } from './schema'
 import { NavRoutes } from '@/utils/navigation'
 
 const COOKIE = 'inkq_last_account',
 	MAX_AGE = 60 * 60 * 24 * 30
 
-const accountSchema = z.object({
-	email: z.email(),
-	name: z.string().max(100).optional(),
-})
-
-export type RememberedAccount =
-	z.infer<typeof accountSchema>
-
-export const rememberAccount = async (account: RememberedAccount) => {
+export const rememberAccount = async (account: AccountValues) => {
 	(await cookies()).set(COOKIE, JSON.stringify(account), {
 		httpOnly: true,
 		maxAge: MAX_AGE,
@@ -24,7 +16,7 @@ export const rememberAccount = async (account: RememberedAccount) => {
 }
 
 //	a display hint for this browser only, never proof of who someone is
-export const getRememberedAccount = async (): Promise<RememberedAccount | null> => {
+export const getRememberedAccount = async (): Promise<AccountValues | null> => {
 	const value = (await cookies()).get(COOKIE)?.value
 	if (!value) return null
 
