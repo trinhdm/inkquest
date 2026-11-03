@@ -432,30 +432,6 @@ describe('Field', () => {
 		})
 	})
 
-	describe('keypad layout', () => {
-		it('keeps the label for assistive tech but hides it visually', () => {
-			const { container } = render(
-				<Field id="a" label="Digit 1" layout="keypad">
-					<Field.Number name="a" type="number" />
-				</Field>
-			)
-
-			expect(container.firstElementChild).toHaveClass('field--keypad')
-			expect(screen.getByText('Digit 1')).toHaveClass('sr')
-			expect(screen.getByLabelText('Digit 1')).toBeInTheDocument()
-		})
-
-		it('leaves the label visible in the default layout (positive control)', () => {
-			render(
-				<Field id="a" label="Digit 1">
-					<Field.Number name="a" type="number" />
-				</Field>
-			)
-
-			expect(screen.getByText('Digit 1')).not.toHaveClass('sr')
-		})
-	})
-
 	describe('asterisk inside a group', () => {
 		it('hides the required asterisk on the label when the Field sits in a Field.Group', () => {
 			render(

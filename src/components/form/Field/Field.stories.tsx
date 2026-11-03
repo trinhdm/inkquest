@@ -77,11 +77,6 @@ const layoutExample = (layout: (typeof LAYOUT_OPTIONS)[number]) => {
 				<Field.Input name="layout-inline" />
 			</Field>
 		)
-		case 'keypad': return (
-			<Field id="layout-keypad" label="Seven" layout="keypad">
-				<Field.Choice name="layout-keypad" value="7" />
-			</Field>
-		)
 		default: return (
 			<Field caption="Unlimited sessions" id="layout-default" label="Pro plan" layout="default">
 				<Field.Choice name="layout-default" value="pro" />

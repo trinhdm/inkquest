@@ -110,7 +110,7 @@ export const TextInput = polymorphic<TextInputSpecs>((_props, { useProps, useSty
 
 			{ hasIcon && (
 				<span { ...styles('icon') }>
-					{ isPassword ? (
+					{ isPassword && (
 						<Button
 							{ ...styles('toggle', { selector: { shown } }) }
 							unstyled
@@ -126,7 +126,9 @@ export const TextInput = polymorphic<TextInputSpecs>((_props, { useProps, useSty
 							<Eye { ...styles('glyph', { selector: 'open' }) } />
 							<EyeClosed { ...styles('glyph', { selector: 'closed' }) } />
 						</Button>
-					) : icon }
+					) }
+
+					{ !isPassword && icon }
 				</span>
 			) }
 

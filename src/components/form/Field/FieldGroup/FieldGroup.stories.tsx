@@ -68,19 +68,6 @@ const hasButtonClass = (el: Element) => hasLayoutClass(el, 'button')
 
 const MODIFIER_LAYOUTS = LAYOUT_OPTIONS.filter(layout => layout !== 'default')
 
-// Captionless choices (the `keypad` layout forbids captions). The layout itself
-// comes from the surrounding group.
-const keypadFields = (prefix: string) => (
-	<>
-		<Field id={ `${prefix}-one` } label="One">
-			<Field.Choice name={ `${prefix}-digit` } value="1" />
-		</Field>
-		<Field id={ `${prefix}-two` } label="Two">
-			<Field.Choice name={ `${prefix}-digit` } value="2" />
-		</Field>
-	</>
-)
-
 const fieldsets = (canvasElement: HTMLElement) =>
 	canvasElement.querySelectorAll<HTMLFieldSetElement>('fieldset')
 
@@ -340,9 +327,6 @@ export const Layouts: Story = {
 					) }
 					{ layout === 'inline' && (
 						<Field.Group layout="inline" legend="Contact details">{ contactFields('layout-inline') }</Field.Group>
-					) }
-					{ layout === 'keypad' && (
-						<Field.Group layout="keypad" legend="Digit">{ keypadFields('layout-keypad') }</Field.Group>
 					) }
 					{ layout === 'default' && (
 						<Field.Group layout="default" legend="Plan">{ planFields('layout-default') }</Field.Group>

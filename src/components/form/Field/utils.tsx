@@ -28,7 +28,7 @@ interface FormErrorsArgs<N extends FieldName> {
 	props: FieldSpecsList[N]['props']
 }
 
-export const getFormErrors = <N extends FieldName>({
+export const getFieldErrors = <N extends FieldName>({
 	context = {},
 	name,
 	props,

@@ -15,7 +15,6 @@ export type FlattenInputTokens =
 	InputTokens[keyof InputTokens]
 
 type InputSpecsList = {
-	choice: Field.Choice.Specs
 	input: Field.Input.Specs
 	number: Field.Number.Specs
 	textarea: Field.Textarea.Specs

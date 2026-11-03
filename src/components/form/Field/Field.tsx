@@ -17,7 +17,7 @@ import { calcInputBox, type InputPropsList } from '../utils'
 import { defineTokens } from '@/lib/component/tokens'
 import { extractOthers } from '@/hooks/useProps'
 import { filterChildren, withInlineWrap } from '@/lib/component/children'
-import { getFormErrors, getIcon } from './utils'
+import { getFieldErrors, getIcon } from './utils'
 import { polymorphic } from '@/lib/component/factory'
 import { toKebabCase } from '@/utils/helpers'
 import { Box } from '@/components/polymorphic/Box'
@@ -83,19 +83,10 @@ interface FieldButtonLayout {
 	size?: never
 }
 
-interface FieldKeypadLayout {
-	caption?: never
-	iconPosition?: never
-	labelPosition?: never
-	layout: 'keypad'
-	size?: Size
-}
-
 type FieldLayoutProps =
 	| FieldButtonLayout
 	| FieldDefaultLayout
 	| FieldInlineLayout
-	| FieldKeypadLayout
 
 type FieldProps =
 	& BaseFieldProps
@@ -214,13 +205,18 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 		loader, name,
 	} = buildControl(props, styles)
 
-	const { error, hasError, isInvalid } = getFormErrors({ context, name, props })
+	const { error, hasError, isInvalid } = getFieldErrors({ context, name, props })
 	const isRequired = !!(required && !readonly)
 
 	const uid = useId()
 	const idx = useMemo(() => {
 		const root = toKebabCase(id ?? uid)
-		return { control: `${root}-control`, error: `${root}-error`, info: `${root}-info` }
+		return {
+			control: `${root}-control`,
+			error: `${root}-error`,
+			info: `${root}-info`,
+			label: `${root}-label`,
+		}
 	}, [id, uid])
 
 	const aria = useMemo(() => {
@@ -232,11 +228,13 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 			busy: !!loader || undefined,
 			describedby: describedby.join(' '),
 			invalid: isInvalid || undefined,
+			labelledby: !!label ? idx.label : undefined,
 			required: isRequired || undefined,
 		}
 	}, [
 		caption, hasError, idx,
-		isInvalid, isRequired, loader,
+		isInvalid, isRequired,
+		label, loader,
 	])
 
 	const clsx = useMemo(() => ({
@@ -271,9 +269,8 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 		} },
 	}
 
-	const clsxKeypad = layout === 'keypad' ? { global: { 'sr': true } } : {}
 	const labelEl = label && (
-		<label { ...styles('label', clsxKeypad) } htmlFor={ idx.control }>
+		<label { ...styles('label') } htmlFor={ idx.control } id={ idx.label }>
 			{ label }
 			{ (isRequired && !context.group) && (
 				<span { ...styles('required') } aria-hidden="true">*</span>

@@ -1,7 +1,7 @@
 import { useId } from 'react'
 import { useFormCtx, type Form } from '../../Form'
 import { extractOthers } from '@/hooks/useProps'
-import { getFormErrors } from '../utils'
+import { getFieldErrors } from '../utils'
 import { polymorphic } from '@/lib/component/factory'
 import { toKebabCase } from '@/utils/helpers'
 import { Box } from '@/components/polymorphic/Box'
@@ -70,7 +70,7 @@ export const FieldGroup = polymorphic<FieldGroupSpecs>((_props, { useProps, useS
 	const uid = useId(),
 		errorID = `${toKebabCase(uid)}-error`
 
-	const { error, hasError, isInvalid } = getFormErrors({ context, name, props })
+	const { error, hasError, isInvalid } = getFieldErrors({ context, name, props })
 
 	const errorEl = hasError && (
 		<span { ...styles('error') } id={ errorID }>

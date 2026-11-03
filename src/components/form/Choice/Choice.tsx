@@ -1,6 +1,5 @@
 import { useField, type Field } from '../Field'
 import { extractOthers } from '@/hooks/useProps'
-import { getSharedTokens, type InputTokens as ChoiceTokens } from '../utils'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import type { ChangeEventHandler, HTMLInputTypeAttribute, MouseEventHandler } from 'react'
@@ -49,20 +48,17 @@ interface ChoiceSpecs {
 	}
 	props: ChoiceProps
 	selectors: ChoiceSelectors
-	tokens: ChoiceTokens
 }
 
 type ChoiceSelectors =
 	| 'root' | 'icon'
-
-const tokens = getSharedTokens('choice')
 
 export const Choice = polymorphic<ChoiceSpecs>((_props, { useProps, useStyles }) => {
 	const { useChosenFieldProps, useFieldCtx } = useField()
 
 	const context = useFieldCtx(NAME)
 	const props = useProps(useChosenFieldProps(_props))
-	const styles = useStyles({ context, props, tokens })
+	const styles = useStyles({ context, props })
 
 	const {
 		aria, clsx, disabled,
