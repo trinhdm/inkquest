@@ -1,22 +1,19 @@
 import Link from 'next/link'
-import { useSignupCtx, type SignupMethod } from '../_utils/signup.context'
+import { useSignupCtx } from '../_utils/signup.context'
 import { validateSignup } from '../_utils/schema'
 import { AuthForm } from '../../_components/AuthForm'
 import { ContactField } from '../_components/ContactField'
 import { NavRoutes } from '@/utils/navigation'
 import { PasswordField } from '../_components/PasswordField'
-
-const SUBMIT_LABELS = {
-	email:	'Create account',
-	magic:	'Send magic link',
-	phone:	'Send code',
-} as const satisfies Record<SignupMethod, string>
+import { METHOD_DATA } from '../_utils/signup.data'
 
 export const SignupRoot = () => {
 	const {
 		idx, method, navigate,
 		signup: { action, pending, state },
 	} = useSignupCtx()
+
+	const { submit } = METHOD_DATA[method.active]
 
 	return (
 		<AuthForm
@@ -31,14 +28,14 @@ export const SignupRoot = () => {
 				One account for finding artists, bidding on flash, and booking.
 			</AuthForm.Header>
 
-			<input name="method" type="hidden" value={ method } />
+			<input name="method" type="hidden" value={ method.active } />
 			<ContactField />
 			<PasswordField />
 
 			<AuthForm.Footer>
 				<AuthForm.Submit
 					fullWidth
-					label={ SUBMIT_LABELS[method] }
+					label={ submit }
 					loading={ pending }
 				/>
 

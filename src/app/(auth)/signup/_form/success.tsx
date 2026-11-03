@@ -2,6 +2,7 @@ import { useSignupCtx } from '../_utils/signup.context'
 import { AuthForm } from '../../_components/AuthForm'
 import { Field } from '@/components/form/Field'
 import { NavRoutes } from '@/utils/navigation'
+import { METHOD_DATA } from '../_utils/signup.data'
 
 export const SignupSuccess = () => {
 	const {
@@ -9,7 +10,7 @@ export const SignupSuccess = () => {
 		guardSubmit,
 	} = useSignupCtx()
 
-	const isPhone = method === 'phone'
+	const { field: { label, type } } = METHOD_DATA[method.active]
 
 	return (
 		<AuthForm idx={ idx } onSubmit={ guardSubmit }>
@@ -21,13 +22,13 @@ export const SignupSuccess = () => {
 				<Field
 					readonly
 					id={ `${idx.field}-to` }
-					label={ isPhone ? 'Phone number' : 'Email' }
+					label={ label }
 					layout="inline"
 				>
 					<Field.Input
 						defaultValue={ destination }
-						name={ isPhone ? 'tel' : 'email' }
-						type={ isPhone ? 'tel' : 'email' }
+						name={ type }
+						type={ type }
 					/>
 				</Field>
 			) }

@@ -22,7 +22,7 @@ export const SignupMagic = () => {
 			</AuthForm.Header>
 
 			<input name="destination" type="hidden" value={ destination } />
-			<input name="method" type="hidden" value={ method } />
+			<input name="method" type="hidden" value={ method.active } />
 
 			<Field
 				readonly

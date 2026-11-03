@@ -1,12 +1,80 @@
 import { syncLengthTo } from '@/utils/helpers'
 import type { BasePageData } from '@/types/shared'
-
-export const SIGNUP_METHODS = ['email', 'magic', 'phone'] as const
+import type { Field } from '@/components/form/Field'
+import type { Icon } from '@/components/core/Icon'
 
 export const SEQUENCE_CHECK_MIN = 4
 
 export const CODE_EXPIRY_SECONDS = 10 * 60
 export const RESEND_COOLDOWN_SECONDS = 30
+
+export const SIGNUP_METHODS = ['email', 'magic', 'phone'] as const
+
+export type SignupMethod =
+	typeof SIGNUP_METHODS[number]
+
+export const METHOD_BASE: SignupMethod = 'email'
+
+const EMAIL_DATA =  {
+	copy: {
+		input: 'email',
+		output: 'email',
+	},
+	field: {
+		label: 'Email',
+		type: 'email',
+	},
+} as const satisfies Pick<MethodData, 'copy' | 'field'>
+
+export const METHOD_DATA = {
+	email: {
+		...EMAIL_DATA,
+		submit: 'Create account',
+		toggle: {
+			icon: 'email',
+			label: 'Use email & password',
+		},
+	},
+	magic: {
+		...EMAIL_DATA,
+		submit: 'Send magic link',
+		toggle: {
+			icon: 'wand-sparkles',
+			label: 'Email me a magic link',
+		},
+	},
+	phone: {
+		copy: {
+			input: 'number',
+			output: 'text',
+		},
+		field: {
+			label: 'Phone Number',
+			type: 'tel',
+		},
+		submit: 'Send code',
+		toggle: {
+			icon: 'phone',
+			label: 'Use phone number',
+		},
+	},
+} as const satisfies Record<SignupMethod, MethodData>
+
+interface MethodData {
+	copy: {
+		input: string
+		output: string
+	}
+	field: {
+		label: string
+		type: Extract<Field.Props['type'], 'email' | 'tel'>
+	}
+	toggle: {
+		icon: Icon.Props['type']
+		label: string
+	}
+	submit: string
+}
 
 export interface PasswordCriteria {
 	readonly id: string

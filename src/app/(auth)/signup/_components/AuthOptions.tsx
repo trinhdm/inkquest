@@ -1,36 +1,18 @@
-import { useSignupCtx, type SignupMethod } from '../_utils/signup.context'
+import { useSignupCtx } from '../_utils/signup.context'
 import { Button } from '@/components/core/Button'
 import { Icon } from '@/components/core/Icon'
-
-interface AuthOption {
-	name: SignupMethod
-	icon: Icon.Props['type']
-	label: string
-}
-
-const AUTH_OPTIONS: AuthOption[] = [
-	{
-		name: 'email',
-		icon: 'email',
-		label: 'Use email & password',
-	},
-	{
-		name: 'magic',
-		icon: 'wand-sparkles',
-		label: 'Email me a magic link',
-	},
-	{
-		name: 'phone',
-		icon: 'phone',
-		label: 'Use phone number',
-	},
-]
+import { METHOD_DATA } from '../_utils/signup.data'
 
 export const AuthOptions = () => {
-	const { handleSignup, method, signup } = useSignupCtx()
+	const {
+		handleSignup, signup,
+		method: { inactive: otherMethods },
+	} = useSignupCtx()
 
-	return AUTH_OPTIONS.map(({ icon, label, name }) => (
-		method !== name && (
+	return otherMethods.map(name => {
+		const { toggle: { icon, label } } = METHOD_DATA[name]
+
+		return (
 			<Button
 				unstyled
 				className="authentication__option"
@@ -42,7 +24,7 @@ export const AuthOptions = () => {
 				<span data-link>{ label }</span>
 			</Button>
 		)
-	))
+	})
 }
 
 AuthOptions.displayName = 'AuthOptions'

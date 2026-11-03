@@ -2,6 +2,7 @@ import { useState, type ChangeEvent } from 'react'
 import { useSignupCtx } from '../_utils/signup.context'
 import { AuthOptions } from './AuthOptions'
 import { Field } from '@/components/form/Field'
+import { METHOD_DATA } from '../_utils/signup.data'
 import { PLACEHOLDER } from '@/lib/form'
 
 export const ContactField = () => {
@@ -15,8 +16,7 @@ export const ContactField = () => {
 		tel: state.values.tel ?? '',
 	})
 
-	const isPhoneAuth = method === 'phone',
-		type = isPhoneAuth ? 'tel' : 'email'
+	const { field: { label, type } } = METHOD_DATA[method.active]
 
 	const handleContact = (event: ChangeEvent<HTMLInputElement>) =>
 		setContact({ ...contact, [type]: event.currentTarget.value })
@@ -26,7 +26,7 @@ export const ContactField = () => {
 			required
 			disabled={ pending }
 			id={ `${idx.field}-${method}` }
-			label={ isPhoneAuth ? 'Phone number' : 'Email' }
+			label={ label }
 			caption={ <AuthOptions /> }
 		>
 			<Field.Input

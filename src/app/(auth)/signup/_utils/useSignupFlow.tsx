@@ -3,12 +3,9 @@ import { useForm, useFormHistory, useOnReply } from '@/hooks/form'
 import { getAuthFormIDs } from '../../_utils/helpers'
 import { initFormState, type FormResults } from '@/lib/form'
 import { resend, signup, verify } from './actions'
-import type { SignupPageData } from './signup.data'
-
-import type {
-	ReplyFromStep,
-	SignupFlow, SignupMethod, SignupScreen,
-} from './signup.context'
+import { METHOD_BASE, SIGNUP_METHODS } from './signup.data'
+import type { ReplyFromStep, SignupFlow, SignupScreen } from './signup.context'
+import type { SignupMethod, SignupPageData } from './signup.data'
 
 export const useSignupFlow = ({ id: pageID }: SignupPageData): SignupFlow => {
 	const {
@@ -17,12 +14,24 @@ export const useSignupFlow = ({ id: pageID }: SignupPageData): SignupFlow => {
 		startWait, stopWait, waiting,
 	} = useFormHistory<SignupScreen>('begin')
 
-	const [method, setMethod] = useState<SignupMethod>('email')
 	const [replyFrom, setReplyFrom] = useState<ReplyFromStep | null>(null)
+	const [order, setOrder] = useState<SignupMethod[]>(() => [
+		METHOD_BASE,
+		...SIGNUP_METHODS.filter(name => name !== METHOD_BASE),
+	])
+
+	const [method, ...otherMethods] = order
 
 	const signupForm = useForm(signup, initFormState)
 	const resendForm = useForm(resend, initFormState)
 	const verifyForm = useForm(verify, initFormState)
+
+	const handleSignup = (next: SignupMethod) =>
+		setOrder(prev => {
+			const [current, ...others] = prev
+			if (next === current) return prev
+			return [next, ...others.filter(name => name !== next), current]
+		})
 
 	useOnReply(signupForm.state, state => {
 		if (!state.success) return
@@ -54,7 +63,7 @@ export const useSignupFlow = ({ id: pageID }: SignupPageData): SignupFlow => {
 	return {
 		goBack: back,
 		guardSubmit: event => guard(event, { when: screen === 'success' }),
-		handleSignup: setMethod,
+		handleSignup,
 		navigate,
 		stopWait,
 
@@ -64,7 +73,10 @@ export const useSignupFlow = ({ id: pageID }: SignupPageData): SignupFlow => {
 
 		destination: signupForm.state.values.destination ?? '',
 		idx: getAuthFormIDs(pageID, screen),
-		method,
+		method: {
+			active: method,
+			inactive: otherMethods,
+		},
 		reply,
 		screen,
 		waiting,

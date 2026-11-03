@@ -17,7 +17,7 @@ export const PasswordField = () => {
 		setPassword('')
 	}
 
-	if (method !== 'email') return null
+	if (method.active !== 'email') return null
 
 	return (
 		<>
