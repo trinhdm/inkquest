@@ -83,7 +83,12 @@ export const Avatar = polymorphic<AvatarSpecs>((_props, { useProps, useStyles })
 	const props = useProps(_props)
 	const styles = useStyles({ props, tokens })
 
-	const { as, ring, user, ...rest } = props
+	const {
+		as, bgColor, ring,
+		size, user,
+		...rest
+	} = props
+
 	const others = extractOthers(rest)
 
 	const name = user.name ?? user.email,
@@ -98,8 +103,13 @@ export const Avatar = polymorphic<AvatarSpecs>((_props, { useProps, useStyles })
 				hidden: true,
 			} } }
 		>
-			{ keyHasValue(user, 'avatar_url') && typeof user.avatar_url === 'string'
-				? <Image { ...styles('image') } fill alt={ name } src={ user.avatar_url } />
+			{ keyHasValue(user, 'avatar_url')
+				? <Image
+					{ ...styles('image') }
+					fill
+					alt={ `${name} icon` }
+					src={ user.avatar_url }
+				/>
 				: <span { ...styles('text') }>{ initials }</span> }
 		</Box>
 	)

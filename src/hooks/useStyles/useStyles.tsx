@@ -59,9 +59,6 @@ export type StyleFn<S extends SpecsContract> = <T extends SpecsSelectors<S>>(
 
 const ROOT_SELECTOR = 'root'
 
-const isUnstyled = <S extends SpecsContract>(props: StyleOptions<S>['props']): boolean =>
-	keyHasValue(props, { unstyled: true })
-
 export const useStyles = <S extends SpecsContract>(
 	name: string,
 	options: StyleOptions<S>
@@ -76,7 +73,7 @@ export const useStyles = <S extends SpecsContract>(
 	): StyleResults<T> => {
 		const check = {
 			isRoot: selector === ROOT_SELECTOR,
-			isUnstyled: isUnstyled(options.props),
+			isUnstyled: keyHasValue(options.props, { unstyled: true }),
 		}
 
 		const args: SharedConfig<S> = { ...opts, check, config, selector }

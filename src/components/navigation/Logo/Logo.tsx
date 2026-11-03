@@ -104,7 +104,7 @@ export const Logo = polymorphic<LogoSpecs>((_props, { useProps, useStyles }) => 
 		/>
 	)
 
-	if (keyHasValue(props, 'href') && !!props.href) {
+	if (keyHasValue(props, 'href')) {
 		const { href } = props
 		let linkProps = { ...sharedProps, href }
 

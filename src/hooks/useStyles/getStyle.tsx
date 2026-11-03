@@ -5,33 +5,27 @@ import type { SharedConfig } from './useStyles'
 import type { SpecsContract } from '@/lib/component/factory/types'
 
 type InheritConfig<S extends SpecsContract> =
-	Omit<SharedConfig<S>, 'props'>
+	& Omit<SharedConfig<S>, 'props'>
 	& { props: S['props'] & Record<'style', CSSProperties> }
 
 const canInherit = <S extends SpecsContract>(
 	args: SharedConfig<S>
 ): args is InheritConfig<S> =>
-	'style' in args.props && keyHasValue(args.props, 'style')
+	keyHasValue(args.props, 'style')
 
 const inheritStyles = <S extends SpecsContract>({
 	check,
 	props,
-}: InheritConfig<S>): CSSProperties => (
-	check.isRoot && keyHasValue(props, 'style')
-		? props.style
-		: {}
-)
+}: InheritConfig<S>): CSSProperties =>
+	check.isRoot && keyHasValue(props, 'style') ? props.style : {}
 
 export const getStyle = <S extends SpecsContract>(
 	args: SharedConfig<S>
 ): CSSProperties => {
 	const {
-		check,
-		context,
-		props,
-		selector,
-		theme,
-		tokens,
+		check, context,
+		props, selector,
+		theme, tokens,
 	} = args
 
 	const inherited = canInherit(args) ? inheritStyles(args) : {}

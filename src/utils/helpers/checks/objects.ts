@@ -6,11 +6,11 @@ export const isObject = <T extends Record<string, any>>(target: unknown): target
 	!!target && target?.constructor === Object && !Array.isArray(target)
 
 export const isKeyOf = <T extends object>(obj: T, key: PropertyKey): key is keyof T =>
-	Object.hasOwn(obj, key)
+	Object.hasOwn(obj, key) || key in obj
 
 type WithKeyValue<T, K extends PropertyKey> =
 	T extends unknown
-		? T & { [P in K]: P extends keyof T ? NonNullable<T[P]> : unknown }
+		? Extract<Omit<T, K> & { [P in K]: P extends keyof T ? NonNullable<T[P]> : unknown }, T>
 		: never
 
 function hasKeyWithValue<

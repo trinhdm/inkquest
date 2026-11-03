@@ -102,11 +102,11 @@ export const createFactory = <
 			;({ displayName } = BaseComponent)
 		}
 
-		if (keyHasValue(args, 'subcomponents'))
-			Object.assign(BaseComponent, args.subcomponents)
-
 		if (keyHasValue(args, 'defaultProps') && !!displayName)
 			setDefaultProps(displayName, args.defaultProps)
+
+		if (keyHasValue(args, 'subcomponents'))
+			Object.assign(BaseComponent, args.subcomponents)
 
 		return args
 	}
