@@ -1,0 +1,50 @@
+//	fades
+
+@keyframes fadeIn {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+	from { opacity: 1; }
+	to { opacity: 0; }
+}
+
+@keyframes fadeInUp {
+	0% {
+        opacity: 0;
+        transform: translateY(var(--inkq-gutter-item));
+    }
+
+    50% {
+        opacity: 0;
+    }
+
+	100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeOutDown {
+	0% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+	100% {
+        opacity: 0;
+        transform: translateY(var(--inkq-gutter-item));
+    }
+}
+
+//	transforms
+
+@keyframes spin {
+	from { transform: rotate(0deg); }
+	to { transform: rotate(360deg); }
+}
