@@ -1,9 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { getAuthFormIDs, getFirstName, getInitials } from '../../_utils/helpers'
+import { getAuthFormIDs, getFirstName } from '../../_utils/helpers'
 import { switchAccount } from '../_utils/actions'
 import { AuthForm } from '../../_components/AuthForm'
+import { Avatar } from '@/components/core/Avatar'
 import type { RememberedAccount } from '../../_utils/account'
 
 const IDX = getAuthFormIDs('logout', 'done')
@@ -23,12 +24,10 @@ export const LogoutBase = ({ account }: LogoutBaseProps) => {
 
 			{ !!account && (
 				<>
-					<div className="authentication__account">
-						<div className="authentication__info">
-							<span aria-hidden="true" className="authentication__initials">
-								{ getInitials(account) }
-							</span>
-							<div className="authentication__details">
+					<div className="account">
+						<div className="account__info">
+							<Avatar user={ account } />
+							<div className="account__details">
 								{ account.name && <strong>{ account.name }</strong> }
 								<span>{ account.email }</span>
 							</div>

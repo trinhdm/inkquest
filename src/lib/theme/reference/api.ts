@@ -34,6 +34,9 @@ const shorthandTokens = {
 
 const componentTokens = {
 	el: {
+		avatar: {
+			size: token.path<UITokens<'element'>['avatar']>(aliasVar, 'avatar'),
+		},
 		field: {
 			padding: token.path<UITokens<'grid'>['field']['padding']>(aliasVar, 'field', 'padding'),
 		},
@@ -46,6 +49,10 @@ const componentTokens = {
 } as const
 
 const propertyTokens = {
+	color: {
+		...aliasTokens.background,
+		...aliasTokens.color,
+	},
 	fontSize: aliasTokens.fontSize,
 	letterSpacing: aliasTokens.letterSpacing,
 	padding: token.path<UITokens<'padding'>>(aliasVar, 'pad'),

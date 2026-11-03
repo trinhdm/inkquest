@@ -1,0 +1,25 @@
+.inkq-avatar {
+	$name: &;
+
+	--avatar-size: var(--avatar-icon-size, var(--inkq-avatar-lg));
+
+	align-items: center;
+	background-color: var(--avatar-background, var(--inkq-background-card-hover));
+	border-radius: var(--inkq-border-radius-pill);
+	box-shadow: var(--avatar-ring, none);
+	display: flex;
+	flex-shrink: 0;
+	height: var(--avatar-size);
+	justify-content: center;
+	overflow: hidden;
+	position: relative;
+	width: var(--avatar-size);
+
+	&__text {
+		display: block;
+		font-family: var(--inkq-font-family-body);
+		font-size: var(--avatar-font-size, var(--inkq-font-size-body));
+		font-weight: var(--inkq-font-weight-bold);
+		line-height: var(--inkq-font-leading-exact);
+	}
+}

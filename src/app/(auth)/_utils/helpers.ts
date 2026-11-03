@@ -18,14 +18,5 @@ export const omitMessage = (form: FormResults): FormResults => ({
 
 //	parse account details
 
-export const getInitials = ({ email, name }: RememberedAccount) =>
-	(name ?? email)
-		.trim()
-		.split(/\s+/)
-		.slice(0, 2)
-		.map(word => Array.from(word)[0])
-		.join('')
-		.toUpperCase()
-
 export const getFirstName = ({ name }: RememberedAccount) =>
 	name?.trim().split(/\s+/)[0]
