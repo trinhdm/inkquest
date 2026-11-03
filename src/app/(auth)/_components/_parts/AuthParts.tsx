@@ -27,6 +27,8 @@ type AuthResendProps =
 	& BaseAuthResendProps
 	& AuthSubmitButton
 
+//	header
+
 //	for AuthForm to read component's props without rendering
 export const AuthHeader = (_props: AuthHeaderProps) => {
 	if (process.env.NODE_ENV !== 'production')
@@ -36,6 +38,8 @@ export const AuthHeader = (_props: AuthHeaderProps) => {
 }
 
 AuthHeader.displayName = 'AuthHeader'
+
+//	note
 
 export const AuthNote = ({ children }: AuthNoteProps) => {
 	const items = Children.toArray(children)
@@ -53,6 +57,8 @@ export const AuthNote = ({ children }: AuthNoteProps) => {
 }
 
 AuthNote.displayName = 'AuthNote'
+
+//	resend
 
 export const AuthResend = ({
 	idx,

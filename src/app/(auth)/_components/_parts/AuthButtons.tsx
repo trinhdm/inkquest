@@ -1,9 +1,7 @@
 import { Button } from '@/components/core/Button'
 import { Icon } from '@/components/core/Icon'
 import { LINKABLE } from '@/utils/constants'
-import type { ReactNode } from 'react'
-import type { Route } from 'next'
-import type { AuthSubmitButton, RootActionButton } from '../../_utils/types'
+import type { AuthSubmitButton, NativeButtonProps } from '../../_utils/types'
 
 const ARROW_SIDE = {
 	left: { left: true },
@@ -11,41 +9,16 @@ const ARROW_SIDE = {
 } as const
 
 interface BaseAuthButtonProps {
-	children: ReactNode
+	children: Button.Props['children']
 	direction: keyof typeof ARROW_SIDE
-	href?: Route
+	href?: Button.Props['href']
 	linkable?: boolean
-	type?: 'submit'
+	type?: Extract<NativeButtonProps['type'], 'submit'>
 	variant?: Button.Props['variant']
 }
 
 type AuthButtonProps =
 	& BaseAuthButtonProps
-	& AuthSubmitButton
-
-interface BaseAuthBackProps {
-	label?: string
-	linkable?: boolean
-	onClick: Button.Props['onClick']
-	variant?: Button.Props['variant']
-}
-
-type AuthBackProps =
-	& BaseAuthBackProps
-	& Pick<RootActionButton, 'disabled' | 'loading'>
-
-interface AuthContinueProps {
-	href: Route
-	label: string
-}
-
-interface BaseAuthSubmitProps {
-	label: string
-	linkable?: boolean
-}
-
-type AuthSubmitProps =
-	& BaseAuthSubmitProps
 	& AuthSubmitButton
 
 const AuthButton = ({
@@ -68,6 +41,15 @@ const AuthButton = ({
 
 //	variations
 
+interface AuthBackProps {
+	disabled?: Button.Props['disabled']
+	label?: string
+	linkable?: AuthButtonProps['linkable']
+	loading?: Button.Props['loading']
+	onClick: Button.Props['onClick']
+	variant?: Button.Props['variant']
+}
+
 export const AuthBack = ({
 	label = 'Back',
 	variant = 'ghost',
@@ -77,10 +59,29 @@ export const AuthBack = ({
 
 AuthBack.displayName = 'Button'
 
-export const AuthContinue = ({ href, label }: AuthContinueProps) =>
-	<AuthButton direction="right" href={ href }>{ label }</AuthButton>
+interface AuthContinueProps {
+	fullWidth?: Button.Props['fullWidth']
+	href: Button.Props['href']
+	label: string
+}
+
+export const AuthContinue = ({
+	href,
+	label,
+	...rest
+}: AuthContinueProps) =>
+	<AuthButton { ...rest } direction="right" href={ href }>{ label }</AuthButton>
 
 AuthContinue.displayName = 'Button'
+
+interface BaseAuthSubmitProps {
+	label: string
+	linkable?: AuthButtonProps['linkable']
+}
+
+type AuthSubmitProps =
+	& BaseAuthSubmitProps
+	& AuthSubmitButton
 
 export const AuthSubmit = ({ label, ...rest }: AuthSubmitProps) =>
 	<AuthButton { ...rest } direction="right" type="submit">{ label }</AuthButton>
