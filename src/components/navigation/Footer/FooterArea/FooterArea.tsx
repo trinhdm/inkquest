@@ -28,8 +28,8 @@ interface FooterAreaSpecs {
 
 type FooterSelectors =
 	| 'root' | 'wrapper'
-	| 'content'
-	| 'navigation' | 'group' | 'label' | 'menu'
+	| 'content' | 'navigation'
+	| 'group' | 'label' | 'menu'
 
 export const FooterArea = polymorphic<FooterAreaSpecs>((_props, { useProps, useStyles }) => {
 	const props = useProps(_props)

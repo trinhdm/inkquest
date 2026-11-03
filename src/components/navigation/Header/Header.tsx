@@ -46,10 +46,8 @@ export const Header = polymorphic<HeaderSpecs>((_props, { useProps, useStyles })
 	const styles = useStyles({ props })
 
 	const {
-		as,
-		children,
-		navbar,
-		subnav,
+		as, children,
+		navbar, subnav,
 		...rest
 	} = props
 

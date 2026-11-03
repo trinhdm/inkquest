@@ -1,3 +1,4 @@
+import { keyHasValue } from './helpers'
 import { SOCIAL_BRANDS } from './constants'
 import type { Route } from 'next'
 import type { Orientation, SocialBrand } from '@/types/shared'
@@ -22,13 +23,14 @@ export enum NavRoutes {
 	LEGAL_PRIVACY = '/privacy-policy',
 	LEGAL_TERMS = '/terms',
 	PROFILE = '/profile',
+	MESSAGES = '/messages',
 	SETTINGS = '/settings',
 	SIGNUP = '/signup',
 	LOGIN = '/login',
 	LOGOUT = '/logout',
 }
 
-// checks if slugs exist
+//	checks if slugs exist
 export const NAV_ROUTES = {
 	HOME: '/',
 	DISCOVER: '/discover',
@@ -49,6 +51,7 @@ export const NAV_ROUTES = {
 	LEGAL_PRIVACY: '/privacy-policy',
 	LEGAL_TERMS: '/terms',
 	PROFILE: '/profile',
+	MESSAGES: '/messages',
 	SETTINGS: '/settings',
 	SIGNUP: '/signup',
 	LOGIN: '/login',
@@ -83,7 +86,9 @@ export const NAVIGATION_DATA: NavigationItem[] = [
 	},
 	{
 		label: 'Marketplace',
-		route: NavRoutes.MARKETPLACE,
+		menu: [
+			{ label: 'Browse work', route: NavRoutes.MARKETPLACE },
+		],
 	},
 	{
 		label: 'Community',
@@ -143,7 +148,38 @@ export const NAVIGATION_DATA: NavigationItem[] = [
 		label: 'Log out',
 		route: NavRoutes.LOGOUT,
 	},
-]
+] as const
+
+const listLabelRoutes = (
+	label: string,
+	maxDepth: number = Infinity,
+	navitems: NavigationItem[] = NAVIGATION_DATA,
+): NavRoute[] => {
+	const parent = navitems.find(item => (label === item.label) && keyHasValue(item, 'menu')),
+		target = parent?.menu
+
+	if (!target) return []
+
+	const filterRoutes = (items: NavigationItem[], depth: number): NavRoute[] =>
+		items.reduce<NavRoute[]>((acc, item) => {
+			let routes: NavRoute[] = []
+
+			if (depth <= maxDepth) {
+				if (item.route) routes.push(item.route)
+
+				if (!!item.menu?.length) {
+					const nestedRoutes = filterRoutes(item.menu, depth + 1)
+					routes = [...routes, ...nestedRoutes]
+				}
+			}
+
+			acc.push(...new Set(routes))
+			return acc
+		}, [])
+
+	const routes = filterRoutes(target, 0)
+	return parent.route ? [parent.route, ...routes] : routes
+}
 
 export const listRoutesWithSlug = (
 	slug: NavRoute,
@@ -217,38 +253,39 @@ export const filterNavigation = (
 	return filterNavitems(navitems, routes)
 }
 
+const getNavigationGroup = <T extends string = string>(
+	label: string,
+	maxDepth: number = 1,
+): NavigationGroup<T> => {
+	const routes = listLabelRoutes(label, maxDepth)
+	if (!routes.length) return {} as NavigationGroup<T>
+
+	return {
+		category: label,
+		routes,
+	}
+}
+
 interface FooterNavGroup
 	extends NavigationGroup<'info' | 'legal'> {
 	orientation?: Orientation
 }
 
 export const HEADER_GLOBAL_NAV: readonly NavRoute[] = [
-	'/discover',
-	'/marketplace',
-	'/community',
+	NavRoutes.DISCOVER,
+	NavRoutes.MARKETPLACE,
+	NavRoutes.COMMUNITY,
 ]
 
 export const FOOTER_GLOBAL_NAV: FooterNavGroup[] = [
+	getNavigationGroup('Discover'),
+	getNavigationGroup('Marketplace'),
+	getNavigationGroup('Community'),
+	getNavigationGroup('Company'),
 	{
-		category: 'Discover',
-		routes: listRoutesWithSlug('/discover'),
-	},
-	{
-		category: 'Marketplace',
-		routes: listRoutesWithSlug('/marketplace'),
-	},
-	{
-		category: 'Community',
-		routes: listRoutesWithSlug('/community'),
-	},
-	{
-		category: 'Company',
-		routes: ['/about', '/faqs', '/careers', '/press'],
-	},
-	{
-		routes: ['/privacy-policy', '/terms', '/cookies'],
 		location: 'legal',
 		orientation: 'horizontal',
+		routes: listLabelRoutes('Legal').slice(0, 3),
 	},
 ] as const
 
