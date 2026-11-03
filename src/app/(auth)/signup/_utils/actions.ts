@@ -2,19 +2,18 @@
 
 import {
 	action,
-	BASE_ERROR, MOCK_DATA,
-	type FormState,
+	BASE_ERROR, FAIL_CONTACT,
+	MOCK_ACCOUNT, MOCK_INCORRECT,
+	type FormAction,
 } from '@/lib/form'
 
 import { maskTo, pickTo } from './helpers'
 import { resendSchema, signupSchema, verifySchema } from './schema'
 
-const FAIL_TO: string[] = [MOCK_DATA.failEmail, MOCK_DATA.failTel]
-
 const start = action(signupSchema, {
 	names: ['email', 'method', 'tel'],
 	conditions: [{
-		check: data => FAIL_TO.includes(pickTo(data)),
+		check: data => FAIL_CONTACT.includes(pickTo(data)),
 		formError: BASE_ERROR,
 	}],
 	onSuccess: (data, values) => ({
@@ -22,7 +21,7 @@ const start = action(signupSchema, {
 	}),
 })
 
-export const signup = async (prev: FormState, data: FormData): Promise<FormState> => {
+export const signup: FormAction = async (prev, data) => {
 	const state = await start(prev, data)
 	return state.errors.method ? { ...state, formError: BASE_ERROR } : state
 	//	`method` is a hidden field, so its error shows as a form error instead
@@ -33,7 +32,7 @@ export const signup = async (prev: FormState, data: FormData): Promise<FormState
 
 export const resend = action(resendSchema, {
 	conditions: [{
-		check: ({ destination }) => destination.includes(MOCK_DATA.failResend),
+		check: ({ destination }) => destination.includes(MOCK_INCORRECT.failResend),
 		formError: BASE_ERROR,
 	}],
 	onSuccess: ({ destination, method }) => ({

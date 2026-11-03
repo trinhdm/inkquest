@@ -44,10 +44,3 @@ export const LINKABLE = {
 	'data-link': true,
 	unstyled: true,
 }
-
-
-//	mock: there are no sessions yet, so the signed-in account is hard-coded
-export const MOCK_ACCOUNT = {
-	email: 'doreen.trinh@gmail.com',
-	name: 'Doreen Trinh',
-}

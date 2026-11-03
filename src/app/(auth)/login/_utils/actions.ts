@@ -1,6 +1,6 @@
 'use server'
 
-import { action } from '@/lib/form'
+import { action, MOCK_ACCOUNT, type FormAction } from '@/lib/form'
 import { loginSchema, magicSchema, resetSchema } from './schema'
 import type z from 'zod'
 

@@ -20,6 +20,9 @@ export interface FormResults<T = FormState> {
 	state: T
 }
 
+export type FormAction =
+	(prev: FormState, data: FormData) => Promise<FormState>
+
 export const initFormState: FormState = {
 	errors: {},
 	values: {},
