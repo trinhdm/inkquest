@@ -9,6 +9,7 @@ import { LoginReset } from '../_form/reset'
 import { LoginRoot } from '../_form/root'
 import { LoginSuccess } from '../_form/success'
 import { LOGIN_PAGE_DATA } from '../_utils/login.data'
+import type { RememberedAccount } from '../../_utils/account'
 
 const SCREENS = {
 	begin:		LoginRoot,
@@ -18,8 +19,12 @@ const SCREENS = {
 	success:	LoginSuccess,
 } satisfies Record<LoginScreen, ComponentType>
 
-export const LoginBase = () => {
-	const { idx, screen, ...flow } = useLoginFlow(LOGIN_PAGE_DATA)
+interface LoginBaseProps {
+	account: RememberedAccount | null
+}
+
+export const LoginBase = ({ account }: LoginBaseProps) => {
+	const { idx, screen, ...flow } = useLoginFlow(LOGIN_PAGE_DATA, account)
 	const lastScreen = useRef(screen)
 
 	useEffect(() => {				//	on screen change, moves focus to new screen's first field

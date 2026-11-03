@@ -5,8 +5,12 @@ import { initFormState, type FormResults } from '@/lib/form'
 import { login, magicLogin, requestReset } from './actions'
 import type { LoginFlow, LoginScreen, ReplyFromStep } from './login.context'
 import type { LoginPageData } from './login.data'
+import type { RememberedAccount } from '../../_utils/account'
 
-export const useLoginFlow = ({ id: pageID }: LoginPageData): LoginFlow => {
+export const useLoginFlow = (
+	{ id: pageID }: LoginPageData,
+	account: RememberedAccount | null
+): LoginFlow => {
 	const {
 		current: screen,
 		back, guard, navigate,
@@ -15,7 +19,11 @@ export const useLoginFlow = ({ id: pageID }: LoginPageData): LoginFlow => {
 
 	const [replyFrom, setReplyFrom] = useState<ReplyFromStep>('begin')
 
-	const loginForm = useForm(login, initFormState)
+	const loginFormState = !!account
+		? { ...initFormState, values: { email: account.email } }
+		: initFormState
+
+	const loginForm = useForm(login, loginFormState)
 	const magicForm = useForm(magicLogin, initFormState)
 	const resetForm = useForm(requestReset, initFormState)
 

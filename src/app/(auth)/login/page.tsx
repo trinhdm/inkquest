@@ -1,3 +1,4 @@
+import { getRememberedAccount } from '../_utils/account'
 import { LoginBase } from './_components'
 import { LOGIN_PAGE_DATA } from './_utils/login.data'
 import type { Metadata } from 'next'
@@ -7,6 +8,7 @@ export const metadata: Metadata = {
 	description: LOGIN_PAGE_DATA.description,
 }
 
-export default function Login() {
-	return <LoginBase />
+export default async function Login() {
+	const account = await getRememberedAccount()
+	return <LoginBase account={ account } />
 }
