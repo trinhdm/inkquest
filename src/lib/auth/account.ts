@@ -19,7 +19,7 @@ export const forgetAccount = async () => {
 }
 
 //	a display hint for this browser only, never proof of who someone is
-export const recallAccount = () => readAccount(COOKIE)
+export const recallAccount = async () => await readAccount(COOKIE)
 
 //	continue as: the account reaches the next /login render, then nowhere else
 export const handoverAccount = async () => {
@@ -28,4 +28,4 @@ export const handoverAccount = async () => {
 	if (account) await writeAccount(HINT_COOKIE, account, HINT_MAX_AGE)
 }
 
-export const suggestAccount = () => readAccount(HINT_COOKIE)
+export const suggestAccount = async () => await readAccount(HINT_COOKIE)

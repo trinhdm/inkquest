@@ -1,13 +1,11 @@
 import { createPageCtx } from '@/lib/page/context'
 import type { AuthFormData, AuthFormIDs } from '../../_utils/types'
-import type { FormResults } from '@/lib/form/types'
 import type { LogoutFormValues } from './types'
 
 export interface LogoutContext
 	extends LogoutFormValues {
 	content: AuthFormData
 	idx: AuthFormIDs
-	logout: FormResults
 }
 
 export const {

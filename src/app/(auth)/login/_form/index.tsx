@@ -1,15 +1,16 @@
 'use client'
 
+import { useEffect, type ComponentType } from 'react'
 import { useLoginFlow } from '../_utils/useLoginFlow'
 import { useScreenFocus } from '@/hooks/form/useScreenFocus'
+import { forgetAccount } from '@/lib/auth'
+import { FinishLogin } from './FinishLogin'
 import { ForgotPassword } from './ForgotPassword'
-import { MagicLogin } from './MagicLogin'
 import { LoginProvider } from '../_utils/context'
+import { MagicLogin } from './MagicLogin'
 import { ResetPassword } from './ResetPassword'
 import { StartLogin } from './StartLogin'
-import { FinishLogin } from './FinishLogin'
 import { LOGIN_PAGE_DATA } from '../_utils/data'
-import type { ComponentType } from 'react'
 import type { AccountValues } from '@/lib/auth/schema'
 import type { LoginScreen } from '../_utils/types'
 
@@ -30,6 +31,9 @@ export const LoginForm = ({ account }: LoginFormProps) => {
 		{ idx, screen } = ctxValues
 
 	useScreenFocus(screen, idx.section)
+	useEffect(() => {
+		if (account) void forgetAccount()
+	}, [account])
 
 	const Screen = SCREENS[screen]
 
