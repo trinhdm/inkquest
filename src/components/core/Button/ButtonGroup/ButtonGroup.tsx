@@ -109,7 +109,7 @@ export const ButtonGroup = polymorphic<ButtonGroupSpecs>((_props, { useProps, us
 	const ctxValues = useMemo(
 		() => Array.from({ length: total }, (_, index): ButtonGroupContext => {
 			const i = hasPriority === 'reverse'
-				? Math.abs(index - total)
+				? total - (index + 1)
 				: index
 
 			return {

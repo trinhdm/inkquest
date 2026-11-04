@@ -1,29 +1,31 @@
 'use client'
 
-import { startTransition, useEffect } from 'react'
+import { useEffect, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/core/Button'
 import { Section } from '@/components/layout/Section'
+import { Icon } from '@/components/core/Icon'
 
 interface AuthErrorProps {
 	error: Error & { digest?: string }
 	reset: () => void
-	unstable_retry: () => void
 }
 
 //	catches anything the auth pages throw that isn't a form reply
-export default function AuthError({
-	error,
-	reset,
-	unstable_retry,
-}: AuthErrorProps) {
+export default function AuthError({ error, reset }: AuthErrorProps) {
+	const [isPending, startTransition] = useTransition()
 	const router = useRouter()
 
 	useEffect(() => {
 		console.error(error)
 	}, [error])
 
-	const handleRefresh = () => {
+	const handleBack = () => {
+		if (window.history.length > 1) router.back()
+		else router.push('/')
+	}
+
+	const handleRetry = () => {
 		startTransition(() => {
 			router.refresh()
 			reset()
@@ -36,7 +38,7 @@ export default function AuthError({
 			layout="content-form"
 			title="Something went wrong."
 		>
-			Try again, or reload the page.
+			Try again, or go back.
 
 			<div className="authentication">
 				<div className="authentication__error">
@@ -45,9 +47,23 @@ export default function AuthError({
 				</div>
 
 				<div className="authentication__note">
-					<Button.Group hasPriority="reverse">
-						<Button onClick={ handleRefresh }>Refresh</Button>
-						<Button onClick={ () => unstable_retry() }>Try again</Button>
+					<Button.Group hasPriority={ false }>
+						<Button
+							animate="left"
+							onClick={ handleBack }
+							variant="ghost"
+						>
+							Back
+							<Button.Section left><Icon type="arrow-left" /></Button.Section>
+						</Button>
+						<Button
+							animate="right"
+							loading={ isPending }
+							onClick={ handleRetry }
+						>
+							Try again
+							<Button.Section right><Icon type="arrow-right" /></Button.Section>
+						</Button>
 					</Button.Group>
 				</div>
 			</div>

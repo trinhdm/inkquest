@@ -10,10 +10,8 @@ import {
 	Cog, Lock, Pipette, Ruler, Wrench,
 	Download, Hash, Image, Link, Share, Tag,
 	Ellipse, GripVertical, LayoutGrid, List, StretchHorizontal,
-	Flag, Mail, MailPlus, Paperclip, Pen, Phone, Send,
-	Heart, Moon, Star, Sun,
-	Printer,
-	WandSparkles,
+	Flag, Mail, MailPlus, Paperclip, Pen, Phone, Printer, Send,
+	Heart, Moon, Star, Sun, WandSparkles,
 	// Rows3, Settings,
 } from 'lucide-react'
 

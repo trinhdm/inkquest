@@ -107,6 +107,10 @@
 		}
 	}
 
+	&:where([data-variant="ghost"]) svg {
+		opacity: .5;
+	}
+
 	&:where([data-variant="text"]) #{$name}__inner {
 		padding-inline: 0;
 	}
