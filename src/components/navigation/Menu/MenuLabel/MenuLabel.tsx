@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { startTransition } from 'react'
 import { extractOthers } from '@/hooks/useProps'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
@@ -36,8 +37,9 @@ export const MenuLabel = polymorphic<MenuLabelSpecs>((_props, { useProps, useSty
 	const styles = useStyles({ name: 'menu-item', props })
 
 	const {
-		as, children, isActive,
-		label, route, trigger,
+		action, as, children,
+		isActive, label,
+		route, trigger,
 		...rest
 	} = props
 
@@ -50,7 +52,21 @@ export const MenuLabel = polymorphic<MenuLabelSpecs>((_props, { useProps, useSty
 		role: 'menuitem',
 	}
 
-	if (route) {
+	//	a button, not a form: the dropdown's arrow keys only find menuitems that sit directly inside li[role="none"]
+	if (action) {
+		return (
+			<Box
+				{ ...sharedProps }
+				as="button"
+				onClick={ () => startTransition(() => action()) }
+				type="button"
+			>
+				{ content }
+			</Box>
+		)
+	}
+
+	else if (route) {
 		return (
 			<Box
 				{ ...sharedProps }

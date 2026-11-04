@@ -1,4 +1,4 @@
-import { render, reset, screen } from '@/tests/test-utils'
+import { fireEvent, render, reset, screen } from '@/tests/test-utils'
 import { getDefaultProps } from '@/hooks/useProps'
 import { MenuLabel } from './MenuLabel'
 
@@ -97,6 +97,36 @@ describe('Menu.Label', () => {
 		it('does not leak isActive onto the DOM', () => {
 			render(<MenuLabel isActive label="Marketplace" route="/marketplace" />)
 			expect(screen.getByRole('menuitem')).not.toHaveAttribute('isactive')
+		})
+	})
+
+	describe('action label', () => {
+		it('renders a button menuitem, not a link', () => {
+			render(<MenuLabel action={ jest.fn() } label="Sign out" />)
+			const button = screen.getByRole('menuitem', { name: 'Sign out' })
+			expect(button.tagName).toBe('BUTTON')
+			expect(button).toHaveAttribute('type', 'button')
+			expect(button).not.toHaveAttribute('href')
+		})
+		it('calls the action when clicked', () => {
+			const action = jest.fn()
+			render(<MenuLabel action={ action } label="Sign out" />)
+			fireEvent.click(screen.getByRole('menuitem', { name: 'Sign out' }))
+			expect(action).toHaveBeenCalledTimes(1)
+		})
+		it('wins over the route', () => {
+			render(<MenuLabel action={ jest.fn() } label="Sign out" route="/logout" />)
+			const button = screen.getByRole('menuitem', { name: 'Sign out' })
+			expect(button.tagName).toBe('BUTTON')
+			expect(button).not.toHaveAttribute('href')
+		})
+		it('stays a link when the action is undefined', () => {
+			render(<MenuLabel action={ undefined } label="Sign out" route="/logout" />)
+			expect(screen.getByRole('menuitem', { name: 'Sign out' })).toHaveAttribute('href', '/logout')
+		})
+		it('does not leak action onto the DOM', () => {
+			render(<MenuLabel action={ jest.fn() } label="Sign out" />)
+			expect(screen.getByRole('menuitem')).not.toHaveAttribute('action')
 		})
 	})
 })

@@ -1,9 +1,12 @@
 import { usePathname } from 'next/navigation'
-import { getDefaultProps } from '@/hooks/useProps'
 import { act, fireEvent, render, reset, screen, within } from '@/tests/test-utils'
-import { COMPANY_NAME } from '@/utils/constants'
-import { NAVIGATION_DATA, NavRoutes, type NavRoute } from '@/utils/navigation'
+import { getDefaultProps } from '@/hooks/useProps'
+import { AuthProvider } from '@/providers/AuthProvider'
 import { Navbar } from './Navbar'
+import { COMPANY_NAME } from '@/utils/constants'
+import { MOCK_ACCOUNT } from '@/lib/form'
+import { NAVIGATION_DATA, NavRoutes, type NavRoute } from '@/utils/navigation'
+import type { ReactElement } from 'react'
 
 // `Navbar.tsx` reads `usePathname()` (the auth tip/button and the slug), and the real hook
 // returns `null` outside an app-router provider, which crashes `pathname.slice(1)`. So the
@@ -13,6 +16,8 @@ jest.mock('next/navigation', () => ({
 	usePathname: jest.fn(() => '/'),
 }))
 
+const mockUsePathname = usePathname as jest.Mock
+
 describe('Navbar', () => {
 	// `Navbar` always renders `Logo`, the auth `Button`s, and the user `Menu` (with an `Avatar`
 	// trigger) alongside the nav `Menu`. Each `Menu` mounts `Menu.Item`/`Menu.Label`/`Menu.Dropdown`.
@@ -21,15 +26,16 @@ describe('Navbar', () => {
 		'Button', 'Button.Group', 'Logo', 'Avatar', 'Icon',
 	)
 
-	// The navbar always mounts a user-account menu AFTER the nav menu, and every dropdown's
-	// submenu is a nested menubar too. So the nav menu is the first top-level menubar, provided
-	// another follows it; with a lone top-level menubar that is the user menu and there is no nav menu.
-	const getNavMenu = () => {
-		const menus = screen.queryAllByRole('menubar')
+	// The nav menu is the one `Navbar` gives the `-nav` id (the user menu gets `-user`). Every
+	// dropdown's submenu is a nested menubar too, so only top-level menubars are considered.
+	const getNavMenu = () =>
+		screen.queryAllByRole('menubar')
 			.filter(menu => !menu.parentElement?.closest('[role="menubar"]'))
+			.find(menu => /-nav$/.test(menu.id))
 
-		return menus.length > 1 ? menus[0] : undefined
-	}
+	// the user menu only renders for a signed-in user, so its tests render inside an `AuthProvider`
+	const renderSignedIn = (ui: ReactElement) =>
+		render(<AuthProvider user={ MOCK_ACCOUNT }>{ ui }</AuthProvider>)
 
 	it('renders a navigation landmark', () => {
 		render(<Navbar />)
@@ -149,7 +155,7 @@ describe('Navbar', () => {
 		})
 
 		it('renders as a second top-level menubar, apart from the main nav menu', () => {
-			render(<Navbar routes={ [NavRoutes.HOME, NavRoutes.DISCOVER] } />)
+			renderSignedIn(<Navbar routes={ [NavRoutes.HOME, NavRoutes.DISCOVER] } />)
 
 			const menus = getTopLevelMenus()
 			expect(menus).toHaveLength(2)
@@ -162,14 +168,14 @@ describe('Navbar', () => {
 		})
 
 		it('renders as the only top-level menubar when there is no main menu', () => {
-			render(<Navbar />)
+			renderSignedIn(<Navbar />)
 
 			expect(getTopLevelMenus()).toHaveLength(1)
 			expect(within(getUserMenu()).getByRole('menuitem', { name: 'User' })).toBeInTheDocument()
 		})
 
 		it('links the avatar to the profile, named "User", with the avatar inside', () => {
-			render(<Navbar />)
+			renderSignedIn(<Navbar />)
 
 			const link = getAvatarLink()
 			expect(link.tagName).toBe('A')
@@ -181,7 +187,7 @@ describe('Navbar', () => {
 		})
 
 		it('has a caret button named "User submenu" with the hidden modifier class', () => {
-			render(<Navbar />)
+			renderSignedIn(<Navbar />)
 
 			const caret = getCaret()
 			expect(caret.className).toContain('hidden')
@@ -190,7 +196,7 @@ describe('Navbar', () => {
 		})
 
 		it('wires the caret to the submenu, which points back at the caret', () => {
-			render(<Navbar />)
+			renderSignedIn(<Navbar />)
 
 			const caret = getCaret(),
 				submenu = getSubmenu()
@@ -200,17 +206,18 @@ describe('Navbar', () => {
 			expect(submenu).toHaveAttribute('aria-labelledby', caret.id)
 		})
 
-		it('derives its ids from useId, ending in -user, -user-trigger and -user-menu', () => {
-			render(<Navbar />)
+		it('derives its ids from useId plus -user, so the menu ends in -user and its item in -user-user', () => {
+			renderSignedIn(<Navbar />)
 
 			const caret = getCaret()
-			expect(caret.id).toMatch(/-user-trigger$/)
+			expect(caret.id).toMatch(/-user-user-trigger$/)
+			expect(getUserMenu().id).toMatch(/-user$/)
 			expect(getSubmenu().id).toBe(caret.id.replace(/-trigger$/, '-menu'))
 			expect(document.getElementById(caret.id.replace(/-trigger$/, ''))?.tagName).toBe('LI')
 		})
 
 		it('lists every child of the data\'s User menu as a link to its route', () => {
-			render(<Navbar />)
+			renderSignedIn(<Navbar />)
 
 			const submenu = within(getSubmenu())
 			expect(userChildren.length).toBeGreaterThan(0)
@@ -221,14 +228,14 @@ describe('Navbar', () => {
 		})
 
 		it('is not open until asked: data-open is absent on the menu item', () => {
-			render(<Navbar />)
+			renderSignedIn(<Navbar />)
 
 			const item = document.getElementById(getCaret().id.replace(/-trigger$/, ''))!
 			expect(item).not.toHaveAttribute('data-open')
 		})
 
 		it('opens when the hidden caret is clicked', () => {
-			render(<Navbar />)
+			renderSignedIn(<Navbar />)
 
 			fireEvent.click(getCaret())
 
@@ -241,7 +248,7 @@ describe('Navbar', () => {
 			afterEach(() => jest.useRealTimers())
 
 			it('opens on ArrowDown from the avatar link and focuses the first child', () => {
-				render(<Navbar />)
+				renderSignedIn(<Navbar />)
 
 				fireEvent.keyDown(getAvatarLink(), { key: 'ArrowDown' })
 				act(() => { jest.runOnlyPendingTimers() })
@@ -251,7 +258,7 @@ describe('Navbar', () => {
 			})
 
 			it('leaves Enter on the avatar link alone, so the link is followed and the menu stays closed', () => {
-				render(<Navbar />)
+				renderSignedIn(<Navbar />)
 
 				// fireEvent returns true when the event was not default-prevented
 				expect(fireEvent.keyDown(getAvatarLink(), { key: 'Enter' })).toBe(true)
@@ -261,7 +268,7 @@ describe('Navbar', () => {
 		})
 
 		it('gives two Navbars on one page no duplicate ids', () => {
-			const { container } = render(<><Navbar /><Navbar /></>)
+			const { container } = renderSignedIn(<><Navbar /><Navbar /></>)
 
 			// positive control: both user menus rendered
 			expect(container.querySelectorAll('button[aria-label="User submenu"]')).toHaveLength(2)
@@ -270,14 +277,155 @@ describe('Navbar', () => {
 			expect(new Set(ids).size).toBe(ids.length)
 		})
 
-		it.each(['/login', '/signup'])('is still rendered on %s, next to the auth tip', path => {
+		it.each(['/login', '/signup'])('shows no auth tip or Log in / Sign up on %s once signed in', path => {
 			(usePathname as jest.Mock).mockReturnValue(path)
-			render(<Navbar />)
+			renderSignedIn(<Navbar />)
 
-			// positive control: on an auth path the auth tip replaces the Log in / Sign up group
-			expect(screen.queryByRole('group')).not.toBeInTheDocument()
+			// positive control: the user menu is there
 			expect(getAvatarLink()).toHaveAttribute('href', '/profile')
 			expect(getCaret()).toBeInTheDocument()
+
+			expect(screen.queryByRole('group')).not.toBeInTheDocument()
+			expect(screen.queryByText('New to Inkquest?')).not.toBeInTheDocument()
+			expect(screen.queryByText('Already have an account?')).not.toBeInTheDocument()
+		})
+
+		it('replaces the Log in / Sign up group when a user is signed in', () => {
+			renderSignedIn(<Navbar />)
+
+			expect(getAvatarLink()).toBeInTheDocument()
+			expect(screen.queryByRole('link', { name: 'Log in' })).not.toBeInTheDocument()
+			expect(screen.queryByRole('link', { name: 'Sign up' })).not.toBeInTheDocument()
+		})
+
+		it('uses the signed-in user for the avatar, so another name shows other initials', () => {
+			render(<AuthProvider user={ { email: 'mira@example.com', name: 'Mira Okafor' } }><Navbar /></AuthProvider>)
+
+			expect(within(getAvatarLink()).getByText('MO')).toBeInTheDocument()
+		})
+	})
+
+	//	`Avatar` is aria-hidden, so the user menu's trigger has no accessible name. Its id is the stable handle.
+	const getUserTrigger = () => document.getElementById('dropdown-user-trigger')
+
+	describe('logged out', () => {
+		it('shows Log in and Sign up, and no user menu', () => {
+			render(<Navbar />)
+			expect(screen.getByRole('link', { name: 'Log in' })).toBeInTheDocument()
+			expect(screen.getByRole('link', { name: 'Sign up' })).toBeInTheDocument()
+			expect(getUserTrigger()).not.toBeInTheDocument()
+			expect(screen.queryByRole('menuitem', { name: 'Sign out' })).not.toBeInTheDocument()
+		})
+		it('shows the tip and one outline button on /login', () => {
+			mockUsePathname.mockReturnValue('/login')
+			render(<Navbar />)
+			expect(screen.getByText('New to Inkquest?')).toBeInTheDocument()
+			expect(screen.getByRole('link', { name: 'Sign up' })).toHaveAttribute('href', '/signup')
+			expect(screen.queryByRole('link', { name: 'Log in' })).not.toBeInTheDocument()
+			expect(getUserTrigger()).not.toBeInTheDocument()
+		})
+		it('shows the tip and one outline button on /signup', () => {
+			mockUsePathname.mockReturnValue('/signup')
+			render(<Navbar />)
+			expect(screen.getByText('Already have an account?')).toBeInTheDocument()
+			expect(screen.getByRole('link', { name: 'Login' })).toHaveAttribute('href', '/login')
+			expect(getUserTrigger()).not.toBeInTheDocument()
+		})
+	})
+	describe('logged in', () => {
+		const renderLoggedIn = (logout?: () => Promise<void>) =>
+			render(
+				<AuthProvider logout={ logout } user={ MOCK_ACCOUNT }>
+					<Navbar />
+				</AuthProvider>
+			)
+		it('shows the user menu', () => {
+			renderLoggedIn()
+			expect(getUserTrigger()).toBeInTheDocument()
+			expect(screen.getByRole('menuitem', { name: 'Sign out' })).toBeInTheDocument()
+		})
+		it('hides Log in and Sign up', () => {
+			renderLoggedIn()
+			expect(screen.queryByRole('link', { name: 'Log in' })).not.toBeInTheDocument()
+			expect(screen.queryByRole('link', { name: 'Sign up' })).not.toBeInTheDocument()
+			expect(screen.queryByRole('group')).not.toBeInTheDocument()
+		})
+		it.each(['/login', '/signup'])('shows no tip and no auth button on %s', path => {
+			mockUsePathname.mockReturnValue(path)
+			renderLoggedIn()
+			expect(screen.queryByText('New to Inkquest?')).not.toBeInTheDocument()
+			expect(screen.queryByText('Already have an account?')).not.toBeInTheDocument()
+			expect(screen.queryByRole('link', { name: 'Sign up' })).not.toBeInTheDocument()
+			expect(screen.queryByRole('link', { name: 'Login' })).not.toBeInTheDocument()
+			expect(getUserTrigger()).toBeInTheDocument()
+		})
+		it('renders Sign out as a button', () => {
+			renderLoggedIn(jest.fn())
+			expect(screen.getByRole('menuitem', { name: 'Sign out' }).tagName).toBe('BUTTON')
+		})
+		it('calls logout once when Sign out is clicked', () => {
+			const logout = jest.fn()
+			renderLoggedIn(logout)
+			fireEvent.click(screen.getByRole('menuitem', { name: 'Sign out' }))
+			expect(logout).toHaveBeenCalledTimes(1)
+		})
+		it('keeps Sign out as a link to /logout when no logout is provided', () => {
+			renderLoggedIn()
+			const signOut = screen.getByRole('menuitem', { name: 'Sign out' })
+			expect(signOut.tagName).toBe('A')
+			expect(signOut).toHaveAttribute('href', '/logout')
+		})
+		it('leaves the other user menu items as links', () => {
+			renderLoggedIn(jest.fn())
+			expect(screen.getByRole('menuitem', { name: 'Settings' })).toHaveAttribute('href', '/settings')
+			expect(screen.getByRole('menuitem', { name: 'Messages' })).toHaveAttribute('href', '/messages')
+		})
+	})
+
+	describe('main menu ids', () => {
+		// the child routes of Events and Feed are included so those two are dropdowns as well
+		const communityRoutes = [
+			NavRoutes.COMMUNITY,
+			NavRoutes.COMMUNITY_EVENTS, NavRoutes.COMMUNITY_EVENTS_LINEUP,
+			NavRoutes.COMMUNITY_FEED, NavRoutes.COMMUNITY_FEED_CIRCLE,
+		]
+
+		it('ends the main menubar id with -nav, apart from the user menu id', () => {
+			renderSignedIn(<Navbar routes={ communityRoutes } />)
+
+			const [navMenu, userMenu] = screen.getAllByRole('menubar')
+				.filter(menu => !menu.parentElement?.closest('[role="menubar"]'))
+
+			expect(navMenu.id).toMatch(/-nav$/)
+			expect(userMenu.id).toMatch(/-user$/)
+			expect(navMenu.id).not.toBe(userMenu.id)
+		})
+
+		it('prefixes the main menu\'s dropdown ids with its -nav id', () => {
+			const { container } = renderSignedIn(<Navbar routes={ communityRoutes } />)
+
+			const navId = getNavMenu()!.id
+			expect(container.querySelector(`li[id="${ navId }-community"]`)).toBeInTheDocument()
+			expect(container.querySelector(`button[id="${ navId }-community-trigger"]`)).toBeInTheDocument()
+			expect(container.querySelector(`ul[id="${ navId }-community-menu"]`)).toBeInTheDocument()
+			expect(container.querySelector(`li[id="${ navId }-community-menu-events"]`)).toBeInTheDocument()
+		})
+
+		it('gives two Navbars with dropdown menus no duplicate ids, nav menus included', () => {
+			const { container } = renderSignedIn(
+				<>
+					<Navbar routes={ communityRoutes } />
+					<Navbar routes={ communityRoutes } />
+				</>
+			)
+
+			// positive control: both nav menus have dropdowns, and both user menus rendered
+			expect(container.querySelectorAll('button[aria-label="Community submenu"]')).toHaveLength(2)
+			expect(container.querySelectorAll('button[aria-label="Events submenu"]')).toHaveLength(2)
+			expect(container.querySelectorAll('button[aria-label="User submenu"]')).toHaveLength(2)
+
+			const ids = Array.from(container.querySelectorAll('[id]'), el => el.id)
+			expect(new Set(ids).size).toBe(ids.length)
 		})
 	})
 })

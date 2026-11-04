@@ -86,18 +86,6 @@ describe('Avatar', () => {
 		expect(token(root, '--avatar-icon-size')).toBe(icon)
 	})
 
-	it('gives the three sizes distinct font and icon sizes', () => {
-		const read = (size: Avatar.Size) => {
-			const { container } = render(<Avatar user={ { email: 'a@b.co' } } size={ size } />)
-			const root = getRoot(container)
-			return [token(root, '--avatar-font-size'), token(root, '--avatar-icon-size')]
-		}
-		const [sm, md, lg] = [read('sm'), read('md'), read('lg')]
-
-		expect(new Set([sm[0], md[0], lg[0]]).size).toBe(3)
-		expect(new Set([sm[1], md[1], lg[1]]).size).toBe(3)
-	})
-
 	it('uses bgColor for the background, else the theme card colour', () => {
 		const user = { email: 'a@b.co' }
 		const { container: custom } = render(<Avatar user={ user } bgColor="red" />)

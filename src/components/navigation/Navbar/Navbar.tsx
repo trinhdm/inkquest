@@ -2,6 +2,7 @@
 
 import { useId } from 'react'
 import { usePathname } from 'next/navigation'
+import { useAuth } from '@/providers/AuthProvider'
 import { extractOthers } from '@/hooks/useProps'
 import { filterNavigation, listRoutesInLabel, NavRoutes } from '@/utils/navigation'
 import { isKeyOf } from '@/utils/helpers'
@@ -11,8 +12,7 @@ import { Box } from '@/components/polymorphic/Box'
 import { Button } from '@/components/core/Button'
 import { Logo } from '../Logo'
 import { Menu } from '../Menu'
-import { MOCK_ACCOUNT } from '@/lib/form'
-import type { NavRoute } from '@/utils/navigation'
+import type { NavigationItem, NavRoute } from '@/utils/navigation'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Navbar.module.scss'
 
@@ -65,9 +65,22 @@ interface NavAuthGroup {
 	tip: string
 }
 
+const attachAction = (
+	items: NavigationItem[],
+	route: NavRoute,
+	action: NavigationItem['action'],
+): NavigationItem[] =>
+	items.map(item => ({
+		...item,
+		...(item.route === route ? { action } : {}),
+		...(item.menu ? { menu: attachAction(item.menu, route, action) } : {}),
+	}))
+
 export const Navbar = polymorphic<NavbarSpecs>((_props, { useProps, useStyles }) => {
 	const id = useId()
 	const pathname = usePathname()
+
+	const { logout, user } = useAuth()
 	const props = useProps(_props)
 	const styles = useStyles({ props })
 
@@ -79,15 +92,15 @@ export const Navbar = polymorphic<NavbarSpecs>((_props, { useProps, useStyles })
 
 	const userRoutes = listRoutesInLabel('User'),
 		userItems = filterNavigation(userRoutes)
-	const userTriggers = {
-		[NavRoutes.USER_PROFILE]: <Avatar ring size="md" user={ MOCK_ACCOUNT } />
+
+	const authItems = attachAction(userItems, NavRoutes.AUTH_LOGOUT, logout)
+	const authTriggers = {
+		[NavRoutes.USER_PROFILE]: user && <Avatar ring size="md" user={ user } />
 	}
 
 	const isLoginPath = pathname === NavRoutes.AUTH_LOGIN,
 		isSignupPath = pathname === NavRoutes.AUTH_SIGNUP,
 		isAuthPath = (isLoginPath || isSignupPath) && isKeyOf(AUTH_COPY, slug)
-
-	const authCopy = isAuthPath ? AUTH_COPY[slug] : undefined
 
 	return (
 		<Box
@@ -103,32 +116,38 @@ export const Navbar = polymorphic<NavbarSpecs>((_props, { useProps, useStyles })
 					</div>
 
 					{ !!menuItems.length && (
-						<div { ...styles('col') }>
-							<Menu
-								{ ...styles('menu') }
-								id={ `${id}-nav` }
-								items={ menuItems }
-							/>
-						</div>
+						<Menu
+							{ ...styles('menu') }
+							id={ `${id}-nav` }
+							items={ menuItems }
+						/>
 					) }
 
 					<div { ...styles('col') }>
-						{ authCopy && (
+						{ user && (
+							<Menu
+								id={ `${id}-user` }
+								items={ authItems }
+								triggers={ authTriggers }
+							/>
+						) }
+
+						{ (!user && isAuthPath) && (
 							<>
 								<span { ...styles('tip') }>
-									{ authCopy.tip }
+									{ AUTH_COPY[slug].tip }
 								</span>
 								<Button
-									href={ authCopy.button.url }
+									href={ AUTH_COPY[slug].button.url }
 									size="sm"
 									variant="outline"
 								>
-									{ authCopy.button.label }
+									{ AUTH_COPY[slug].button.label }
 								</Button>
 							</>
 						) }
 
-						{ !isAuthPath && (
+						{ (!user && !isAuthPath) && (
 							<Button.Group
 								{ ...styles('buttons') }
 								hasPriority={ false }
@@ -142,12 +161,6 @@ export const Navbar = polymorphic<NavbarSpecs>((_props, { useProps, useStyles })
 								</Button>
 							</Button.Group>
 						) }
-
-						<Menu
-							id={ `${id}-user` }
-							items={ userItems }
-							triggers={ userTriggers }
-						/>
 					</div>
 				</div>
 			</div>

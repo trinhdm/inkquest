@@ -4,9 +4,9 @@ import { extractOthers } from '@/hooks/useProps'
 import { keyHasValue } from '@/utils/helpers'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
+import type { AuthUser } from '@/providers/AuthProvider'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
-import type { RequireSome } from '@/types/utils'
-import type { Size, UserData } from '@/types/shared'
+import type { Size } from '@/types/shared'
 import classes from './Avatar.module.scss'
 
 const NAME = 'Avatar' as const,
@@ -22,7 +22,7 @@ interface AvatarProps {
 	bgColor?: string										//	TODO
 	ring?: boolean
 	size?: Size
-	user: RequireSome<Partial<UserData>, 'email'>
+	user: AuthUser
 }
 
 interface AvatarSpecs {
@@ -56,7 +56,7 @@ const getInitials = (name: string) =>
 
 const tokens = defineTokens<AvatarSpecs>()(({ props, theme }) => {
 	const { bgColor, ring, size } = props
-	let avatarFontSize, avatarIconSize
+	let fontSize, iconSize
 
 	if (!!size) {
 		const avatarFontSizes: Record<Avatar.Size, string> = {
@@ -65,15 +65,15 @@ const tokens = defineTokens<AvatarSpecs>()(({ props, theme }) => {
 			lg: theme.fontSize('label'),
 		}
 
-		avatarFontSize = avatarFontSizes[size]
-		avatarIconSize = theme.el.avatar.size(size)
+		fontSize = avatarFontSizes[size]
+		iconSize = theme.el.avatar.size(size)
 	}
 
 	return {
 		root: {
 			'--avatar-background': bgColor ? bgColor : theme.color.card('hover'),
-			'--avatar-font-size': avatarFontSize,
-			'--avatar-icon-size': avatarIconSize,
+			'--avatar-font-size': fontSize,
+			'--avatar-icon-size': iconSize,
 			'--avatar-ring': ring ? `0 0 0 2px ${theme.color.action()}` : undefined,
 		},
 	}

@@ -48,8 +48,8 @@ export const MenuItem = polymorphic<MenuItemSpecs>((_props, { useProps, useStyle
 	const styles = useStyles({ props })
 
 	const {
-		active, as, attributes,
-		className, depth,
+		action, active, as,
+		attributes, className, depth,
 		hasDropdowns, id, label,
 		menu, route, trigger,
 		...rest
@@ -66,6 +66,7 @@ export const MenuItem = polymorphic<MenuItemSpecs>((_props, { useProps, useStyle
 
 	const labelEl = (
 		<MenuLabel
+			action={ action }
 			isActive={ isActive }
 			label={ label }
 			route={ route }
@@ -111,7 +112,7 @@ export const MenuItem = polymorphic<MenuItemSpecs>((_props, { useProps, useStyle
 			attributes={ setAttributes(isActive) }
 			className={ className }
 			depth={ depth }
-			hasCaret={ trigger === undefined }
+			hasCaret={ trigger == null }
 			id={ id ?? `dropdown-${toSlug(label)}` }
 			label={ label }
 			menu={ menu }
