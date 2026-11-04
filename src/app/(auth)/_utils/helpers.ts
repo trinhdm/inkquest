@@ -1,5 +1,5 @@
 import type { AccountValues } from '@/lib/auth/schema'
-import type { FormResults } from '@/lib/form'
+import type { FormResults } from '@/lib/form/types'
 
 export const getAuthFormIDs = <T extends string>(
 	pageID: string,

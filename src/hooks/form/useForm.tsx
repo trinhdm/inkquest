@@ -1,5 +1,5 @@
 import { useActionState } from 'react'
-import type { FormResults } from '@/lib/form'
+import type { FormResults } from '@/lib/form/types'
 
 export const useForm = <T,>(
 	serverAction: (_prev: T, data: FormData) => Promise<T>,

@@ -12,7 +12,7 @@ import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import { FormProvider, type FormContext } from './Form.context'
 import { Grid } from '@/components/layout/Grid'
-import type { FormState } from '@/lib/form'
+import type { FormState } from '@/lib/form/types'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Form.module.scss'
 
@@ -32,10 +32,14 @@ const DEFAULT_PROPS = {
 	},
 } as const
 
+const DISABLED = ':disabled',
+	HIDDEN = '[type="hidden"]',
+	READONLY = '[readonly]'
+
 const FIRST_CONTROL = [
-	'input:not(:disabled, [readonly], [type="hidden"])',
-	'select:not(:disabled)',
-	'textarea:not(:disabled, [readonly])',
+	`input:not(${DISABLED}, ${READONLY}, ${HIDDEN})`,
+	`select:not(${DISABLED})`,
+	`textarea:not(${DISABLED}, ${READONLY})`,
 ].join(', ')
 
 const INVALID_CONTROL = '[aria-invalid="true"]'

@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { useForm, useFormHistory, useOnReply } from '@/hooks/form'
 import { getAuthFormIDs } from '../../_utils/helpers'
-import { initFormState, type FormResults } from '@/lib/form'
+import { initFormState } from '@/lib/form'
 import { resend, signup, verify } from './actions'
 import { METHOD_BASE, SIGNUP_METHODS } from './data'
+import type { FormResults } from '@/lib/form/types'
 import type { SignupFlow } from './context'
 
 import type {

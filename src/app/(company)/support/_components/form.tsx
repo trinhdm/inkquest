@@ -2,7 +2,8 @@ import { Button } from '@/components/core/Button'
 import { Field } from '@/components/form/Field'
 import { Form } from '@/components/form/Form'
 import { Grid } from '@/components/layout/Grid'
-import { PLACEHOLDER, type FormResults } from '@/lib/form'
+import { PLACEHOLDER } from '@/lib/form'
+import type { FormResults } from '@/lib/form/types'
 import type { SupportTopic } from '../_utils/types'
 
 interface SupportFormProps

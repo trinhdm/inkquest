@@ -1,7 +1,7 @@
 import { createPageCtx } from '@/lib/page/context'
 import type { SubmitEvent } from 'react'
 import type { AuthFormIDs } from '../../_utils/types'
-import type { FormResults } from '@/lib/form'
+import type { FormResults } from '@/lib/form/types'
 import type { SignupMethod, SignupPageData, SignupScreen } from './types'
 
 export interface SignupFlow {

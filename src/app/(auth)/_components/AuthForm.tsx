@@ -14,7 +14,7 @@ import { verifyChildren } from '@/lib/component/children'
 import { Form } from '@/components/form/Form'
 import { Section } from '@/components/layout/Section'
 import type { AuthFormIDs } from '../_utils/types'
-import type { FormResults } from '@/lib/form'
+import type { FormResults } from '@/lib/form/types'
 
 const NAME = 'AuthForm' as const
 

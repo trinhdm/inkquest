@@ -1,5 +1,5 @@
 import { createCompoundCtx } from '@/lib/component/context'
-import type { FormErrors } from '@/lib/form'
+import type { FormErrors } from '@/lib/form/types'
 
 export interface FormContext {
 	errors: FormErrors

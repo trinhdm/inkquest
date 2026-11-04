@@ -1,6 +1,7 @@
 import { z } from 'zod'
-import { pause, pickValues, showMessage, type FormState } from './state'
+import { pause, pickValues, showMessage } from './state'
 import { ACTION_DELAY, BASE_ERROR } from './constants'
+import type { FormState } from './types'
 import type { RequireSome } from '@/types/utils'
 
 type FormFeedback =

@@ -4,12 +4,12 @@ import {
 	action,
 	BASE_ERROR, FAIL_CONTACT,
 	MOCK_ACCOUNT, MOCK_INCORRECT,
-	type FormAction,
 } from '@/lib/form'
 
 import { maskTo, pickTo } from './helpers'
 import { resendSchema, signupSchema, verifySchema } from './schema'
 import { startSession } from '@/lib/auth/session'
+import type { FormAction } from '@/lib/form/types'
 
 const start = action(signupSchema, {
 	names: ['email', 'method', 'tel'],

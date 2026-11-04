@@ -1,9 +1,10 @@
 'use server'
 
-import { action, MOCK_ACCOUNT, type FormAction } from '@/lib/form'
+import { action, MOCK_ACCOUNT } from '@/lib/form'
 import { loginSchema, magicSchema, resetSchema } from './schema'
 import { startSession } from '@/lib/auth/session'
 import type z from 'zod'
+import type { FormAction } from '@/lib/form/types'
 
 const checkLogin = action(loginSchema, {
 	names: ['email'],

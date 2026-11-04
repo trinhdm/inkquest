@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { FormState } from '@/lib/form'
+import type { FormState } from '@/lib/form/types'
 
 //	runs callback once for each new reply, during render
 //	`onReply` is used to set the calling component's own state only
