@@ -5,34 +5,38 @@ import { createPageCtx } from '../createPageCtx'
 interface Data { title: string }
 
 describe('createPageCtx', () => {
-	const { PageProvider, usePageCtx, useSafePageCtx } = createPageCtx<Data>('privacy')
+	const { usePageCtx, useSafePageCtx, PageProvider } = createPageCtx<Data>('privacy')
 
-	const wrap = (value: Data) =>
-		({ children }: { children: ReactNode }) => <PageProvider value={ value }>{ children }</PageProvider>
+	const withPage = (value: Data) => {
+		const Wrapper = ({ children }: { children: ReactNode }) => (
+			<PageProvider value={ value }>{ children }</PageProvider>
+		)
+		return Wrapper
+	}
 
 	describe('inside a provider', () => {
 		it('exposes the value with the page slug added as pageID', () => {
-			const { result } = renderHook(() => usePageCtx(), { wrapper: wrap({ title: 'Privacy' }) })
+			const { result } = renderHook(() => usePageCtx(), { wrapper: withPage({ title: 'Privacy' }) })
 
 			expect(result.current).toEqual({ title: 'Privacy', pageID: 'privacy' })
 		})
 
 		it('lets the slug win over a pageID smuggled into the value', () => {
 			const value = { title: 'x', pageID: 'other' } as Data
-			const { result } = renderHook(() => usePageCtx(), { wrapper: wrap(value) })
+			const { result } = renderHook(() => usePageCtx(), { wrapper: withPage(value) })
 
 			expect(result.current.pageID).toBe('privacy')
 		})
 
 		it('gives useSafePageCtx the same value', () => {
-			const { result } = renderHook(() => useSafePageCtx(), { wrapper: wrap({ title: 'Privacy' }) })
+			const { result } = renderHook(() => useSafePageCtx(), { wrapper: withPage({ title: 'Privacy' }) })
 
 			expect(result.current).toEqual({ title: 'Privacy', pageID: 'privacy' })
 		})
 
 		it('keeps the same object across re-renders while the value is unchanged', () => {
 			const value = { title: 'Privacy' }
-			const { result, rerender } = renderHook(() => usePageCtx(), { wrapper: wrap(value) })
+			const { result, rerender } = renderHook(() => usePageCtx(), { wrapper: withPage(value) })
 			const first = result.current
 
 			rerender()
@@ -77,7 +81,7 @@ describe('createPageCtx', () => {
 
 	it('keeps separate pages isolated from each other', () => {
 		const other = createPageCtx<Data>('terms')
-		const { result } = renderHook(() => other.useSafePageCtx(), { wrapper: wrap({ title: 'Privacy' }) })
+		const { result } = renderHook(() => other.useSafePageCtx(), { wrapper: withPage({ title: 'Privacy' }) })
 
 		expect(result.current).toBeNull()
 	})
