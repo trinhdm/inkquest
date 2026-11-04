@@ -83,6 +83,9 @@ export const AuthFormRoot = ({
 
 	return (
 		<Section
+			attributes={ { aria: {
+				label: title,
+			} } }
 			eyebrow={ eyebrow }
 			id={ idx.section }
 			layout="content-form"

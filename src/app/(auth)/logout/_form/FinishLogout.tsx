@@ -5,7 +5,7 @@ import { getFirstName } from '../../_utils/helpers'
 import { switchAccount, transferAccount } from '../_utils/actions'
 import { AccountCard } from '../../_components/AccountCard'
 import { AuthForm } from '../../_components/AuthForm'
-import { NavRoutes } from '@/utils/navigation'
+import { SHARED_CONTINUE_PROPS } from '../_utils/data'
 
 export const FinishLogout = () => {
 	const { account, idx  } = useLogoutCtx()
@@ -32,7 +32,7 @@ export const FinishLogout = () => {
 				/>
 
 				<AuthForm.Note>
-					<AuthForm.Continue linkable href={ NavRoutes.HOME } label="Back to home" />
+					<AuthForm.Continue { ...SHARED_CONTINUE_PROPS } />
 				</AuthForm.Note>
 			</AuthForm.Footer>
 		</AuthForm>

@@ -40,7 +40,7 @@ export const SignupMagic = () => {
 			</Field>
 
 			<AuthForm.Footer>
-				<AuthForm.Back onClick={ goBack } />
+				<AuthForm.Back disabled={ resend.pending } onClick={ goBack } />
 
 				<AuthForm.Resend
 					disabled={ waiting }

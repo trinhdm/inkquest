@@ -1,4 +1,12 @@
+import { NavRoutes } from '@/utils/navigation'
+import type { AuthContinue } from '../../_components/_parts'
 import type { LogoutPageData } from './types'
+
+export const SHARED_CONTINUE_PROPS = {
+	href: NavRoutes.HOME,
+	label: 'Back to home',
+	linkable: true,
+} satisfies AuthContinue.Props
 
 export const LOGOUT_PAGE_DATA: LogoutPageData = {
 	id: 'logout',

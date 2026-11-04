@@ -33,7 +33,7 @@ export const SignupVerify = () => {
 			<CodeField />
 
 			<AuthForm.Footer>
-				<AuthForm.Back onClick={ goBack } />
+				<AuthForm.Back disabled={ reply.pending } onClick={ goBack } />
 
 				<AuthForm.Submit label="Verify" loading={ verify.pending } />
 

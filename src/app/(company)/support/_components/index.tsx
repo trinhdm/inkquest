@@ -1,8 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { useForm } from '@/hooks/form'
-import { initFormState } from '@/lib/form'
+import { useForm } from '@/hooks/form/useForm'
+import { initFormState } from '@/lib/form/state'
 import { supportArtist, supportClient } from '../_utils/actions'
 import { Grid } from '@/components/layout/Grid'
 import { NavRoutes } from '@/utils/navigation'
