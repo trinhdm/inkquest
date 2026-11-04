@@ -2,8 +2,8 @@
 
 import { useScreenFocus } from '@/hooks/form/useScreenFocus'
 import { useLogoutFlow } from '../_utils/useLogoutFlow'
-import { ConfirmLogout } from '../_form/ConfirmLogout'
-import { FinishLogout } from '../_form/FinishLogout'
+import { ConfirmLogout } from './ConfirmLogout'
+import { FinishLogout } from './FinishLogout'
 import { LogoutProvider } from '../_utils/context'
 import { LOGOUT_PAGE_DATA } from '../_utils/data'
 import type { ComponentType } from 'react'
@@ -18,7 +18,7 @@ export const LogoutForm = (props: LogoutFormValues) => {
 	const ctxValues = useLogoutFlow(LOGOUT_PAGE_DATA, props),
 		{ idx, screen } = ctxValues
 
-	useScreenFocus(idx.section, screen)
+	useScreenFocus(screen, idx.section)
 
 	const Screen = SCREENS[screen]
 

@@ -1,6 +1,5 @@
 import { redirect } from 'next/navigation'
-import { getSession } from '@/lib/auth/session'
-import { recallAccount } from '@/lib/auth/account'
+import { getSession, recallAccount } from '@/lib/auth'
 import { LogoutForm } from './_form'
 import { NavRoutes } from '@/utils/navigation'
 import { LOGOUT_PAGE_DATA } from './_utils/data'

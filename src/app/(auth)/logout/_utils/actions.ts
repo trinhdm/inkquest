@@ -1,18 +1,14 @@
 'use server'
 
-import { redirect, RedirectType } from 'next/navigation'
-import { forgetAccount, handoverAccount } from '@/lib/auth/account'
+import { forgetAccount, handoverAccount, redirectTo } from '@/lib/auth'
 import { NavRoutes } from '@/utils/navigation'
-
-const redirectLogout = () =>
-	redirect(NavRoutes.AUTH_LOGIN, RedirectType.replace)
 
 export const switchAccount = async () => {
 	await forgetAccount()
-	redirectLogout()
+	redirectTo(NavRoutes.AUTH_LOGIN)
 }
 
 export const transferAccount = async () => {
 	await handoverAccount()
-	redirectLogout()
+	redirectTo(NavRoutes.AUTH_LOGIN)
 }

@@ -1,9 +1,8 @@
 'use server'
 
 import { action, MOCK_ACCOUNT } from '@/lib/form'
-import { forgetAccount } from '@/lib/auth/account'
+import { forgetAccount, startSession } from '@/lib/auth'
 import { loginSchema, magicSchema, resetSchema } from './schema'
-import { startSession } from '@/lib/auth/session'
 import type z from 'zod'
 import type { FormAction } from '@/lib/form/types'
 

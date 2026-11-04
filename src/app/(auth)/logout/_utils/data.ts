@@ -16,7 +16,7 @@ export const LOGOUT_PAGE_DATA: LogoutPageData = {
 		confirm: {
 			id: 'confirm-logout',
 			eyebrow: 'Confirm',
-			heading: `"Log out of Inkquest?`,
+			heading: `Log out of Inkquest?`,
 			body: `You're still logged in on this browser.`,
 		},
 		finish: {

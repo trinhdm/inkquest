@@ -7,9 +7,8 @@ import {
 } from '@/lib/form'
 
 import { contactSchema, signupSchema, verifySchema } from './schema'
-import { forgetAccount } from '@/lib/auth/account'
+import { forgetAccount, startSession } from '@/lib/auth'
 import { getContact, maskContact } from './helpers'
-import { startSession } from '@/lib/auth/session'
 import { METHOD_DATA } from './data'
 import type { FormAction } from '@/lib/form/types'
 

@@ -1,5 +1,6 @@
-import { suggestAccount } from '@/lib/auth/account'
+import { getSession, redirectTo, suggestAccount } from '@/lib/auth'
 import { LoginForm } from './_form'
+import { NavRoutes } from '@/utils/navigation'
 import { LOGIN_PAGE_DATA } from './_utils/data'
 import type { Metadata } from 'next'
 
@@ -9,6 +10,9 @@ export const metadata: Metadata = {
 }
 
 export default async function Login() {
+	const user = await getSession()
+	if (user) redirectTo(NavRoutes.HOME)
+
 	const account = await suggestAccount()
 	return <LoginForm account={ account } />
 }

@@ -73,7 +73,7 @@
 		}
 
 		:where([id^="logout"]):only-child &,
-		#login-begin & {
+		#login-start & {
 			justify-content: center;
 			max-width: none;
 		}
