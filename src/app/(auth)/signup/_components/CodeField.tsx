@@ -1,34 +1,28 @@
 import { useState } from 'react'
+import { useOnReply } from '@/hooks/form/useOnReply'
 import { useSignupCtx } from '../_utils/context'
 import { Field } from '@/components/form/Field'
-
-const CODE_LENGTH = 6
+import { CODE_LENGTH } from '../_utils/data'
 
 export const CodeField = () => {
-	const {
-		idx,
-		method: { active: method },
-		verify: { pending, state },
-	} = useSignupCtx()
+	const { idx, resend, verify } = useSignupCtx()
+	const [resetKey, setResetKey] = useState(0)
 
-	const [code, setCode] = useState(0)
-	const [lastState, setLastState] = useState(state)
+	const clear = () => setResetKey(key => key + 1)
 
-	if (state !== lastState) {
-		setLastState(state)
-		setCode(key => key++)
-	}
-
-	if (method === 'magic') return null
+	useOnReply(verify.state, clear)
+	useOnReply(resend.state, state => {
+		if (state.success) clear()
+	})
 
 	return (
 		<Field
 			required
-			disabled={ pending }
+			disabled={ verify.pending }
 			id={ `${idx.field}-code` }
 		>
 			<Field.Code
-				key={ code }
+				key={ resetKey }
 				length={ CODE_LENGTH }
 				name="code"
 			/>

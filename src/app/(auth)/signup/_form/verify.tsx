@@ -3,7 +3,7 @@ import { validateVerifyForm } from '../_utils/schema'
 import { AuthForm } from '../../_components/AuthForm'
 import { CodeField } from '../_components/CodeField'
 import { Field } from '@/components/form/Field'
-import { METHOD_DATA } from '../_utils/data'
+import { CODE_LENGTH, METHOD_DATA } from '../_utils/data'
 
 export const SignupVerify = () => {
 	const {
@@ -23,8 +23,8 @@ export const SignupVerify = () => {
 			state={ reply.state }
 			validate={ validateVerifyForm }
 		>
-			<AuthForm.Header eyebrow="Verify" title={ `Check your ${copy.output}s` }>
-				We sent a 6-digit code to { destination }. Enter it below.
+			<AuthForm.Header eyebrow="Verify" title={ `Check your ${copy.output}` }>
+				We sent a { CODE_LENGTH }-digit code to { destination }. Enter it below.
 			</AuthForm.Header>
 
 			<Field.Hidden name="destination" value={ destination } />

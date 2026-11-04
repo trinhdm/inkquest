@@ -1,7 +1,16 @@
 import { z } from 'zod'
 import { describeMissing } from './helpers'
 import { emailRule, telRule, validateWith } from '@/lib/form'
-import { SEQUENCE_CHECK_MIN, SIGNUP_METHODS } from './data'
+import { CODE_LENGTH, SEQUENCE_CHECK_MIN } from './data'
+
+const CODE_PATTERN = new RegExp(`^\\d{${CODE_LENGTH}}$`)
+
+const codeRule = z.string()
+	.transform(value => value.replace(/\s/g, ''))
+	.refine(
+		value => CODE_PATTERN.test(value),
+		{ message: `Enter the ${CODE_LENGTH}-digit code.` }
+	)
 
 const passwordRule = z.string()
 	.min(1, `Enter a password.`)
@@ -13,13 +22,6 @@ const passwordRule = z.string()
 
 		if (message) ctx.addIssue({ code: 'custom', message })
 	})
-
-const codeRule = z.string()
-	.transform(value => value.replace(/\s/g, ''))
-	.refine(
-		value => /^\d{6}$/.test(value),
-		{ message: 'Enter the 6-digit code.' }
-	)
 
 
 //	SignupRoot
