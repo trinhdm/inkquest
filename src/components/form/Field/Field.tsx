@@ -37,6 +37,8 @@ const NAME = 'Field' as const,
 
 const DEFAULT_PROPS = {
 	as: TAG,
+	describeCaption: true,
+	hideLabel: false,
 	size: 'md',
 } as const
 
@@ -53,8 +55,10 @@ export const SUBCOMPONENTS = {
 interface BaseFieldProps {
 	caption?: ReactNode
 	children: ReactNode
+	describeCaption?: boolean
 	disabled?: boolean
 	error?: string
+	hideLabel?: boolean
 	id: string
 	invalid?: boolean
 	label?: string
@@ -192,7 +196,8 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 
 	const {
 		as, caption, children,
-		disabled, error: propError,
+		describeCaption, disabled,
+		error: propError, hideLabel,
 		id, invalid, label,
 		labelPosition, layout,
 		loading, readonly, required,
@@ -202,13 +207,12 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 
 	const others = extractOthers(rest)
 
-	const {
-		control, icon,
-		loader, name,
-	} = buildControl(props, styles)
-
+	const { control, icon, loader, name } = buildControl(props, styles)
 	const { error, hasError, isInvalid } = getFieldErrors({ context, name, props })
-	const isRequired = !!(required && !readonly)
+
+	const hasLabel = hideLabel ? false : !!label,
+		isCaptionA11y = !!(caption && describeCaption),
+		isRequired = !!(required && !readonly)
 
 	const uid = useId()
 	const idx = useMemo(() => {
@@ -223,20 +227,21 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 
 	const aria = useMemo(() => {
 		const describedby = []
-		if (caption) describedby.push(idx.info)
+		if (isCaptionA11y) describedby.push(idx.info)
 		if (hasError) describedby.push(idx.error)
 
 		return {
 			busy: !!loader || undefined,
 			describedby: describedby.join(' '),
 			invalid: isInvalid || undefined,
-			labelledby: !!label ? idx.label : undefined,
+			label: hasLabel ? undefined : label,
+			labelledby: hasLabel ? idx.label : undefined,
 			required: isRequired || undefined,
 		}
 	}, [
-		caption, hasError, idx,
-		isInvalid, isRequired,
-		label, loader,
+		hasError, hasLabel, idx,
+		isCaptionA11y, isInvalid,
+		isRequired, label, loader,
 	])
 
 	const clsx = useMemo(() => ({
@@ -271,7 +276,7 @@ export const Field = polymorphic<FieldSpecs>((_props, { useProps, useStyles }) =
 		} },
 	}
 
-	const labelEl = label && (
+	const labelEl = hasLabel && (
 		<label { ...styles('label') } htmlFor={ idx.control } id={ idx.label }>
 			{ label }
 			{ (isRequired && !context.group) && (

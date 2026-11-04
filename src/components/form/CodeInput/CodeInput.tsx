@@ -236,6 +236,7 @@ export const CodeInput = polymorphic<CodeInputSpecs>((_props, { useProps, useSty
 				attributes={ { aria: {
 					busy: aria.busy,
 					describedby: aria.describedby,
+					label: aria.label,
 					labelledby: aria.labelledby,
 				} } }
 				dir="ltr"

@@ -5,7 +5,11 @@ import { Field } from '@/components/form/Field'
 import { CODE_LENGTH } from '../_utils/data'
 
 export const CodeField = () => {
-	const { idx, resend, verify } = useSignupCtx()
+	const {
+		destination, idx,
+		resend, verify,
+	} = useSignupCtx()
+
 	const [resetKey, setResetKey] = useState(0)
 
 	const clear = () => setResetKey(key => key + 1)
@@ -17,9 +21,11 @@ export const CodeField = () => {
 
 	return (
 		<Field
+			hideLabel
 			required
 			disabled={ verify.pending }
 			id={ `${idx.field}-code` }
+			label={ `${CODE_LENGTH}-digit code sent to ${destination}` }
 		>
 			<Field.Code
 				key={ resetKey }

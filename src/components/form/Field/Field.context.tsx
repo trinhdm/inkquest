@@ -15,6 +15,7 @@ interface FieldAria {
 	busy: boolean | undefined
 	describedby: string | undefined
 	invalid: boolean | undefined
+	label: string | undefined
 	labelledby: string | undefined
 	required: boolean | undefined
 }
@@ -53,6 +54,7 @@ const FIELD_CONTEXT_BASE = {
 		busy: undefined,
 		describedby: undefined,
 		invalid: undefined,
+		label: undefined,
 		labelledby: undefined,
 		required: undefined,
 	},

@@ -42,6 +42,7 @@ export const ContactField = () => {
 		<Field
 			required
 			caption={ <AuthOptions /> }
+			describeCaption={ false }
 			disabled={ pending }
 			id={ `${idx.field}-${method}` }
 			label={ label }
