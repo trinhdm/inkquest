@@ -1,19 +1,19 @@
 import { useLoginCtx } from '../_utils/context'
 import { AuthForm } from '../../_components/AuthForm'
 import { SenderField } from '../../_components/SenderField'
+import { writeExpiryText } from '../../_utils/helpers'
 
 export const LoginReset = () => {
 	const {
-		goBack, guardSubmit,
-		restart, stopWait,
-		destination, idx,
-		reset, waiting,
+		content, destination, goBack,
+		guardSubmit, idx, reset,
+		restart, stopWait, waiting,
 	} = useLoginCtx()
 
 	return (
 		<AuthForm { ...reset } idx={ idx } onSubmit={ guardSubmit }>
-			<AuthForm.Header eyebrow="Check your inbox" title="Reset link sent">
-				If an account exists for { destination }, a link to reset your password is on its way. It expires in 30 minutes.
+			<AuthForm.Header eyebrow={ content.eyebrow } title={ content.heading }>
+				{ content.body ?? writeExpiryText(`If an account exists for ${destination}, a link to reset your password is on its way.`, 1800) }
 			</AuthForm.Header>
 
 			<SenderField email={ destination } idx={ idx } />

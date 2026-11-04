@@ -26,13 +26,12 @@ interface LoginFormProps {
 }
 
 export const LoginForm = ({ account }: LoginFormProps) => {
-	const flow = useLoginFlow(LOGIN_PAGE_DATA, account),
-		{ idx, screen } = flow
+	const ctxValues = useLoginFlow(LOGIN_PAGE_DATA, account),
+		{ idx, screen } = ctxValues
 
-	useScreenFocus(idx.section, screen)
+	useScreenFocus(screen, idx.section)
 
-	const Screen = SCREENS[screen],
-		ctxValues = { data: LOGIN_PAGE_DATA, ...flow }
+	const Screen = SCREENS[screen]
 
 	return (
 		<LoginProvider value={ ctxValues }>

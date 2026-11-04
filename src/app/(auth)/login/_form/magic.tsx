@@ -5,14 +5,15 @@ import { SenderField } from '../../_components/SenderField'
 
 export const LoginMagic = () => {
 	const {
-		goBack, guardSubmit, stopWait,
-		destination, idx, magic, waiting,
+		content, goBack, guardSubmit,
+		destination, idx, magic,
+		stopWait, waiting,
 	} = useLoginCtx()
 
 	return (
 		<AuthForm { ...magic } idx={ idx } onSubmit={ guardSubmit }>
-			<AuthForm.Header eyebrow="Magic Link" title="Check your inbox">
-				{ writeExpiryText(`If an account exists for ${destination}, a sign-in link is on its way.`) }
+			<AuthForm.Header eyebrow={ content.eyebrow } title={ content.heading }>
+				{ content.body ?? writeExpiryText(`If an account exists for ${destination}, a sign-in link is on its way.`) }
 			</AuthForm.Header>
 
 			<SenderField email={ destination } idx={ idx } />

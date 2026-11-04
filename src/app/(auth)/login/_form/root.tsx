@@ -6,8 +6,8 @@ import { PLACEHOLDER } from '@/lib/form'
 
 export const LoginRoot = () => {
 	const {
-		destination, idx, login,
-		magic, navigate, reply,
+		content, destination, idx,
+		login, magic, navigate, reply,
 	} = useLoginCtx()
 
 	const ForgotPass = (
@@ -27,8 +27,8 @@ export const LoginRoot = () => {
 			state={ reply.state }
 			validate={ validateLoginForm }
 		>
-			<AuthForm.Header eyebrow="Log In" title="Welcome back.">
-				Pick up where you left off.
+			<AuthForm.Header eyebrow={ content.eyebrow } title={ content.heading }>
+				{ content.body }
 			</AuthForm.Header>
 
 			<Field

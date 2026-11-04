@@ -5,13 +5,13 @@ import { initFormState } from '@/lib/form'
 import { login, magicLogin, requestReset } from './actions'
 import type { AccountValues } from '@/lib/auth/schema'
 import type { FormResults } from '@/lib/form/types'
-import type { LoginFlow } from './context'
+import type { LoginContext } from './context'
 import type { LoginPageData, LoginScreen, ReplyFromStep } from './types'
 
 export const useLoginFlow = (
-	{ id: pageID }: LoginPageData,
+	{ form, id: pageID }: LoginPageData,
 	account: AccountValues | null
-): LoginFlow => {
+): LoginContext => {
 	const {
 		current: screen,
 		back, guard, navigate,
@@ -60,6 +60,8 @@ export const useLoginFlow = (
 		navigate,
 		restart,
 		stopWait,
+
+		content: form[shown],
 
 		login: loginForm,
 		magic: magicForm,

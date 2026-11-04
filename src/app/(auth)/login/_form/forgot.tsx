@@ -6,14 +6,14 @@ import { PLACEHOLDER } from '@/lib/form'
 
 export const LoginForgot = () => {
 	const {
-		destination, goBack,
-		idx, reset,
+		content, destination,
+		goBack, idx, reset,
 	} = useLoginCtx()
 
 	return (
 		<AuthForm { ...reset } idx={ idx } validate={ validateReset }>
-			<AuthForm.Header eyebrow="Reset password" title="Forgot your password?">
-				Enter the email on your account and we&apos;ll send a link to set a new one.
+			<AuthForm.Header eyebrow={ content.eyebrow } title={ content.heading }>
+				{ content.body }
 			</AuthForm.Header>
 
 			<Field
