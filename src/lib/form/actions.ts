@@ -33,7 +33,7 @@ export const action = <S extends z.ZodType>(schema: S, config?: FormActionConfig
 			if (!result.success)
 				return { ...base, errors: showMessage(result.error) }
 
-			await pause(ACTION_DELAY)
+			await pause(ACTION_DELAY * 1000)
 
 			for (const { check, ...feedback } of config?.conditions ?? [])
 				if (await check(result.data)) return { ...base, ...feedback }

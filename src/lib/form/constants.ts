@@ -1,7 +1,7 @@
 
 //	timing (in seconds)
 
-export const ACTION_DELAY = 800
+export const ACTION_DELAY = .8
 export const CODE_EXPIRY = 900
 export const TIMER_DURATION = 30
 
