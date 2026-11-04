@@ -18,12 +18,14 @@ const SCREENS = {
 	verify:		SignupVerify,
 } satisfies Record<SignupScreen, ComponentType>
 
-export const SignupBase = () => {
-	const { idx, screen, ...flow } = useSignupFlow(SIGNUP_PAGE_DATA)
+export const SignupForm = () => {
+	const flow = useSignupFlow(SIGNUP_PAGE_DATA),
+		{ idx, screen } = flow
+
 	useScreenFocus(screen, idx.section)
 
 	const Screen = SCREENS[screen],
-		ctxValues = { data: SIGNUP_PAGE_DATA, idx, screen, ...flow }
+		ctxValues = { data: SIGNUP_PAGE_DATA, ...flow }
 
 	return (
 		<SignupProvider value={ ctxValues }>
@@ -32,4 +34,4 @@ export const SignupBase = () => {
 	)
 }
 
-SignupBase.displayName = 'SignupBase'
+SignupForm.displayName = 'SignupForm'

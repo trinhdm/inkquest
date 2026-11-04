@@ -15,11 +15,13 @@ const SCREENS = {
 } satisfies Record<LogoutScreen, ComponentType>
 
 export const LogoutForm = (props: LogoutFormValues) => {
-	const { idx, screen, ...flow } = useLogoutFlow(LOGOUT_PAGE_DATA, props)
-	useScreenFocus(screen, idx.section)
+	const flow = useLogoutFlow(LOGOUT_PAGE_DATA, props),
+		{ idx, screen } = flow
+
+	useScreenFocus(idx.section, screen)
 
 	const Screen = SCREENS[screen],
-		ctxValues = { data: LOGOUT_PAGE_DATA, idx, screen, ...flow }
+		ctxValues = { data: LOGOUT_PAGE_DATA, ...flow }
 
 	return (
 		<LogoutProvider value={ ctxValues }>

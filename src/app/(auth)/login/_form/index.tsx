@@ -21,16 +21,18 @@ const SCREENS = {
 	success:	LoginSuccess,
 } satisfies Record<LoginScreen, ComponentType>
 
-interface LoginBaseProps {
+interface LoginFormProps {
 	account: AccountValues | null
 }
 
-export const LoginBase = ({ account }: LoginBaseProps) => {
-	const { idx, screen, ...flow } = useLoginFlow(LOGIN_PAGE_DATA, account)
-	useScreenFocus(screen, idx.section)
+export const LoginForm = ({ account }: LoginFormProps) => {
+	const flow = useLoginFlow(LOGIN_PAGE_DATA, account),
+		{ idx, screen } = flow
+
+	useScreenFocus(idx.section, screen)
 
 	const Screen = SCREENS[screen],
-		ctxValues = { data: LOGIN_PAGE_DATA, idx, screen, ...flow }
+		ctxValues = { data: LOGIN_PAGE_DATA, ...flow }
 
 	return (
 		<LoginProvider value={ ctxValues }>
@@ -39,4 +41,4 @@ export const LoginBase = ({ account }: LoginBaseProps) => {
 	)
 }
 
-LoginBase.displayName = 'LoginBase'
+LoginForm.displayName = 'LoginForm'

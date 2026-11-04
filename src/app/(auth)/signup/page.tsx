@@ -1,4 +1,4 @@
-import { SignupBase } from './_components'
+import { SignupForm } from './_form'
 import { SIGNUP_PAGE_DATA } from './_utils/data'
 import type { Metadata } from 'next'
 
@@ -8,5 +8,5 @@ export const metadata: Metadata = {
 }
 
 export default function Signup() {
-	return <SignupBase />
+	return <SignupForm />
 }

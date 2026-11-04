@@ -1,5 +1,5 @@
 import { suggestAccount } from '@/lib/auth/account'
-import { LoginBase } from './_components'
+import { LoginForm } from './_form'
 import { LOGIN_PAGE_DATA } from './_utils/data'
 import type { Metadata } from 'next'
 
@@ -10,5 +10,5 @@ export const metadata: Metadata = {
 
 export default async function Login() {
 	const account = await suggestAccount()
-	return <LoginBase account={ account } />
+	return <LoginForm account={ account } />
 }
