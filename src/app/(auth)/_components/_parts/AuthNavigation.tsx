@@ -63,6 +63,7 @@ interface AuthContinueProps {
 	fullWidth?: Button.Props['fullWidth']
 	href: Button.Props['href']
 	label: string
+	linkable?: AuthButtonProps['linkable']
 }
 
 export const AuthContinue = ({

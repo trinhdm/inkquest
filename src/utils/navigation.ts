@@ -135,7 +135,7 @@ export const NAVIGATION_DATA: NavigationItem[] = [
 			{ label: 'Messages', route: NavRoutes.USER_MESSAGES },
 			{ label: 'Collections', route: NavRoutes.USER_COLLECTIONS },
 			{ label: 'Settings', route: NavRoutes.USER_SETTINGS },
-			{ label: 'Sign out', route: NavRoutes.AUTH_LOGOUT, },
+			{ label: 'Log out', route: NavRoutes.AUTH_LOGOUT, },
 		],
 	},
 	{

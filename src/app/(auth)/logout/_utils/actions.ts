@@ -12,7 +12,7 @@ export const switchAccount = async () => {
 	redirectLogout()
 }
 
-export const suggestAccount = async () => {
+export const transferAccount = async () => {
 	await handoverAccount()
 	redirectLogout()
 }

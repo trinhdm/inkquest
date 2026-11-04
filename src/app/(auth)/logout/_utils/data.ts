@@ -1,7 +1,4 @@
-import { getAuthFormIDs } from '../../_utils/helpers'
 import type { LogoutPageData } from './types'
-
-export const IDX = getAuthFormIDs('logout', 'done')
 
 export const LOGOUT_PAGE_DATA: LogoutPageData = {
 	id: 'logout',
