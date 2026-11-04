@@ -2,7 +2,7 @@
 
 import { action, MOCK_ACCOUNT, type FormAction } from '@/lib/form'
 import { loginSchema, magicSchema, resetSchema } from './schema'
-import { startSession } from '../../_utils/session'
+import { startSession } from '@/lib/auth/session'
 import type z from 'zod'
 
 const checkLogin = action(loginSchema, {

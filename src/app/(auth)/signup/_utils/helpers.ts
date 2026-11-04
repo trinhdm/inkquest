@@ -33,6 +33,5 @@ export const describeMissing = (value: string) => {
 export const maskTo = (method: SignupMethod, to: string) =>
 	method === 'phone' ? `•••-${to.slice(-4)}` : to
 
-
 export const pickTo = (data: SignupValues) =>
 	data.method === 'phone' ? data.tel : data.email

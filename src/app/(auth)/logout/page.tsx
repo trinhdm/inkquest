@@ -1,4 +1,4 @@
-import { getRememberedAccount } from '../_utils/account'
+import { getRememberedAccount } from '@/lib/auth/account'
 import { LogoutBase } from './_components'
 import { LOGOUT_PAGE_DATA } from './_utils/data'
 import type { Metadata } from 'next'

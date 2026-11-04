@@ -9,7 +9,7 @@ import {
 
 import { maskTo, pickTo } from './helpers'
 import { resendSchema, signupSchema, verifySchema } from './schema'
-import { startSession } from '../../_utils/session'
+import { startSession } from '@/lib/auth/session'
 
 const start = action(signupSchema, {
 	names: ['email', 'method', 'tel'],

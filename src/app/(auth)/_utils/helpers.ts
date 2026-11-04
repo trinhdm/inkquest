@@ -1,4 +1,4 @@
-import type { AccountValues } from './schema'
+import type { AccountValues } from '@/lib/auth/schema'
 import type { FormResults } from '@/lib/form'
 
 export const getAuthFormIDs = <T extends string>(

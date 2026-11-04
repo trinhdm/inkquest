@@ -1,4 +1,4 @@
-import { getLoginHint } from '../_utils/account'
+import { getAccountHint } from '@/lib/auth/account'
 import { LoginBase } from './_components'
 import { LOGIN_PAGE_DATA } from './_utils/data'
 import type { Metadata } from 'next'
@@ -9,6 +9,6 @@ export const metadata: Metadata = {
 }
 
 export default async function Login() {
-	const account = await getLoginHint()
+	const account = await getAccountHint()
 	return <LoginBase account={ account } />
 }

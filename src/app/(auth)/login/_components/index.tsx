@@ -9,7 +9,7 @@ import { LoginReset } from '../_form/reset'
 import { LoginRoot } from '../_form/root'
 import { LoginSuccess } from '../_form/success'
 import { LOGIN_PAGE_DATA } from '../_utils/data'
-import type { AccountValues } from '../../_utils/schema'
+import type { AccountValues } from '@/lib/auth/schema'
 import type { LoginScreen } from '../_utils/types'
 
 const SCREENS = {
