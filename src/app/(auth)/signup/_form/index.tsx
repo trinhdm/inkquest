@@ -2,20 +2,20 @@
 
 import { useScreenFocus } from '@/hooks/form/useScreenFocus'
 import { useSignupFlow } from '../_utils/useSignupFlow'
-import { SignupMagic } from './magic'
+import { FinishSignup } from './FinishSignup'
+import { CheckSignup } from './CheckSignup'
 import { SignupProvider } from '../_utils/context'
-import { SignupRoot } from './root'
-import { SignupSuccess } from './success'
-import { SignupVerify } from './verify'
+import { StartSignup } from './StartSignup'
+import { VerifySignup } from './VerifySignup'
 import { SIGNUP_PAGE_DATA } from '../_utils/data'
 import type { ComponentType } from 'react'
 import type { SignupScreen } from '../_utils/types'
 
 const SCREENS = {
-	begin:		SignupRoot,
-	inbox:		SignupMagic,
-	success:	SignupSuccess,
-	verify:		SignupVerify,
+	start:		StartSignup,
+	check:		CheckSignup,
+	verify:		VerifySignup,
+	finish:		FinishSignup,
 } satisfies Record<SignupScreen, ComponentType>
 
 export const SignupForm = () => {

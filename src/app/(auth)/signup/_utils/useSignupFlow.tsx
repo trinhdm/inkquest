@@ -3,7 +3,7 @@ import { useForm, useFormHistory, useOnReply } from '@/hooks/form'
 import { getAuthFormIDs } from '../../_utils/helpers'
 import { initFormState } from '@/lib/form'
 import { resend, signup, verify } from './actions'
-import { METHOD_BASE, SIGNUP_METHODS } from './data'
+import { METHOD_BASE, SCREEN_BASE, SIGNUP_METHODS } from './data'
 import type { FormResults } from '@/lib/form/types'
 import type { SignupContext } from './context'
 
@@ -12,12 +12,15 @@ import type {
 	SignupPageData, SignupScreen,
 } from './types'
 
-export const useSignupFlow = ({ id: pageID, form }: SignupPageData): SignupContext => {
+export const useSignupFlow = ({
+	form,
+	id: pageID,
+}: SignupPageData): SignupContext => {
 	const {
 		current: screen,
 		back, guard, navigate,
 		startWait, stopWait, waiting,
-	} = useFormHistory<SignupScreen>('begin')
+	} = useFormHistory<SignupScreen>(SCREEN_BASE)
 
 	const [replyFrom, setReplyFrom] = useState<ReplyFromStep | null>(null)
 	const [order, setOrder] = useState<SignupMethod[]>(() => [
@@ -41,7 +44,7 @@ export const useSignupFlow = ({ id: pageID, form }: SignupPageData): SignupConte
 	useOnReply(signupForm.state, state => {
 		if (!state.success) return
 		setReplyFrom(null)
-		navigate(method === 'magic' ? 'inbox' : 'verify', { wait: true })
+		navigate(method === 'magic' ? 'check' : 'verify', { wait: true })
 	})
 
 	useOnReply(resendForm.state, state => {
@@ -51,10 +54,11 @@ export const useSignupFlow = ({ id: pageID, form }: SignupPageData): SignupConte
 
 	useOnReply(verifyForm.state, state => {
 		setReplyFrom('verify')
-		if (state.success) navigate('success')
+		if (state.success) navigate('finish')
 	})
 
-	const isSignupSSO = screen === 'success' && !verifyForm.state.success
+	const hasFinished = screen === 'finish',
+		isSignupSSO = hasFinished && !verifyForm.state.success
 
 	const replies = {
 		resend: resendForm,
@@ -69,7 +73,7 @@ export const useSignupFlow = ({ id: pageID, form }: SignupPageData): SignupConte
 
 	return {
 		goBack: back,
-		guardSubmit: event => guard(event, { when: screen === 'success' }),
+		guardSubmit: event => guard(event, { when: hasFinished }),
 		navigate,
 		selectMethod,
 		stopWait,

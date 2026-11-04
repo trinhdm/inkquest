@@ -26,8 +26,8 @@ export interface MethodData {
 }
 
 export type SignupScreen =
-	| 'begin' | 'verify'
-	| 'inbox' | 'success'
+	| 'start' | 'check'
+	| 'verify' | 'finish'
 
 export type ReplyFromStep =
 	| 'resend' | 'verify'

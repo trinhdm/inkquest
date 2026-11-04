@@ -4,7 +4,7 @@ import { AuthForm } from '../../_components/AuthForm'
 import { HiddenFields } from '../_components/HiddenFields'
 import { SenderField } from '../../_components/SenderField'
 
-export const SignupMagic = () => {
+export const CheckSignup = () => {
 	const {
 		content, destination, goBack,
 		guardSubmit, idx, reply,
@@ -40,4 +40,4 @@ export const SignupMagic = () => {
 	)
 }
 
-SignupMagic.displayName = 'SignupMagic'
+CheckSignup.displayName = 'CheckSignup'

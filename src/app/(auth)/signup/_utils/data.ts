@@ -1,11 +1,11 @@
 import { syncLengthTo } from '@/utils/helpers'
+import { NavRoutes } from '@/utils/navigation'
 import type { CSSProperties } from 'react'
 
 import type {
 	MethodData, PasswordRule,
-	SignupMethod, SignupPageData,
+	SignupMethod, SignupPageData, SignupScreen,
 } from './types'
-import { NavRoutes } from '@/utils/navigation'
 
 //	otp code
 
@@ -16,6 +16,8 @@ export const CODE_LENGTH = 6
 export const SKIP_GAP = 2
 export const TIER_MS = 75
 export const METER_CSS = { '--pw-tier-duration': `${TIER_MS}ms` } as CSSProperties
+
+export const SCREEN_BASE: SignupScreen = 'start'
 
 //	signup methods
 
@@ -139,15 +141,15 @@ export const SIGNUP_PAGE_DATA: SignupPageData = {
 	title: 'Sign Up',
 	description: 'Create your own Inkquest account.',
 	form: {
-		begin: {
+		start: {
 			id: 'start-signup',
 			eyebrow: 'Sign Up',
 			heading: 'Join Inkquest.',
 			body: 'One account for finding artists, bidding on flash, and booking.',
 			footer: `By creating an account, you confirm you're 18+ and agree to the <a href="${NavRoutes.LEGAL_TERMS}" data-link>Terms</a> and <a href="${NavRoutes.LEGAL_PRIVACY}" data-link>Privacy Policy</a>.`,
 		},
-		inbox: {
-			id: 'magic-inbox',
+		check: {
+			id: 'check-signup',
 			eyebrow: 'Magic Link',
 			heading: 'Check your inbox',
 		},
@@ -156,7 +158,7 @@ export const SIGNUP_PAGE_DATA: SignupPageData = {
 			eyebrow: 'Verify',
 			heading: 'Check your inbox',
 		},
-		success: {
+		finish: {
 			id: 'finish-signup',
 			eyebrow: 'Success!',
 			heading: 'Account created.',

@@ -7,7 +7,7 @@ import { HiddenFields } from '../_components/HiddenFields'
 import { PasswordField } from '../_components/PasswordField'
 import { METHOD_DATA } from '../_utils/data'
 
-export const SignupRoot = () => {
+export const StartSignup = () => {
 	const {
 		content, idx, navigate,
 		method: { active: method },
@@ -46,7 +46,7 @@ export const SignupRoot = () => {
 					as="SSO"
 					disabled={ pending }
 					label="continue"
-					onClick={ () => navigate('success') }
+					onClick={ () => navigate('finish') }
 				/>
 
 				{ !!note && (
@@ -59,4 +59,4 @@ export const SignupRoot = () => {
 	)
 }
 
-SignupRoot.displayName = 'SignupRoot'
+StartSignup.displayName = 'StartSignup'

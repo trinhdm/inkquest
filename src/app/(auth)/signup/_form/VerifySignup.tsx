@@ -5,7 +5,7 @@ import { CodeField } from '../_components/CodeField'
 import { HiddenFields } from '../_components/HiddenFields'
 import { CODE_LENGTH, METHOD_DATA } from '../_utils/data'
 
-export const SignupVerify = () => {
+export const VerifySignup = () => {
 	const {
 		content, destination, goBack, idx,
 		method: { active: method },
@@ -31,7 +31,7 @@ export const SignupVerify = () => {
 			<CodeField />
 
 			<AuthForm.Footer>
-				<AuthForm.Back disabled={ reply.pending } onClick={ goBack } />
+				{/* <AuthForm.Back disabled={ reply.pending } onClick={ goBack } /> */}
 				<AuthForm.Submit label="Verify" loading={ verify.pending } />
 
 				<AuthForm.Note>
@@ -57,4 +57,4 @@ export const SignupVerify = () => {
 	)
 }
 
-SignupVerify.displayName = 'SignupVerify'
+VerifySignup.displayName = 'VerifySignup'

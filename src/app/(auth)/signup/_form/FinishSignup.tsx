@@ -5,7 +5,7 @@ import { Field } from '@/components/form/Field'
 import { NavRoutes } from '@/utils/navigation'
 import { METHOD_DATA } from '../_utils/data'
 
-export const SignupSuccess = () => {
+export const FinishSignup = () => {
 	const {
 		content, destination, guardSubmit, idx,
 		method: { active: method },
@@ -48,4 +48,4 @@ export const SignupSuccess = () => {
 	)
 }
 
-SignupSuccess.displayName = 'SignupSuccess'
+FinishSignup.displayName = 'FinishSignup'
