@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { describeMissing } from './helpers'
 import { emailRule, telRule, validateWith } from '@/lib/form'
-import { SEQUENCE_CHECK_MIN, SIGNUP_METHODS } from './signup.data'
+import { SEQUENCE_CHECK_MIN, SIGNUP_METHODS } from './data'
 
 const passwordRule = z.string()
 	.min(1, `Enter a password.`)

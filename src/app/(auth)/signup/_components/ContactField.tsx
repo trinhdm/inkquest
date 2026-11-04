@@ -1,8 +1,8 @@
 import { useState, type ChangeEvent } from 'react'
-import { useSignupCtx } from '../_utils/signup.context'
+import { useSignupCtx } from '../_utils/context'
 import { AuthOptions } from './AuthOptions'
 import { Field } from '@/components/form/Field'
-import { METHOD_DATA } from '../_utils/signup.data'
+import { METHOD_DATA } from '../_utils/data'
 import { PLACEHOLDER } from '@/lib/form'
 
 export const ContactField = () => {

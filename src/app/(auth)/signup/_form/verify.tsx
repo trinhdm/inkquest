@@ -1,9 +1,9 @@
-import { useSignupCtx } from '../_utils/signup.context'
+import { useSignupCtx } from '../_utils/context'
 import { validateResend } from '../_utils/schema'
 import { AuthForm } from '../../_components/AuthForm'
 import { CodeField } from '../_components/CodeField'
 import { Field } from '@/components/form/Field'
-import { METHOD_DATA } from '../_utils/signup.data'
+import { METHOD_DATA } from '../_utils/data'
 
 export const SignupVerify = () => {
 	const {

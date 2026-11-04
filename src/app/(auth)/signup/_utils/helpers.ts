@@ -1,5 +1,5 @@
 import { keyHasValue } from '@/utils/helpers'
-import { PASSWORD_RULES, type SignupMethod } from './signup.data'
+import { PASSWORD_RULES, type SignupMethod } from './data'
 import type { SignupValues } from './schema'
 
 const listFormat = new Intl.ListFormat('en', { type: 'conjunction' })

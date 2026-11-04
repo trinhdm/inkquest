@@ -1,7 +1,7 @@
-import { useSignupCtx } from '../_utils/signup.context'
+import { useSignupCtx } from '../_utils/context'
 import { Button } from '@/components/core/Button'
 import { Icon } from '@/components/core/Icon'
-import { METHOD_DATA } from '../_utils/signup.data'
+import { METHOD_DATA } from '../_utils/data'
 
 export const AuthOptions = () => {
 	const {

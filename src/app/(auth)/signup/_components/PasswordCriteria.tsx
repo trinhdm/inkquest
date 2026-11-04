@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { usePasswordMeter, METER_CSS } from '../_utils/usePasswordMeter'
 import { Icon } from '@/components/core/Icon'
-import { PASSWORD_RULES, PASSWORD_SCORE } from '../_utils/signup.data'
+import { PASSWORD_RULES, PASSWORD_SCORE } from '../_utils/data'
 
 const SR_DELAY = 1000
 const TOTAL = PASSWORD_RULES.length

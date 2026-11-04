@@ -2,7 +2,7 @@ import { createPageCtx } from '@/lib/page/context'
 import type { SubmitEvent } from 'react'
 import type { AuthFormIDs } from '../../_utils/types'
 import type { FormResults } from '@/lib/form'
-import type { LoginPageData } from './login.data'
+import type { LoginPageData } from './data'
 
 export type LoginScreen =
 	| 'begin' | 'magic'

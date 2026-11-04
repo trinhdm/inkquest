@@ -1,6 +1,6 @@
 import { getLoginHint } from '../_utils/account'
 import { LoginBase } from './_components'
-import { LOGIN_PAGE_DATA } from './_utils/login.data'
+import { LOGIN_PAGE_DATA } from './_utils/data'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {

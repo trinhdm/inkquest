@@ -1,5 +1,5 @@
 import { SignupBase } from './_components'
-import { SIGNUP_PAGE_DATA } from './_utils/signup.data'
+import { SIGNUP_PAGE_DATA } from './_utils/data'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
