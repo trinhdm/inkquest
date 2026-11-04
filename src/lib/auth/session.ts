@@ -27,6 +27,7 @@ export const getSession = async (): Promise<AccountValues | null> => {
 		return null
 	}
 }
+
 export const endSession = async () => {
 	(await cookies()).delete(COOKIE)
 }

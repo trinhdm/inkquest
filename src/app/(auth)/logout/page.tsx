@@ -1,4 +1,4 @@
-import { getRememberedAccount } from '@/lib/auth/account'
+import { recallAccount } from '@/lib/auth/account'
 import { LogoutBase } from './_components'
 import { LOGOUT_PAGE_DATA } from './_utils/data'
 import type { Metadata } from 'next'
@@ -10,6 +10,6 @@ export const metadata: Metadata = {
 }
 
 export default async function Logout() {
-	const account = await getRememberedAccount()
+	const account = await recallAccount()
 	return <LogoutBase account={ account } />
 }

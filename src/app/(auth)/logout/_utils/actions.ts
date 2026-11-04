@@ -1,15 +1,18 @@
 'use server'
 
-import { redirect } from 'next/navigation'
-import { forgetRememberedAccount, setAccountHint } from '@/lib/auth/account'
+import { redirect, RedirectType } from 'next/navigation'
+import { forgetAccount, handoverAccount } from '@/lib/auth/account'
 import { NavRoutes } from '@/utils/navigation'
 
+const redirectLogout = () =>
+	redirect(NavRoutes.AUTH_LOGIN, RedirectType.replace)
+
 export const switchAccount = async () => {
-	await forgetRememberedAccount()
-	redirect(NavRoutes.AUTH_LOGIN)
+	await forgetAccount()
+	redirectLogout()
 }
 
 export const suggestAccount = async () => {
-	await setAccountHint()
-	redirect(NavRoutes.AUTH_LOGIN)
+	await handoverAccount()
+	redirectLogout()
 }

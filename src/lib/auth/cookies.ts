@@ -1,6 +1,5 @@
 import { cookies } from 'next/headers'
 import { accountSchema, type AccountValues } from './schema'
-import { NavRoutes } from '@/utils/navigation'
 
 export const writeAccount = async (
 	name: string,
@@ -10,7 +9,6 @@ export const writeAccount = async (
 	(await cookies()).set(name, JSON.stringify(values), {
 		httpOnly: true,
 		maxAge,
-		path: NavRoutes.HOME,
 		sameSite: 'lax',
 		secure: process.env.NODE_ENV === 'production',
 	})
