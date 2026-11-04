@@ -2,16 +2,18 @@ import { useSignupCtx } from '../_utils/signup.context'
 import { validateResend } from '../_utils/schema'
 import { AuthForm } from '../../_components/AuthForm'
 import { CodeField } from '../_components/CodeField'
+import { Field } from '@/components/form/Field'
 import { METHOD_DATA } from '../_utils/signup.data'
 
 export const SignupVerify = () => {
 	const {
-		goBack, stopWait,
-		destination, idx, method,
-		reply, resend, verify, waiting,
+		destination, goBack, idx,
+		method: { active: method },
+		reply, resend, stopWait,
+		verify, waiting,
 	} = useSignupCtx()
 
-	const { copy } = METHOD_DATA[method.active]
+	const { copy } = METHOD_DATA[method]
 
 	return (
 		<AuthForm
@@ -25,8 +27,8 @@ export const SignupVerify = () => {
 				We sent a 6-digit code to { destination }. Enter it below.
 			</AuthForm.Header>
 
-			<input name="destination" type="hidden" value={ destination } />
-			<input name="method" type="hidden" value={ method.active } />
+			<Field.Hidden name="destination" value={ destination } />
+			<Field.Hidden name="method" value={ method } />
 
 			<CodeField />
 

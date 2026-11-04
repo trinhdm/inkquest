@@ -6,11 +6,11 @@ import { METHOD_DATA } from '../_utils/signup.data'
 
 export const SignupSuccess = () => {
 	const {
-		destination, idx, method,
-		guardSubmit,
+		destination, guardSubmit, idx,
+		method: { active: method },
 	} = useSignupCtx()
 
-	const { field: { label, type } } = METHOD_DATA[method.active]
+	const { field: { label, type } } = METHOD_DATA[method]
 
 	return (
 		<AuthForm idx={ idx } onSubmit={ guardSubmit }>

@@ -4,9 +4,9 @@ import { Field } from '@/components/form/Field'
 
 export const SignupMagic = () => {
 	const {
-		goBack, guardSubmit, stopWait,
-		destination, idx, method,
-		reply, resend, waiting,
+		destination, goBack, guardSubmit, idx,
+		method: { active: method },
+		reply, resend, stopWait, waiting,
 	} = useSignupCtx()
 
 	return (
@@ -21,8 +21,8 @@ export const SignupMagic = () => {
 				We emailed a sign-in link to { destination }. It expires in 15 minutes.
 			</AuthForm.Header>
 
-			<input name="destination" type="hidden" value={ destination } />
-			<input name="method" type="hidden" value={ method.active } />
+			<Field.Hidden name="destination" value={ destination } />
+			<Field.Hidden name="method" value={ method } />
 
 			<Field
 				readonly

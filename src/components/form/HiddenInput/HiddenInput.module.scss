@@ -1,0 +1,6 @@
+@use '@/styles/utils' as global;
+@use '../shared' as shared;
+
+.inkq-hidden-input {
+	$name: &;
+}

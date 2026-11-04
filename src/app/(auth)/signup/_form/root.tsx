@@ -3,17 +3,19 @@ import { useSignupCtx } from '../_utils/signup.context'
 import { validateSignup } from '../_utils/schema'
 import { AuthForm } from '../../_components/AuthForm'
 import { ContactField } from '../_components/ContactField'
+import { Field } from '@/components/form/Field'
 import { NavRoutes } from '@/utils/navigation'
 import { PasswordField } from '../_components/PasswordField'
 import { METHOD_DATA } from '../_utils/signup.data'
 
 export const SignupRoot = () => {
 	const {
-		idx, method, navigate,
+		idx, navigate,
+		method: { active: method },
 		signup: { action, pending, state },
 	} = useSignupCtx()
 
-	const { submit } = METHOD_DATA[method.active]
+	const { submit } = METHOD_DATA[method]
 
 	return (
 		<AuthForm
@@ -28,7 +30,8 @@ export const SignupRoot = () => {
 				One account for finding artists, bidding on flash, and booking.
 			</AuthForm.Header>
 
-			<input name="method" type="hidden" value={ method.active } />
+			<Field.Hidden name="method" value={ method } />
+
 			<ContactField />
 			<PasswordField />
 

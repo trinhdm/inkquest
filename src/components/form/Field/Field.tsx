@@ -24,6 +24,7 @@ import { Box } from '@/components/polymorphic/Box'
 import { Choice as ChoiceInput } from '../Choice'
 import { CodeInput } from '../CodeInput'
 import { FieldGroup } from './FieldGroup'
+import { HiddenInput } from '../HiddenInput'
 import { Textarea as TextareaInput } from '../Textarea'
 import { TextInput } from '../TextInput'
 import type { PropsDefaultList } from '@/lib/component/factory/types'
@@ -43,6 +44,7 @@ export const SUBCOMPONENTS = {
 	Choice: ChoiceInput,
 	Code: CodeInput,
 	Group: FieldGroup,
+	Hidden: HiddenInput,
 	Input: TextInput,
 	Textarea: TextareaInput,
 	// Upload: FileUpload,
@@ -374,6 +376,11 @@ export declare namespace Field {
 	export namespace Code {
 		export type Props = CodeInput.Props
 		export type Specs = CodeInput.Specs
+	}
+
+	export namespace Hidden {
+		export type Props = HiddenInput.Props
+		export type Specs = HiddenInput.Specs
 	}
 
 	export namespace Input {
