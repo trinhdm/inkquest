@@ -2,7 +2,10 @@ import { useEffect, useRef } from 'react'
 
 //	on screen change, focuses the new screen's section,
 //	unless `Form` already focused a field inside it
-export const useScreenFocus = (screen: string, sectionID: string) => {
+export const useScreenFocus = <T extends string>(
+	screen: T,
+	sectionID: string,
+) => {
 	const lastScreen = useRef(screen)
 
 	useEffect(() => {

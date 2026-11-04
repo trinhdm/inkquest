@@ -78,12 +78,22 @@ export interface ContentData<
 	buttons?: ButtonData[]
 }
 
+export interface FieldData<Id extends string = string> {
+	id: Id
+	eyebrow?: Section.Props['eyebrow']
+	heading: NonNullable<Section.Props['title']>
+	body?: string
+	footer?: string
+	// fields?: ButtonData[]
+}
+
 export interface BasePageData {
 	id: string
 	title: string
 	description: string
 	hero?: _LayoutGroup<'hero', 'hero'>
 	content?: ContentData[]
+	form?: Record<string, FieldData>
 	footer?: _LayoutGroup<'footer', 'banner'>
 }
 

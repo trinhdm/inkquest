@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useOnReply } from '@/hooks/form'
 import { useSignupCtx } from '../_utils/context'
 import { Field } from '@/components/form/Field'
 import { PasswordCriteria } from './PasswordCriteria'
@@ -10,13 +11,8 @@ export const PasswordField = () => {
 		signup: { pending, state },
 	} = useSignupCtx()
 
-	const [lastState, setLastState] = useState(state)
 	const [password, setPassword] = useState('')
-
-	if (state !== lastState) {
-		setLastState(state)
-		setPassword('')
-	}
+	useOnReply(state, () => setPassword(''))
 
 	if (method !== 'email') return null
 

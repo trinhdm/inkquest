@@ -5,7 +5,7 @@ const SENDER_CAPTION_BASE = `Didn't arrive? Check spam, or resend below.`
 
 interface SenderFieldProps {
 	caption?: string | null
-	email: string
+	email?: string
 	idx: AuthFormIDs
 }
 
@@ -14,6 +14,7 @@ export const SenderField = ({
 	email,
 	idx,
 }: SenderFieldProps) => {
+	if (!email) return null
 	return (
 		<Field
 			readonly
