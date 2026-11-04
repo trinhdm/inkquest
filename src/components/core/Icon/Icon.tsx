@@ -1,8 +1,9 @@
 import Link from 'next/link'
-import { buildIcon } from './buildIcon'
-import { isExternalLink, keyHasValue } from '@/utils/helpers'
+import { buildIcon, isLucideIcon } from './buildIcon'
+import { capitalize, isExternalLink, keyHasValue } from '@/utils/helpers'
 import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
+import { COMPANY_NAME, SocialBrands } from '@/utils/constants'
 import type { ComponentPropsWithoutRef } from 'react'
 import type { Route } from 'next'
 import type { LucideProps, LucideType } from './IconMap'
@@ -28,6 +29,7 @@ interface BaseIconProps<T extends LucideProps | SvgProps> {
 	color?: T['color']
 	href?: Route
 	hidden?: boolean
+	name?: string
 	strokeWidth?: T['strokeWidth']
 }
 
@@ -70,18 +72,35 @@ export const Icon = polymorphic<IconSpecs>((_props, { useProps, useStyles }) => 
 	const iconEl = buildIcon({ props, styles, tag: TAG })
 	if (!iconEl) return null
 
+	let sharedProps = { ...styles('root') }
+
 	if (keyHasValue(props, 'href')) {
-		let linkProps = { ...styles('root'), href: props.href }
+		let label = props.name ?? capitalize(props.type)
+
+		if (!isLucideIcon(props.type)) {
+			const target = props.name ?? COMPANY_NAME,
+				type = (props.type).toUpperCase() as Uppercase<typeof props.type>
+			label = `${target} on ${SocialBrands[type]}`
+		}
 
 		if (isExternalLink(props.href)) {
 			const external = { target: '_blank', rel: 'noopener noreferrer' }
-			linkProps = { ...linkProps, ...external }
+			sharedProps = { ...sharedProps, ...external }
 		}
 
-		return <Box { ...linkProps } as={ Link }>{ iconEl }</Box>
+		return (
+			<Box
+				{ ...sharedProps }
+				as={ Link }
+				attributes={ { aria: { label } } }
+				href={ props.href }
+			>
+				{ iconEl }
+			</Box>
+		)
 	}
 
-	return <Box { ...styles('root') } as="span">{ iconEl }</Box>
+	return <Box { ...sharedProps } as="span">{ iconEl }</Box>
 }, { name: NAME, classes })
 
 Icon.set({

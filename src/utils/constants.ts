@@ -29,16 +29,15 @@ export const MONTH_NAMES = [
 	'September', 'October', 'November', 'December',
 ] as const
 
-export const SOCIAL_BRANDS = [
-	'apple',
-	'facebook',
-	'google',
-	'instagram',
-	'pinterest',
-	'tiktok',
-	'x',
-] as const
-
+export enum SocialBrands {
+	APPLE = 'Apple',
+	FACEBOOK = 'Facebook',
+	GOOGLE = 'Google',
+	INSTAGRAM = 'Instagram',
+	PINTEREST = 'Pinterest',
+	TIKTOK = 'TikTok',
+	X = 'X',
+}
 
 export const LINKABLE = {
 	'data-link': true,

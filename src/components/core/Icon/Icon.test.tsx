@@ -1,5 +1,7 @@
 import { getDefaultProps } from '@/hooks/useProps'
 import { render, reset, screen } from '@/tests/test-utils'
+import { capitalize } from '@/utils/helpers'
+import { COMPANY_NAME, SocialBrands } from '@/utils/constants'
 import { Icon } from './Icon'
 import type { Route } from 'next'
 
@@ -159,6 +161,85 @@ describe('Icon', () => {
 				<Icon type={ 'not-a-real-icon' as Icon.Props['type'] } href="/about" />
 			)
 			expect(container).toBeEmptyDOMElement()
+		})
+	})
+
+	describe('link name', () => {
+		const href = (brand: string) => `https://${brand}.com/inkquest` as Route
+
+		it('names a social link after the company and the brand', () => {
+			render(<Icon type="instagram" href={ href('instagram') } />)
+
+			expect(screen.getByRole('link', { name: `${COMPANY_NAME} on ${SocialBrands.INSTAGRAM}` })).toBeInTheDocument()
+		})
+
+		it('keeps the brand\'s own capitalisation, such as TikTok and X', () => {
+			render(
+				<>
+					<Icon type="tiktok" href={ href('tiktok') } />
+					<Icon type="x" href={ href('x') } />
+				</>
+			)
+
+			expect(screen.getByRole('link', { name: `${COMPANY_NAME} on TikTok` })).toBeInTheDocument()
+			expect(screen.getByRole('link', { name: `${COMPANY_NAME} on X` })).toBeInTheDocument()
+			expect(SocialBrands.TIKTOK).toBe('TikTok')
+		})
+
+		it('lets `name` replace the owner in a social link name', () => {
+			render(<Icon type="instagram" href={ href('instagram') } name="Mira Okafor" />)
+
+			expect(screen.getByRole('link', { name: `Mira Okafor on ${SocialBrands.INSTAGRAM}` })).toBeInTheDocument()
+			expect(screen.queryByRole('link', { name: new RegExp(COMPANY_NAME) })).not.toBeInTheDocument()
+		})
+
+		it('names a Lucide link after its capitalised type by default', () => {
+			render(<Icon type="close" href="/about" />)
+			expect(screen.getByRole('link', { name: capitalize('close') })).toHaveAttribute('href', '/about')
+		})
+
+		it('names a Lucide link exactly `name` when given', () => {
+			render(<Icon type="arrow-left" href="/about" name="Go back" />)
+
+			expect(screen.getByRole('link', { name: 'Go back' })).toBeInTheDocument()
+			expect(screen.queryByRole('link', { name: capitalize('arrow-left') })).not.toBeInTheDocument()
+		})
+
+		it('keeps the glyph inside the link decorative, and never gives it a name attribute', () => {
+			const { container } = render(<Icon type="instagram" href={ href('instagram') } name="Mira Okafor" />)
+
+			// positive control: the link rendered with its label
+			expect(screen.getByRole('link')).toHaveAttribute('aria-label', `Mira Okafor on ${SocialBrands.INSTAGRAM}`)
+
+			const svg = container.querySelector('svg')
+			expect(svg).toHaveAttribute('aria-hidden', 'true')
+			expect(svg).not.toHaveAttribute('name')
+		})
+
+		it('keeps `name` off the svg for a Lucide glyph too', () => {
+			const { container } = render(<Icon type="close" name="Dismiss" />)
+			expect(container.querySelector('svg')).not.toHaveAttribute('name')
+		})
+
+		it('sets target and rel on an external link, and neither on an internal one', () => {
+			const { unmount } = render(<Icon type="instagram" href={ href('instagram') } />)
+			expect(screen.getByRole('link')).toHaveAttribute('target', '_blank')
+			expect(screen.getByRole('link')).toHaveAttribute('rel', 'noopener noreferrer')
+			unmount()
+
+			render(<Icon type="close" href="/about" />)
+			expect(screen.getByRole('link')).not.toHaveAttribute('target')
+			expect(screen.getByRole('link')).not.toHaveAttribute('rel')
+		})
+
+		it('renders a span with no aria-label, and no link, without an href', () => {
+			const { container } = render(<Icon type="instagram" name="Mira Okafor" />)
+
+			const root = container.firstElementChild
+			expect(root?.tagName.toLowerCase()).toBe('span')
+			expect(root).not.toHaveAttribute('aria-label')
+			expect(screen.queryByRole('link')).not.toBeInTheDocument()
+			expect(root?.querySelector('svg')).toBeInTheDocument()
 		})
 	})
 })

@@ -1,5 +1,5 @@
 import { keyHasValue } from './helpers'
-import { SOCIAL_BRANDS } from './constants'
+import { SocialBrands } from './constants'
 import type { Route } from 'next'
 import type { Orientation, SocialBrand } from '@/types/shared'
 
@@ -297,8 +297,11 @@ interface SocialBrandGroup {
 const getSocials = (handle: string): SocialBrandGroup[] => {
 	const socials: SocialBrandGroup[] = []
 
-	for (const brand of SOCIAL_BRANDS) {
-		const url: Route = `https://${brand}.com/${handle}`
+	for (const key of Object.keys(SocialBrands)) {
+		const value = SocialBrands[key as keyof typeof SocialBrands],
+			brand = `${value}`.toLowerCase() as SocialBrand,
+			url: Route = `https://${brand}.com/${handle}`
+
 		socials.push({ type: brand, url })
 	}
 

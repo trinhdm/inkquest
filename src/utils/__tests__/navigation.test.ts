@@ -2,7 +2,7 @@ import {
 	filterNavigation, listRoutesWithSlug, NavRoutes,
 	NAV_ROUTES, NAVIGATION_DATA, SOCIALS_NAV,
 } from '../navigation'
-import { SOCIAL_BRANDS } from '../constants'
+import { SocialBrands } from '../constants'
 import type { NavigationItem, NavRoute } from '../navigation'
 
 describe('filterNavigation - short-circuit behavior', () => {
@@ -334,8 +334,16 @@ describe('SOCIALS_NAV - getSocials URL construction', () => {
 		expect(facebook?.url).toBe('https://facebook.com/inkquest')
 	})
 
-	it('produces one entry per configured social brand', () => {
-		expect(SOCIALS_NAV.map(social => social.type)).toEqual([...SOCIAL_BRANDS])
+	it('builds every URL as https://<lowercase brand>.com/inkquest', () => {
+		expect(SOCIALS_NAV.length).toBeGreaterThan(0)
+		SOCIALS_NAV.forEach(({ type, url }) => {
+			expect(type).toBe(type.toLowerCase())
+			expect(url).toBe(`https://${type}.com/inkquest`)
+		})
+	})
+
+	it('produces one entry per configured social brand, in enum order', () => {
+		expect(SOCIALS_NAV.map(social => social.type)).toEqual(Object.values(SocialBrands).map(brand => brand.toLowerCase()))
 	})
 })
 

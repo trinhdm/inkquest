@@ -1,9 +1,11 @@
 import { expect, within } from 'storybook/test'
 import { getDefaultProps } from '@/hooks/useProps'
-import { SOCIAL_BRANDS } from '@/utils/constants'
+import { capitalize } from '@/utils/helpers'
+import { COMPANY_NAME, SocialBrands } from '@/utils/constants'
 import { Icon } from './Icon'
 import { ICON_MAP } from './IconMap'
 import type { ReactNode } from 'react'
+import type { Route } from 'next'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import type { LucideType } from './IconMap'
 import type { SocialBrand } from '@/types/shared'
@@ -69,11 +71,12 @@ const ICON_TYPE_OPTIONS: readonly LucideType[] = [
 
 // `IconProps` is a union (`LucideIconProps | SocialIconProps`), discriminated
 // by `type`: a `LucideType` (`ICON_TYPE_OPTIONS`, above) or a `SocialBrand`.
-// `SOCIAL_BRANDS` (`@/utils/constants`) is the exact literal-array source
-// `SocialBrand` itself is derived from, so this stays a single re-typed
-// `readonly SocialBrand[]` rather than a hand-copied list. Used by
-// `argTypes.type`'s combined options and the `SocialIcons` story.
-const SOCIAL_TYPE_OPTIONS: readonly SocialBrand[] = SOCIAL_BRANDS
+// The `SocialBrands` enum (`@/utils/constants`) is the source `SocialBrand` itself is
+// derived from (`Lowercase<`${ SocialBrands }`>`), so the options are built from its values
+// rather than hand-copied. Used by `argTypes.type`'s combined options and the `SocialIcons`
+// story.
+const SOCIAL_TYPE_OPTIONS: readonly SocialBrand[] =
+	Object.values(SocialBrands).map(brand => brand.toLowerCase() as SocialBrand)
 
 // Combined `type` union for `argTypes.type.options` only — individual stories
 // still map over `ICON_TYPE_OPTIONS`/`SOCIAL_TYPE_OPTIONS` separately, since
@@ -147,7 +150,11 @@ const meta: Meta<IconStoryProps> = {
 		},
 		href: {
 			control: 'text',
-			description: 'When set, wraps the rendered icon glyph in a `next/link` `<Link>` instead of the default `<span>` wrapper (`Icon.tsx`\'s `keyHasValue(props, \'href\')` branch, so a falsy `href`, such as an empty string, falls back to the `<span>`). `isExternalLink(href)` (`@/utils/helpers`) additionally adds `target="_blank" rel="noopener noreferrer"` whenever the link is external. See the `AsLink` story for both branches.',
+			description: 'When set, wraps the rendered icon glyph in a `next/link` `<Link>` instead of the default `<span>` wrapper (`Icon.tsx`\'s `keyHasValue(props, \'href\')` branch, so a falsy `href`, such as an empty string, falls back to the `<span>`). `isExternalLink(href)` (`@/utils/helpers`) additionally adds `target="_blank" rel="noopener noreferrer"` whenever the link is external. See the `AsLink` story for both branches. The link also gets an `aria-label`, see `name` and the `LinkNames` story.',
+		},
+		name: {
+			control: 'text',
+			description: 'Only used when `href` is set, where it feeds the link\'s `aria-label`; it never reaches the `<svg>`. Its meaning depends on the icon: for a LUCIDE icon it is the WHOLE accessible name (`name ?? capitalize(type)`, so `Go back`, or `Caret-left` by default); for a SOCIAL brand it is the OWNER of the account (`${ name ?? COMPANY_NAME } on ${ SocialBrands[TYPE] }`, so `Inkquest on Instagram` by default, or `Mira Okafor on Instagram`). Without `href` it has no effect. See the `LinkNames` story.',
 		},
 		strokeLinecap: {
 			control: 'select',
@@ -583,5 +590,67 @@ export const AsLink: Story = {
 
 		await expect(internalIcon.closest('a')).toBe(internalLink)
 		await expect(externalIcon.closest('a')).toBe(externalLink)
+	},
+}
+
+// With `href`, `Icon.tsx` names the link through `aria-label` (the `<svg>` stays
+// `aria-hidden`, being decorative, and never receives `name`). The name depends on the icon:
+// - Lucide: `name ?? capitalize(type)`, the whole name;
+// - social brand: `${ name ?? COMPANY_NAME } on ${ SocialBrands[TYPE] }`, where `name` is the
+//   owner of the account and the brand keeps its enum casing (`TikTok`, not `Tiktok`).
+// Four labelled groups cover each branch with and without `name`.
+const LINK_NAME_CASES = [
+	{
+		label: 'social, no name',
+		props: { type: 'tiktok', href: 'https://tiktok.com/inkquest' as Route },
+		expected: `${ COMPANY_NAME } on ${ SocialBrands.TIKTOK }`,
+	},
+	{
+		label: 'social, name',
+		props: { type: 'instagram', name: 'Mira Okafor', href: 'https://instagram.com/mira' as Route },
+		expected: `Mira Okafor on ${ SocialBrands.INSTAGRAM }`,
+	},
+	{
+		label: 'lucide, no name',
+		props: { type: 'caret-left', href: '/discover' as Route },
+		expected: capitalize('caret-left'),
+	},
+	{
+		label: 'lucide, name',
+		props: { type: 'caret-left', name: 'Go back', href: '/discover' as Route },
+		expected: 'Go back',
+	},
+] as const satisfies readonly { label: string, props: Icon.Props, expected: string }[]
+
+export const LinkNames: Story = {
+	parameters: {
+		layout: 'padded',
+		controls: { exclude: ['href', 'name', 'type'] },
+	},
+	render: (args) => (
+		<Row>
+			{ LINK_NAME_CASES.map(({ label, props }) => (
+				<Group key={ label } label={ label }>
+					<Icon { ...args as IconStoryProps } { ...props } />
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement)
+
+		await expect(canvas.getAllByRole('link')).toHaveLength(LINK_NAME_CASES.length)
+
+		for (const { expected } of LINK_NAME_CASES) {
+			const link = canvas.getByRole('link', { name: expected }),
+				svg = link.querySelector('svg')
+
+			await expect(link).toHaveAttribute('aria-label', expected)
+			await expect(svg).not.toBeNull()
+
+			// The glyph stays decorative, and `name` never lands on it.
+			await expect(svg).toHaveAttribute('aria-hidden', 'true')
+			await expect(svg).not.toHaveAttribute('name')
+		}
 	},
 }

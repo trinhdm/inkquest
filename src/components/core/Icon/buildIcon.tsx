@@ -59,7 +59,7 @@ const getBrandProps = (type: Icon.Props['type']): Icon.Svg.Props | undefined => 
 	}
 }
 
-const isLucideIcon = (type: Icon.Props['type']): type is Icon.Lucide.Props['type'] =>
+export const isLucideIcon = (type: Icon.Props['type']): type is Icon.Lucide.Props['type'] =>
 	keyHasValue(ICON_MAP, type)
 
 interface BuildIconArgs {
@@ -70,8 +70,9 @@ interface BuildIconArgs {
 
 export const buildIcon = ({ props, styles, tag }: BuildIconArgs) => {
 	const {
-		color, filled, href,
-		hidden, size, type,
+		color, filled,
+		hidden, href, name,
+		size, type,
 		...rest
 	} = props
 

@@ -3,8 +3,8 @@ import type { Route } from 'next'
 import type { Badge } from '@/components/core/Badge'
 import type { Button } from '@/components/core/Button'
 import type { CalendarDate } from './datetime'
-import type { SOCIAL_BRANDS } from '@/utils/constants'
 import type { Section } from '@/components/layout/Section'
+import type { SocialBrands } from '@/utils/constants'
 
 //	files
 
@@ -148,8 +148,4 @@ export interface StatisticItem {
 //	company / brand
 
 export type SocialBrand =
-	(typeof SOCIAL_BRANDS)[number]
-
-// export interface StyleContext {
-// 	classes?: Record<string, string>
-// }
+	Lowercase<`${SocialBrands}`>
