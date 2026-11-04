@@ -1,5 +1,6 @@
 'use client'
 
+import { useScreenFocus } from '@/hooks/form/useScreenFocus'
 import { useLogoutFlow } from '../_utils/useLogoutFlow'
 import { ConfirmLogout } from '../_form/ConfirmLogout'
 import { FinishLogout } from '../_form/FinishLogout'
@@ -14,10 +15,11 @@ const SCREENS = {
 } satisfies Record<LogoutScreen, ComponentType>
 
 export const LogoutForm = (props: LogoutFormValues) => {
-	const { screen, ...flow } = useLogoutFlow(LOGOUT_PAGE_DATA, props)
+	const { idx, screen, ...flow } = useLogoutFlow(LOGOUT_PAGE_DATA, props)
+	useScreenFocus(screen, idx.section)
 
 	const Screen = SCREENS[screen],
-		ctxValues = { data: LOGOUT_PAGE_DATA, screen, ...flow }
+		ctxValues = { data: LOGOUT_PAGE_DATA, idx, screen, ...flow }
 
 	return (
 		<LogoutProvider value={ ctxValues }>
