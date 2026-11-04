@@ -26,4 +26,4 @@ export const LOGOUT_PAGE_DATA: LogoutPageData = {
 			body: `Your account is safe. Log back in whenever you're ready.`,
 		},
 	},
-} as const
+}

@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import type { AccountValues } from '@/lib/auth/schema'
 
 interface AccountCardProps {
-	account: AccountValues | null
+	account?: AccountValues | null
 	children?: ReactNode
 }
 

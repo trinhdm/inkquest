@@ -2,7 +2,7 @@
 
 import { redirect } from 'next/navigation'
 import { endSession, getSession } from './session'
-import { rememberAccount } from './account'
+import { forgetAccount, rememberAccount } from './account'
 import { NavRoutes } from '@/utils/navigation'
 
 export const logout = async () => {
@@ -10,4 +10,8 @@ export const logout = async () => {
 	if (user) await rememberAccount(user)
 	await endSession()
 	redirect(NavRoutes.AUTH_LOGOUT)
+}
+
+export const clearAccount = async () => {
+	await forgetAccount()
 }

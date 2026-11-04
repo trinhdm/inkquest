@@ -5,7 +5,7 @@ const SENDER_CAPTION_BASE = `Didn't arrive? Check spam, or resend below.`
 
 interface SenderFieldProps {
 	caption?: string | null
-	email?: string
+	email?: string | null
 	idx: AuthFormIDs
 }
 

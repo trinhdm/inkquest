@@ -3,7 +3,7 @@
 import { useEffect, type ComponentType } from 'react'
 import { useLoginFlow } from '../_utils/useLoginFlow'
 import { useScreenFocus } from '@/hooks/form/useScreenFocus'
-import { forgetAccount } from '@/lib/auth'
+import { clearAccount } from '@/lib/auth/actions'
 import { FinishLogin } from './FinishLogin'
 import { ForgotPassword } from './ForgotPassword'
 import { LoginProvider } from '../_utils/context'
@@ -32,7 +32,7 @@ export const LoginForm = ({ account }: LoginFormProps) => {
 
 	useScreenFocus(screen, idx.section)
 	useEffect(() => {
-		if (account) void forgetAccount()
+		if (account) void clearAccount()
 	}, [account])
 
 	const Screen = SCREENS[screen]

@@ -2,9 +2,6 @@ import type { RequireSome } from '@/types/utils'
 
 //	state
 
-export type FormSSO =
-	| 'Apple' | 'Google'
-
 export type FormErrors =
 	Record<string, string | undefined>
 

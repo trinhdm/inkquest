@@ -166,4 +166,4 @@ export const SIGNUP_PAGE_DATA: SignupPageData = {
 		},
 	},
 
-} as const
+}

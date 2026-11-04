@@ -3,7 +3,7 @@
 import { forgetAccount, handoverAccount, redirectTo } from '@/lib/auth'
 import { NavRoutes } from '@/utils/navigation'
 
-export const switchAccount = async () => {
+export const swapAccount = async () => {
 	await forgetAccount()
 	redirectTo(NavRoutes.AUTH_LOGIN)
 }

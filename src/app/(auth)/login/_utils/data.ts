@@ -37,7 +37,7 @@ export const LOGIN_PAGE_DATA: LoginPageData = {
 			id: 'finish-login',
 			eyebrow: 'Success!',
 			heading: 'Logged in.',
-			footer: `Welcome back — your feed is where you left it.`,
+			body: `Welcome back — your feed is where you left it.`,
 		},
 	},
-} as const
+}
