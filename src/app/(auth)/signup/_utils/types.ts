@@ -15,12 +15,14 @@ export interface MethodData {
 		label: string
 		type: Extract<Field.Props['type'], 'email' | 'tel'>
 	}
-	submit: string
 	toggle: {
 		icon: Icon.Props['type']
 		label: string
 	}
-	verify: 'code' | 'link'
+	verify: {
+		submit: string
+		type: 'code' | 'link'
+	}
 }
 
 export type SignupScreen =

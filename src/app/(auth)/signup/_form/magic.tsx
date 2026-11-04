@@ -1,14 +1,14 @@
 import { useSignupCtx } from '../_utils/context'
 import { writeMagicIntro } from '../../_utils/helpers'
 import { AuthForm } from '../../_components/AuthForm'
-import { Field } from '@/components/form/Field'
+import { HiddenFields } from '../_components/HiddenFields'
 import { SenderField } from '../../_components/SenderField'
 
 export const SignupMagic = () => {
 	const {
-		destination, goBack, guardSubmit, idx,
-		method: { active: method },
-		reply, resend, stopWait, waiting,
+		destination, goBack,
+		guardSubmit, idx, reply,
+		resend, stopWait, waiting,
 	} = useSignupCtx()
 
 	return (
@@ -23,9 +23,7 @@ export const SignupMagic = () => {
 				{ writeMagicIntro(destination) }
 			</AuthForm.Header>
 
-			<Field.Hidden name="destination" value={ destination } />
-			<Field.Hidden name="method" value={ method } />
-
+			<HiddenFields contact destination method />
 			<SenderField email={ destination } idx={ idx } />
 
 			<AuthForm.Footer>

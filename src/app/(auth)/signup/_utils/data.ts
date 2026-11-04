@@ -35,21 +35,25 @@ const EMAIL_DATA =  {
 export const METHOD_DATA = {
 	email: {
 		...EMAIL_DATA,
-		submit: 'Create account',
 		toggle: {
 			icon: 'email',
 			label: 'Use email & password',
 		},
-		verify: 'code',
+		verify: {
+			submit: 'Create account',
+			type: 'code',
+		},
 	},
 	magic: {
 		...EMAIL_DATA,
-		submit: 'Send magic link',
 		toggle: {
 			icon: 'wand-sparkles',
 			label: 'Email me a magic link',
 		},
-		verify: 'link',
+		verify: {
+			submit: 'Send magic link',
+			type: 'link',
+		},
 	},
 	phone: {
 		copy: {
@@ -60,12 +64,14 @@ export const METHOD_DATA = {
 			label: 'Phone Number',
 			type: 'tel',
 		},
-		submit: 'Send code',
 		toggle: {
 			icon: 'phone',
 			label: 'Use phone number',
 		},
-		verify: 'code',
+		verify: {
+			submit: 'Send code',
+			type: 'code',
+		},
 	},
 } as const satisfies Record<SignupMethod, MethodData>
 
@@ -131,10 +137,13 @@ export const SIGNUP_PAGE_DATA: SignupPageData = {
 	id: 'signup',
 	title: 'Sign Up',
 	description: 'Create your own Inkquest account.',
-	hero: {
-		id: 'hero',
-		eyebrow: 'Sign Up',
-		heading: 'Join Inkquest.',
-		body: 'One account for finding artists, bidding on flash, and booking.',
+	form: {
+		begin: {
+			id: 'begin',
+			eyebrow: 'Sign Up',
+			heading: 'Join Inkquest.',
+			body: 'One account for finding artists, bidding on flash, and booking.',
+		},
 	},
+
 } as const

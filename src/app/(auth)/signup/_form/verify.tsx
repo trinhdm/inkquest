@@ -2,12 +2,12 @@ import { useSignupCtx } from '../_utils/context'
 import { validateVerifyForm } from '../_utils/schema'
 import { AuthForm } from '../../_components/AuthForm'
 import { CodeField } from '../_components/CodeField'
-import { Field } from '@/components/form/Field'
+import { HiddenFields } from '../_components/HiddenFields'
 import { CODE_LENGTH, METHOD_DATA } from '../_utils/data'
 
 export const SignupVerify = () => {
 	const {
-		contact, destination, goBack, idx,
+		destination, goBack, idx,
 		method: { active: method },
 		reply, resend, stopWait,
 		verify, waiting,
@@ -27,9 +27,7 @@ export const SignupVerify = () => {
 				We sent a { CODE_LENGTH }-digit code to { destination }. Enter it below.
 			</AuthForm.Header>
 
-			<Field.Hidden name="contact" value={ contact } />
-			<Field.Hidden name="destination" value={ destination } />
-			<Field.Hidden name="method" value={ method } />
+			<HiddenFields contact method />
 
 			<CodeField />
 

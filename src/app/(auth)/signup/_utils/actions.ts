@@ -13,6 +13,13 @@ import { startSession } from '@/lib/auth/session'
 import { METHOD_DATA } from './data'
 import type { FormAction } from '@/lib/form/types'
 
+//	hidden fields can't show their own error, so it shows as a form error instead
+const withHiddenErrors = (formAction: FormAction, hidden: readonly string[]): FormAction =>
+	async (prev, data) => {
+		const state = await formAction(prev, data)
+		return hidden.some(name => state.errors[name]) ? { ...state, formError: BASE_ERROR } : state
+	}
+
 const start = action(signupSchema, {
 	names: ['email', 'method', 'tel'],
 	conditions: [{
@@ -26,24 +33,24 @@ const start = action(signupSchema, {
 	},
 })
 
-export const signup: FormAction = async (prev, data) => {
-	const state = await start(prev, data)
-	return state.errors.method ? { ...state, formError: BASE_ERROR } : state
-	//	`method` is a hidden field, so its error shows as a form error instead
-}
+export const signup = withHiddenErrors(start, ['method'])
 
 
 //	resend
 
-export const resend = action(contactSchema, {
+const sendAgain = action(contactSchema, {
 	conditions: [{
 		check: ({ contact }) => contact.includes(MOCK_INCORRECT.failResend),
 		formError: BASE_ERROR,
 	}],
-	onSuccess: ({ contact, method }) => ({
-		message: `We sent another ${METHOD_DATA[method]} to ${contact}.`,
-	}),
+	onSuccess: data => {
+		const destination = maskContact(data),
+			verification = METHOD_DATA[data.method].verify['type']
+		return { message: `We sent another ${verification} to ${destination}.` }
+	},
 })
+
+export const resend = withHiddenErrors(sendAgain, ['contact', 'method'])
 
 
 //	verify
@@ -61,7 +68,7 @@ const checkCode = action(verifySchema, {
 	],
 })
 
-export const verify: FormAction = async (prev, data) => {
+const verifyCode: FormAction = async (prev, data) => {
 	const state = await checkCode(prev, data)
 
 	if (state.success) {
@@ -71,3 +78,5 @@ export const verify: FormAction = async (prev, data) => {
 
 	return state
 }
+
+export const verify = withHiddenErrors(verifyCode, ['contact', 'method'])
