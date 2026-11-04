@@ -2,23 +2,23 @@
 
 import { useLoginFlow } from '../_utils/useLoginFlow'
 import { useScreenFocus } from '@/hooks/form/useScreenFocus'
-import { LoginForgot } from './forgot'
-import { LoginMagic } from './magic'
+import { ForgotPassword } from './ForgotPassword'
+import { MagicLogin } from './MagicLogin'
 import { LoginProvider } from '../_utils/context'
-import { LoginReset } from './reset'
-import { LoginRoot } from './root'
-import { LoginSuccess } from './success'
+import { ResetPassword } from './ResetPassword'
+import { StartLogin } from './StartLogin'
+import { FinishLogin } from './FinishLogin'
 import { LOGIN_PAGE_DATA } from '../_utils/data'
 import type { ComponentType } from 'react'
 import type { AccountValues } from '@/lib/auth/schema'
 import type { LoginScreen } from '../_utils/types'
 
 const SCREENS = {
-	begin:		LoginRoot,
-	forgot:		LoginForgot,
-	magic:		LoginMagic,
-	reset:		LoginReset,
-	success:	LoginSuccess,
+	start:		StartLogin,
+	magic:		MagicLogin,
+	forgot:		ForgotPassword,
+	reset:		ResetPassword,
+	finish:		FinishLogin,
 } satisfies Record<LoginScreen, ComponentType>
 
 interface LoginFormProps {

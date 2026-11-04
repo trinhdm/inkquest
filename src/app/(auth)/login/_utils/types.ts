@@ -1,12 +1,12 @@
 import type { BasePageData, FieldData } from '@/types/shared'
 
 export type LoginScreen =
-	| 'begin' | 'magic'
+	| 'start' | 'magic'
 	| 'forgot' | 'reset'
-	| 'success'
+	| 'finish'
 
 export type ReplyFromStep =
-	Extract<LoginScreen, 'begin' | 'magic'| 'reset'>
+	Extract<LoginScreen, 'start' | 'magic'| 'reset'>
 
 export type LoginFormData =
 	FieldData<string>

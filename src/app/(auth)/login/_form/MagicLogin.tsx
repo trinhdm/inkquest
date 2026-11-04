@@ -3,7 +3,7 @@ import { writeExpiryText } from '../../_utils/helpers'
 import { AuthForm } from '../../_components/AuthForm'
 import { SenderField } from '../../_components/SenderField'
 
-export const LoginMagic = () => {
+export const MagicLogin = () => {
 	const {
 		content, goBack, guardSubmit,
 		destination, idx, magic,
@@ -34,4 +34,4 @@ export const LoginMagic = () => {
 	)
 }
 
-LoginMagic.displayName = 'LoginMagic'
+MagicLogin.displayName = 'MagicLogin'

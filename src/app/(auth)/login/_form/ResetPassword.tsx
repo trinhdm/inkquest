@@ -3,7 +3,7 @@ import { AuthForm } from '../../_components/AuthForm'
 import { SenderField } from '../../_components/SenderField'
 import { writeExpiryText } from '../../_utils/helpers'
 
-export const LoginReset = () => {
+export const ResetPassword = () => {
 	const {
 		content, destination, goBack,
 		guardSubmit, idx, reset,
@@ -48,4 +48,4 @@ export const LoginReset = () => {
 	)
 }
 
-LoginReset.displayName = 'LoginReset'
+ResetPassword.displayName = 'ResetPassword'

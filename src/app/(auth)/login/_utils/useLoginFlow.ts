@@ -3,6 +3,7 @@ import { useForm, useFormHistory, useOnReply } from '@/hooks/form'
 import { getAuthFormIDs, omitMessage } from '../../_utils/helpers'
 import { initFormState } from '@/lib/form'
 import { login, magicLogin, requestReset } from './actions'
+import { SCREEN_BASE } from './data'
 import type { AccountValues } from '@/lib/auth/schema'
 import type { FormResults } from '@/lib/form/types'
 import type { LoginContext } from './context'
@@ -16,9 +17,9 @@ export const useLoginFlow = (
 		current: screen,
 		back, guard, navigate,
 		restart, stopWait, waiting,
-	} = useFormHistory<LoginScreen>('begin')
+	} = useFormHistory<LoginScreen>('start')
 
-	const [replyFrom, setReplyFrom] = useState<ReplyFromStep>('begin')
+	const [replyFrom, setReplyFrom] = useState<ReplyFromStep>(SCREEN_BASE)
 
 	const loginFormState = !!account
 		? { ...initFormState, values: { email: account.email } }
@@ -28,7 +29,7 @@ export const useLoginFlow = (
 	const magicForm = useForm(magicLogin, initFormState)
 	const resetForm = useForm(requestReset, initFormState)
 
-	useOnReply(loginForm.state, () => setReplyFrom('begin'))
+	useOnReply(loginForm.state, () => setReplyFrom(SCREEN_BASE))
 
 	useOnReply(magicForm.state, state => {
 		setReplyFrom('magic')
@@ -41,13 +42,13 @@ export const useLoginFlow = (
 	})
 
 	const replies = {
-		begin: loginForm,
+		start: loginForm,
 		magic: magicForm,
 		reset: resetForm,
 	} satisfies Record<ReplyFromStep, FormResults>
 
 	const replyForm = replies[replyFrom],
-		shown = loginForm.state.success ? 'success' : screen
+		shown: LoginScreen = loginForm.state.success ? 'finish' : screen
 
 	const reply = omitMessage({
 		...replyForm,
@@ -56,7 +57,7 @@ export const useLoginFlow = (
 
 	return {
 		goBack: back,
-		guardSubmit: event => guard(event, { when: shown === 'success' }),
+		guardSubmit: event => guard(event, { when: shown === 'finish' }),
 		navigate,
 		restart,
 		stopWait,
@@ -68,7 +69,7 @@ export const useLoginFlow = (
 		reset: screen === 'reset' ? resetForm : omitMessage(resetForm),
 		reply,
 
-		destination: screen === 'success' ? '' : replyForm.state.values.email ?? '',
+		destination: screen === 'finish' ? '' : replyForm.state.values.email ?? '',
 		idx: getAuthFormIDs(pageID, shown),
 		screen: shown,
 		waiting,

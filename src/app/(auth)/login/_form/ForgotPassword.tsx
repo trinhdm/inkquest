@@ -4,7 +4,7 @@ import { AuthForm } from '../../_components/AuthForm'
 import { Field } from '@/components/form/Field'
 import { PLACEHOLDER } from '@/lib/form'
 
-export const LoginForgot = () => {
+export const ForgotPassword = () => {
 	const {
 		content, destination,
 		goBack, idx, reset,
@@ -39,4 +39,4 @@ export const LoginForgot = () => {
 	)
 }
 
-LoginForgot.displayName = 'LoginForgot'
+ForgotPassword.displayName = 'ForgotPassword'

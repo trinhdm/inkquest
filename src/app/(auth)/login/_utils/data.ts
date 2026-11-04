@@ -1,11 +1,17 @@
-import type { LoginPageData } from './types'
+import type { LoginPageData, LoginScreen } from './types'
+
+//	login screens
+
+export const SCREEN_BASE = 'start' as const satisfies LoginScreen
+
+//	page data
 
 export const LOGIN_PAGE_DATA: LoginPageData = {
 	id: 'login',
 	title: 'Login',
 	description: 'Login to your Inkquest account.',
 	form: {
-		begin: {
+		start: {
 			id: 'hero',
 			eyebrow: 'Log In',
 			heading: 'Welcome back.',
@@ -27,7 +33,7 @@ export const LOGIN_PAGE_DATA: LoginPageData = {
 			eyebrow: 'Check your inbox',
 			heading: 'Reset link sent',
 		},
-		success: {
+		finish: {
 			id: 'finish-login',
 			eyebrow: 'Success!',
 			heading: 'Logged in.',

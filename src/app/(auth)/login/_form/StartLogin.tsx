@@ -4,7 +4,7 @@ import { AuthForm } from '../../_components/AuthForm'
 import { Field } from '@/components/form/Field'
 import { PLACEHOLDER } from '@/lib/form'
 
-export const LoginRoot = () => {
+export const StartLogin = () => {
 	const {
 		content, destination, idx,
 		login, magic, navigate, reply,
@@ -72,7 +72,7 @@ export const LoginRoot = () => {
 					as="SSO"
 					disabled={ reply.pending }
 					label="Log In"
-					onClick={ () => navigate('success') }
+					onClick={ () => navigate('finish') }
 				/>
 
 				<AuthForm.Note>
@@ -89,4 +89,4 @@ export const LoginRoot = () => {
 	)
 }
 
-LoginRoot.displayName = 'LoginRoot'
+StartLogin.displayName = 'StartLogin'

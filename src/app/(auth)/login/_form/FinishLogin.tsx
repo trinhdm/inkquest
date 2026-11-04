@@ -3,7 +3,7 @@ import { AuthForm } from '../../_components/AuthForm'
 import { NavRoutes } from '@/utils/navigation'
 import { SenderField } from '../../_components/SenderField'
 
-export const LoginSuccess = () => {
+export const FinishLogin = () => {
 	const {
 		content, destination,
 		guardSubmit, idx,
@@ -24,4 +24,4 @@ export const LoginSuccess = () => {
 	)
 }
 
-LoginSuccess.displayName = 'LoginSuccess'
+FinishLogin.displayName = 'FinishLogin'
