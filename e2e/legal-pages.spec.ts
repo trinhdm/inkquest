@@ -27,7 +27,7 @@ test.describe('legal routes', () => {
 })
 
 // The Legal subnav (src/app/(legal)/layout.tsx: category 'Legal', routes ['/privacy-policy',
-// '/terms', '/cookies']) lives in the banner. Each of its items is a menuitem (MenuItem sets
+// '/terms', '/cookies']) lives in the banner. Each of its items is a menuitem (MenuLabel sets
 // role="menuitem" on its anchors). Scoped to the banner because the footer repeats these links.
 // Subnav item labels, read from the rendered banner (they are shorter than the page headings).
 const SUBNAV_LABELS = {

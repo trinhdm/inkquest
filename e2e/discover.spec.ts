@@ -5,8 +5,8 @@ import { expect, test } from '@playwright/test'
 //
 // src/app/discover/layout.tsx mounts Header + Footer around both (see navigation.spec.ts
 // for the landmark coverage). On /discover/artists the Subnav renders nothing, so the
-// banner has no "Your Style" link there. The only in-app route to /discover/style is the
-// FOOTER's "Your Style" menuitem, which is what the drill-down test clicks.
+// banner has no "Styles" link there. The only in-app route to /discover/style is the
+// FOOTER's "Styles" menuitem, which is what the drill-down test clicks.
 //
 // All heading checks use exact: true. Playwright's default name match is a
 // case-insensitive substring, so "Discover" would also match "Discover Artists".
@@ -19,10 +19,10 @@ test.describe('/discover', () => {
 		await expect(page.getByRole('heading', { level: 1, name: 'Discover Artists', exact: true })).toBeVisible()
 	})
 
-	test('footer "Your Style" menuitem drills down to /discover/style', async ({ page }) => {
+	test('footer "Styles" menuitem drills down to /discover/style', async ({ page }) => {
 		await page.goto('/discover/artists')
 
-		await page.getByRole('contentinfo').getByRole('menuitem', { name: 'Your Style' }).click()
+		await page.getByRole('contentinfo').getByRole('menuitem', { name: 'Styles', exact: true }).click()
 
 		await expect(page).toHaveURL('/discover/style')
 		await expect(page.getByRole('heading', { level: 1, name: 'Discover Styles', exact: true })).toBeVisible()

@@ -87,10 +87,10 @@ test.describe('the root sandbox has no page chrome', () => {
 })
 
 test.describe('primary nav (Navbar) and secondary nav (Subnav)', () => {
-	// Exactly one real click-through, so coverage of MenuItem's role="menuitem" link path
-	// (MenuItem.tsx's MenuLabel() renders nav links as next/link <a> elements but explicitly
-	// sets role="menuitem" in sharedProps, overriding the anchor's implicit "link" role -
-	// verified in MenuItem.tsx, not assumed) is not lost now that most routes have no nav to
+	// Exactly one real click-through, so coverage of the role="menuitem" link path
+	// (MenuLabel.tsx renders nav links as next/link <a> elements but explicitly sets
+	// role="menuitem" in sharedProps, overriding the anchor's implicit "link" role -
+	// verified in MenuLabel.tsx, not assumed) is not lost now that most routes have no nav to
 	// click through at all.
 	test('banner menuitem navigates to /discover/artists, and the /about Subnav renders its own items', async ({ page }) => {
 		await page.goto('/about')

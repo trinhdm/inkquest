@@ -123,7 +123,7 @@ test.describe('color scheme persistence', () => {
 		// This click is the actual soft navigation under test: a client-side Link
 		// transition does not unmount <html> or re-run the injected script, so the
 		// attribute must simply survive because the DOM node it lives on never goes away.
-		// (role="menuitem" per MenuItem.tsx - see navigation.spec.ts for why "link" is not
+		// (role="menuitem" per MenuLabel.tsx - see navigation.spec.ts for why "link" is not
 		// the correct role here.)
 		await page.getByRole('banner').getByRole('menuitem', { name: 'FAQs' }).click()
 		await expect(page).toHaveURL('/faqs')
