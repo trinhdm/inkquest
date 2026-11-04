@@ -1,15 +1,19 @@
 'use server'
 
-import { action, MOCK_ACCOUNT } from '@/lib/form'
-import { forgetAccount, startSession } from '@/lib/auth'
+import {
+	action,
+	MOCK_ACCOUNT, MOCK_INCORRECT,
+} from '@/lib/form'
+
 import { loginSchema, magicSchema, resetSchema } from './schema'
+import { signIn } from '@/lib/auth'
 import type z from 'zod'
 import type { FormAction } from '@/lib/form/types'
 
 const checkLogin = action(loginSchema, {
 	names: ['email'],
 	conditions: [{
-		check: ({ password }) => password === 'wrong',
+		check: ({ password }) => password === MOCK_INCORRECT.wrongPassword,
 		formError: 'Email or password is incorrect.',
 	}],
 })
@@ -17,12 +21,7 @@ const checkLogin = action(loginSchema, {
 //	mock: everyone who gets in is MOCK_ACCOUNT
 export const login: FormAction = async (prev, data) => {
 	const state = await checkLogin(prev, data)
-
-	if (state.success) {
-		await startSession(MOCK_ACCOUNT)
-		await forgetAccount()
-	}
-
+	if (state.success) await signIn(MOCK_ACCOUNT)
 	return state
 }
 

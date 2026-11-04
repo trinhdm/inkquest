@@ -1,8 +1,9 @@
 import { deleteAccount, readAccount, writeAccount } from './cookies'
+import { forgetAccount } from './account'
+import { SESSION_COOKIE as COOKIE } from './constants'
 import type { AccountValues } from './schema'
 
-const COOKIE = 'inkq_session',
-	MAX_AGE = 60 * 60 * 24 * 7
+const MAX_AGE = 60 * 60 * 24 * 7
 
 //	mock: the cookie holds the account itself; a real backend replaces these three bodies
 export const startSession = async (user: AccountValues) => {
@@ -15,4 +16,10 @@ export const getSession = async (): Promise<AccountValues | null> =>
 
 export const endSession = async () => {
 	await deleteAccount(COOKIE)
+}
+
+/** Starts a session and clears any remembered account or hint, so an old "Continue as" can't follow a new login. */
+export const signIn = async (user: AccountValues) => {
+	await startSession(user)
+	await forgetAccount()
 }

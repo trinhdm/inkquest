@@ -7,8 +7,8 @@ import {
 } from '@/lib/form'
 
 import { contactSchema, signupSchema, verifySchema } from './schema'
-import { forgetAccount, startSession } from '@/lib/auth'
 import { getContact, maskContact } from './helpers'
+import { signIn } from '@/lib/auth'
 import { METHOD_DATA } from './data'
 import type { FormAction } from '@/lib/form/types'
 
@@ -69,12 +69,7 @@ const checkCode = action(verifySchema, {
 
 const verifyCode: FormAction = async (prev, data) => {
 	const state = await checkCode(prev, data)
-
-	if (state.success) {
-		await startSession(MOCK_ACCOUNT)
-		await forgetAccount()
-	}
-
+	if (state.success) await signIn(MOCK_ACCOUNT)
 	return state
 }
 

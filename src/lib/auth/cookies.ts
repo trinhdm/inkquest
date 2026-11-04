@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers'
-import { accountSchema, type AccountValues } from './schema'
+import { parseAccount, type AccountValues } from './schema'
 
 export const writeAccount = async (
 	name: string,
@@ -14,17 +14,8 @@ export const writeAccount = async (
 	})
 }
 
-export const readAccount = async (name: string): Promise<AccountValues | null> => {
-	const value = (await cookies()).get(name)?.value
-	if (!value) return null
-
-	try {
-		const result = accountSchema.safeParse(JSON.parse(value))
-		return result.success ? result.data : null
-	} catch {
-		return null
-	}
-}
+export const readAccount = async (name: string): Promise<AccountValues | null> =>
+	parseAccount((await cookies()).get(name)?.value)
 
 export const deleteAccount = async (name: string) => {
 	(await cookies()).delete(name)
