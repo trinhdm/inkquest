@@ -22,5 +22,5 @@ export const omitMessage = (form: FormResults): FormResults => ({
 export const getFirstName = ({ name }: AccountValues) =>
 	name?.trim().split(/\s+/)[0]
 
-export const writeMagicIntro = (destination: string, expiration: number = CODE_EXPIRY) =>
-	`If an account exists for ${destination}, a sign-in link is on its way. It expires in ${expiration / 60} minutes.`
+export const writeExpiryText = (text: string, expiration: number = CODE_EXPIRY) =>
+	`${text} It expires in ${expiration / 60} minutes.`

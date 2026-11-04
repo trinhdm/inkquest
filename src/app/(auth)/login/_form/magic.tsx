@@ -1,5 +1,5 @@
 import { useLoginCtx } from '../_utils/context'
-import { writeMagicIntro } from '../../_utils/helpers'
+import { writeExpiryText } from '../../_utils/helpers'
 import { AuthForm } from '../../_components/AuthForm'
 import { SenderField } from '../../_components/SenderField'
 
@@ -12,7 +12,7 @@ export const LoginMagic = () => {
 	return (
 		<AuthForm { ...magic } idx={ idx } onSubmit={ guardSubmit }>
 			<AuthForm.Header eyebrow="Magic Link" title="Check your inbox">
-				{ writeMagicIntro(destination) }
+				{ writeExpiryText(`If an account exists for ${destination}, a sign-in link is on its way.`) }
 			</AuthForm.Header>
 
 			<SenderField email={ destination } idx={ idx } />

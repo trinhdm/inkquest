@@ -1,5 +1,5 @@
 import { useSignupCtx } from '../_utils/context'
-import { writeMagicIntro } from '../../_utils/helpers'
+import { writeExpiryText } from '../../_utils/helpers'
 import { AuthForm } from '../../_components/AuthForm'
 import { HiddenFields } from '../_components/HiddenFields'
 import { SenderField } from '../../_components/SenderField'
@@ -20,7 +20,7 @@ export const SignupMagic = () => {
 			state={ reply.state }
 		>
 			<AuthForm.Header eyebrow="Magic Link" title="Check your inbox">
-				{ writeMagicIntro(destination) }
+				{ writeExpiryText(`We emailed a sign-in link to ${destination}.`) }
 			</AuthForm.Header>
 
 			<HiddenFields contact destination method />
