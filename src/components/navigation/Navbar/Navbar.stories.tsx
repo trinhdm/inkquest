@@ -214,10 +214,10 @@ export const SignupPath: Story = {
 /**
  * The `auth` toolbar global (`.storybook/preview.tsx`) wraps every story in an `AuthProvider`.
  * `globals: { auth: 'in' }` logs in `MOCK_ACCOUNT` for this story only. The Log in / Sign up
- * group goes away and the avatar menu takes its place. Sign out is a `button` that calls the
+ * group goes away and the avatar menu takes its place. Log out is a `button` that calls the
  * mocked `logout`, so it shows up in the Actions panel and never touches the server.
  *
- * `Sign out` sits in a closed dropdown (`visibility: hidden` until it opens), so it is queried
+ * `Log out` sits in a closed dropdown (`visibility: hidden` until it opens), so it is queried
  * with `hidden: true`. The avatar trigger is `aria-hidden`, so it has no name: it is found by id.
  */
 export const LoggedIn: Story = {
@@ -225,12 +225,12 @@ export const LoggedIn: Story = {
 	globals: { auth: 'in' },
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement)
-		await expect(canvasElement.querySelector('#dropdown-user-trigger')).not.toBeNull()
+		await expect(canvasElement.querySelector('[id$="-user-trigger"]')).not.toBeNull()
 		await expect(canvas.queryByRole('link', { name: 'Log in' })).not.toBeInTheDocument()
 		await expect(canvas.queryByRole('link', { name: 'Sign up' })).not.toBeInTheDocument()
 		await expect(canvasElement.querySelector('.inkq-navbar__buttons')).toBeNull()
-		const signOut = canvas.getByRole('menuitem', { name: 'Sign out', hidden: true })
-		await expect(signOut.tagName).toBe('BUTTON')
+		const logOut = canvas.getByRole('menuitem', { name: 'Log out', hidden: true })
+		await expect(logOut.tagName).toBe('BUTTON')
 	},
 }
 /**
@@ -242,7 +242,7 @@ export const LoggedInOnLogin: Story = {
 	parameters: { nextjs: { appDirectory: true, navigation: { pathname: '/login' } } },
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement)
-		await expect(canvasElement.querySelector('#dropdown-user-trigger')).not.toBeNull()
+		await expect(canvasElement.querySelector('[id$="-user-trigger"]')).not.toBeNull()
 		await expect(canvas.queryByText('New to Inkquest?')).not.toBeInTheDocument()
 		await expect(canvasElement.querySelectorAll('.inkq-navbar__tip')).toHaveLength(0)
 		await expect(canvas.queryByRole('link', { name: 'Sign up' })).not.toBeInTheDocument()

@@ -1,6 +1,7 @@
 import { expect, within } from 'storybook/test'
 import { getDefaultProps } from '@/hooks/useProps'
 import { Footer } from './Footer'
+import { COMPANY_NAME, SocialBrands } from '@/utils/constants'
 import { FOOTER_GLOBAL_NAV, SOCIALS_NAV } from '@/utils/navigation'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
@@ -28,8 +29,8 @@ const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 // stable selector for reaching the root element regardless of state.
 const ROOT_SELECTOR = '.inkq-footer'
 
-// Real `SOCIAL_BRANDS` coverage: `SOCIAL_BRANDS` (`@/utils/constants`) lists 7 brands
-// and `SOCIALS_NAV` mirrors it. `buildIcon` (`core/Icon/buildIcon.tsx`) only renders a
+// Real `SocialBrands` coverage: the `SocialBrands` enum (`@/utils/constants`) lists 7 brands
+// and `SOCIALS_NAV` mirrors it (lowercased, as `SocialBrand`). `buildIcon` (`core/Icon/buildIcon.tsx`) only renders a
 // brand it has an `ICON_MAP` entry or a `getBrandProps` case for: `apple`, `google`,
 // `instagram`, `tiktok` and `x`. `'facebook'`/`'pinterest'` hit its `default: return`
 // branch and render `null`. So the fallback-to-ALL branch (`socials: []`, see the
@@ -38,9 +39,9 @@ const DEFAULT_SOCIAL_COUNT = 3,
 	ALL_RENDERABLE_SOCIAL_COUNT = 5
 
 // `Icon` (`core/Icon/Icon.tsx`) no longer renders `role="img"`/`<title>`. With an
-// `href` it renders `<a><svg aria-hidden="true" aria-label="<type> icon" /></a>` (the
+// `href` it renders `<a aria-label="<name>"><svg aria-hidden="true" /></a>` (the
 // registered default `hidden: true` drives `aria-hidden`), so each social icon is
-// reached as a `link`, with the `<svg>` as its child.
+// reached as a `link` named by the `<a>`'s own `aria-label`, with the `<svg>` as its child.
 const getSocialLinks = (socials: HTMLElement) => within(socials).getAllByRole('link')
 
 // A small custom `items` fixture, independent of `FOOTER_GLOBAL_NAV`, used to
@@ -77,7 +78,7 @@ const meta: Meta<FooterStoryProps> = {
 		},
 		socials: {
 			control: 'object',
-			description: 'A `readonly SocialBrand[]` allow-list (defaults to `[\'instagram\', \'tiktok\', \'x\']`). Filters `SOCIALS_NAV` down to the matching entries. IMPORTANT quirk: `!socials?.length` — so an explicit empty array falls back to rendering ALL of `SOCIALS_NAV`, not none. `undefined` is different: `useProps` only overlays defined props, so it gets the registered default instead. See the `Socials` story, including the further quirk that only 5 of the 7 `SOCIAL_BRANDS` (`apple`, `google`, `instagram`, `tiktok`, `x`) ever render a visible icon — `facebook` and `pinterest` render nothing.',
+			description: 'A `readonly SocialBrand[]` allow-list (defaults to `[\'instagram\', \'tiktok\', \'x\']`). Filters `SOCIALS_NAV` down to the matching entries. IMPORTANT quirk: `!socials?.length` — so an explicit empty array falls back to rendering ALL of `SOCIALS_NAV`, not none. `undefined` is different: `useProps` only overlays defined props, so it gets the registered default instead. See the `Socials` story, including the further quirk that only 5 of the 7 `SocialBrands` (`apple`, `google`, `instagram`, `tiktok`, `x`) ever render a visible icon — `facebook` and `pinterest` render nothing.',
 		},
 		unstyled: {
 			control: 'boolean',
@@ -170,20 +171,30 @@ export const EmptyItems: Story = {
 }
 
 /**
- * BUG: every social link should have a non-empty accessible name, but today it has
- * none. `Footer.tsx` renders `<Icon href={ url } type={ type } />` and never passes
- * `hidden={ false }` or any label, so `Icon`'s new registered default `hidden: true`
- * puts `aria-hidden="true"` on the `<svg>` (`buildIcon.tsx` also sets
- * `aria-label="<type> icon"` on it, but a hidden element is excluded from the name
- * computation). The `<a>` therefore ends up icon-only with an empty name. This story
- * asserts the INTENDED behavior and is expected to fail until the source is fixed.
+ * Every social link has an accessible name. `Footer.tsx` renders `<Icon href={ url }
+ * type={ type } />` with no `name`, so `Icon` names the link
+ * `${ COMPANY_NAME } on ${ SocialBrands[TYPE] }` through `aria-label` on the `<a>`, while
+ * the `<svg>` inside stays `aria-hidden`. The brand keeps its enum casing, so the default
+ * three are `Inkquest on Instagram`, `Inkquest on TikTok` and `Inkquest on X`.
  */
 export const SocialLinkNames: Story = {
 	play: async ({ canvasElement }) => {
-		const socials = canvasElement.querySelector('.inkq-footer__socials') as HTMLElement
+		const socials = canvasElement.querySelector('.inkq-footer__socials') as HTMLElement,
+			links = getSocialLinks(socials)
 
-		for (const link of getSocialLinks(socials)) {
-			await expect(link).toHaveAccessibleName()
+		const expected = [
+			`${ COMPANY_NAME } on ${ SocialBrands.INSTAGRAM }`,
+			`${ COMPANY_NAME } on ${ SocialBrands.TIKTOK }`,
+			`${ COMPANY_NAME } on ${ SocialBrands.X }`,
+		]
+
+		await expect(links.map(link => link.getAttribute('aria-label')).sort()).toEqual([...expected].sort())
+
+		for (const name of expected) {
+			const link = within(socials).getByRole('link', { name })
+
+			await expect(link).toHaveAccessibleName(name)
+			await expect(link.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
 		}
 	},
 }

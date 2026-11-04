@@ -32,11 +32,12 @@ const ROOT_SELECTOR = '.inkq-header'
 // `Subnav.stories.tsx`'s own `LABEL_SELECTOR` convention) to disambiguate the two.
 const SUBNAV_LABEL_SELECTOR = '.inkq-subnav__label'
 
-// `Navbar` renders TWO menus: the main navigation (given the semantic `inkq-navbar__menu`
-// class) and a separate user menu with an `Avatar` trigger. `Subnav` renders one more
-// (`inkq-subnav__menu`) inside its own `inkq-subnav` root. Counting every `menubar` or
-// `menuitem` in a `Header` therefore picks up the user menu, so queries about the main
-// navigation and the subnav are scoped to these two. The user menu has no stories yet.
+// `Navbar` can render a main navigation menu (given the semantic `inkq-navbar__menu` class
+// and the id `${ useId() }-nav`) plus, for a signed-in user, a separate user menu with an
+// `Avatar` trigger (`-user`). No story provides an `AuthProvider`, so there is no user menu
+// here. `Subnav` renders one more menu (`inkq-subnav__menu`) inside its own `inkq-subnav`
+// root. Queries about the main navigation and the subnav are scoped to these two, so they
+// hold either way. The user menu has no stories yet.
 const NAVBAR_MENU_SELECTOR = '.inkq-navbar__menu',
 	SUBNAV_SELECTOR = '.inkq-subnav'
 
@@ -218,7 +219,7 @@ export const NullParts: Story = {
 
 		const [navbarNull, subnavNull, neitherNull, bothNull] = roots
 
-		// With no `Navbar` there is no user menu either, so the subnav's is the only
+		// With no `Navbar` there is no main menu either, so the subnav's is the only
 		// `menubar` left.
 		await expect(within(navbarNull).queryByRole('navigation')).not.toBeInTheDocument()
 		await expect(within(navbarNull).getByText('Community', { selector: SUBNAV_LABEL_SELECTOR })).toBeInTheDocument()

@@ -20,18 +20,17 @@ describe('Header', () => {
 		mockUsePathname.mockReturnValue('/discover')
 	})
 
-	// The Navbar also mounts a user-account menu, and every dropdown's submenu is a nested
-	// menubar, so menubars are never counted. Each menu is found by where it sits instead:
-	// the nav menu is the Navbar's first top-level menubar, provided the user menu follows it,
-	// and the subnav menu is the top-level menubar outside the `<nav>` landmark.
+	// A signed-in user adds a user-account menu to the Navbar, and every dropdown's submenu is a
+	// nested menubar, so menubars are never counted. Each menu is found by where it sits instead:
+	// the nav menu is the Navbar's top-level menubar whose id ends in `-nav`, and the subnav
+	// menu is the top-level menubar outside the `<nav>` landmark.
 	const topLevelMenus = (root: HTMLElement) =>
 		within(root).queryAllByRole('menubar')
 			.filter(menu => !menu.parentElement?.closest('[role="menubar"]'))
 
 	const getNavMenu = () => {
 		const nav = screen.queryByRole('navigation')
-		const menus = nav ? topLevelMenus(nav) : []
-		return menus.length > 1 ? menus[0] : undefined
+		return nav ? topLevelMenus(nav).find(menu => /-nav$/.test(menu.id)) : undefined
 	}
 
 	const getSubnavMenu = () => {

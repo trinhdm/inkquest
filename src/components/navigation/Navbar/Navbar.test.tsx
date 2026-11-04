@@ -306,7 +306,7 @@ describe('Navbar', () => {
 	})
 
 	//	`Avatar` is aria-hidden, so the user menu's trigger has no accessible name. Its id is the stable handle.
-	const getUserTrigger = () => document.getElementById('dropdown-user-trigger')
+	const getUserTrigger = () => document.querySelector('[id$="-user-trigger"]')
 
 	describe('logged out', () => {
 		it('shows Log in and Sign up, and no user menu', () => {
@@ -314,7 +314,7 @@ describe('Navbar', () => {
 			expect(screen.getByRole('link', { name: 'Log in' })).toBeInTheDocument()
 			expect(screen.getByRole('link', { name: 'Sign up' })).toBeInTheDocument()
 			expect(getUserTrigger()).not.toBeInTheDocument()
-			expect(screen.queryByRole('menuitem', { name: 'Sign out' })).not.toBeInTheDocument()
+			expect(screen.queryByRole('menuitem', { name: 'Log out' })).not.toBeInTheDocument()
 		})
 		it('shows the tip and one outline button on /login', () => {
 			mockUsePathname.mockReturnValue('/login')
@@ -342,7 +342,7 @@ describe('Navbar', () => {
 		it('shows the user menu', () => {
 			renderLoggedIn()
 			expect(getUserTrigger()).toBeInTheDocument()
-			expect(screen.getByRole('menuitem', { name: 'Sign out' })).toBeInTheDocument()
+			expect(screen.getByRole('menuitem', { name: 'Log out' })).toBeInTheDocument()
 		})
 		it('hides Log in and Sign up', () => {
 			renderLoggedIn()
@@ -359,21 +359,21 @@ describe('Navbar', () => {
 			expect(screen.queryByRole('link', { name: 'Login' })).not.toBeInTheDocument()
 			expect(getUserTrigger()).toBeInTheDocument()
 		})
-		it('renders Sign out as a button', () => {
+		it('renders Log out as a button', () => {
 			renderLoggedIn(jest.fn())
-			expect(screen.getByRole('menuitem', { name: 'Sign out' }).tagName).toBe('BUTTON')
+			expect(screen.getByRole('menuitem', { name: 'Log out' }).tagName).toBe('BUTTON')
 		})
-		it('calls logout once when Sign out is clicked', () => {
+		it('calls logout once when Log out is clicked', () => {
 			const logout = jest.fn()
 			renderLoggedIn(logout)
-			fireEvent.click(screen.getByRole('menuitem', { name: 'Sign out' }))
+			fireEvent.click(screen.getByRole('menuitem', { name: 'Log out' }))
 			expect(logout).toHaveBeenCalledTimes(1)
 		})
-		it('keeps Sign out as a link to /logout when no logout is provided', () => {
+		it('keeps Log out as a link to /logout when no logout is provided', () => {
 			renderLoggedIn()
-			const signOut = screen.getByRole('menuitem', { name: 'Sign out' })
-			expect(signOut.tagName).toBe('A')
-			expect(signOut).toHaveAttribute('href', '/logout')
+			const logOut = screen.getByRole('menuitem', { name: 'Log out' })
+			expect(logOut.tagName).toBe('A')
+			expect(logOut).toHaveAttribute('href', '/logout')
 		})
 		it('leaves the other user menu items as links', () => {
 			renderLoggedIn(jest.fn())

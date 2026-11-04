@@ -1,6 +1,6 @@
 import { getDefaultProps } from '@/hooks/useProps'
 import { render, reset, screen } from '@/tests/test-utils'
-import { COMPANY_NAME } from '@/utils/constants'
+import { COMPANY_NAME, SocialBrands } from '@/utils/constants'
 import { Footer } from './Footer'
 
 describe('Footer', () => {
@@ -18,6 +18,25 @@ describe('Footer', () => {
 		render(<Footer />)
 		const currentYear = new Date().getFullYear()
 		expect(screen.getByText(`© ${ currentYear } ${ COMPANY_NAME }`)).toBeInTheDocument()
+	})
+
+	it.each([
+		['instagram', SocialBrands.INSTAGRAM],
+		['tiktok', SocialBrands.TIKTOK],
+		['x', SocialBrands.X],
+	])('names the default %s social link after the company and the brand', (type, brand) => {
+		render(<Footer />)
+
+		const link = screen.getByRole('link', { name: `${ COMPANY_NAME } on ${ brand }` })
+		expect(link).toHaveAttribute('href', `https://${ type }.com/inkquest`)
+		expect(link).toHaveAttribute('target', '_blank')
+	})
+
+	it('renders exactly the three default social links, none of them nameless', () => {
+		render(<Footer />)
+
+		const socials = screen.getAllByRole('link', { name: new RegExp(` on (${ Object.values(SocialBrands).join('|') })$`) })
+		expect(socials).toHaveLength(3)
 	})
 
 	it('renders as the registered default tag (footer)', () => {
