@@ -1,5 +1,5 @@
 import { useSignupCtx } from '../_utils/context'
-import { validateResend } from '../_utils/schema'
+import { validateVerifyForm } from '../_utils/schema'
 import { AuthForm } from '../../_components/AuthForm'
 import { CodeField } from '../_components/CodeField'
 import { Field } from '@/components/form/Field'
@@ -21,7 +21,7 @@ export const SignupVerify = () => {
 			idx={ idx }
 			pending={ reply.pending }
 			state={ reply.state }
-			validate={ validateResend }
+			validate={ validateVerifyForm }
 		>
 			<AuthForm.Header eyebrow="Verify" title={ `Check your ${copy.output}s` }>
 				We sent a 6-digit code to { destination }. Enter it below.

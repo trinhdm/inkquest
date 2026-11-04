@@ -95,6 +95,13 @@
 		}
 	}
 
+	&__options {
+		column-gap: inherit;
+		display: flex;
+		flex-wrap: wrap;
+		font: inherit;
+	}
+
 	&__option {
 		.inkq-button__inner,
 		.inkq-button__section {

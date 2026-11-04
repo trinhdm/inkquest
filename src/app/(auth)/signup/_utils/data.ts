@@ -2,16 +2,13 @@ import { syncLengthTo } from '@/utils/helpers'
 import type { CSSProperties } from 'react'
 
 import type {
-	MethodData, PasswordCriteria,
+	MethodData, PasswordRule,
 	SignupMethod, SignupPageData,
 } from './types'
 
-//	resend code
+//	otp code
 
-export const SEQUENCE_CHECK_MIN = 4
-
-export const CODE_EXPIRY_SECONDS = 10 * 60
-export const RESEND_COOLDOWN_SECONDS = 30
+export const CODE_LENGTH = 6
 
 //	password meter
 
@@ -55,7 +52,7 @@ export const METHOD_DATA = {
 	phone: {
 		copy: {
 			input: 'number',
-			output: 'text',
+			output: 'texts',
 		},
 		field: {
 			label: 'Phone Number',
@@ -71,12 +68,15 @@ export const METHOD_DATA = {
 
 //	password requirements
 
+export const PASSWORD_MIN_LENGTH = 6
+export const SEQUENCE_CHECK_MIN = 4
+
 export const PASSWORD_RULES = [
 	{
 		id: 'length',
-		label: '6+ characters',
-		error: 'at least 6 characters',
-		test: (value: string) => value.length >= 6,
+		label: `${PASSWORD_MIN_LENGTH}+ characters`,
+		error: `at least ${PASSWORD_MIN_LENGTH} characters`,
+		test: (value: string) => value.length >= PASSWORD_MIN_LENGTH,
 	},
 	{
 		id: 'nonsequential',
@@ -115,7 +115,7 @@ export const PASSWORD_RULES = [
 		label: 'A symbol',
 		test: (value: string) => /[^A-Za-z0-9]/.test(value),
 	},
-] as const satisfies readonly PasswordCriteria[]
+] as const satisfies readonly PasswordRule[]
 
 export const PASSWORD_SCORE = syncLengthTo(PASSWORD_RULES)([
 	'weak', 'fair', 'moderate',

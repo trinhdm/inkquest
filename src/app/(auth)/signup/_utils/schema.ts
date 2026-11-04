@@ -75,5 +75,5 @@ export const resendSchema = z.object({
 //	shared forms
 
 //	the Resend button shares this form but has no code to check
-export const validateResend = (data: FormData) =>
+export const validateVerifyForm = (data: FormData) =>
 	data.get('intent') === 'resend' ? {} : validateVerify(data)

@@ -7,8 +7,8 @@ import type { SignupMethod, SignupPageData, SignupScreen } from './types'
 export interface SignupFlow {
 	goBack: () => void
 	guardSubmit: (event: SubmitEvent<HTMLFormElement>) => void
-	handleSignup: (method: SignupMethod) => void
 	navigate: (next: SignupScreen) => void
+	selectMethod: (method: SignupMethod) => void
 	stopWait: () => void
 
 	signup: FormResults

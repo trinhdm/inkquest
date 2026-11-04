@@ -29,7 +29,7 @@ export type SignupScreen =
 export type ReplyFromStep =
 	| 'resend' | 'verify'
 
-export interface PasswordCriteria {
+export interface PasswordRule {
 	readonly id: string
 	readonly label: string
 	readonly error?: string

@@ -5,26 +5,34 @@ import { METHOD_DATA } from '../_utils/data'
 
 export const AuthOptions = () => {
 	const {
-		handleSignup, signup,
 		method: { inactive: otherMethods },
+		selectMethod, signup,
 	} = useSignupCtx()
 
-	return otherMethods.map(name => {
-		const { toggle: { icon, label } } = METHOD_DATA[name]
+	return (
+		<div
+			aria-label="Other ways to sign up"
+			className="authentication__options"
+			role="group"
+		>
+			{ otherMethods.map(name => {
+				const { toggle: { icon, label } } = METHOD_DATA[name]
 
-		return (
-			<Button
-				unstyled
-				className="authentication__option"
-				disabled={ signup.pending }
-				key={ `${name}-option` }
-				onClick={ () => handleSignup(name) }
-			>
-				<Button.Section><Icon size="14" type={ icon } /></Button.Section>
-				<span data-link>{ label }</span>
-			</Button>
-		)
-	})
+				return (
+					<Button
+						unstyled
+						className="authentication__option"
+						disabled={ signup.pending }
+						key={ `${name}-option` }
+						onClick={ () => selectMethod(name) }
+					>
+						<Button.Section><Icon size="14" type={ icon } /></Button.Section>
+						<span data-link>{ label }</span>
+					</Button>
+				)
+			}) }
+		</div>
+	)
 }
 
 AuthOptions.displayName = 'AuthOptions'

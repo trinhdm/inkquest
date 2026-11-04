@@ -31,7 +31,7 @@ export const useSignupFlow = ({ id: pageID }: SignupPageData): SignupFlow => {
 	const resendForm = useForm(resend, initFormState)
 	const verifyForm = useForm(verify, initFormState)
 
-	const handleSignup = (next: SignupMethod) =>
+	const selectMethod = (next: SignupMethod) =>
 		setOrder(prev => {
 			const [current, ...others] = prev
 			if (next === current) return prev
@@ -68,8 +68,8 @@ export const useSignupFlow = ({ id: pageID }: SignupPageData): SignupFlow => {
 	return {
 		goBack: back,
 		guardSubmit: event => guard(event, { when: screen === 'success' }),
-		handleSignup,
 		navigate,
+		selectMethod,
 		stopWait,
 
 		signup: signupForm,
