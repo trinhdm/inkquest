@@ -6,20 +6,24 @@ import {
 	MOCK_ACCOUNT, MOCK_INCORRECT,
 } from '@/lib/form'
 
-import { maskTo, pickTo } from './helpers'
-import { resendSchema, signupSchema, verifySchema } from './schema'
+import { contactSchema, signupSchema, verifySchema } from './schema'
+import { forgetAccount } from '@/lib/auth/account'
+import { getContact, maskContact } from './helpers'
 import { startSession } from '@/lib/auth/session'
+import { METHOD_DATA } from './data'
 import type { FormAction } from '@/lib/form/types'
 
 const start = action(signupSchema, {
 	names: ['email', 'method', 'tel'],
 	conditions: [{
-		check: data => FAIL_CONTACT.includes(pickTo(data)),
+		check: data => FAIL_CONTACT.includes(getContact(data)),
 		formError: BASE_ERROR,
 	}],
-	onSuccess: (data, values) => ({
-		values: { ...values, destination: maskTo(data.method, pickTo(data)) },
-	}),
+	onSuccess: (data, values) => {
+		const contact = getContact(data),
+			destination = maskContact({ contact, method: data.method })
+		return { values: { ...values, contact, destination } }
+	},
 })
 
 export const signup: FormAction = async (prev, data) => {
@@ -31,13 +35,13 @@ export const signup: FormAction = async (prev, data) => {
 
 //	resend
 
-export const resend = action(resendSchema, {
+export const resend = action(contactSchema, {
 	conditions: [{
-		check: ({ destination }) => destination.includes(MOCK_INCORRECT.failResend),
+		check: ({ contact }) => contact.includes(MOCK_INCORRECT.failResend),
 		formError: BASE_ERROR,
 	}],
-	onSuccess: ({ destination, method }) => ({
-		message: `We sent another ${method === 'magic' ? 'link' : 'code'} to ${destination}.`,
+	onSuccess: ({ contact, method }) => ({
+		message: `We sent another ${METHOD_DATA[method]} to ${contact}.`,
 	}),
 })
 
@@ -59,6 +63,11 @@ const checkCode = action(verifySchema, {
 
 export const verify: FormAction = async (prev, data) => {
 	const state = await checkCode(prev, data)
-	if (state.success) await startSession(MOCK_ACCOUNT)
+
+	if (state.success) {
+		await startSession(MOCK_ACCOUNT)
+		await forgetAccount()
+	}
+
 	return state
 }

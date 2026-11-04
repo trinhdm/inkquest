@@ -20,6 +20,7 @@ export interface MethodData {
 		icon: Icon.Props['type']
 		label: string
 	}
+	verify: 'code' | 'link'
 }
 
 export type SignupScreen =

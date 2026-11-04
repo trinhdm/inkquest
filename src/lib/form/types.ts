@@ -1,3 +1,4 @@
+import type { RequireSome } from '@/types/utils'
 
 //	state
 
@@ -20,6 +21,21 @@ export interface FormResults<T = FormState> {
 	pending: boolean
 	state: T
 }
+
+type FormResponse =
+	Partial<Pick<FormState, 'message' | 'values'>>
+
+type FormFeedback =
+	Partial<Omit<FormState, 'success' | 'values'>>
+
+type RequireFeedback<T extends keyof FormFeedback = keyof FormFeedback> = {
+	[K in T]: RequireSome<FormFeedback, K>
+}[T]
+
+//	an action's `run` return value
+export type ActionReply =
+	| ({ success: true } & FormResponse)
+	| ({ success: false } & RequireFeedback)
 
 export type FormAction =
 	(prev: FormState, data: FormData) => Promise<FormState>

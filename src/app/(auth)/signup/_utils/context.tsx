@@ -16,6 +16,7 @@ export interface SignupFlow {
 	verify: FormResults
 	reply: FormResults
 
+	contact: string
 	destination: string
 	idx: AuthFormIDs
 	method: {

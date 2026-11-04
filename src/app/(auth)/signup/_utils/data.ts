@@ -40,6 +40,7 @@ export const METHOD_DATA = {
 			icon: 'email',
 			label: 'Use email & password',
 		},
+		verify: 'code',
 	},
 	magic: {
 		...EMAIL_DATA,
@@ -48,6 +49,7 @@ export const METHOD_DATA = {
 			icon: 'wand-sparkles',
 			label: 'Email me a magic link',
 		},
+		verify: 'link',
 	},
 	phone: {
 		copy: {
@@ -63,6 +65,7 @@ export const METHOD_DATA = {
 			icon: 'phone',
 			label: 'Use phone number',
 		},
+		verify: 'code',
 	},
 } as const satisfies Record<SignupMethod, MethodData>
 

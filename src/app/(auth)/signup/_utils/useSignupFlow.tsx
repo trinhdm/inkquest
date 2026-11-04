@@ -54,6 +54,8 @@ export const useSignupFlow = ({ id: pageID }: SignupPageData): SignupFlow => {
 		if (state.success) navigate('success')
 	})
 
+	const isSignupSSO = screen === 'success' && !verifyForm.state.success
+
 	const replies = {
 		resend: resendForm,
 		verify: verifyForm,
@@ -76,7 +78,8 @@ export const useSignupFlow = ({ id: pageID }: SignupPageData): SignupFlow => {
 		resend: resendForm,
 		verify: verifyForm,
 
-		destination: signupForm.state.values.destination ?? '',
+		contact: signupForm.state.values.contact ?? '',
+		destination: isSignupSSO ? '' : signupForm.state.values.destination ?? '',
 		idx: getAuthFormIDs(pageID, screen),
 		method: {
 			active: method,

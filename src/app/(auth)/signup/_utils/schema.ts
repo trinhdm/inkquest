@@ -53,29 +53,29 @@ export const signupSchema = z.discriminatedUnion(
 export const validateSignup = validateWith(signupSchema)
 
 
-//	SignupVerify
+//	SignupVerify and SignupMagic
+
+export type ContactValues =
+	z.infer<typeof contactSchema>
+
+//	hidden fields that carry step 1's contact to the next request
+export const contactSchema = z.discriminatedUnion('method', [
+	z.object({ method: z.literal('email'), contact: emailRule }),
+	z.object({ method: z.literal('magic'), contact: emailRule }),
+	z.object({ method: z.literal('phone'), contact: telRule }),
+])
+
+const codeSchema = z.object({ code: codeRule })
+const validateCode = validateWith(codeSchema)
+
+
+//	resend code
 
 export type VerifyValues =
 	z.infer<typeof verifySchema>
 
-export const verifySchema = z.object({ code: codeRule })
-const validateVerify = validateWith(verifySchema)
+export const verifySchema = z.intersection(codeSchema, contactSchema)
 
-
-//	SignupResend
-
-export type ResendValues =
-	z.infer<typeof resendSchema>
-
-//	these fields are hidden
-export const resendSchema = z.object({
-	destination: z.string().min(1),
-	method: z.enum(SIGNUP_METHODS),
-})
-
-
-//	shared forms
-
-//	the Resend button shares this form but has no code to check
+//	resend button shares this form but has no code to check
 export const validateVerifyForm = (data: FormData) =>
-	data.get('intent') === 'resend' ? {} : validateVerify(data)
+	data.get('intent') === 'resend' ? {} : validateCode(data)

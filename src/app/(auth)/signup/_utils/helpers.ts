@@ -1,7 +1,6 @@
 import { keyHasValue } from '@/utils/helpers'
 import { PASSWORD_RULES } from './data'
-import type { SignupMethod } from './types'
-import type { SignupValues } from './schema'
+import type { ContactValues, SignupValues } from './schema'
 
 const listFormat = new Intl.ListFormat('en', { type: 'conjunction' })
 
@@ -30,8 +29,8 @@ export const describeMissing = (value: string) => {
 	return `Password must contain ${message}.`
 }
 
-export const maskTo = (method: SignupMethod, to: string) =>
-	method === 'phone' ? `•••-${to.slice(-4)}` : to
-
-export const pickTo = (data: SignupValues) =>
+export const getContact = (data: SignupValues) =>
 	data.method === 'phone' ? data.tel : data.email
+
+export const maskContact = ({ contact, method }: ContactValues) =>
+	method === 'phone' ? `•••-${contact.slice(-4)}` : contact

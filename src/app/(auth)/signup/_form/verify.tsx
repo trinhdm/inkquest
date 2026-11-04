@@ -7,7 +7,7 @@ import { CODE_LENGTH, METHOD_DATA } from '../_utils/data'
 
 export const SignupVerify = () => {
 	const {
-		destination, goBack, idx,
+		contact, destination, goBack, idx,
 		method: { active: method },
 		reply, resend, stopWait,
 		verify, waiting,
@@ -27,6 +27,7 @@ export const SignupVerify = () => {
 				We sent a { CODE_LENGTH }-digit code to { destination }. Enter it below.
 			</AuthForm.Header>
 
+			<Field.Hidden name="contact" value={ contact } />
 			<Field.Hidden name="destination" value={ destination } />
 			<Field.Hidden name="method" value={ method } />
 

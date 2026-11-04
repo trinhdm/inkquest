@@ -1,6 +1,7 @@
 'use server'
 
 import { action, MOCK_ACCOUNT } from '@/lib/form'
+import { forgetAccount } from '@/lib/auth/account'
 import { loginSchema, magicSchema, resetSchema } from './schema'
 import { startSession } from '@/lib/auth/session'
 import type z from 'zod'
@@ -17,7 +18,12 @@ const checkLogin = action(loginSchema, {
 //	mock: everyone who gets in is MOCK_ACCOUNT
 export const login: FormAction = async (prev, data) => {
 	const state = await checkLogin(prev, data)
-	if (state.success) await startSession(MOCK_ACCOUNT)
+
+	if (state.success) {
+		await startSession(MOCK_ACCOUNT)
+		await forgetAccount()
+	}
+
 	return state
 }
 
