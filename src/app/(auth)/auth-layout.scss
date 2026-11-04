@@ -72,8 +72,8 @@
 			}
 		}
 
-		#login-begin &,
-		#logout-done & {
+		:where([id^="logout"]):only-child &,
+		#login-begin & {
 			justify-content: center;
 			max-width: none;
 		}
@@ -129,7 +129,7 @@
 
 	&__info {
 		align-items: center;
-		column-gap: var(--inkq-gutter-item);
+		column-gap: var(--inkq-gutter-content);
 		display: flex;
 	}
 
