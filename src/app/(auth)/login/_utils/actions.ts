@@ -2,15 +2,23 @@
 
 import { action, MOCK_ACCOUNT, type FormAction } from '@/lib/form'
 import { loginSchema, magicSchema, resetSchema } from './schema'
+import { startSession } from '../../_utils/session'
 import type z from 'zod'
 
-export const login = action(loginSchema, {
+const checkLogin = action(loginSchema, {
 	names: ['email'],
 	conditions: [{
 		check: ({ password }) => password === 'wrong',
 		formError: 'Email or password is incorrect.',
 	}],
 })
+
+//	mock: everyone who gets in is MOCK_ACCOUNT
+export const login: FormAction = async (prev, data) => {
+	const state = await checkLogin(prev, data)
+	if (state.success) await startSession(MOCK_ACCOUNT)
+	return state
+}
 
 
 type ActionConfig<S extends z.ZodType> =

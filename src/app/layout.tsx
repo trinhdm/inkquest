@@ -1,7 +1,10 @@
 import { AppProvider } from '@/providers/AppProvider'
+import { AuthProvider } from '@/providers/AuthProvider'
 import { ScriptInjector } from '@/components/document/ScriptInjector'
 import { COMPANY_NAME } from '@/utils/constants'
 import { fontVariables } from '@/styles/fonts'
+import { getSession } from './(auth)/_utils/session'
+import { logout } from '@/app/(auth)/logout/_utils/actions'
 import type { Metadata } from 'next'
 import '@/styles/_global.scss'
 
@@ -13,9 +16,11 @@ export const metadata: Metadata = {
 	description: 'Tattoo artist platform',
 }
 
-export default function RootLayout({
+export default async function RootLayout({
 	children,
 }: Readonly<{ children: React.ReactNode }>) {
+	const user = await getSession()
+
 	return (
 		<html
 			suppressHydrationWarning
@@ -28,9 +33,11 @@ export default function RootLayout({
 			</head>
 			<body>
 				<AppProvider>
-					<div className="page-container">
-						{ children }
-					</div>
+					<AuthProvider logout={ logout } user={ user }>
+						<div className="page-container">
+							{ children }
+						</div>
+					</AuthProvider>
 				</AppProvider>
 			</body>
 		</html>

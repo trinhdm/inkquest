@@ -3,7 +3,7 @@ import { Button } from '@/components/core/Button'
 import { Icon } from '@/components/core/Icon'
 import { NavRoutes } from '@/utils/navigation'
 import type { ReactNode } from 'react'
-import type { RootActionButton } from '../../_utils/types'
+import type { AuthSubmitButton, RootActionButton } from '../../_utils/types'
 
 const SHARED_ALT = {
 	fullWidth: true,
@@ -52,15 +52,27 @@ interface AuthAlternateBase {
 	hasDivider?: boolean
 }
 
-interface AuthDefaultProps
-	extends Omit<RootActionButton, 'fullWidth' | 'onClick'> {
+interface AuthDefaultBase {
 	as: 'auth'
+	label?: never
+	onClick?: never
 }
 
-interface AuthSSOProps
-	extends Omit<ButtonSSOProps, 'brand'> {
+type AuthDefaultProps =
+	& Omit<AuthSubmitButton, 'fullWidth' | 'onClick'>
+	& AuthDefaultBase
+
+interface AuthSSOBase {
 	as: 'SSO'
+	'data-intent'?: never
+	formAction?: never
+	name?: never
+	value?: never
 }
+
+type AuthSSOProps =
+	& Omit<ButtonSSOProps, 'brand'>
+	& AuthSSOBase
 
 type AuthAlternateChoices =
 	| AuthDefaultProps
@@ -82,14 +94,24 @@ const AuthAlternatives = (props: AuthAlternateChoices) => {
 		)
 	}
 
-	const { as, ...rest } = props
+	const {
+		as, formAction,
+		'data-intent': intent,
+		...rest }
+		 = props
+	const others = { ...rest, ...SHARED_ALT }
 
 	return (
 		<>
-			<Button { ...rest } { ...SHARED_ALT } type="submit">
+			<Button
+				{ ...others }
+				data-intent={ intent }
+				formAction={ formAction }
+				type="submit"
+			>
 				Use a different account
 			</Button>
-			<Button { ...rest } { ...SHARED_ALT } href={ NavRoutes.AUTH_SIGNUP }>
+			<Button { ...others } href={ NavRoutes.AUTH_SIGNUP }>
 				Create an account
 			</Button>
 		</>

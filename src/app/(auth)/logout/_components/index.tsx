@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { getAuthFormIDs, getFirstName } from '../../_utils/helpers'
-import { switchAccount } from '../_utils/actions'
+import { hintAccount, switchAccount } from '../_utils/actions'
 import { AuthForm } from '../../_components/AuthForm'
 import { Avatar } from '@/components/core/Avatar'
 import { NavRoutes } from '@/utils/navigation'
@@ -18,7 +18,7 @@ export const LogoutBase = ({ account }: LogoutBaseProps) => {
 	const firstName = account && getFirstName(account)
 
 	return (
-		<AuthForm action={ switchAccount } idx={ IDX }>
+		<AuthForm action={ hintAccount } idx={ IDX }>
 			<AuthForm.Header eyebrow="Logged out" title="You're signed out.">
 				Your account is safe. Log back in whenever you&apos;re ready.
 			</AuthForm.Header>
@@ -34,9 +34,8 @@ export const LogoutBase = ({ account }: LogoutBaseProps) => {
 							</div>
 						</div>
 
-						<AuthForm.Continue
+						<AuthForm.Submit
 							fullWidth
-							href={ NavRoutes.AUTH_LOGIN }
 							label={ firstName ? `Continue as ${firstName}` : 'Continue' }
 						/>
 					</div>
@@ -44,7 +43,12 @@ export const LogoutBase = ({ account }: LogoutBaseProps) => {
 			) }
 
 			<AuthForm.Footer>
-				<AuthForm.Alternate as="auth" hasDivider={ !!account } />
+				<AuthForm.Alternate
+					as="auth"
+					data-intent="switch"
+					formAction={ switchAccount }
+					hasDivider={ !!account }
+				/>
 
 				<AuthForm.Note>
 					<p><Link href={ NavRoutes.HOME } data-link>Back to home</Link></p>

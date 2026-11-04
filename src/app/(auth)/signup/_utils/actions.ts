@@ -9,6 +9,7 @@ import {
 
 import { maskTo, pickTo } from './helpers'
 import { resendSchema, signupSchema, verifySchema } from './schema'
+import { startSession } from '../../_utils/session'
 
 const start = action(signupSchema, {
 	names: ['email', 'method', 'tel'],
@@ -43,15 +44,21 @@ export const resend = action(resendSchema, {
 
 //	verify
 
-export const verify = action(verifySchema, {
+const checkCode = action(verifySchema, {
 	conditions: [
 		{
-			check: ({ code }) => code.includes(MOCK_DATA.wrongCode),
+			check: ({ code }) => code.includes(MOCK_INCORRECT.wrongCode),
 			errors: { code: `That code isn't right. Check it and try again.` },
 		},
 		{
-			check: ({ code }) => code.includes(MOCK_DATA.expiredCode),
+			check: ({ code }) => code.includes(MOCK_INCORRECT.expiredCode),
 			formError: 'That code has expired. Resend to get a new one.',
 		},
 	],
 })
+
+export const verify: FormAction = async (prev, data) => {
+	const state = await checkCode(prev, data)
+	if (state.success) await startSession(MOCK_ACCOUNT)
+	return state
+}
