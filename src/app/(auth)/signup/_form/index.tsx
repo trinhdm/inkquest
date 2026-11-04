@@ -19,13 +19,12 @@ const SCREENS = {
 } satisfies Record<SignupScreen, ComponentType>
 
 export const SignupForm = () => {
-	const flow = useSignupFlow(SIGNUP_PAGE_DATA),
-		{ idx, screen } = flow
+	const ctxValues = useSignupFlow(SIGNUP_PAGE_DATA),
+		{ idx, screen } = ctxValues
 
 	useScreenFocus(screen, idx.section)
 
-	const Screen = SCREENS[screen],
-		ctxValues = { data: SIGNUP_PAGE_DATA, ...flow }
+	const Screen = SCREENS[screen]
 
 	return (
 		<SignupProvider value={ ctxValues }>

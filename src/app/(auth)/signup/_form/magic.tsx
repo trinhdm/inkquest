@@ -6,7 +6,7 @@ import { SenderField } from '../../_components/SenderField'
 
 export const SignupMagic = () => {
 	const {
-		destination, goBack,
+		content, destination, goBack,
 		guardSubmit, idx, reply,
 		resend, stopWait, waiting,
 	} = useSignupCtx()
@@ -19,8 +19,8 @@ export const SignupMagic = () => {
 			pending={ resend.pending }
 			state={ reply.state }
 		>
-			<AuthForm.Header eyebrow="Magic Link" title="Check your inbox">
-				{ writeExpiryText(`We emailed a sign-in link to ${destination}.`) }
+			<AuthForm.Header eyebrow={ content.eyebrow } title={ content.heading }>
+				{ content.body ?? writeExpiryText(`We emailed a sign-in link to ${destination}.`) }
 			</AuthForm.Header>
 
 			<HiddenFields contact destination method />

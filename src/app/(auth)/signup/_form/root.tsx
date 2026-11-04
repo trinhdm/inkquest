@@ -1,20 +1,20 @@
-import Link from 'next/link'
+import { useParser } from '@/hooks/useParser'
 import { useSignupCtx } from '../_utils/context'
 import { validateSignup } from '../_utils/schema'
 import { AuthForm } from '../../_components/AuthForm'
 import { ContactField } from '../_components/ContactField'
 import { HiddenFields } from '../_components/HiddenFields'
-import { NavRoutes } from '@/utils/navigation'
 import { PasswordField } from '../_components/PasswordField'
 import { METHOD_DATA } from '../_utils/data'
 
 export const SignupRoot = () => {
 	const {
-		idx, navigate,
+		content, idx, navigate,
 		method: { active: method },
 		signup: { action, pending, state },
 	} = useSignupCtx()
 
+	const note = useParser(content.footer)
 	const { verify: { submit } } = METHOD_DATA[method]
 
 	return (
@@ -26,8 +26,8 @@ export const SignupRoot = () => {
 			state={ state }
 			validate={ validateSignup }
 		>
-			<AuthForm.Header eyebrow="Sign Up" title="Join Inkquest.">
-				One account for finding artists, bidding on flash, and booking.
+			<AuthForm.Header eyebrow={ content.eyebrow } title={ content.heading }>
+				{ content.body }
 			</AuthForm.Header>
 
 			<HiddenFields method />
@@ -49,9 +49,11 @@ export const SignupRoot = () => {
 					onClick={ () => navigate('success') }
 				/>
 
-				<AuthForm.Note>
-					<p>By creating an account, you confirm you&apos;re 18+ and agree to the <Link href={ NavRoutes.LEGAL_TERMS } data-link>Terms</Link> and <Link href={ NavRoutes.LEGAL_PRIVACY } data-link>Privacy Policy</Link>.</p>
-				</AuthForm.Note>
+				{ !!note && (
+					<AuthForm.Note>
+						<p>{ note }</p>
+					</AuthForm.Note>
+				) }
 			</AuthForm.Footer>
 		</AuthForm>
 	)

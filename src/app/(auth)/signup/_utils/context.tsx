@@ -2,9 +2,9 @@ import { createPageCtx } from '@/lib/page/context'
 import type { SubmitEvent } from 'react'
 import type { AuthFormIDs } from '../../_utils/types'
 import type { FormResults } from '@/lib/form/types'
-import type { SignupMethod, SignupPageData, SignupScreen } from './types'
+import type { SignupFormData, SignupMethod, SignupScreen } from './types'
 
-export interface SignupFlow {
+export interface SignupContext {
 	goBack: () => void
 	guardSubmit: (event: SubmitEvent<HTMLFormElement>) => void
 	navigate: (next: SignupScreen) => void
@@ -16,6 +16,7 @@ export interface SignupFlow {
 	verify: FormResults
 	reply: FormResults
 
+	content: SignupFormData
 	contact: string
 	destination: string
 	idx: AuthFormIDs
@@ -25,11 +26,6 @@ export interface SignupFlow {
 	}
 	screen: SignupScreen
 	waiting: boolean
-}
-
-export interface SignupContext
-	extends SignupFlow {
-	data: SignupPageData
 }
 
 export const {

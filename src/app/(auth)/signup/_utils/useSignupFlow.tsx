@@ -5,14 +5,14 @@ import { initFormState } from '@/lib/form'
 import { resend, signup, verify } from './actions'
 import { METHOD_BASE, SIGNUP_METHODS } from './data'
 import type { FormResults } from '@/lib/form/types'
-import type { SignupFlow } from './context'
+import type { SignupContext } from './context'
 
 import type {
 	ReplyFromStep, SignupMethod,
 	SignupPageData, SignupScreen,
 } from './types'
 
-export const useSignupFlow = ({ id: pageID }: SignupPageData): SignupFlow => {
+export const useSignupFlow = ({ id: pageID, form }: SignupPageData): SignupContext => {
 	const {
 		current: screen,
 		back, guard, navigate,
@@ -73,6 +73,8 @@ export const useSignupFlow = ({ id: pageID }: SignupPageData): SignupFlow => {
 		navigate,
 		selectMethod,
 		stopWait,
+
+		content: form[screen],
 
 		signup: signupForm,
 		resend: resendForm,

@@ -7,7 +7,7 @@ import { CODE_LENGTH, METHOD_DATA } from '../_utils/data'
 
 export const SignupVerify = () => {
 	const {
-		destination, goBack, idx,
+		content, destination, goBack, idx,
 		method: { active: method },
 		reply, resend, stopWait,
 		verify, waiting,
@@ -23,17 +23,15 @@ export const SignupVerify = () => {
 			state={ reply.state }
 			validate={ validateVerifyForm }
 		>
-			<AuthForm.Header eyebrow="Verify" title={ `Check your ${copy.output}` }>
-				We sent a { CODE_LENGTH }-digit code to { destination }. Enter it below.
+			<AuthForm.Header eyebrow={ content.eyebrow } title={ `Check your ${copy.output}` }>
+				{ content.body ?? <>We sent a { CODE_LENGTH }-digit code to { destination }. Enter it below.</> }
 			</AuthForm.Header>
 
 			<HiddenFields contact method />
-
 			<CodeField />
 
 			<AuthForm.Footer>
 				<AuthForm.Back disabled={ reply.pending } onClick={ goBack } />
-
 				<AuthForm.Submit label="Verify" loading={ verify.pending } />
 
 				<AuthForm.Note>

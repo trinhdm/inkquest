@@ -5,6 +5,7 @@ import type {
 	MethodData, PasswordRule,
 	SignupMethod, SignupPageData,
 } from './types'
+import { NavRoutes } from '@/utils/navigation'
 
 //	otp code
 
@@ -139,10 +140,27 @@ export const SIGNUP_PAGE_DATA: SignupPageData = {
 	description: 'Create your own Inkquest account.',
 	form: {
 		begin: {
-			id: 'begin',
+			id: 'start-signup',
 			eyebrow: 'Sign Up',
 			heading: 'Join Inkquest.',
 			body: 'One account for finding artists, bidding on flash, and booking.',
+			footer: `By creating an account, you confirm you're 18+ and agree to the <a href="${NavRoutes.LEGAL_TERMS}" data-link>Terms</a> and <a href="${NavRoutes.LEGAL_PRIVACY}" data-link>Privacy Policy</a>.`,
+		},
+		inbox: {
+			id: 'magic-inbox',
+			eyebrow: 'Magic Link',
+			heading: 'Check your inbox',
+		},
+		verify: {
+			id: 'verify-signup',
+			eyebrow: 'Verify',
+			heading: 'Check your inbox',
+		},
+		success: {
+			id: 'finish-signup',
+			eyebrow: 'Success!',
+			heading: 'Account created.',
+			footer: `You're in. A two-minute setup tunes your feed, search, and profile.`,
 		},
 	},
 
