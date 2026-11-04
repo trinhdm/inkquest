@@ -1,4 +1,5 @@
 export { AuthAlternate } from './AuthAlternate'
-export { AuthBack, AuthContinue, AuthSubmit } from './AuthButtons'
+export { AuthBack, AuthContinue, AuthSubmit } from './AuthNavigation'
 export { AuthFooter } from './AuthFooter'
-export { AuthHeader, AuthNote, AuthResend } from './AuthParts'
+export { AuthHeader, AuthNote } from './AuthContent'
+export { AuthResend } from './AuthActions'

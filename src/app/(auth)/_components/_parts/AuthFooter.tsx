@@ -1,8 +1,13 @@
-import { isValidElement, Children, type ReactElement, type ReactNode } from 'react'
+import {
+	isValidElement, Children,
+	type ReactElement, type ReactNode,
+} from 'react'
+
 import { verifyChildren } from '@/lib/component/children'
 import { AuthAlternate } from './AuthAlternate'
-import { AuthBack, AuthContinue, AuthSubmit } from './AuthButtons'
-import { AuthNote, AuthResend } from './AuthParts'
+import { AuthBack, AuthContinue, AuthSubmit } from './AuthNavigation'
+import { AuthNote } from './AuthContent'
+import { AuthResend } from './AuthActions'
 import { Button } from '@/components/core/Button'
 
 const NAME = 'AuthFooter' as const
