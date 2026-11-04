@@ -1,6 +1,6 @@
 import { useLoginCtx } from '../_utils/context'
 import { AuthForm } from '../../_components/AuthForm'
-import { Field } from '@/components/form/Field'
+import { SenderField } from '../../_components/SenderField'
 
 export const LoginReset = () => {
 	const {
@@ -16,20 +16,7 @@ export const LoginReset = () => {
 				If an account exists for { destination }, a link to reset your password is on its way. It expires in 30 minutes.
 			</AuthForm.Header>
 
-			<Field
-				readonly
-				id={ `${idx.field}-email` }
-				label="Email"
-				labelPosition="last"
-				layout="inline"
-				caption="Didn't arrive? Check spam, or resend below."
-			>
-				<Field.Input
-					defaultValue={ destination }
-					name="email"
-					type="email"
-				/>
-			</Field>
+			<SenderField email={ destination } idx={ idx } />
 
 			<AuthForm.Footer>
 				<AuthForm.Back

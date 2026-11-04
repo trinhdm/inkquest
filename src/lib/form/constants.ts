@@ -1,7 +1,8 @@
 
-//	general
+//	timing (in seconds)
 
 export const ACTION_DELAY = 800
+export const CODE_EXPIRY = 900
 export const TIMER_DURATION = 30
 
 //	form errors
@@ -29,6 +30,7 @@ export const MOCK_INCORRECT = {
 	failTel: '+10000000000',		//	what telRule makes of '(000) 000-0000'
 	expiredCode: '111111',
 	wrongCode: '000000',
+	wrongPassword: 'wrong',
 } as const
 
 export const FAIL_CONTACT: string[] = [MOCK_INCORRECT.failEmail, MOCK_INCORRECT.failTel] as const

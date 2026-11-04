@@ -1,3 +1,4 @@
+import { CODE_EXPIRY } from '@/lib/form'
 import type { AccountValues } from '@/lib/auth/schema'
 import type { FormResults } from '@/lib/form/types'
 
@@ -20,3 +21,6 @@ export const omitMessage = (form: FormResults): FormResults => ({
 
 export const getFirstName = ({ name }: AccountValues) =>
 	name?.trim().split(/\s+/)[0]
+
+export const writeMagicIntro = (destination: string, expiration: number = CODE_EXPIRY) =>
+	`If an account exists for ${destination}, a sign-in link is on its way. It expires in ${expiration / 60} minutes.`

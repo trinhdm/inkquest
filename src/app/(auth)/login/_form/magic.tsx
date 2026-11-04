@@ -1,6 +1,7 @@
 import { useLoginCtx } from '../_utils/context'
+import { writeMagicIntro } from '../../_utils/helpers'
 import { AuthForm } from '../../_components/AuthForm'
-import { Field } from '@/components/form/Field'
+import { SenderField } from '../../_components/SenderField'
 
 export const LoginMagic = () => {
 	const {
@@ -11,23 +12,10 @@ export const LoginMagic = () => {
 	return (
 		<AuthForm { ...magic } idx={ idx } onSubmit={ guardSubmit }>
 			<AuthForm.Header eyebrow="Magic Link" title="Check your inbox">
-				We emailed a sign-in link to { destination }. It expires in 15 minutes.
+				{ writeMagicIntro(destination) }
 			</AuthForm.Header>
 
-			<Field
-				readonly
-				id={ `${idx.field}-email` }
-				label="Email"
-				labelPosition="last"
-				layout="inline"
-				caption="Didn't arrive? Check spam, or resend below."
-			>
-				<Field.Input
-					defaultValue={ destination }
-					name="email"
-					type="email"
-				/>
-			</Field>
+			<SenderField email={ destination } idx={ idx } />
 
 			<AuthForm.Footer>
 				<AuthForm.Back disabled={ magic.pending } onClick={ goBack } />

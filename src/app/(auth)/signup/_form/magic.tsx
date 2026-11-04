@@ -1,6 +1,8 @@
 import { useSignupCtx } from '../_utils/context'
+import { writeMagicIntro } from '../../_utils/helpers'
 import { AuthForm } from '../../_components/AuthForm'
 import { Field } from '@/components/form/Field'
+import { SenderField } from '../../_components/SenderField'
 
 export const SignupMagic = () => {
 	const {
@@ -18,26 +20,13 @@ export const SignupMagic = () => {
 			state={ reply.state }
 		>
 			<AuthForm.Header eyebrow="Magic Link" title="Check your inbox">
-				We emailed a sign-in link to { destination }. It expires in 15 minutes.
+				{ writeMagicIntro(destination) }
 			</AuthForm.Header>
 
 			<Field.Hidden name="destination" value={ destination } />
 			<Field.Hidden name="method" value={ method } />
 
-			<Field
-				readonly
-				id={ `${idx.field}-email` }
-				label="Email"
-				labelPosition="last"
-				layout="inline"
-				caption="Didn't arrive? Check spam, or resend below."
-			>
-				<Field.Input
-					defaultValue={ destination }
-					name="email"
-					type="email"
-				/>
-			</Field>
+			<SenderField email={ destination } idx={ idx } />
 
 			<AuthForm.Footer>
 				<AuthForm.Back disabled={ resend.pending } onClick={ goBack } />
