@@ -3,11 +3,12 @@
 import { useEffect, useRef, type ComponentType } from 'react'
 import { useSignupFlow } from '../_utils/useSignupFlow'
 import { SignupMagic } from '../_form/magic'
-import { SignupProvider, type SignupScreen } from '../_utils/context'
+import { SignupProvider } from '../_utils/context'
 import { SignupRoot } from '../_form/root'
 import { SignupSuccess } from '../_form/success'
 import { SignupVerify } from '../_form/verify'
 import { SIGNUP_PAGE_DATA } from '../_utils/data'
+import type { SignupScreen } from '../_utils/types'
 
 const SCREENS = {
 	begin:		SignupRoot,

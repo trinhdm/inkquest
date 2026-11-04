@@ -2,15 +2,7 @@ import { createPageCtx } from '@/lib/page/context'
 import type { SubmitEvent } from 'react'
 import type { AuthFormIDs } from '../../_utils/types'
 import type { FormResults } from '@/lib/form'
-import type { LoginPageData } from './data'
-
-export type LoginScreen =
-	| 'begin' | 'magic'
-	| 'forgot' | 'reset'
-	| 'success'
-
-export type ReplyFromStep =
-	Extract<LoginScreen, 'begin' | 'magic'| 'reset'>
+import type { LoginPageData, LoginScreen } from './types'
 
 export interface LoginFlow {
 	goBack: () => void

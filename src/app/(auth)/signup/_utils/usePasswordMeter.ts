@@ -1,8 +1,5 @@
-import { useEffect, useState, type CSSProperties } from 'react'
-
-const SKIP_GAP = 2
-const TIER_MS = 75
-export const METER_CSS = { '--pw-tier-duration': `${TIER_MS}ms` } as CSSProperties
+import { useEffect, useState } from 'react'
+import { SKIP_GAP, TIER_MS } from './data'
 
 //	fills the meter toward `met` one tier per `TIER_MS`
 //	multiple tiers jumps straight there, instead of animating

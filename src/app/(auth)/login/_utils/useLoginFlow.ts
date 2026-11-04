@@ -4,8 +4,8 @@ import { getAuthFormIDs, omitMessage } from '../../_utils/helpers'
 import { initFormState, type FormResults } from '@/lib/form'
 import { login, magicLogin, requestReset } from './actions'
 import type { AccountValues } from '../../_utils/schema'
-import type { LoginFlow, LoginScreen, ReplyFromStep } from './context'
-import type { LoginPageData } from './data'
+import type { LoginFlow } from './context'
+import type { LoginPageData, LoginScreen, ReplyFromStep } from './types'
 
 export const useLoginFlow = (
 	{ id: pageID }: LoginPageData,

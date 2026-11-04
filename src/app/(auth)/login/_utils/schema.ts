@@ -1,7 +1,6 @@
 import { z } from 'zod'
 import { emailRule, validateWith } from '@/lib/form'
 
-
 //	LoginRoot
 
 export type LoginValues =
@@ -19,6 +18,7 @@ const sharedSchema = {
 	email: emailRule,
 	resent: z.stringbool().optional(),
 }
+
 
 //	LoginReset
 

@@ -1,7 +1,7 @@
-import type { BasePageData } from '@/types/shared'
+import { getAuthFormIDs } from '../../_utils/helpers'
+import type { LogoutPageData } from './types'
 
-export interface LogoutPageData
-	extends BasePageData {}
+export const IDX = getAuthFormIDs('logout', 'done')
 
 export const LOGOUT_PAGE_DATA: LogoutPageData = {
 	id: 'logout',

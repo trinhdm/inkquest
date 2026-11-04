@@ -1,7 +1,4 @@
-import type { BasePageData } from '@/types/shared'
-
-export interface LoginPageData
-	extends BasePageData {}
+import type { LoginPageData } from './types'
 
 export const LOGIN_PAGE_DATA: LoginPageData = {
 	id: 'login',

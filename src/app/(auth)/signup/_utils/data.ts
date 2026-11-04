@@ -1,18 +1,27 @@
 import { syncLengthTo } from '@/utils/helpers'
-import type { BasePageData } from '@/types/shared'
-import type { Field } from '@/components/form/Field'
-import type { Icon } from '@/components/core/Icon'
+import type { CSSProperties } from 'react'
+
+import type {
+	MethodData, PasswordCriteria,
+	SignupMethod, SignupPageData,
+} from './types'
+
+//	resend code
 
 export const SEQUENCE_CHECK_MIN = 4
 
 export const CODE_EXPIRY_SECONDS = 10 * 60
 export const RESEND_COOLDOWN_SECONDS = 30
 
+//	password meter
+
+export const SKIP_GAP = 2
+export const TIER_MS = 75
+export const METER_CSS = { '--pw-tier-duration': `${TIER_MS}ms` } as CSSProperties
+
+//	signup methods
+
 export const SIGNUP_METHODS = ['email', 'magic', 'phone'] as const
-
-export type SignupMethod =
-	typeof SIGNUP_METHODS[number]
-
 export const METHOD_BASE: SignupMethod = 'email'
 
 const EMAIL_DATA =  {
@@ -60,28 +69,7 @@ export const METHOD_DATA = {
 	},
 } as const satisfies Record<SignupMethod, MethodData>
 
-interface MethodData {
-	copy: {
-		input: string
-		output: string
-	}
-	field: {
-		label: string
-		type: Extract<Field.Props['type'], 'email' | 'tel'>
-	}
-	toggle: {
-		icon: Icon.Props['type']
-		label: string
-	}
-	submit: string
-}
-
-export interface PasswordCriteria {
-	readonly id: string
-	readonly label: string
-	readonly error?: string
-	readonly test: (value: string) => boolean
-}
+//	password requirements
 
 export const PASSWORD_RULES = [
 	{
@@ -134,8 +122,7 @@ export const PASSWORD_SCORE = syncLengthTo(PASSWORD_RULES)([
 	'good', 'strong', 'optimal',
 ])
 
-export interface SignupPageData
-	extends BasePageData {}
+//	page data
 
 export const SIGNUP_PAGE_DATA: SignupPageData = {
 	id: 'signup',

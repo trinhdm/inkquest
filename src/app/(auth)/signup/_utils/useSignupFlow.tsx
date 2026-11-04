@@ -3,9 +3,13 @@ import { useForm, useFormHistory, useOnReply } from '@/hooks/form'
 import { getAuthFormIDs } from '../../_utils/helpers'
 import { initFormState, type FormResults } from '@/lib/form'
 import { resend, signup, verify } from './actions'
-import { METHOD_BASE, SIGNUP_METHODS } from './signup.data'
-import type { ReplyFromStep, SignupFlow, SignupScreen } from './signup.context'
-import type { SignupMethod, SignupPageData } from './signup.data'
+import { METHOD_BASE, SIGNUP_METHODS } from './data'
+import type { SignupFlow } from './context'
+
+import type {
+	ReplyFromStep, SignupMethod,
+	SignupPageData, SignupScreen,
+} from './types'
 
 export const useSignupFlow = ({ id: pageID }: SignupPageData): SignupFlow => {
 	const {

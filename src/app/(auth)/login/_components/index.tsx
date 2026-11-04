@@ -4,12 +4,13 @@ import { useEffect, useRef, type ComponentType } from 'react'
 import { useLoginFlow } from '../_utils/useLoginFlow'
 import { LoginForgot } from '../_form/forgot'
 import { LoginMagic } from '../_form/magic'
-import { LoginProvider, type LoginScreen } from '../_utils/context'
+import { LoginProvider } from '../_utils/context'
 import { LoginReset } from '../_form/reset'
 import { LoginRoot } from '../_form/root'
 import { LoginSuccess } from '../_form/success'
 import { LOGIN_PAGE_DATA } from '../_utils/data'
 import type { AccountValues } from '../../_utils/schema'
+import type { LoginScreen } from '../_utils/types'
 
 const SCREENS = {
 	begin:		LoginRoot,

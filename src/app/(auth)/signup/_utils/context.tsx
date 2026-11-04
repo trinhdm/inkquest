@@ -2,14 +2,7 @@ import { createPageCtx } from '@/lib/page/context'
 import type { SubmitEvent } from 'react'
 import type { AuthFormIDs } from '../../_utils/types'
 import type { FormResults } from '@/lib/form'
-import type { SignupMethod, SignupPageData } from './data'
-
-export type SignupScreen =
-	| 'begin' | 'verify'
-	| 'inbox' | 'success'
-
-export type ReplyFromStep =
-	| 'resend' | 'verify'
+import type { SignupMethod, SignupPageData, SignupScreen } from './types'
 
 export interface SignupFlow {
 	goBack: () => void

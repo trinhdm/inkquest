@@ -1,14 +1,13 @@
 'use client'
 
 import Link from 'next/link'
-import { getAuthFormIDs, getFirstName } from '../../_utils/helpers'
+import { getFirstName } from '../../_utils/helpers'
 import { hintAccount, switchAccount } from '../_utils/actions'
 import { AuthForm } from '../../_components/AuthForm'
 import { Avatar } from '@/components/core/Avatar'
 import { NavRoutes } from '@/utils/navigation'
+import { IDX } from '../_utils/data'
 import type { AccountValues } from '../../_utils/schema'
-
-const IDX = getAuthFormIDs('logout', 'done')
 
 interface LogoutBaseProps {
 	account: AccountValues | null
