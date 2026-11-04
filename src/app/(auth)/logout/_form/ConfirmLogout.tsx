@@ -7,12 +7,12 @@ import { AuthForm } from '../../_components/AuthForm'
 import { SHARED_CONTINUE_PROPS } from '../_utils/data'
 
 export const ConfirmLogout = () => {
-	const { account, idx } = useLogoutCtx()
+	const { account, content, idx } = useLogoutCtx()
 
 	return (
 		<AuthForm action={ logout } idx={ idx }>
-			<AuthForm.Header eyebrow="Confirm" title="Log out of Inkquest?">
-				You&apos;re still logged in on this browser.
+			<AuthForm.Header eyebrow={ content.eyebrow } title={ content.heading }>
+				{ content.body }
 			</AuthForm.Header>
 
 			<AccountCard account={ account }>

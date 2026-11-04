@@ -12,10 +12,18 @@ export const LOGOUT_PAGE_DATA: LogoutPageData = {
 	id: 'logout',
 	title: 'Log out',
 	description: 'Log out of your Inkquest account.',
-	hero: {
-		id: 'hero',
-		eyebrow: 'Log out',
-		heading: `You've been signed out.`,
-		body: `Your account is safe. Log back in whenever you're ready.`,
+	form: {
+		confirm: {
+			id: 'confirm-logout',
+			eyebrow: 'Confirm',
+			heading: `"Log out of Inkquest?`,
+			body: `You're still logged in on this browser.`,
+		},
+		finish: {
+			id: 'finish-logout',
+			eyebrow: 'Logged out',
+			heading: `You're signed out.`,
+			body: `Your account is safe. Log back in whenever you're ready.`,
+		},
 	},
 } as const

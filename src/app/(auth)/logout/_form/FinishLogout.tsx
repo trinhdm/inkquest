@@ -8,13 +8,13 @@ import { AuthForm } from '../../_components/AuthForm'
 import { SHARED_CONTINUE_PROPS } from '../_utils/data'
 
 export const FinishLogout = () => {
-	const { account, idx  } = useLogoutCtx()
+	const { account, content, idx } = useLogoutCtx()
 	const firstName = account && getFirstName(account)
 
 	return (
 		<AuthForm action={ transferAccount } idx={ idx }>
-			<AuthForm.Header eyebrow="Logged out" title="You're signed out.">
-				Your account is safe. Log back in whenever you&apos;re ready.
+			<AuthForm.Header eyebrow={ content.eyebrow } title={ content.heading }>
+				{ content.body }
 			</AuthForm.Header>
 
 			<AccountCard account={ account }>
