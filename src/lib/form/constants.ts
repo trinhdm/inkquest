@@ -1,19 +1,21 @@
 
-//	forms
+//	general
 
 export const ACTION_DELAY = 800
 export const TIMER_DURATION = 30
 
+//	form errors
+
 export const BASE_ERROR = 'Something went wrong. Try again.'
+export const NETWORK_ERROR = 'Couldn\'t reach Inkquest. Check your connection and try again.'
+
+//	mock data
 
 export const PLACEHOLDER = {
 	name: 'John Doe',
 	email: 'name@example.com',
 	tel: '(123) 456-7890',
 } as const
-
-
-//	mock data
 
 //	there are no sessions yet, so the signed-in account is hard-coded
 export const MOCK_ACCOUNT = {
