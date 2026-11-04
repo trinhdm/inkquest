@@ -1,17 +1,14 @@
-import type { BasePageData, FieldData } from '@/types/shared'
+import type { AuthFormData } from '../../_utils/types'
+import type { BasePageData } from '@/types/shared'
 
 export type LoginScreen =
-	| 'start' | 'magic'
+	| 'start' | 'magic' | 'finish'
 	| 'forgot' | 'reset'
-	| 'finish'
 
 export type ReplyFromStep =
 	Extract<LoginScreen, 'start' | 'magic'| 'reset'>
 
-export type LoginFormData =
-	FieldData<string>
-
 export interface LoginPageData
 	extends BasePageData {
-	form: Record<LoginScreen, FieldData<string>>
+	form: Record<LoginScreen, AuthFormData>
 }

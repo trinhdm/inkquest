@@ -1,8 +1,8 @@
 import { createPageCtx } from '@/lib/page/context'
 import type { SubmitEvent } from 'react'
-import type { AuthFormIDs } from '../../_utils/types'
+import type { AuthFormData, AuthFormIDs } from '../../_utils/types'
 import type { FormResults } from '@/lib/form/types'
-import type { SignupFormData, SignupMethod, SignupScreen } from './types'
+import type { SignupMethod, SignupScreen } from './types'
 
 export interface SignupContext {
 	goBack: () => void
@@ -16,7 +16,7 @@ export interface SignupContext {
 	verify: FormResults
 	reply: FormResults
 
-	content: SignupFormData
+	content: AuthFormData
 	contact: string
 	destination: string
 	idx: AuthFormIDs

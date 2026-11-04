@@ -1,5 +1,11 @@
 import type { ComponentPropsWithoutRef } from 'react'
 import type { Button } from '@/components/core/Button'
+import type { FieldData } from '@/types/shared'
+
+//	auth form
+
+export type AuthFormData =
+	FieldData<string>
 
 export interface AuthFormIDs {
 	field: string
@@ -7,6 +13,8 @@ export interface AuthFormIDs {
 	section: string
 	timer: string
 }
+
+//	auth form button
 
 //	`data-intent` + `formAction` is only needed when one form has
 //	two or more submit buttons that do different jobs

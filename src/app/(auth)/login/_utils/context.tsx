@@ -1,8 +1,8 @@
 import { createPageCtx } from '@/lib/page/context'
 import type { SubmitEvent } from 'react'
-import type { AuthFormIDs } from '../../_utils/types'
+import type { AuthFormData, AuthFormIDs } from '../../_utils/types'
 import type { FormResults } from '@/lib/form/types'
-import type { LoginFormData, LoginScreen } from './types'
+import type { LoginScreen } from './types'
 
 export interface LoginContext {
 	goBack: () => void
@@ -16,7 +16,7 @@ export interface LoginContext {
 	reset: FormResults
 	reply: FormResults
 
-	content: LoginFormData
+	content: AuthFormData
 	destination: string
 	idx: AuthFormIDs
 	screen: LoginScreen

@@ -17,12 +17,12 @@ export const SKIP_GAP = 2
 export const TIER_MS = 75
 export const METER_CSS = { '--pw-tier-duration': `${TIER_MS}ms` } as CSSProperties
 
-export const SCREEN_BASE: SignupScreen = 'start'
+export const SCREEN_BASE = 'start' as const satisfies SignupScreen
 
 //	signup methods
 
 export const SIGNUP_METHODS = ['email', 'magic', 'phone'] as const
-export const METHOD_BASE: SignupMethod = 'email'
+export const METHOD_BASE = 'email' as const satisfies SignupMethod
 
 const EMAIL_DATA =  {
 	copy: {

@@ -1,4 +1,5 @@
-import type { BasePageData, FieldData } from '@/types/shared'
+import type { AuthFormData } from '../../_utils/types'
+import type { BasePageData } from '@/types/shared'
 import type { Field } from '@/components/form/Field'
 import type { Icon } from '@/components/core/Icon'
 import type { SIGNUP_METHODS } from './data'
@@ -39,10 +40,7 @@ export interface PasswordRule {
 	readonly test: (value: string) => boolean
 }
 
-export type SignupFormData =
-	FieldData<string>
-
 export interface SignupPageData
 	extends BasePageData {
-	form: Record<SignupScreen, FieldData<string>>
+	form: Record<SignupScreen, AuthFormData>
 }
