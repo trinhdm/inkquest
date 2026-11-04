@@ -118,6 +118,14 @@
 			color: var(--inkq-color-placeholder);
 		}
 	}
+
+	&__error {
+		@include global.blurb(var(--inkq-gutter-content));
+
+		& > span:first-child:not(:only-child) {
+			@include global.label('control');
+		}
+	}
 }
 
 .account {

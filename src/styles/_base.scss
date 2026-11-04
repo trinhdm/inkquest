@@ -141,6 +141,13 @@ button {
 	padding-inline: unset;
 }
 
+code,
+pre {
+	color: var(--inkq-color-text);
+	font: var(--inkq-text-label-mono);
+	font-weight: var(--inkq-font-weight-normal);
+}
+
 svg {
 	font-size: var(--icon-size, var(--inkq-icon-md));
 	height: var(--icon-size, auto);

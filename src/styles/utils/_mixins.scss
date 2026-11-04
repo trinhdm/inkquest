@@ -64,7 +64,7 @@
 
 //	content
 
-@mixin blurb($layout: null) {
+@mixin blurb($marginBottom: var(--inkq-space-grid)) {
 	align-items: baseline;
 	display: flex;
     background-color: var(--inkq-background-surface);
@@ -72,7 +72,7 @@
     border-radius: var(--inkq-border-radius-md);
 	font-size: var( --inkq-font-size-body);
     gap: var(--inkq-space-group);
-    margin-block-end: var(--inkq-space-grid);
+    margin-block-end: $marginBottom;
 	padding: var(--inkq-space-group-lg);
 
 	&:last-child {
