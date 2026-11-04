@@ -5,12 +5,12 @@ export const IDX = getAuthFormIDs('logout', 'done')
 
 export const LOGOUT_PAGE_DATA: LogoutPageData = {
 	id: 'logout',
-	title: 'Logout',
-	description: `You're signed out.`,
+	title: 'Log out',
+	description: 'Log out of your Inkquest account.',
 	hero: {
 		id: 'hero',
-		eyebrow: 'Log Out',
+		eyebrow: 'Log out',
 		heading: `You've been signed out.`,
 		body: `Your account is safe. Log back in whenever you're ready.`,
 	},
-}
+} as const

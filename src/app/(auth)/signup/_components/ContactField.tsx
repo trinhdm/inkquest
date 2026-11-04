@@ -7,7 +7,8 @@ import { PLACEHOLDER } from '@/lib/form'
 
 export const ContactField = () => {
 	const {
-		idx, method,
+		idx,
+		method: { active: method },
 		signup: { pending, state },
 	} = useSignupCtx()
 
@@ -16,7 +17,7 @@ export const ContactField = () => {
 		tel: state.values.tel ?? '',
 	})
 
-	const { field: { label, type } } = METHOD_DATA[method.active]
+	const { field: { label, type } } = METHOD_DATA[method]
 
 	const handleContact = (event: ChangeEvent<HTMLInputElement>) =>
 		setContact({ ...contact, [type]: event.currentTarget.value })

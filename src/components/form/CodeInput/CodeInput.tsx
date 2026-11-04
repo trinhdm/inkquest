@@ -29,6 +29,7 @@ interface BaseCodeInputProps {
 	name: string
 	onChange?: (code: string) => void
 	onComplete?: (code: string) => void
+	placeholder?: never
 	readonly?: boolean
 }
 
@@ -95,9 +96,9 @@ export const CodeInput = polymorphic<CodeInputSpecs>((_props, { useProps, useSty
 	const others = extractOthers(rest)
 	const max = length ?? DEFAULT_LENGTH
 
-	const boxes = useRef<(HTMLInputElement | null)[]>([])
+	const boxesRef = useRef<(HTMLInputElement | null)[]>([])
 	const hiddenRef = useRef<HTMLInputElement>(null)
-	const pending = useRef<PendingWork>({})
+	const pendingRef = useRef<PendingWork>({})
 
 	const [active, setActive] = useState(0) // the one box in the Tab order
 	const [digits, setDigits] = useState(() => toBoxes(defaultValue, max))
@@ -107,15 +108,15 @@ export const CodeInput = polymorphic<CodeInputSpecs>((_props, { useProps, useSty
 		code = cells.join('')
 
 	const focusBox = (i: number) => {
-		const el = boxes.current[i]
-		el?.focus()
-		el?.select()
+		const box = boxesRef.current[i]
+		box?.focus()
+		box?.select()
 	}
 
 	// after React wrote the new values, before paint
 	useLayoutEffect(() => {
-		const { focus, submit } = pending.current
-		pending.current = {}
+		const { focus, submit } = pendingRef.current
+		pendingRef.current = {}
 
 		if (focus !== undefined) focusBox(focus)
 
@@ -126,8 +127,8 @@ export const CodeInput = polymorphic<CodeInputSpecs>((_props, { useProps, useSty
 	//	with `autoSubmit` focus is still on the last box, which does not carry the error
 	useEffect(() => {
 		if (!autoSubmit || !hasError) return
-		const first = boxes.current[0]
 
+		const first = boxesRef.current[0]
 		first?.focus()
 		first?.select()
 	}, [autoSubmit, hasError])
@@ -143,11 +144,11 @@ export const CodeInput = polymorphic<CodeInputSpecs>((_props, { useProps, useSty
 		onChange?.(next.join(''))
 
 		// something changed: wait for the layout effect, or the re-render wipes the selection
-		pending.current.focus = focus
+		pendingRef.current.focus = focus
 
 		if (next.every(Boolean)) {
 			onComplete?.(next.join(''))
-			pending.current.submit = !!autoSubmit
+			pendingRef.current.submit = !!autoSubmit
 		}
 	}
 
@@ -197,8 +198,8 @@ export const CodeInput = polymorphic<CodeInputSpecs>((_props, { useProps, useSty
 
 	const handleKeyDown = (i: number) => (event: KeyboardEvent<HTMLInputElement>) => {
 		// keep browser shortcuts (paste, select all) working
-		const { altKey, ctrlKey, key, metaKey } = event
-		if (metaKey || ctrlKey || altKey || readonly) return
+		if (event.metaKey || event.ctrlKey || event.altKey || readonly) return
+		const { key } = event
 
 		const go = (to: number) => {
 			event.preventDefault()
@@ -232,13 +233,13 @@ export const CodeInput = polymorphic<CodeInputSpecs>((_props, { useProps, useSty
 		<>
 			<Box
 				{ ...styles('root', clsx) }
-				role="group"
-				dir="ltr"
 				attributes={ { aria: {
 					busy: aria.busy,
 					describedby: aria.describedby,
 					labelledby: aria.labelledby,
 				} } }
+				dir="ltr"
+				role="group"
 			>
 				{ cells.map((digit, i) => {
 					const isControl = i === 0,
@@ -268,7 +269,7 @@ export const CodeInput = polymorphic<CodeInputSpecs>((_props, { useProps, useSty
 							onKeyDown={ handleKeyDown(i) }
 							onPaste={ handlePaste(i) }
 							readOnly={ !!readonly }
-							ref={ (el: HTMLInputElement | null) => { boxes.current[i] = el } }
+							ref={ (el: HTMLInputElement | null) => { boxesRef.current[i] = el } }
 							spellCheck={ false }
 							tabIndex={ i === active ? 0 : -1 }
 							type="text"

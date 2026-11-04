@@ -5,7 +5,8 @@ import { PasswordCriteria } from './PasswordCriteria'
 
 export const PasswordField = () => {
 	const {
-		idx, method,
+		idx,
+		method: { active: method },
 		signup: { pending, state },
 	} = useSignupCtx()
 
@@ -17,7 +18,7 @@ export const PasswordField = () => {
 		setPassword('')
 	}
 
-	if (method.active !== 'email') return null
+	if (method !== 'email') return null
 
 	return (
 		<>

@@ -6,7 +6,8 @@ const CODE_LENGTH = 6
 
 export const CodeField = () => {
 	const {
-		idx, method,
+		idx,
+		method: { active: method },
 		verify: { pending, state },
 	} = useSignupCtx()
 
@@ -18,20 +19,18 @@ export const CodeField = () => {
 		setCode(key => key++)
 	}
 
-	if (method.active === 'magic') return null
+	if (method === 'magic') return null
 
 	return (
 		<Field
 			required
 			disabled={ pending }
 			id={ `${idx.field}-code` }
-			// label="6-digit code"
 		>
 			<Field.Code
 				key={ code }
 				length={ CODE_LENGTH }
 				name="code"
-				placeholder="123456"
 			/>
 		</Field>
 	)

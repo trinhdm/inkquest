@@ -134,4 +134,4 @@ export const SIGNUP_PAGE_DATA: SignupPageData = {
 		heading: 'Join Inkquest.',
 		body: 'One account for finding artists, bidding on flash, and booking.',
 	},
-}
+} as const

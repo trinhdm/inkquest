@@ -10,4 +10,4 @@ export const LOGIN_PAGE_DATA: LoginPageData = {
 		heading: 'Welcome back.',
 		body: 'Pick up where you left off.',
 	},
-}
+} as const
