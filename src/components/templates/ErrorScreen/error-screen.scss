@@ -1,0 +1,21 @@
+@use '@/styles/utils' as global;
+
+.error-screen {
+	display: flex;
+	flex-direction: column;
+	grid-gap: var(--inkq-gutter-content);
+
+	&__message {
+		@include global.blurb(var(--inkq-gutter-content));
+
+		& > span:first-child:not(:only-child) {
+			@include global.label('control');
+		}
+	}
+
+	&__actions {
+		column-gap: var(--inkq-gutter-list);
+		display: flex;
+		max-width: var( --inkq-breakpoint-min);
+	}
+}
