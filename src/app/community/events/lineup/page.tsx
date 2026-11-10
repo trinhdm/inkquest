@@ -1,4 +1,19 @@
+'use client'
+
+import { Section } from '@/components/layout/Section'
 
 export default function YourLineup() {
-	return <main><h1>YourLineup</h1></main>
+	const pageID = 'your-lineup'
+
+	return (
+		<>
+			<Section
+				id={ `${pageID}-hero` }
+				layout="hero"
+				title="Your Lineup"
+			>
+				your lineup
+			</Section>
+		</>
+	)
 }

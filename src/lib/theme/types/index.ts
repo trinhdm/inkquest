@@ -1,16 +1,17 @@
 export type {
-	BaseVarKey, ColorScheme,
+	ColorScheme,
 	SiteTheme, SiteThemeConfig,
 	ThemeName, ThemeTokens,
 } from './theme.types'
 
 export type {
 	StaticColorNames,
-	TokenState, TokenStateHues, TokenVariableShape,
+	TokenState, TokenStateHues,
+	TokenSizeShape, TokenVariableShape,
 } from './token.types'
 
 export type {
-	ColorVariable, CssRule,
+	CssRule,
 	Priority, Tone, Variant,
 	PaletteTokens, VariantTokens,
 	SemanticVariantProps, VariantProps,

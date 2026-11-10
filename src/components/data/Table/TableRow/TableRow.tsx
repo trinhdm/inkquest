@@ -1,6 +1,5 @@
-import { useProps, extractOtherProps } from '@/hooks/useProps'
-import { useStyles } from '@/hooks/useStyles'
-import { polymorphic } from '@/lib/component'
+import { extractOthers } from '@/hooks/useProps'
+import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import type { ReactNode } from 'react'
 import classes from '../Table.module.scss'
@@ -14,14 +13,18 @@ interface TableRowProps {
 interface TableRowSpecs {
 	isCompound: true
 	props: TableRowProps
+	selectors: TableRowSelectors
 }
 
-export const TableRow = polymorphic<TableRowSpecs>(_props => {
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props })
+type TableRowSelectors =
+	| 'root'
+
+export const TableRow = polymorphic<TableRowSpecs>((_props, { useProps, useStyles }) => {
+	const props = useProps(_props)
+	const styles = useStyles({ props })
 
 	const { children, ...rest } = props
-	const { others } = extractOtherProps(rest)
+	const others = extractOthers(rest)
 
 	return (
 		<Box
@@ -32,10 +35,9 @@ export const TableRow = polymorphic<TableRowSpecs>(_props => {
 			{ children }
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
-TableRow.displayName = NAME
-TableRow.setDefaults({})
+TableRow.set({ displayName: NAME })
 
 export declare namespace TableRow {
 	export type Props = TableRowProps

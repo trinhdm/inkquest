@@ -58,6 +58,7 @@ export const validate = () => {
 		numeric: {
 			integer: (num: N) => num % 1 === 0,
 			percent: (num: N) => num > 0 && num <= 1,
+			scalePercent: (nums: N[]) => nums.every(num => num >= 0 && num <= 1),
 			weight: (num: N) => num > 0 && num % 100 === 0,
 		},
 		shorthand: {

@@ -1,14 +1,6 @@
-'use client'
-
-import { Container } from '@/components/layout/Container'
+import { redirect } from 'next/navigation'
+import { NavRoutes } from '@/utils/navigation'
 
 export default function Discover() {
-	return (
-		<main>
-			<Container>
-				<h1>Discover</h1>
-				{/* { children } */}
-			</Container>
-		</main>
-	)
+	redirect(NavRoutes.DISCOVER_ARTISTS)
 }

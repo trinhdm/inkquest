@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { createFactory } from '../createFactory'
 import { getDefaultProps, resetComponentDefaults } from '@/hooks/useProps'
+import { ThemeProvider } from '@/providers/ThemeProvider'
 import { POLYMORPHIC_MARKER } from '../constants'
 import type { ReactNode } from 'react'
 
@@ -11,16 +12,56 @@ interface WidgetProps {
 
 interface WidgetSpecs {
 	props: WidgetProps
+	selectors: 'root'
 }
 
-const classes = { root: 'widget-root' }
+// a second spec that declares selectors, so `styles()` is exercised against a
+// real selector union rather than the `string` fallback
+interface StyledSpecs {
+	props: WidgetProps
+	selectors: 'root' | 'icon'
+}
 
-const makeWidget = (withClasses = true) => {
-	const Widget = createFactory<WidgetSpecs>(
+// `getClassName` resolves its CSS-module lookup key from the kebab-cased
+// component NAME (plus `__<selector>` for non-root selectors) — not from the
+// selector alone. These are the keys a real `*.module.scss` import exposes.
+const classes = { widget: 'widget-root' }
+
+const scoped = {
+	widget: 'scoped-widget-root',
+	widget__icon: 'scoped-widget-icon',
+}
+
+const wrapper = ({ children }: { children: ReactNode }) => (
+	<ThemeProvider>{ children }</ThemeProvider>
+)
+
+const makeWidget = () =>
+	createFactory<WidgetSpecs>(
 		props => <div data-testid="widget">{ props.label }{ props.children }</div>,
-		withClasses ? classes : undefined
+		{ classes, name: 'Widget' }
 	)
-	Widget.displayName = 'Widget'
+
+// no default value for `classMap` — a JS default parameter also kicks in on
+// an explicit `undefined` argument, which would silently defeat the
+// "created without classes" test below
+const makeStyledWidget = (
+	classMap?: Record<string, string>,
+	onTools?: (tools: unknown) => void,
+) => {
+	const Widget = createFactory<StyledSpecs>((props, tools) => {
+		onTools?.(tools)
+		const styles = tools.useStyles({ props })
+
+		// the root selector returns pluralized keys, so read `classNames`
+		return (
+			<div data-testid="widget" className={ styles('root').classNames }>
+				<span data-testid="icon" { ...styles('icon') } />
+				{ props.label }
+			</div>
+		)
+	}, { classes: classMap, name: 'Widget' })
+
 	return Widget
 }
 
@@ -32,38 +73,37 @@ describe('createFactory', () => {
 		expect(POLYMORPHIC_MARKER in Widget).toBe(true)
 	})
 
-	it('stores the classes map on the component when one is passed', () => {
+	it('does not expose "classes" as a property on the component — it only lives in the factory closure', () => {
 		const Widget = makeWidget()
-		expect(Widget.classes).toBe(classes)
+		expect('classes' in Widget).toBe(false)
 	})
 
-	it('does not set a "classes" property at all when none is passed', () => {
-		const Widget = makeWidget(false)
-		expect(Widget.classes).toBeUndefined()
-	})
+	it('no-ops instead of registering defaults when the factory was configured with an empty name', () => {
+		const Widget = createFactory<WidgetSpecs>(
+			props => <div>{ props.label }</div>,
+			{ name: '' }
+		)
 
-	it('throws when setDefaults is called before a displayName is assigned', () => {
-		const Widget = createFactory<WidgetSpecs>(props => <div>{ props.label }</div>)
-		expect(() => Widget.setDefaults({ props: { label: 'x' } }))
-			.toThrow('cannot set defaultProps: missing `displayName`')
+		expect(() => Widget.set({ displayName: '', defaultProps: { label: 'x' } })).not.toThrow()
+		expect(getDefaultProps<WidgetProps>('')).toEqual({})
 	})
 
 	it('registers defaults that are then readable via getDefaultProps', () => {
 		const Widget = makeWidget()
-		Widget.setDefaults({ props: { label: 'Default label' } })
+		Widget.set({ defaultProps: { label: 'Default label' } })
 		expect(getDefaultProps<WidgetProps>('Widget')).toEqual({ label: 'Default label' })
 	})
 
-	it('does not register anything when props is an empty object', () => {
+	it('does not register anything when defaultProps is an empty object', () => {
 		const Widget = makeWidget()
-		Widget.setDefaults({ props: {} })
+		Widget.set({ defaultProps: {} })
 		expect(getDefaultProps<WidgetProps>('Widget')).toEqual({})
 	})
 
 	it('returns the exact args object it was called with', () => {
 		const Widget = makeWidget()
-		const args = { props: { label: 'Returned' } }
-		expect(Widget.setDefaults(args)).toBe(args)
+		const args = { defaultProps: { label: 'Returned' } }
+		expect(Widget.set(args)).toBe(args)
 	})
 
 	describe('withProps', () => {
@@ -87,6 +127,130 @@ describe('createFactory', () => {
 
 			render(<Bound />)
 			expect(screen.getByTestId('widget')).toHaveTextContent('bound')
+		})
+	})
+
+	describe('injected tools.useStyles', () => {
+		it('passes a tools object exposing useProps, useStyles, and useVariants as the target\'s second argument', () => {
+			let seen: unknown
+			const Widget = makeStyledWidget(scoped, tools => { seen = tools })
+
+			render(<Widget />, { wrapper })
+			expect(seen).toEqual(
+				expect.objectContaining({
+					useProps: expect.any(Function),
+					useStyles: expect.any(Function),
+					useVariants: expect.any(Function),
+				})
+			)
+		})
+
+		it('forwards the factory\'s classes map into the underlying hook', () => {
+			const Widget = makeStyledWidget(scoped)
+
+			render(<Widget />, { wrapper })
+			expect(screen.getByTestId('widget')).toHaveClass('scoped-widget-root')
+			expect(screen.getByTestId('icon')).toHaveClass('scoped-widget-icon')
+		})
+
+		it('still emits the semantic class when the factory was created without classes', () => {
+			const Widget = makeStyledWidget(undefined)
+
+			render(<Widget />, { wrapper })
+			const root = screen.getByTestId('widget')
+
+			expect(root).toHaveClass('widget')
+			expect(root).not.toHaveClass('scoped-widget-root')
+		})
+
+		it('lets the per-call "name" option override the factory-level scope used for class resolution', () => {
+			const Widget = createFactory<StyledSpecs>((props, { useStyles }) => {
+				const styles = useStyles({ name: 'Other', props })
+				return <div data-testid="widget" className={ styles('root').classNames } />
+			}, { classes: scoped, name: 'Widget' })
+
+			render(<Widget />, { wrapper })
+			const root = screen.getByTestId('widget')
+
+			// `scoped` has no `other` key, so this falls back to the kebab-cased
+			// override name rather than the factory's own "widget" lookup
+			expect(root).toHaveClass('other')
+			expect(root).not.toHaveClass('scoped-widget-root')
+		})
+
+		// guards the closure in `createFactory`: `classes` is captured once per
+		// factory call, so two factories must not see each other's map
+		it('does not leak one factory\'s classes into another', () => {
+			const First = makeStyledWidget({ widget: 'from-first' })
+			const Second = makeStyledWidget({ widget: 'from-second' })
+
+			render(<><First /><Second /></>, { wrapper })
+			const [first, second] = screen.getAllByTestId('widget')
+
+			expect(first).toHaveClass('from-first')
+			expect(first).not.toHaveClass('from-second')
+			expect(second).toHaveClass('from-second')
+		})
+
+		it('builds a new tools object on every render', () => {
+			const seen: unknown[] = []
+			const Widget = makeStyledWidget(scoped, tools => seen.push(tools))
+
+			// `memo` bails out on identical props, so change one to force a render
+			const { rerender } = render(<Widget label="a" />, { wrapper })
+			rerender(<Widget label="b" />)
+
+			// `tooling(_props)` builds a fresh object literal on every call, so
+			// `target` receives a new `tools` object each render — flagged here
+			// as a performance concern (a new closure per render) worth revisiting
+			expect(seen.length).toBeGreaterThan(1)
+			expect(seen.at(0)).not.toBe(seen.at(-1))
+		})
+	})
+
+	// A compound part (`Parent.Child`) lives in the parent's stylesheet. With
+	// `withRootName: true`, `useStyles` takes its scope from `context.rootName`
+	// instead of the part's own factory name.
+	describe('injected tools.useStyles with withRootName', () => {
+		interface PartSpecs {
+			context: { baseName: string, rootName: string }
+			isCompound: true
+			props: WidgetProps
+			selectors: 'item'
+		}
+
+		const parentClasses = { parent__item: 'parent-item-class', part__item: 'part-item-class' },
+			context = { baseName: 'item', rootName: 'Parent' } as const
+
+		const makePart = (withRootName?: true) =>
+			createFactory<PartSpecs>((props, { useStyles }) => {
+				const styles = useStyles(
+					withRootName
+						? { context, props, withRootName }
+						: { context, props }
+				)
+				return <div data-testid="part" { ...styles('item') } />
+			}, { classes: parentClasses, name: 'Part' })
+
+		it('resolves classes against context.rootName rather than the part\'s own name', () => {
+			const Part = makePart(true)
+
+			render(<Part />, { wrapper })
+			const part = screen.getByTestId('part')
+
+			expect(part).toHaveClass('parent-item-class')
+			expect(part).not.toHaveClass('part-item-class')
+		})
+
+		it('keeps the part\'s own name as the scope when withRootName is not set', () => {
+			const Part = makePart()
+
+			render(<Part />, { wrapper })
+			const part = screen.getByTestId('part')
+
+			// positive control for the test above: same context, same classes map
+			expect(part).toHaveClass('part-item-class')
+			expect(part).not.toHaveClass('parent-item-class')
 		})
 	})
 })

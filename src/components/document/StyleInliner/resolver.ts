@@ -1,7 +1,7 @@
-import { buildSchemes, type SiteTheme } from '@/lib/theme'
+import { buildSchemes } from '@/lib/theme'
 import { deepMerge } from '@/utils/helpers'
 import { SCHEME_STORAGE_KEY } from '../constants'
-import type { CssRule, ThemeTokens } from '@/lib/theme'
+import type { CssRule, SiteTheme, ThemeTokens } from '@/lib/theme/types'
 
 interface ResolveCSSProps {
 	current: SiteTheme

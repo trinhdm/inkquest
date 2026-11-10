@@ -1,29 +1,45 @@
-import type { AriaAttributes, ComponentPropsWithoutRef, ElementType } from 'react'
+import type { AriaAttributes } from 'react'
 
-// type Aria = `aria-${string}`
-export type DataAttrs = Record<`data-${string}`, unknown>
+//	html tags
 
-export type CSSVariable = `--${string}`
-export type CSSVars<V = unknown> = Record<CSSVariable, V>
+export type HeadingOrder =
+	1 | 2 | 3 | 4 | 5 | 6
 
-export type HexCode = `#${string}`
+export type Heading =
+	`h${HeadingOrder}`
+
+type _CommonHtmlTag =
+	| 'a' | 'button'
+	| 'article' | 'blockquote'
+	| 'aside' | 'header' | 'footer' | 'nav'
+	| 'canvas' | 'img' | 'video'
+	| 'details' | 'summary'
+	| 'dialog' | 'progress'
+	| 'div' | 'section'
+	| 'form' | 'label'
+	| 'input' | 'option' | 'select' | 'textarea'
+	| 'menu' | 'ol' | 'ul' | 'li'
+	| 'p' | 'span'
+	| Heading
+
+type _CommonSvgTag =
+	| 'circle' | 'line' | 'rect'
+	| 'mask' | 'title'
+	| 'path' | 'svg'
+
+export type TagDictionary =
+	& Pick<HTMLElementTagNameMap, _CommonHtmlTag>
+	& Pick<SVGElementTagNameMap, _CommonSvgTag>
 
 
-export type ExtractHtmlAttributes<T extends ElementType> =
-	Omit<
-		ComponentPropsWithoutRef<T>,
-		keyof AriaAttributes
-	>
-
+//	aria
 
 type RemoveAriaPrefix<T> = {
 	[K in keyof T as K extends `aria-${infer Rest}` ? Rest : never]: T[K]
 }
 
-type AriaName =
+export type AriaName =
 	RemoveAriaPrefix<AriaAttributes>
 
-export interface SpecAttributes {
-	aria?: AriaName
-	data?: Record<string, unknown>
-}
+export type Orientation =
+	AriaAttributes['aria-orientation']

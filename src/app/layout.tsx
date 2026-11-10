@@ -1,55 +1,43 @@
-import { Archivo, Archivo_Black, Space_Mono } from 'next/font/google'
+import { fontVariables } from '@/styles/fonts'
+import { getSession } from '@/lib/auth/session'
+import { logout } from '@/lib/auth/actions'
 import { AppProvider } from '@/providers/AppProvider'
-import { Footer, Navbar, Subnav } from '@/components/navigation'
+import { AuthProvider } from '@/providers/AuthProvider'
 import { ScriptInjector } from '@/components/document/ScriptInjector'
+import { COMPANY_NAME } from '@/utils/constants'
 import type { Metadata } from 'next'
 import '@/styles/_global.scss'
 
 export const metadata: Metadata = {
-	title: "Inkquest",
-	description: "Tattoo artist platform",
+	title: {
+		default: COMPANY_NAME,
+		template: `%s | ${COMPANY_NAME}`,
+	},
+	description: 'Tattoo artist platform',
 }
 
-const archivo = Archivo({
-	variable: '--font-archivo',
-	weight: ['400', '600', '700'],
-	subsets: ['latin'],
-})
-
-const archivoBlack = Archivo_Black({
-	variable: '--font-archivo-black',
-	weight: '400',
-	subsets: ['latin'],
-})
-
-const spaceMono = Space_Mono({
-	variable: '--font-space-mono',
-	weight: ['400', '700'],
-	subsets: ['latin'],
-})
-
-const fontsList = `${archivo.variable} ${archivoBlack.variable} ${spaceMono.variable}`
-
-export default function RootLayout({
+export default async function RootLayout({
 	children,
 }: Readonly<{ children: React.ReactNode }>) {
+	const user = await getSession()
+
 	return (
 		<html
 			suppressHydrationWarning
 			lang="en"
-			className={ fontsList }
+			className={ fontVariables }
+			data-scroll-behavior="smooth"
 		>
 			<head>
 				<ScriptInjector />
 			</head>
 			<body>
 				<AppProvider>
-					<header>
-						<Navbar routes={ ['/discover', '/marketplace', '/community'] } />
-						<Subnav routes={ ['/community', '/community/feed', '/community/events', '/community/spotlights'] } />
-					</header>
-					<main>{ children }</main>
-					<Footer />
+					<AuthProvider logout={ logout } user={ user }>
+						<div className="page-container">
+							{ children }
+						</div>
+					</AuthProvider>
 				</AppProvider>
 			</body>
 		</html>

@@ -1,17 +1,17 @@
-import { useProps } from '@/hooks/useProps'
 import { useReveal, type MaybeAnimationProps } from '@/hooks/animation'
-import { useStyles } from '@/hooks/useStyles'
-import { buildSection } from './builder'
-import { polymorphic } from '@/lib/component'
-import { setThemeCSS } from '@/lib/theme'
+import { buildSection } from './buildSection'
+import { defineTokens } from '@/lib/component/tokens'
+import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
-import { Button } from '@/components/core'
 import { Container } from '../Container'
+import { SectionFooter } from './SectionFooter'
 import type { ReactNode } from 'react'
-import type { ListProps } from '@/lib/component/factory/types'
+import type { PropsDefaultList } from '@/lib/component/factory/types'
+import type { SectionContext } from './Section.context'
 import classes from './Section.module.scss'
 
 const NAME = 'Section' as const
+
 const DEFAULT_PROPS = {
 	animated: true,
 	duration: 600,
@@ -19,32 +19,50 @@ const DEFAULT_PROPS = {
 	stagger: 150,
 } as const
 
+const SUBCOMPONENTS = {
+	Footer: SectionFooter,
+} as const
+
 type SectionLayout =
-	| 'blocks'
+	| 'banner'
+	| 'banner-note'
+	| 'content'
+	| 'content-blocks'
+	| 'content-form'
+	| 'content-split'
 	| 'default'
-	| 'cta'
 	| 'hero'
-	| 'split'
+	| 'hero-split'
+	| 'hero-tight'
 
 interface BaseSectionProps {
+	alignText?: 'left' | 'center' | 'right'
 	children: ReactNode
 }
 
 interface SectionBlocksProps {
 	eyebrow?: never
-	layout: Extract<SectionLayout, 'blocks'>
+	layout: Extract<SectionLayout, 'content-blocks'>
 	title?: never
 }
 
 interface SectionContentProps {
 	eyebrow?: string
-	layout?: Exclude<SectionLayout, 'blocks'>
+	layout?: Exclude<SectionLayout, 'content-blocks'>
+	title?: string
+}
+
+interface SectionHeaderProps {
+	children?: never
+	eyebrow?: string
+	layout?: Extract<SectionLayout, 'default' | 'hero'>
 	title?: string
 }
 
 type LayoutSectionProps =
 	| SectionBlocksProps
 	| SectionContentProps
+	| SectionHeaderProps
 
 type SectionProps =
 	& BaseSectionProps
@@ -52,45 +70,68 @@ type SectionProps =
 	& MaybeAnimationProps
 
 interface SectionSpecs {
-	defaults: { props: ListProps<typeof DEFAULT_PROPS> }
+	defaults: { props: PropsDefaultList<typeof DEFAULT_PROPS> }
 	props: SectionProps
-	subcomponents: {
-		Button: typeof Button
-	}
+	selectors: SectionSelectors
+	subcomponents: typeof SUBCOMPONENTS
+	tokens: SectionTokens
 }
 
-const tokens = setThemeCSS<SectionSpecs>((theme, props) => {
-	const { duration, stagger } = props
+type SectionSelectors =
+	| 'root' | 'inner'
+	| 'eyebrow' | 'title'
+	| 'description' | 'body'
+	| 'content' | 'cta'
+
+type SectionTokens = {
+	root:
+		| '--reveal-duration'
+		| '--reveal-stagger'
+	inner:
+		| '--section-align'
+}
+
+const tokens = defineTokens<SectionSpecs>()(({ props }) => {
+	const { alignText, duration, layout, stagger } = props
+	let textAlign
+
+	if (!!alignText)
+		textAlign = alignText
+	else if (layout === 'content-form')
+		textAlign = 'left'
+	else if (layout === 'banner')
+		textAlign = 'center'
 
 	return {
 		root: {
 			'--reveal-duration': duration ? `${duration}ms` : undefined,
 			'--reveal-stagger': stagger ? `${stagger}ms` : undefined,
 		},
+		inner: {
+			'--section-align': textAlign,
+		},
 	}
 })
 
-export const Section = polymorphic<SectionSpecs>(_props => {
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props, tokens })
+export const Section = polymorphic<SectionSpecs>((_props, { useProps, useStyles }) => {
+	const props = useProps(_props)
+	const styles = useStyles({ props, tokens })
 
 	const {
-		children,
-		eyebrow,
-		layout,
-		title,
+		alignText, children,
+		eyebrow, layout, title,
 		...rest
 	} = props
 
 	const { others, ref, reveal } = useReveal<HTMLElement>(rest)
 
-	const module = {
-		[`${layout}`]: !!(layout && layout !== 'default')
+	const clsx = {
+		module: { [`${layout}`]: !!(layout && layout !== 'default') },
 	}
 
 	return (
 		<Box
-			{ ...styles('root', { module }) }
+			{ ...styles('root', clsx) }
 			{ ...others }
 			as={ Container }
 			ref={ ref }
@@ -98,13 +139,23 @@ export const Section = polymorphic<SectionSpecs>(_props => {
 			{ buildSection({ props, reveal: reveal(), styles }) }
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
-Section.displayName = NAME
-Section.Button = Button
-Section.setDefaults({ props: DEFAULT_PROPS })
+Section.set({
+	defaultProps: DEFAULT_PROPS,
+	displayName: NAME,
+	subcomponents: SUBCOMPONENTS,
+})
 
 export declare namespace Section {
+	export type Context = SectionContext
 	export type Props = SectionProps
 	export type Specs = SectionSpecs
+
+	export type Layout = SectionLayout
+
+	export namespace Footer {
+		export type Props = SectionFooter.Props
+		export type Specs = SectionFooter.Specs
+	}
 }

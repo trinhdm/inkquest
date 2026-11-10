@@ -2,14 +2,15 @@
 
 import { useInsertionEffect } from 'react'
 import { useTheme } from '@/providers/ThemeProvider'
-import { deriveVariants } from './helpers'
+import { deriveVariants, serializeStyles } from './helpers'
+import { getDefaultProps } from '../useProps'
 import { hasInjectVariant, markInjectVariant } from './variantsRegistry'
-import { serializeStyles } from '@/components/document/StyleInliner'
 
 export const useVariants = (name: string) => {
 	const theme = useTheme()
 
 	useInsertionEffect(() => {
+		if (!name || !('variant' in getDefaultProps(name))) return
 		if (hasInjectVariant(name)) return
 
 		const variants = deriveVariants({ name }, theme),

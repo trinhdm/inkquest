@@ -1,7 +1,8 @@
 import { Component } from 'react'
 import { expect, userEvent, within } from 'storybook/test'
+import { getDefaultProps } from '@/hooks/useProps'
 import { Accordion } from '../Accordion'
-import { BOOLEAN_OPTIONS } from '../options.story'
+import { BOOLEAN_OPTIONS, LAYOUT_OPTIONS, SIZE_OPTIONS } from '../options.story'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import classes from '../Accordion.module.scss'
@@ -89,10 +90,11 @@ const meta: Meta<AccordionContentStoryProps> = {
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `AccordionContent`\'s own `AccordionContentProps`. Read purely off `AccordionContent`\'s OWN props (`useProps(NAME, _props)`) — unlike `Accordion`, it does NOT inherit `unstyled` from the wrapping `Accordion`\'s context (`useAccordionCtx` only ever destructures `idx`/`isOpen` here). The semantic base classes (`inkq-accordion-content`, `inkq-accordion-content__inner`, `inkq-accordion-content__wrapper`) are ALWAYS emitted regardless of this prop — it only suppresses the CSS-module-hashed class normally appended alongside each. See the `Unstyled` story.',
+			description: 'Part of `PolymorphicProps` (via the shared `FactoryContract`), not `AccordionContent`\'s own `AccordionContentProps`. Read purely off `AccordionContent`\'s OWN props (`useProps(_props)`) — unlike `Accordion`, it does NOT inherit `unstyled` from the wrapping `Accordion`\'s context (the context is read for `idx`/`isOpen` and, for tokens, `layout`/`size`, never `unstyled`). The semantic base classes (`inkq-accordion-content`, `inkq-accordion-content__inner`, `inkq-accordion-content__wrapper`) are ALWAYS emitted regardless of this prop. `unstyled` drops the CSS-module-hashed class normally appended alongside each, plus the global `inkq-prose` config class on the root and the root\'s `--accordion-content-size`/`--accordion-content-indent` tokens. See the `Unstyled` story.',
 		},
 	},
 	args: {
+		...getDefaultProps<Accordion.Content.Props>('Accordion.Content'),
 		children: 'We offer a 30-day money-back guarantee on all plans, no questions asked.',
 	},
 }
@@ -102,8 +104,9 @@ export default meta
 export const Default: Story = {}
 
 // `inert` (not visibility/display) is the real "is it interactive" signal:
-// set on the INNER div (`styles('inner')`), not the `role="region"` root —
-// `!isOpen || undefined`, so it's entirely absent when open.
+// set on the WRAPPER div (`styles('wrapper')`, the root's first child), not
+// the `role="region"` root — `!isOpen || undefined`, so it's entirely absent
+// when open.
 export const Inert: Story = {
 	parameters: { layout: 'padded' },
 	render: args => (
@@ -148,33 +151,146 @@ export const KeyboardToggle: Story = {
 		const canvas = within(canvasElement),
 			title = canvas.getByRole('button'),
 			content = canvasElement.querySelector('[role="region"]') as HTMLElement,
-			inner = content.firstElementChild as HTMLElement
+			wrapper = content.firstElementChild as HTMLElement
 
-		await expect(inner).toHaveAttribute('inert')
-
-		await userEvent.click(title)
-		await expect(inner).not.toHaveAttribute('inert')
+		await expect(wrapper).toHaveAttribute('inert')
 
 		await userEvent.click(title)
-		await expect(inner).toHaveAttribute('inert')
+		await expect(wrapper).not.toHaveAttribute('inert')
+
+		await userEvent.click(title)
+		await expect(wrapper).toHaveAttribute('inert')
+	},
+}
+
+// The root carries the global `inkq-prose` class (the `prose` global name,
+// prefixed like every other global class) so rich content gets prose
+// typography.
+export const Prose: Story = {
+	play: async ({ canvasElement }) => {
+		const content = canvasElement.querySelector('[role="region"]') as HTMLElement
+
+		await expect(content).toHaveClass('inkq-prose')
+	},
+}
+
+// `--accordion-content-size` is derived from the wrapping `Accordion`'s
+// `layout` and `size` (read off the ITEM's context, not the group's): `sm` and
+// `md` use the plain body size, `lg` the larger body size — so `sm` and `md`
+// match each other and differ from `lg` — and `blockquote` uses the caption
+// size whatever the size. Compared relative to each other rather than against
+// hardcoded token strings. `--accordion-content-indent` is only set for
+// `layout="steps"`, where it lines the content up under the title text (past
+// the step column and the title gap); otherwise it is unset and the
+// stylesheet's own fallback applies.
+export const Tokens: Story = {
+	parameters: { layout: 'padded' },
+	render: args => (
+		<Row>
+			{ SIZE_OPTIONS.map(size => (
+				<Group key={ size } label={ `size: ${ size }` }>
+					{ contentTemplate(args, { children: null, size }) }
+				</Group>
+			)) }
+			{ LAYOUT_OPTIONS.map(layout => (
+				<Group key={ layout } label={ `layout: ${ layout }` }>
+					{ contentTemplate(args, { children: null, layout }) }
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const regions = [...canvasElement.querySelectorAll<HTMLElement>('[role="region"]')]
+
+		expect(regions).toHaveLength(SIZE_OPTIONS.length + LAYOUT_OPTIONS.length)
+
+		const read = (region: HTMLElement, token: string) => region.style.getPropertyValue(token)
+
+		// `SIZE_OPTIONS` is `['sm', 'md', 'lg']`, then `LAYOUT_OPTIONS` is
+		// `['default', 'blockquote', 'steps']`, mapped in order.
+		const [sm, md, lg, defaultLayout, blockquoteLayout, stepsLayout] = regions
+
+		await expect(read(sm, '--accordion-content-size')).not.toBe('')
+		await expect(read(md, '--accordion-content-size')).not.toBe('')
+		await expect(read(lg, '--accordion-content-size')).not.toBe('')
+		await expect(read(sm, '--accordion-content-size')).toBe(read(md, '--accordion-content-size'))
+		await expect(read(lg, '--accordion-content-size')).not.toBe(read(md, '--accordion-content-size'))
+
+		// Default-size (`md`) groups: `default` and `steps` share the body size,
+		// `blockquote` swaps it for the caption size.
+		await expect(read(defaultLayout, '--accordion-content-size')).toBe(read(md, '--accordion-content-size'))
+		await expect(read(stepsLayout, '--accordion-content-size')).toBe(read(md, '--accordion-content-size'))
+		await expect(read(blockquoteLayout, '--accordion-content-size')).not.toBe('')
+		await expect(read(blockquoteLayout, '--accordion-content-size')).not.toBe(read(md, '--accordion-content-size'))
+
+		await expect(read(defaultLayout, '--accordion-content-indent')).toBe('')
+		await expect(read(blockquoteLayout, '--accordion-content-indent')).toBe('')
+		await expect(read(stepsLayout, '--accordion-content-indent'))
+			.toBe('calc(var(--accordion-column-width) + var(--accordion-title-gap))')
+	},
+}
+
+// `withInlineWrap(children)` wraps the content in a `<p>` only when EVERY
+// child is inline: plain text, a number, or an inline tag such as `strong`
+// or `a`. A single block-level child (here a `div`), or a mix of inline and
+// block, is left as written. (Children are passed as arrays rather than
+// Fragments: a Fragment counts as one non-inline child.)
+export const InlineWrap: Story = {
+	parameters: { layout: 'padded' },
+	render: args => (
+		<Row>
+			<Group label="text only">
+				{ contentTemplate({ ...args, children: 'Plain text content.' }, { children: null, defaultOpen: true }) }
+			</Group>
+			<Group label="text + inline tag">
+				{ contentTemplate({ ...args, children: ['Text with ', <strong key="strong">strong</strong>, ' inline.'] }, { children: null, defaultOpen: true }) }
+			</Group>
+			<Group label="block child">
+				{ contentTemplate({ ...args, children: <div>Block content.</div> }, { children: null, defaultOpen: true }) }
+			</Group>
+			<Group label="text + block child">
+				{ contentTemplate({ ...args, children: ['Text next to ', <div key="block">a block.</div>] }, { children: null, defaultOpen: true }) }
+			</Group>
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const regions = [...canvasElement.querySelectorAll<HTMLElement>('[role="region"]')]
+
+		expect(regions).toHaveLength(4)
+
+		const inner = (region: HTMLElement) =>
+			region.firstElementChild!.firstElementChild as HTMLElement
+
+		const [textOnly, textInline, block, textBlock] = regions
+
+		await expect(inner(textOnly).firstElementChild?.tagName).toBe('P')
+		await expect(inner(textInline).firstElementChild?.tagName).toBe('P')
+		await expect(inner(textInline).querySelector('p > strong')).toBeInTheDocument()
+
+		await expect(inner(block).firstElementChild?.tagName).toBe('DIV')
+		await expect(inner(block).querySelector('p')).not.toBeInTheDocument()
+		await expect(inner(textBlock).querySelector('p')).not.toBeInTheDocument()
 	},
 }
 
 // `unstyled` is `AccordionContent`'s OWN prop, read straight off its own
 // `_props` via `useProps` — unlike `Accordion` (which merges an enclosing
-// `Accordion.Group`'s context), `AccordionContent` only pulls `idx`/`isOpen`
-// off `Accordion.context` (`useAccordionCtx`), never `unstyled`. So it must
-// be set directly on `AccordionContent` itself here, NOT on the wrapping
-// `Accordion` (which has no effect on it at all).
+// `Accordion.Group`'s context), `AccordionContent` pulls `idx`/`isOpen`
+// (and, for its tokens, `layout`/`size`) off `Accordion.context`
+// (`useAccordionCtx`), never `unstyled`. So it must be set directly on
+// `AccordionContent` itself here, NOT on the wrapping `Accordion` (which has
+// no effect on it at all).
 //
 // It does NOT remove `AccordionContent`'s own semantic base classes
 // (`inkq-accordion-content`, `inkq-accordion-content__inner`,
 // `inkq-accordion-content__wrapper`) — per `getClassName.tsx`, the base
-// class is now ALWAYS emitted. It only suppresses the CSS-module hashed
-// class normally appended alongside it, for every selector this component
-// styles — asserted here against the REAL compiled export map
+// class is ALWAYS emitted. It does suppress the CSS-module hashed class
+// normally appended alongside it, for every selector this component styles —
+// asserted here against the REAL compiled export map
 // (`Accordion.module.scss`), not a literal hash or an "any extra class"
-// heuristic.
+// heuristic. It also drops the root's global `inkq-prose` config class and
+// its tokens (`getStyle.tsx`): `--accordion-content-size` is set on the
+// styled root and absent on the unstyled one.
 export const Unstyled: Story = {
 	parameters: {
 		layout: 'padded',
@@ -202,6 +318,14 @@ export const Unstyled: Story = {
 		expect(styledRoot.classList.contains(rootHash)).toBe(true)
 		expect(unstyledRoot.classList.contains(rootHash)).toBe(false)
 
+		// Global config classes (`inkq-prose`) are dropped too when unstyled.
+		await expect(styledRoot).toHaveClass('inkq-prose')
+		await expect(unstyledRoot).not.toHaveClass('inkq-prose')
+
+		// Tokens are dropped too.
+		await expect(styledRoot.style.getPropertyValue('--accordion-content-size')).not.toBe('')
+		await expect(unstyledRoot.style.getPropertyValue('--accordion-content-size')).toBe('')
+
 		// Nesting is root > wrapper > inner. The `wrapper` is the element
 		// `AccordionContent.tsx` puts `inert` on while closed; `inner` holds
 		// the actual content.
@@ -227,7 +351,7 @@ export const Unstyled: Story = {
 	},
 }
 
-// `useAccordionCtx(NAME)` (`createRootCtx`'s REQUIRED reader, not the
+// `useAccordionCtx(NAME)` (`createCompoundCtx`'s REQUIRED reader, not the
 // optional `useSafeRootCtx`) throws the instant `AccordionContent` is
 // rendered with no wrapping `Accordion` at all, rather than silently
 // rendering unstyled/inert. A raw, uncaught render throw would crash every
@@ -256,6 +380,6 @@ export const RequiresAccordionParent: Story = {
 		await expect(validContent).toBeInTheDocument()
 
 		const errorFallback = await canvas.findByTestId('accordion-content-error')
-		await expect(errorFallback).toHaveTextContent('<Accordion.Content /> must be rendered inside <Accordion>')
+		await expect(errorFallback).toHaveTextContent('<Accordion.Content /> must be a direct child of <Accordion>')
 	},
 }

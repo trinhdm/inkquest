@@ -1,11 +1,12 @@
-import { useProps, extractOtherProps } from '@/hooks/useProps'
-import { useStyles } from '@/hooks/useStyles'
-import { polymorphic } from '@/lib/component'
-import { setThemeCSS } from '@/lib/theme'
+import { defineTokens } from '@/lib/component/tokens'
+import { extractOthers } from '@/hooks/useProps'
+import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import { GridItem } from './GridItem'
-import type { ReactNode } from 'react'
-import type { ListProps } from '@/lib/component/factory/types'
+import type { CSSProperties, ReactNode } from 'react'
+import type { ConfigOptions } from '@/lib/theme/types/theme.types'
+import type { PropsDefaultList } from '@/lib/component/factory/types'
+import type { UnpackArray } from '@/types/utils'
 import classes from './Grid.module.scss'
 
 const NAME = 'Grid' as const,
@@ -13,56 +14,125 @@ const NAME = 'Grid' as const,
 
 const DEFAULT_PROPS = {
 	as: TAG,
+	equalWidth: true,
 } as const
 
-interface GridProps {
+const SUBCOMPONENTS = {
+	Item: GridItem,
+} as const
+
+interface BaseGridProps {
 	children: ReactNode
-	columns?: number
 }
+
+interface ColumnsGridProps {
+	columns?: CSSProperties['gridTemplateColumns']
+	equalWidth?: boolean
+	gap?: Exclude<UnpackArray<GridGapOptions>, Lowercase<typeof NAME>>
+	layout?: 'default'
+}
+
+interface SidebarGridProps {
+	columns?: never
+	equalWidth?: never
+	gap?: never
+	layout: 'sidebar'
+}
+
+type GridLayoutOptions =
+	| ColumnsGridProps
+	| SidebarGridProps
+
+type GridProps =
+	& BaseGridProps
+	& GridLayoutOptions
+
+type GridGapOptions =
+	ConfigOptions<'space', Lowercase<typeof NAME>>
 
 interface GridSpecs {
 	defaults: {
 		as: typeof TAG
-		props: ListProps<typeof DEFAULT_PROPS>
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: GridProps
-	subcomponents: {
-		Item: typeof GridItem
-	}
+	selectors: GridSelectors
+	subcomponents: typeof SUBCOMPONENTS
+	tokens: GridTokens
 }
 
-const tokens = setThemeCSS<GridSpecs>((theme, props) => {
-	const { columns } = props
+type GridSelectors =
+	| 'root'
+
+type GridTokens = {
+	root:
+		| '--grid-cols'
+		| '--grid-gap'
+}
+
+const tokens = defineTokens<GridSpecs>()(({ props, theme }) => {
+	const { columns, equalWidth, gap, layout } = props
+
+	const gridGap = ['grid']
+	const hasNumCols = typeof columns === 'number' && columns > 0,
+		isLayoutSidebar = layout === 'sidebar'
+
+	if (isLayoutSidebar) gridGap.push('xl')
+	else if (gap) gridGap.push(gap)
+
+	let gridCount: number | string = 'auto-fit'
+
+	if (isLayoutSidebar) gridCount = 4
+	else if (hasNumCols) gridCount = columns
+
+	const isEqualWidth = typeof equalWidth === 'boolean' && !!equalWidth
+	const gridWidth = !isEqualWidth && hasNumCols
+		? 'auto'
+		: 'minmax(0, 1fr)'
+
+	const gridTemplate = typeof columns === 'string' && !!columns.trim()
+		? columns
+		: `repeat(${gridCount}, ${gridWidth})`
 
 	return {
 		root: {
-			'--grid-cols': !!(columns && columns > 0) ? columns : undefined,
+			'--grid-cols': gridTemplate,
+			'--grid-gap': theme.space(...gridGap as GridGapOptions),
 		},
 	}
 })
 
-export const Grid = polymorphic<GridSpecs>(_props => {
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props, tokens })
+export const Grid = polymorphic<GridSpecs>((_props, { useProps, useStyles }) => {
+	const props = useProps(_props)
+	const styles = useStyles({ props, tokens })
 
-	const { children, columns, ...rest } = props
-	const { as, others } = extractOtherProps(rest)
+	const {
+		as, children, columns,
+		equalWidth, gap, layout,
+		...rest
+	} = props
+
+	const others = extractOthers(rest)
+	const clsx = {
+		selector: { [`${layout}`]: !!layout && layout !== 'default' },
+	}
 
 	return (
 		<Box
-			{ ...styles('root') }
+			{ ...styles('root', clsx) }
 			{ ...others }
 			as={ as }
 		>
 			{ children }
-			{/* { filterChildren(children, 'GridItem').map(child => child) } */}
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
-Grid.displayName = NAME
-Grid.Item = GridItem
-Grid.setDefaults({ props: DEFAULT_PROPS })
+Grid.set({
+	defaultProps: DEFAULT_PROPS,
+	displayName: NAME,
+	subcomponents: SUBCOMPONENTS,
+})
 
 export declare namespace Grid {
 	export type Props = GridProps

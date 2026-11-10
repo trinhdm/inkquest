@@ -64,4 +64,13 @@ const config: Config = {
 	},
 }
 
-export default createJestConfig(config)
+const parseJestConfig = async () => {
+	const jestConfig = await createJestConfig(config)()
+	jestConfig.transformIgnorePatterns = [
+		'/node_modules/(?!(domhandler|domelementtype|domutils|dom-serializer|htmlparser2|entities|html-dom-parser|html-react-parser)/)',
+		'^.+\\.module\\.(css|sass|scss)$',
+	]
+	return jestConfig
+}
+
+export default parseJestConfig()

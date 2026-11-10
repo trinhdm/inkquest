@@ -1,20 +1,33 @@
-import Link from 'next/link'
-import { LoaderCircle } from 'lucide-react'
-import { isValidElement, useMemo, Children } from 'react'
-import { useProps, extractOtherProps } from '@/hooks/useProps'
-import { useStyles } from '@/hooks/useStyles'
-import { useVariants } from '@/hooks/useVariants'
-import { extractChildrenText } from '@/lib/component'
-import { isExternalLink } from '@/utils/helpers'
-import { polymorphic } from '@/lib/component'
+import {
+	useCallback,
+	useMemo,
+	type ComponentPropsWithoutRef,
+	type MouseEvent, type MouseEventHandler,
+	type ReactNode, type Ref,
+} from 'react'
+
+import Link, { type LinkProps } from 'next/link'
+import { Copy, LoaderCircle, Printer } from 'lucide-react'
+import { useButtonGroupProps, ButtonGroup } from './ButtonGroup'
+import { buildSections, ButtonSection } from './ButtonSection'
+import { defineTokens } from '@/lib/component/tokens'
+import { extractOthers } from '@/hooks/useProps'
+import { extractText } from '@/lib/component/children'
+import { isExternalLink, keyHasValue } from '@/utils/helpers'
+import { polymorphic } from '@/lib/component/factory'
+import { rem } from '@/lib/general'
 import { Box } from '@/components/polymorphic/Box'
-import { ButtonGroup, useButtonGroupProps } from './ButtonGroup'
 import { ButtonProvider, type ButtonContext } from './Button.context'
-import { ButtonSection } from './ButtonSection'
-import type { ComponentPropsWithoutRef, MouseEventHandler, ReactNode, Ref } from 'react'
+
+import type {
+	Priority as ThemePriority,
+	Tone as ThemeTone,
+	Variant as ThemeVariant,
+} from '@/lib/theme/types'
+
 import type { Route } from 'next'
-import type { ListProps } from '@/lib/component/factory/types'
-import type { Priority as ThemePriority, Variant as ThemeVariant } from '@/lib/theme'
+import type { PropsDefaultList } from '@/lib/component/factory/types'
+import type { Size } from '@/types/shared'
 import classes from './Button.module.scss'
 
 const NAME = 'Button' as const,
@@ -22,160 +35,260 @@ const NAME = 'Button' as const,
 
 const DEFAULT_PROPS = {
 	as: TAG,
+	hasIcon: true,
 	size: 'md',
 	variant: 'solid',
 } as const
 
-type ButtonSize =
-	| 'sm'
-	| 'md'
-	| 'lg'
+const SUBCOMPONENTS = {
+	Group: ButtonGroup,
+	Section: ButtonSection,
+} as const
 
 interface BaseButtonProps {
+	animate?: 'left' | 'right'
 	children: ReactNode
 	disabled?: boolean
 	fullWidth?: boolean
 	loading?: boolean
 	priority?: ThemePriority
-	size?: ButtonSize
 	showLabel?: boolean
+	size?: Size
+	tone?: ThemeTone
 	variant?: ThemeVariant
 }
 
+type LinkOptions<T extends string = string> =
+	Pick<LinkProps<T>, 'onNavigate' | 'prefetch' | 'replace' | 'scroll'>
+
 interface LinkButtonProps<T extends string = string>
-	extends ComponentPropsWithoutRef<'a'> {
+	extends
+		ComponentPropsWithoutRef<'a'>,
+		LinkOptions<T> {
+	action?: never
+	hasIcon?: never
 	href: Route<T>
 	onClick?: never
 	ref?: Ref<HTMLAnchorElement>
 }
 
 interface NativeButtonProps
-	extends ComponentPropsWithoutRef<'button'> {
+	extends
+		ComponentPropsWithoutRef<'button'>,
+		Record<keyof LinkOptions, never> {
+	action?: never
+	hasIcon?: never
 	href?: never
 	onClick?: MouseEventHandler<HTMLButtonElement>
 	ref?: Ref<HTMLButtonElement>
 }
 
+interface ActionButtonProps
+	extends Omit<NativeButtonProps, 'action' | 'hasIcon'> {
+	action: 'copy' | 'print'
+	hasIcon?: boolean
+}
+
 type ButtonProps = BaseButtonProps & (
 	| LinkButtonProps
 	| NativeButtonProps
+	| ActionButtonProps
 )
 
 interface ButtonSpecs {
+	context: ButtonGroup.Context
 	defaults: {
 		as: typeof TAG
-		props: ListProps<typeof DEFAULT_PROPS>
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: ButtonProps
-	subcomponents: {
-		Group: typeof ButtonGroup
-		Section: typeof ButtonSection
-	}
+	selectors: ButtonSelectors
+	subcomponents: typeof SUBCOMPONENTS
+	tokens: ButtonTokens
 }
 
-const buildSections = (
-	children: ButtonProps['children'],
-	styles: ReturnType<typeof useStyles>
-) => {
-	const label: ReactNode[] = []
-	let left: ReactNode = null,
-		right: ReactNode = null
+type ButtonSelectors =
+	| 'root' | 'inner'
+	| 'label' | 'icon'
+	| 'indicator' | 'loader'
 
-	Children.toArray(children).forEach(child => {
-		if (isValidElement<ButtonSection.Props>(child) && child.type === ButtonSection) {
-			const isLeft = 'left' in child.props && !!child.props.left,
-				taken = isLeft ? left : right
+type ButtonTokens = {
+	root:
+		| '--button-font-size'
+		| '--button-tracking'
+	inner:
+		| '--button-gap'
+		| '--button-icon-size'
+		| '--button-icon-translate'
+		| '--button-padding'
+	indicator:
+		| '--button-indicator-size'
+}
 
-			if (!taken) {
-				if (isLeft) left = child
-				else right = child
-			} else if (process.env.NODE_ENV !== 'production') {
-				const section = `${NAME}.Section`
-				console.warn(`${NAME}: multiple ${section}[${isLeft ? 'left' : 'right'}] found; only the first ${section} is rendered.`)
-			}
-			return
+const tokens = defineTokens<ButtonSpecs>()(({ props, theme }) => {
+	const { animate, size } = props
+	let buttonFontSize, buttonIconSize,
+		buttonPadding, buttonTracking,
+		iconTranslate
+
+	if (!!size) {
+		const buttonFontSizes: Record<Button.Size, string> = {
+			sm: theme.fontSize('label'),
+			md: theme.fontSize('body'),
+			lg: theme.fontSize('body'),
 		}
 
-		label.push(child)
-	})
+		const buttonPaddings: Record<Button.Size, string> = {
+			sm: theme.padding('chip'),
+			md: theme.padding('item'),
+			lg: theme.padding('block'),
+		}
 
-	const content = <span { ...styles('label') }>{ label }</span>
+		const buttonTrackings: Record<Button.Size, string> = {
+			sm: theme.letterSpacing('heading'),
+			md: theme.letterSpacing('display'),
+			lg: theme.letterSpacing('stat'),
+		}
 
-	if (!left && !right) return content
-	return <>{ left }{ content }{ right }</>
-}
+		buttonIconSize = theme.el.icon.size(size)
+		buttonFontSize = buttonFontSizes[size]
+		buttonPadding = buttonPaddings[size]
+		buttonTracking = buttonTrackings[size]
 
-export const Button = polymorphic<ButtonSpecs>(_props => {
-	useVariants(NAME)
-	const props = useProps(NAME, useButtonGroupProps(_props))
-	const styles = useStyles(NAME, { classes, props })
+		if (!!animate) {
+			const baseDistance = theme.space('icon'),
+				step = { sm: 2, md: 1, lg: 0 },
+				xPos = rem(step[size])
+
+			iconTranslate = `calc(${baseDistance} - ${xPos})`
+			if (animate === 'left') iconTranslate = `calc(-1 * ${iconTranslate})`
+		}
+	}
+
+	return {
+		root: {
+			'--button-font-size': buttonFontSize,
+			'--button-tracking': buttonTracking,
+		},
+		inner: {
+			'--button-gap': theme.space('chip'),
+			'--button-icon-size': buttonIconSize,
+			'--button-icon-translate': iconTranslate,
+			'--button-padding': buttonPadding,
+		},
+		indicator: {
+			'--button-indicator-size': `calc(.375rem + ${buttonIconSize})`,
+		},
+	}
+})
+
+export const Button = polymorphic<ButtonSpecs>((_props, { useProps, useStyles, useVariants }) => {
+	useVariants()
+	const props = useProps(useButtonGroupProps(_props))
+	const styles = useStyles({ props, tokens })
 
 	const {
-		children,
-		disabled,
-		fullWidth,
-		loading,
-		priority,
-		size,
-		showLabel,
-		unstyled,
-		variant,
+		action, animate, as,
+		children, disabled, fullWidth,
+		hasIcon, loading, onClick,
+		prefetch, priority, replace,
+		scroll, showLabel, size,
+		tone, unstyled, variant,
 		...rest
 	} = props
 
-	const { as, others } = extractOtherProps(rest)
+	const others = extractOthers(rest)
+	const ctxValues = useMemo(() => ({ unstyled }), [unstyled])
 
-	const clsx = {
-		global: { block: fullWidth },
-		module: { [`${size}`]: size },
+	const isDisabled = !!disabled,
+		isLoading = !!loading,
+		isInert = isDisabled || isLoading
+
+	const handleClick = useCallback((evt: MouseEvent<HTMLButtonElement>) => {
+		if (isLoading) {
+			evt.preventDefault()
+			return
+		}
+
+		if (typeof onClick === 'function') onClick(evt)
+		if (action === 'print') window.print()
+	}, [action, isLoading, onClick])
+
+	const aria = {
+		disabled: isInert,
+		label: !!showLabel ? extractText(children) : undefined,
 	}
 
-	const ariaLabel = extractChildrenText(children),
-		aria = { label: !!(showLabel && ariaLabel.length) ? ariaLabel : undefined }
-
 	const data = {
-		variant,
-		priority,
+		variant, tone, priority, animate,
 		block: !!fullWidth || null,
-		disabled: !!disabled || null,
-		loading: !!loading || null,
+		disabled: isDisabled || null,
+		loading: isLoading || null,
 	}
 
 	const sharedProps = {
+		...styles('root', { global: { block: fullWidth } }),
 		attributes: { aria, data },
+		disabled,
 		unstyled,
-		...styles('root', clsx),
 	}
 
-	const ctxValues = useMemo(() => ({ unstyled }), [unstyled])
+	const childList = Array.isArray(children) ? [...children] : [children]
 
-	const inner = (
+	if (!!(action && hasIcon)) {
+		const IconTag = { copy: Copy, print: Printer }[action]
+		const ActionSection = (
+			<ButtonSection>
+				<IconTag { ...styles('icon') } />
+			</ButtonSection>
+		)
+		childList.unshift(ActionSection)
+	}
+
+	const innerEl = (
 		<ButtonProvider value={ ctxValues }>
+			{ (isLoading && !unstyled) && (
+				<span { ...styles('indicator') }>
+					<LoaderCircle { ...styles('loader', true) } />
+				</span>
+			) }
+
 			<Box as="span" { ...styles('inner') }>
-				{ loading && <Box as={ LoaderCircle } { ...styles('icon') } /> }
-				{ buildSections(children, styles) }
+				{ buildSections({
+					children: [...new Set(childList)],
+					parentName: Button.displayName,
+					styles,
+				}) }
 			</Box>
 		</ButtonProvider>
 	)
 
-	if ('href' in others) {
+	if (keyHasValue(others, 'href')) {
 		// narrows `rest` typing (`LinkButtonProps | NativeButtonProps`)
 		// by excluding `NativeButtonProps` from `rest`
 		// this allows `rest` to be properly typed
 
-		let linkProps: LinkButtonProps = {
+		let linkProps = {
 			...sharedProps,
 			...others as Extract<typeof others, LinkButtonProps>,
 		}
-
-		// console.log({ href: others.href, external: isExternalLink(others.href) })
 
 		if (isExternalLink(others.href)) {
 			const external = { target: '_blank', rel: 'noopener noreferrer' }
 			linkProps = { ...linkProps, ...external }
 		}
 
-		return <Box { ...linkProps } as={ Link }>{ inner }</Box>
+		return (
+			<Box
+				{ ...linkProps }
+				as={ Link }
+				prefetch={ prefetch }
+				scroll={ scroll }
+				replace={ replace }
+			>
+				{ innerEl }
+			</Box>
+		)
 	}
 
 	return (
@@ -183,24 +296,30 @@ export const Button = polymorphic<ButtonSpecs>(_props => {
 			{ ...sharedProps }
 			{ ...others }
 			as={ as }
+			onClick={ handleClick }
 		>
-			{ inner }
+			{ innerEl }
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
-Button.displayName = NAME
-Button.Group = ButtonGroup
-Button.Section = ButtonSection
-Button.setDefaults({ props: DEFAULT_PROPS })
+Button.set({
+	defaultProps: DEFAULT_PROPS,
+	displayName: NAME,
+	subcomponents: SUBCOMPONENTS,
+})
 
 export declare namespace Button {
 	export type Context = ButtonContext
 	export type Props = ButtonProps
 	export type Specs = ButtonSpecs
 
+	export type BaseProps = BaseButtonProps
+		& Pick<ButtonProps, 'action' | 'hasIcon' | 'onClick'>
+
 	export type Priority = ThemePriority
-	export type Size = ButtonSize
+	export type Size = NonNullable<Button.Props['size']>
+	export type Tone = ThemeTone
 	export type Variant = ThemeVariant
 
 	export namespace Group {

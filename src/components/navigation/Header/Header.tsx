@@ -1,0 +1,76 @@
+'use client'
+
+import {
+	listRoutesWithSlug,
+	HEADER_GLOBAL_NAV,
+	type NavRoute,
+} from '@/utils/navigation'
+
+import { usePathname } from 'next/navigation'
+import { extractOthers } from '@/hooks/useProps'
+import { polymorphic } from '@/lib/component/factory'
+import { Box } from '@/components/polymorphic/Box'
+import { Navbar } from '../Navbar'
+import { Subnav } from '../Subnav'
+import type { PropsDefaultList } from '@/lib/component/factory/types'
+import classes from './Header.module.scss'
+
+const NAME = 'Header' as const,
+	TAG = 'header' as const
+
+const DEFAULT_PROPS = {
+	as: TAG,
+	navbar: { routes: HEADER_GLOBAL_NAV },
+} as const
+
+interface HeaderProps {
+	navbar?: Navbar.Props | null
+	subnav?: Subnav.Props | null
+}
+
+interface HeaderSpecs {
+	defaults: {
+		as: typeof TAG
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
+	}
+	props: HeaderProps
+	selectors: HeaderSelectors
+}
+
+type HeaderSelectors =
+	| 'root'
+
+export const Header = polymorphic<HeaderSpecs>((_props, { useProps, useStyles }) => {
+	const pathname = usePathname()
+	const props = useProps(_props)
+	const styles = useStyles({ props })
+
+	const {
+		as, children,
+		navbar, subnav,
+		...rest
+	} = props
+
+	const others = extractOthers(rest)
+
+	const subnavRoutes = !!subnav?.routes?.length
+		? subnav.routes
+		: listRoutesWithSlug(pathname as NavRoute)
+
+	return (
+		<Box { ...styles('root') } { ...others } as={ as }>
+			{ navbar !== null && <Navbar routes={ navbar?.routes } /> }
+			{ subnav !== null && <Subnav category={ subnav?.category } routes={ subnavRoutes } /> }
+		</Box>
+	)
+}, { name: NAME, classes })
+
+Header.set({
+	defaultProps: DEFAULT_PROPS,
+	displayName: NAME,
+})
+
+export declare namespace Header {
+	export type Props = HeaderProps
+	export type Specs = HeaderSpecs
+}

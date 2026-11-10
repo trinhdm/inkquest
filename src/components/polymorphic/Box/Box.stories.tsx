@@ -1,7 +1,7 @@
 import { expect, fn, userEvent, within } from 'storybook/test'
-import { Badge } from '@/components/core'
+import { Badge } from '@/components/core/Badge'
 import { Box } from './Box'
-import { DEFAULT_TAG } from '@/lib/component'
+import { DEFAULT_TAG } from '@/lib/component/factory'
 import type { ElementType, ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
@@ -48,7 +48,7 @@ const meta: Meta<BoxComponentProps> = {
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Declared on `Box`\'s own `BoxProps` (and the shared `SpecsContract` type) and destructured out of `Box`\'s render, so it never lands on the DOM as a literal attribute. Its value IS read before that destructure, inside `resolveProps` -> `buildAttributes` (`Box/utils/buildAttributes.ts`): `keepStateAttrs` uses it, together with `STATE_KEYS`/`DISABLEABLE_TAGS`, to decide whether `attributes.data` entries survive — when `true`, only interaction-state keys (`busy`, `checked`, `disabled`, etc.) are kept. See the `Unstyled` and `UnstyledDisableableTag` stories. It\'s also forwarded straight through to the `as` target itself, but only when that target carries `POLYMORPHIC_MARKER` (i.e. was built via `createFactory`/`polymorphic()`, like `Badge`) — a plain tag or an unmarked component never receives it. See the `UnstyledForwarding` story.',
+			description: 'Declared on `Box`\'s own `BoxProps` and destructured out of `Box`\'s render, so it never lands on the DOM as a literal attribute. Its value IS read before that destructure, inside `resolveProps` -> `buildAttributes` (`Box/utils/buildAttributes.ts`): `keepStateAttrs` uses it, together with `STATE_KEYS`/`DISABLEABLE_TAGS`, to decide whether `attributes.data` entries survive — when `true`, only the `STATE_KEYS` survive: the interaction-state keys (`busy`, `checked`, `disabled`, etc.) plus the custom string-storing keys `keep` and `tooltip`. See the `Unstyled`, `UnstyledKeptKeys` and `UnstyledDisableableTag` stories. It\'s also forwarded straight through to the `as` target itself, but only when that target carries `POLYMORPHIC_MARKER` (i.e. was built via `createFactory`/`polymorphic()`, like `Badge`) — a plain tag or an unmarked component never receives it. See the `UnstyledForwarding` story.',
 		},
 		attributes: {
 			control: 'object',
@@ -56,7 +56,7 @@ const meta: Meta<BoxComponentProps> = {
 		},
 		classNames: {
 			control: 'text',
-			description: 'Plain `string`, merged with the native `className` prop via `clsx(className, classNames)` inside `resolveProps` (`styleProps`\'s `mergeStyleAliases`) before the result is spread onto the rendered element (`clsx` accepts a bare string fine — it isn\'t doing any conditional/array composition here). See the `ClassNames` story.',
+			description: 'Plain `string`, merged with the native `className` prop via `cx(className, classNames)` inside `resolveProps` (`styleProps`\'s `mergeStyleAliases`, in `@/hooks/useProps`) before the result is spread onto the rendered element. See the `ClassNames` story.',
 		},
 		styles: {
 			control: 'object',
@@ -82,16 +82,17 @@ type Story = StoryObj<BoxComponentProps>
 
 export const Default: Story = {}
 
-// `unstyled` is declared on `BoxProps`/`SpecsContract` and destructured out
+// `unstyled` is declared on `Box`'s own `BoxProps` and destructured out
 // of `Box`'s render, so it never lands on the DOM as a literal attribute —
 // but its raw value IS read earlier, inside `resolveProps` -> `buildAttributes`
 // (`Box/utils/buildAttributes.ts`)'s `keepStateAttrs`, to decide whether
 // `attributes.data` entries survive: when `unstyled` is true, only
 // interaction-state keys (`STATE_KEYS`: `busy`, `checked`, `disabled`,
 // `expanded`, `invalid`, `loading`, `pressed`, `readonly`, `required`,
-// `selected`) are kept — any other `data-*` key (like the non-state `demo`
-// key used below) is stripped entirely. See `UnstyledDisableableTag` for the
-// `disabled`-specific carve-out within that same filter.
+// `selected`, plus the custom string-storing `keep` and `tooltip`) are kept —
+// any other `data-*` key (like the non-state `demo` key used below) is stripped
+// entirely. See `UnstyledKeptKeys` for `keep`/`tooltip` and
+// `UnstyledDisableableTag` for the `disabled`-specific carve-out.
 export const Unstyled: Story = {
 	parameters: { controls: { exclude: ['unstyled'] } },
 	render: (args) => (
@@ -120,6 +121,41 @@ export const Unstyled: Story = {
 
 		await expect(styledBox).toHaveAttribute('data-demo', 'value')
 		await expect(unstyledBox).not.toHaveAttribute('data-demo')
+	},
+}
+
+// `keep` and `tooltip` are in `STATE_KEYS` too (custom data-attrs that store
+// strings), so they survive `unstyled` while the non-state `demo` key doesn't.
+export const UnstyledKeptKeys: Story = {
+	parameters: { controls: { exclude: ['unstyled'] } },
+	render: (args) => (
+		<Row>
+			{ BOOLEAN_OPTIONS.map(unstyled => (
+				<Group key={ String(unstyled) } label={ String(unstyled) }>
+					<Box
+						{ ...args }
+						unstyled={ unstyled }
+						id={ `unstyled-kept-${ unstyled }` }
+						attributes={ { data: { demo: 'value', keep: 'kept', tooltip: 'tip' } } }
+					/>
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const unstyledBox = canvasElement.querySelector('#unstyled-kept-true'),
+			styledBox = canvasElement.querySelector('#unstyled-kept-false')
+
+		await expect(unstyledBox).toBeInTheDocument()
+		await expect(styledBox).toBeInTheDocument()
+
+		await expect(styledBox).toHaveAttribute('data-demo', 'value')
+		await expect(styledBox).toHaveAttribute('data-keep', 'kept')
+		await expect(styledBox).toHaveAttribute('data-tooltip', 'tip')
+
+		await expect(unstyledBox).not.toHaveAttribute('data-demo')
+		await expect(unstyledBox).toHaveAttribute('data-keep', 'kept')
+		await expect(unstyledBox).toHaveAttribute('data-tooltip', 'tip')
 	},
 }
 
@@ -197,14 +233,14 @@ export const UnstyledForwarding: Story = {
 		await expect(badgeRoot).toBeInTheDocument()
 		await expect(span).toBeInTheDocument()
 
-		// Badge's own base class (`inkq-badge`) is always emitted regardless of
-		// `unstyled` (`getClassName.tsx`); only the CSS-module-hashed class
-		// alongside it is suppressed, and only because `unstyled` actually
-		// reached Badge's own `useStyles` call here. `getConfigClasses` still
-		// runs regardless of `unstyled`, but Badge's default args (`fullWidth:
-		// false`) produce no `global`/`module` modifier class to confuse this
-		// check with, unlike `Button`'s default `size` — see `Button.stories.tsx`'s
-		// `Unstyled` story for that caveat.
+		// Badge's own base class (`inkq-badge`) is not gated on `unstyled`
+		// (`getClassName.tsx`); only the CSS-module-hashed class alongside it is
+		// suppressed, and only because `unstyled` actually reached Badge's own
+		// `useStyles` call here. `getConfigClasses` returns early when
+		// `check.isUnstyled`, and this story passes Badge no `fullWidth`/`size`
+		// (Badge registers no default for either), so no modifier class exists
+		// to confuse this check. The `${ base }--` exclusion below is only a
+		// guard against one being added later.
 		const hasModuleClass = (el: Element, base: string) =>
 			Array.from(el.classList).some(c => c !== base && !c.startsWith(`${ base }--`))
 
@@ -235,10 +271,26 @@ export const As: Story = {
 				<Box as="a" href="#" style={ demoStyle }>a content</Box>
 			</Group>
 			<Group label='a (no href)'>
-				<Box as="a" style={ demoStyle }>a content</Box>
+				<Box as="a" style={ demoStyle }>a no-href content</Box>
 			</Group>
 		</Row>
 	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement)
+
+		await expect(canvas.getByText('div content').tagName).toBe('DIV')
+		await expect(canvas.getByText('span content').tagName).toBe('SPAN')
+
+		const withHref = canvas.getByText('a content')
+		await expect(withHref.tagName).toBe('A')
+		await expect(withHref).toHaveAttribute('href', '#')
+
+		// `as="a"` alone renders an anchor tag, but without `href` it is not
+		// a link.
+		const withoutHref = canvas.getByText('a no-href content')
+		await expect(withoutHref.tagName).toBe('A')
+		await expect(withoutHref).not.toHaveAttribute('href')
+	},
 }
 
 export const NoChildren: Story = {

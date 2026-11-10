@@ -1,229 +1,130 @@
-import Link from 'next/link'
-import { useEffect, useRef, useState } from 'react'
-import { useOutsideClick } from '@/hooks/useOutsideClick'
-import { useProps, extractOtherProps } from '@/hooks/useProps'
-import { useStyles } from '@/hooks/useStyles'
-import { polymorphic } from '@/lib/component'
-import { toKebabCase } from '@/utils/helpers'
+import { deepMerge, toSlug } from '@/utils/helpers'
+import { extractOthers } from '@/hooks/useProps'
+import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
-import { Button, Icon } from '@/components/core'
-import { Menu } from '../Menu'
-import type { ListProps } from '@/lib/component/factory/types'
+import { MenuDropdown } from '../MenuDropdown'
+import { MenuLabel } from '../MenuLabel'
+import type { ReactNode } from 'react'
+import type { Menu } from '../Menu'
 import type { NavigationItem } from '@/utils/navigation'
+import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from '../Menu.module.scss'
 
-const NAME = 'MenuItem' as const,
-	TAG = 'li' as const,
-	MENUITEM_SELECTOR = ':scope > [role="none"] > [role="menuitem"]'
+const NAME = 'Menu.Item' as const,
+	TAG = 'li' as const
 
 const DEFAULT_PROPS = {
 	as: TAG,
 	hasDropdowns: true,
 } as const
 
-interface MenuItemProps extends NavigationItem {
-	hasDropdowns?: boolean
+interface MenuItemProps
+	extends
+		NavigationItem,
+		Pick<Menu.Props, 'active' | 'depth' | 'hasDropdowns'> {
+	trigger?: ReactNode
 }
 
 interface MenuItemSpecs {
 	defaults: {
 		as: typeof TAG
-		props: ListProps<typeof DEFAULT_PROPS>
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: MenuItemProps
+	selectors: MenuItemSelectors
 }
 
-const getSubmenuItems = (root: HTMLLIElement | null) =>
-	Array.from(
-		root?.querySelector('[role="menubar"]')
-			?.querySelectorAll<HTMLElement>(MENUITEM_SELECTOR) ?? []
-	)
+type MenuItemSelectors =
+	| 'root'
 
-const MenuLabel = (
-	item: NavigationItem,
-	styles: ReturnType<typeof useStyles>
-) => {
-	const sharedProps = {
-		role: 'menuitem',
-		...styles('label'),
-	}
+const isCurrentRoute = (
+	route?: NavigationItem['route'],
+	active?: NavigationItem['route'],
+) =>
+	!!route && route === active
 
-	if (item.route) {
-		return (
-			<Box as={ Link } href={ item.route } { ...sharedProps }>
-				{ item.label }
-			</Box>
-		)
-	}
-
-	return (
-		<Box as="span" tabIndex={ -1 } { ...sharedProps }>
-			{ item.label }
-		</Box>
-	)
-}
-
-export const MenuItem = polymorphic<MenuItemSpecs>(_props => {
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props })
-	// add behavior for:
-	// aria-current="page": Marks the link of the active page
-	// add state to set tabIndex on keyboard navigation
-
-	const timeoutRef = useRef<NodeJS.Timeout>(null)
-	const itemRef = useRef<HTMLLIElement>(null)
-	const [isOpen, setIsOpen] = useState(false)
-
-	useEffect(() => {
-		return () => {
-			if (timeoutRef.current) clearTimeout(timeoutRef.current)
-		}
-	}, [])
+export const MenuItem = polymorphic<MenuItemSpecs>((_props, { useProps, useStyles }) => {
+	const props = useProps(_props)
+	const styles = useStyles({ props })
 
 	const {
-		hasDropdowns,
-		label,
-		menu,
-		route,
+		action, active, as,
+		attributes, className, depth,
+		hasDropdowns, id, label,
+		menu, route, trigger,
 		...rest
 	} = props
 
-	const { as, others } = extractOtherProps(rest)
+	const others = extractOthers(rest)
+	const isActive = isCurrentRoute(route, active),
+		isDropdown = !!menu?.length
 
-	const isDropdown = !!menu?.length
-
-	const handleToggle: React.MouseEventHandler<HTMLButtonElement> = evt => {
-		evt.stopPropagation()
-		setIsOpen(prevState => !prevState)
+	const setAttributes = (isCurrent: boolean) => {
+		const dataAttrs = { data: { current: isCurrent || attributes?.data?.current || null } }
+		return deepMerge(attributes ?? {}, dataAttrs)
 	}
 
-	useOutsideClick(itemRef, evt => {
-		if (hasDropdowns && isDropdown && isOpen)
-			handleToggle(evt)
-	})
+	const labelEl = (
+		<MenuLabel
+			action={ action }
+			isActive={ isActive }
+			label={ label }
+			route={ route }
+			trigger={ trigger }
+		/>
+	)
 
-	const handleMouseEnter = () => {
-		if (timeoutRef.current) clearTimeout(timeoutRef.current)
-		setIsOpen(true)
-	}
-
-	const handleMouseLeave = () => {
-		timeoutRef.current = setTimeout(() => setIsOpen(false), 300)
-	}
-
-	const handleKeyDown: React.KeyboardEventHandler<HTMLLIElement> = evt => {
-		if (!isOpen) {
-			if (evt.key === 'ArrowDown' || evt.key === 'Enter' || evt.key === ' ') {
-				evt.preventDefault()
-				evt.stopPropagation()
-				setIsOpen(true)
-				requestAnimationFrame(() => getSubmenuItems(itemRef.current)[0]?.focus())
-			}
-			return
-		}
-
-		const items = getSubmenuItems(itemRef.current),
-			currentIndex = items.findIndex(item => item === document.activeElement)
-
-		switch (evt.key) {
-			case 'ArrowDown':
-			case 'ArrowUp': {
-				evt.preventDefault()
-				evt.stopPropagation()
-
-				if (!items.length) return
-
-				const step = evt.key === 'ArrowDown' ? 1 : -1
-				const nextIndex = currentIndex === -1
-					? (step === 1 ? 0 : items.length - 1)
-					: (currentIndex + step + items.length) % items.length
-
-				items[nextIndex]?.focus()
-				break
-			}
-			case 'Escape':
-				evt.stopPropagation()
-				setIsOpen(false)
-				itemRef.current?.querySelector<HTMLElement>(':scope > button')?.focus()
-				break
-			case 'Tab':
-				setIsOpen(false)
-				break
-		}
-	}
-
-	const wrappedLabel = MenuLabel({ label, route }, styles)
 	const sharedProps = {
-		role: 'none',
 		...styles('root'),
 		...others,
+		as,
+		role: 'none',
 	}
 
 	if (!isDropdown) {
 		return (
-			<Box as={ as } { ...sharedProps }>
-				{ wrappedLabel }
+			<Box { ...sharedProps } attributes={ setAttributes(isActive) }>
+				{ labelEl }
 			</Box>
 		)
 	}
 
-	if (!hasDropdowns) {
-		return menu?.map(item => (
-			<Box
-				as={ TAG }
-				key={ item.label }
-				{ ...sharedProps }
-			>
-				{ MenuLabel(item, styles) }
-			</Box>
-		))
+	else if (!hasDropdowns) {
+		return menu?.map(item => {
+			const isCurrent = isCurrentRoute(item.route, active)
+
+			return (
+				<Box
+					{ ...sharedProps }
+					attributes={ setAttributes(isCurrent) }
+					key={ item.label }
+				>
+					<MenuLabel { ...item } isActive={ isCurrent } />
+				</Box>
+			)
+		})
 	}
 
-	const target = toKebabCase(label),
-		triggerID = `${target}-dropdown-trigger`,
-		menuID = `${target}-menu-list`
-
 	return (
-		<Box
+		<MenuDropdown
+			active={ active }
 			as={ as }
-			ref={ itemRef }
-			onKeyDown={ handleKeyDown }
-			onMouseEnter={ handleMouseEnter }
-			onMouseLeave={ handleMouseLeave }
-			{ ...sharedProps }
-		>
-			{ wrappedLabel }
-
-			<Button
-				unstyled
-				id={ triggerID }
-				onClick={ handleToggle }
-				attributes={ { aria: {
-					controls: menuID,
-					expanded: isOpen,
-					haspopup: 'true',
-				} } }
-				{ ...styles('trigger') }
-			>
-				<Icon
-					attributes={ { aria: { hidden: true } } }
-					type={ isOpen ? 'caret-up' : 'caret-down' }
-				/>
-			</Button>
-
-			{ isOpen && (
-				<Menu
-					attributes={ { aria: { labelledby: triggerID } } }
-					id={ menuID }
-					items={ menu }
-				/>
-			) }
-		</Box>
+			attributes={ setAttributes(isActive) }
+			className={ className }
+			depth={ depth }
+			hasCaret={ trigger == null }
+			id={ id ?? `dropdown-${toSlug(label)}` }
+			label={ label }
+			menu={ menu }
+			trigger={ labelEl }
+		/>
 	)
-}, classes)
+}, { name: NAME, classes })
 
-MenuItem.displayName = NAME
-MenuItem.setDefaults({ props: DEFAULT_PROPS })
+MenuItem.set({
+	defaultProps: DEFAULT_PROPS,
+	displayName: NAME,
+})
 
 export declare namespace MenuItem {
 	export type Props = MenuItemProps

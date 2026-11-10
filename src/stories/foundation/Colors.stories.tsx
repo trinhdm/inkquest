@@ -1,35 +1,35 @@
-// Foundation/Colors — documents the theme's color-related token layers:
+// Design Tokens/Colors — documents the theme's color-related token layers:
 //
-//   1. Semantic tokens (`tokens.color.*`, `tokens.background.*`) — imported
-//      from the theme's real public barrel, `@/lib/theme` (`export {
-//      semanticTokens as tokens } from './reference'` in
-//      `src/lib/theme/index.ts`). This is the ONLY color surface components
-//      are meant to consume directly (`reference/semantic.ts`: "limit
-//      component usage to only semantic tokens").
+//   1. Semantic tokens (`alias.color.*`, `alias.background.*`) — the
+//      `semanticTokens` group in `reference/semantic.ts`, exposed on
+//      `aliasTokens` (exported as `alias` from `reference/index.ts`). This is
+//      the ONLY color surface components are meant to consume directly
+//      (`reference/semantic.ts`: "limit component usage to only semantic
+//      tokens"). The accent/secondary scales behind it (`alias.accent`,
+//      `alias.secondary`) and the `--inkq-background-surface|control|gradient`
+//      / `--inkq-color-control*` vars have no `semanticTokens` entry; they
+//      are shown below as internal, by literal variable name.
 //   2. Primitive tokens (`ink`/`paper`/`oxblood`/`crimson`/`ghost`/`smoke`
 //      plus the static red/green/yellow/blue/white/gray/black swatches) —
-//      imported from `@/lib/theme/reference`, NOT the public `@/lib/theme`
-//      barrel, because `primitiveTokens` (exported there as `base`) is
-//      deliberately not re-exported from `theme/index.ts`. That import is
-//      intentional here (documentation needs to show what a semantic token
-//      resolves to), but it is a one-way exception: nothing in this file
-//      writes to or edits `src/lib/theme/`, and no component should import
-//      `reference` directly — only `tokens` from `@/lib/theme`.
+//      `primitiveTokens`, exported as `base` from `reference/index.ts`.
+//      Documentation needs to show what a semantic token resolves to, so this
+//      page imports it, but it is a one-way exception: nothing in this file
+//      writes to or edits `src/lib/theme/`, and components should not consume
+//      primitives directly.
 //
 // Every swatch below is styled with the real accessor (`style={{ background:
-// tokens.background.page() }}`), never a literal hex copied out of
+// alias.background.page() }}`), never a literal hex copied out of
 // `scales.ts` — accessors resolve to `var(--inkq-*)`/`var(--ink-*)`
 // references, and the actual color is whatever the currently-applied color
 // scheme (`data-inkq-scheme` on `<html>`, via `schemeControls()`) resolves
 // them to at paint time.
-import { base } from '@/lib/theme/reference'
-import { COLOR_TOKENS } from '@/lib/theme'
-import { schemeControls } from '@/components/document/ScriptInjector'
-import { tokens } from '@/lib/theme'
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { expect, waitFor } from 'storybook/test'
-import type { ColorScheme } from '@/lib/theme'
+import { alias, base } from '@/lib/theme/reference'
+import { schemeControls } from '@/components/document/ScriptInjector/schemeControls'
+import { COLOR_TOKENS } from '@/lib/theme/scales'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+import type { ColorScheme } from '@/lib/theme/types'
 
 // --- scheme control -------------------------------------------------------
 //
@@ -108,14 +108,34 @@ const Swatch = ({ label, path, background, color, textOn }: SwatchProps) => (
 // chains (`--inkq-background-page` -> `var(--ink-100)` -> literal hex) are
 // fully resolved by the browser before we read them back — no hand-copied
 // hex values, no eyeballing.
-const parseRgb = (value: string): [number, number, number] => {
-	const match = value.match(/rgba?\(([^)]+)\)/)
-	if (!match) return [0, 0, 0]
-	const [r, g, b] = match[1].split(',').map(part => parseFloat(part.trim()))
-	return [r, g, b]
+//
+// Chrome reports `color-mix()` and `oklch(from …)` colors in their own space
+// (`oklab(…)`, `oklch(…)`), not `rgb()`, so the computed color is painted
+// onto a 1×1 canvas, which converts any CSS color to 8-bit sRGB — the space
+// the WCAG formula expects.
+type RGB = [number, number, number]
+type RGBA = [number, number, number, number]
+
+let pixel: CanvasRenderingContext2D | null = null
+
+const toRgba = (color: string): RGBA | null => {
+	if (!CSS.supports('color', color)) return null
+	pixel ??= Object.assign(document.createElement('canvas'), { width: 1, height: 1 })
+		.getContext('2d', { willReadFrequently: true })
+	if (!pixel) return null
+
+	pixel.clearRect(0, 0, 1, 1)
+	pixel.fillStyle = color
+	pixel.fillRect(0, 0, 1, 1)
+	const [r, g, b, a] = pixel.getImageData(0, 0, 1, 1).data
+	return [r, g, b, a / 255]
 }
 
-const relativeLuminance = ([r, g, b]: [number, number, number]) => {
+// see-through text shows the background through it, so blend before measuring
+const blend = (fore: RGBA, back: RGBA): RGB =>
+	[0, 1, 2].map(i => fore[i] * fore[3] + back[i] * (1 - fore[3])) as RGB
+
+const relativeLuminance = ([r, g, b]: RGB) => {
 	const channel = (c: number) => {
 		const s = c / 255
 		return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4
@@ -123,9 +143,13 @@ const relativeLuminance = ([r, g, b]: [number, number, number]) => {
 	return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b)
 }
 
-const contrastRatio = (fg: string, bg: string) => {
-	const l1 = relativeLuminance(parseRgb(fg)),
-		l2 = relativeLuminance(parseRgb(bg))
+const contrastRatio = (fg: string, bg: string): number | null => {
+	const fore = toRgba(fg),
+		back = toRgba(bg)
+	if (!fore || !back) return null
+
+	const l1 = relativeLuminance(blend(fore, back)),
+		l2 = relativeLuminance([back[0], back[1], back[2]])
 	const [lighter, darker] = l1 > l2 ? [l1, l2] : [l2, l1]
 	return (lighter + 0.05) / (darker + 0.05)
 }
@@ -149,7 +173,7 @@ const ContrastPair = ({ label, foreground, background }: ContrastPairProps) => {
 
 		const computed = getComputedStyle(el)
 		setRatio(contrastRatio(computed.color, computed.backgroundColor))
-	})
+	}, [setRatio])
 
 	const passes = ratio !== null && ratio >= AA_NORMAL_TEXT
 
@@ -195,6 +219,30 @@ const PrimitiveColorScale = () => (
 			<code>primitiveTokens</code> (<code>reference/primitive.ts</code>, exported as{ ' ' }
 			<code>base</code>). Semantic color/background tokens above alias these steps.
 		</p>
+		<ul style={ { fontSize: 12, opacity: 0.7, maxWidth: 640, marginBottom: 24 } }>
+			<li>
+				<code>background.page</code> / <code>background.card</code>: dark = ink 100 / ink 300,
+				light = paper 300 / paper 100 (<code>tokens/background/index.ts</code>).
+			</li>
+			<li>
+				<code>background.surface</code> = theme step 200, <code>background.card(&apos;hover&apos;)</code> =
+				theme step 400, where &quot;theme&quot; is the active scheme&apos;s scale (ink or paper).
+			</li>
+			<li>
+				<code>color.text(&apos;inverse&apos;)</code> = theme step 100; <code>border</code> /{ ' ' }
+				<code>border-strong</code> = theme steps 500 / 600.
+			</li>
+			<li>
+				<code>color.action</code> aliases the accent scale (oxblood in dark, crimson in light);
+				<code> color.text</code> / <code>color.link</code> / <code>color.placeholder</code> alias the
+				secondary scale (ghost in dark, smoke in light) (<code>tokens/accent/</code>,{ ' ' }
+				<code>tokens/colors/</code>).
+			</li>
+			<li>
+				<code>color.danger</code> / <code>success</code> / <code>warning</code> / <code>info</code> are
+				mixed from the static red / green / yellow / blue (<code>tokens/colors/states.ts</code>).
+			</li>
+		</ul>
 		<div style={ rowStyle }>
 			{ colorSteps(COLOR_TOKENS.ink.length).map(step => (
 				<Swatch key={ `ink-${ step }` } label={ `ink ${ step }` } path={ `base.ink('${ step }')` } background={ base.ink(step as InkStep) } />
@@ -229,60 +277,94 @@ const SemanticColorSections = () => (
 	<div>
 		<SectionTitle>background</SectionTitle>
 		<div style={ rowStyle }>
-			<Swatch label="page" path="tokens.background.page()" background={ tokens.background.page() } />
-			<Swatch label="card" path="tokens.background.card()" background={ tokens.background.card() } />
-			<Swatch label="card (hover)" path="tokens.background.card('hover')" background={ tokens.background.card('hover') } />
+			<Swatch label="page" path="alias.background.page()" background={ alias.background.page() } />
+			<Swatch label="card" path="alias.background.card()" background={ alias.background.card() } />
+			<Swatch label="card (hover)" path="alias.background.card('hover')" background={ alias.background.card('hover') } />
+		</div>
+
+		<SectionTitle>background (internal — no alias accessor)</SectionTitle>
+		<p style={ { fontSize: 12, opacity: 0.7, maxWidth: 640, marginBottom: 12 } }>
+			Emitted by <code>tokens/background/index.ts</code> but absent from{ ' ' }
+			<code>semanticTokens</code>, so referenced by literal CSS variable name.
+		</p>
+		<div style={ rowStyle }>
+			<Swatch label="surface" path="var(--inkq-background-surface)" background="var(--inkq-background-surface)" />
+			<Swatch label="control" path="var(--inkq-background-control)" background="var(--inkq-background-control)" />
+			<Swatch label="gradient" path="var(--inkq-background-gradient)" background="var(--inkq-background-gradient)" />
 		</div>
 
 		<SectionTitle>color.text</SectionTitle>
 		<div style={ rowStyle }>
-			<Swatch label="base" path="tokens.color.text()" background={ tokens.background.page() } color={ tokens.color.text() } />
-			<Swatch label="secondary" path="tokens.color.text('secondary')" background={ tokens.background.page() } color={ tokens.color.text('secondary') } />
-			<Swatch label="tertiary" path="tokens.color.text('tertiary')" background={ tokens.background.page() } color={ tokens.color.text('tertiary') } />
-			<Swatch label="inverse" path="tokens.color.text('inverse')" background={ tokens.color.action() } color={ tokens.color.text('inverse') } />
-			<Swatch label="on.accent" path="tokens.color.text('on', 'accent')" background={ tokens.color.action() } color={ tokens.color.text('on', 'accent') } />
+			<Swatch label="base" path="alias.color.text()" background={ alias.background.page() } color={ alias.color.text() } />
+			<Swatch label="secondary" path="alias.color.text('secondary')" background={ alias.background.page() } color={ alias.color.text('secondary') } />
+			<Swatch label="tertiary" path="alias.color.text('tertiary')" background={ alias.background.page() } color={ alias.color.text('tertiary') } />
+			<Swatch label="inverse" path="alias.color.text('inverse')" background={ alias.color.action() } color={ alias.color.text('inverse') } />
+			<Swatch label="on.accent" path="alias.color.text('on', 'accent')" background={ alias.color.action() } color={ alias.color.text('on', 'accent') } />
 		</div>
 
 		<SectionTitle>color.link</SectionTitle>
 		<div style={ rowStyle }>
-			<Swatch label="base" path="tokens.color.link()" background={ tokens.background.page() } color={ tokens.color.link() } />
-			<Swatch label="hover" path="tokens.color.link('hover')" background={ tokens.background.page() } color={ tokens.color.link('hover') } />
+			<Swatch label="base" path="alias.color.link()" background={ alias.background.page() } color={ alias.color.link() } />
+			<Swatch label="hover" path="alias.color.link('hover')" background={ alias.background.page() } color={ alias.color.link('hover') } />
+			<Swatch label="focus" path="alias.color.link('focus')" background={ alias.background.page() } color={ alias.color.link('focus') } />
+			<Swatch label="disable" path="alias.color.link('disable')" background={ alias.background.page() } color={ alias.color.link('disable') } />
+		</div>
+
+		<SectionTitle>color.placeholder</SectionTitle>
+		<div style={ rowStyle }>
+			<Swatch label="placeholder" path="alias.color.placeholder()" background={ alias.background.page() } color={ alias.color.placeholder() } />
+		</div>
+
+		<SectionTitle>color.control (internal — no alias accessor)</SectionTitle>
+		<div style={ rowStyle }>
+			<Swatch label="base" path="var(--inkq-color-control)" background={ alias.background.page() } color="var(--inkq-color-control)" />
+			<Swatch label="hover" path="var(--inkq-color-control-hover)" background={ alias.background.page() } color="var(--inkq-color-control-hover)" />
 		</div>
 
 		<SectionTitle>color.action</SectionTitle>
 		<p style={ { fontSize: 12, opacity: 0.7, marginBottom: 12 } }>
-			Themed from the internal accent scale (<code>oxblood</code> in dark, <code>crimson</code> in
-			light — see <code>tokens/accent/primary.ts</code>); not directly accessible as an
-			&quot;accent&quot; token itself, only through <code>tokens.color.action</code>.
+			Aliases the accent scale (<code>oxblood</code> in dark, <code>crimson</code> in
+			light — see <code>tokens/accent/primary.ts</code>): <code>base</code> /{ ' ' }
+			<code>hover</code> / <code>active</code> = <code>alias.accent()</code> / <code>(&apos;hover&apos;)</code> /{ ' ' }
+			<code>(&apos;active&apos;)</code>, <code>select</code> = accent <code>tint</code>,{ ' ' }
+			<code>error</code> = accent <code>muted</code> (<code>tokens/colors/states.ts</code>).
 		</p>
 		<div style={ rowStyle }>
-			<Swatch label="base" path="tokens.color.action()" background={ tokens.color.action() } />
-			<Swatch label="hover" path="tokens.color.action('hover')" background={ tokens.color.action('hover') } />
-			<Swatch label="active" path="tokens.color.action('active')" background={ tokens.color.action('active') } />
-			<Swatch label="select" path="tokens.color.action('select')" background={ tokens.color.action('select') } />
-			<Swatch label="disable" path="tokens.color.action('disable')" background={ tokens.color.action('disable') } />
+			<Swatch label="base" path="alias.color.action()" background={ alias.color.action() } />
+			<Swatch label="hover" path="alias.color.action('hover')" background={ alias.color.action('hover') } />
+			<Swatch label="active" path="alias.color.action('active')" background={ alias.color.action('active') } />
+			<Swatch label="select" path="alias.color.action('select')" background={ alias.color.action('select') } />
 		</div>
 
 		{ ([
-			{ status: 'danger', get: tokens.color.danger },
-			{ status: 'success', get: tokens.color.success },
-			{ status: 'warning', get: tokens.color.warning },
-			{ status: 'info', get: tokens.color.info },
+			{ status: 'danger', get: alias.color.danger },
+			{ status: 'success', get: alias.color.success },
+			{ status: 'warning', get: alias.color.warning },
+			{ status: 'info', get: alias.color.info },
 		] as const).map(({ status, get }) => (
 			<div key={ status }>
 				<SectionTitle>color.{ status }</SectionTitle>
 				<div style={ rowStyle }>
-					<Swatch label="base" path={ `tokens.color.${ status }()` } background={ get() } />
-					<Swatch label="hover" path={ `tokens.color.${ status }('hover')` } background={ get('hover') } />
-					<Swatch label="active" path={ `tokens.color.${ status }('active')` } background={ get('active') } />
-					<Swatch label="tint" path={ `tokens.color.${ status }('tint')` } background={ get('tint') } />
-					<Swatch label="shade" path={ `tokens.color.${ status }('shade')` } background={ get('shade') } />
-					<Swatch label="bright" path={ `tokens.color.${ status }('bright')` } background={ get('bright') } />
-					<Swatch label="dim" path={ `tokens.color.${ status }('dim')` } background={ get('dim') } />
-					<Swatch label="muted" path={ `tokens.color.${ status }('muted')` } background={ get('muted') } />
+					<Swatch label="base" path={ `alias.color.${ status }()` } background={ get() } />
+					<Swatch label="hover" path={ `alias.color.${ status }('hover')` } background={ get('hover') } />
+					<Swatch label="active" path={ `alias.color.${ status }('active')` } background={ get('active') } />
+					<Swatch label="tint" path={ `alias.color.${ status }('tint')` } background={ get('tint') } />
+					<Swatch label="shade" path={ `alias.color.${ status }('shade')` } background={ get('shade') } />
+					<Swatch label="bright" path={ `alias.color.${ status }('bright')` } background={ get('bright') } />
+					<Swatch label="dim" path={ `alias.color.${ status }('dim')` } background={ get('dim') } />
+					<Swatch label="muted" path={ `alias.color.${ status }('muted')` } background={ get('muted') } />
 				</div>
 			</div>
 		)) }
+
+		<p style={ { fontSize: 12, opacity: 0.7, maxWidth: 640, marginBottom: 24 } }>
+			<code>src/styles/_base.scss</code> also defines hard-coded backups per{ ' ' }
+			<code>[data-variant^=&quot;danger|warning|success|info&quot;]</code>:{ ' ' }
+			<code>--inkq-background-backup</code> = the status <code>muted</code>,{ ' ' }
+			<code>--inkq-border-backup</code> = <code>hover</code>, <code>--inkq-color-backup</code> = base.
+			Selection and <code>mark</code> use <code>color.action(&apos;select&apos;)</code> with{ ' ' }
+			<code>color.text(&apos;on&apos;, &apos;accent&apos;)</code>.
+		</p>
 
 		<SectionTitle>opacity.disabled</SectionTitle>
 		<div style={ rowStyle }>
@@ -291,34 +373,34 @@ const SemanticColorSections = () => (
 					width: 96,
 					height: 64,
 					borderRadius: 8,
-					background: tokens.color.action(),
-					opacity: tokens.opacity.disabled(),
+					background: alias.color.action(),
+					opacity: alias.opacity.disabled(),
 				} }
 			/>
-			<span style={ labelStyle }>tokens.opacity.disabled()</span>
+			<span style={ labelStyle }>alias.opacity.disabled()</span>
 		</div>
 	</div>
 )
 
 const ContrastChecks = () => (
 	<div style={ { display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 420 } }>
-		<ContrastPair label="text on page" foreground={ tokens.color.text() } background={ tokens.background.page() } />
-		<ContrastPair label="text.secondary on page" foreground={ tokens.color.text('secondary') } background={ tokens.background.page() } />
-		<ContrastPair label="text.tertiary on page" foreground={ tokens.color.text('tertiary') } background={ tokens.background.page() } />
-		<ContrastPair label="link on page" foreground={ tokens.color.link() } background={ tokens.background.page() } />
-		<ContrastPair label="text.inverse on action" foreground={ tokens.color.text('inverse') } background={ tokens.color.action() } />
-		<ContrastPair label="text.on(accent) on action" foreground={ tokens.color.text('on', 'accent') } background={ tokens.color.action() } />
-		<ContrastPair label="danger on page" foreground={ tokens.color.danger() } background={ tokens.background.page() } />
-		<ContrastPair label="success on page" foreground={ tokens.color.success() } background={ tokens.background.page() } />
-		<ContrastPair label="warning on page" foreground={ tokens.color.warning() } background={ tokens.background.page() } />
-		<ContrastPair label="info on page" foreground={ tokens.color.info() } background={ tokens.background.page() } />
+		<ContrastPair label="text on page" foreground={ alias.color.text() } background={ alias.background.page() } />
+		<ContrastPair label="text.secondary on page" foreground={ alias.color.text('secondary') } background={ alias.background.page() } />
+		<ContrastPair label="text.tertiary on page" foreground={ alias.color.text('tertiary') } background={ alias.background.page() } />
+		<ContrastPair label="link on page" foreground={ alias.color.link() } background={ alias.background.page() } />
+		<ContrastPair label="text.inverse on action" foreground={ alias.color.text('inverse') } background={ alias.color.action() } />
+		<ContrastPair label="text.on(accent) on action" foreground={ alias.color.text('on', 'accent') } background={ alias.color.action() } />
+		<ContrastPair label="danger on page" foreground={ alias.color.danger() } background={ alias.background.page() } />
+		<ContrastPair label="success on page" foreground={ alias.color.success() } background={ alias.background.page() } />
+		<ContrastPair label="warning on page" foreground={ alias.color.warning() } background={ alias.background.page() } />
+		<ContrastPair label="info on page" foreground={ alias.color.info() } background={ alias.background.page() } />
 	</div>
 )
 
 // --- stories -----------------------------------------------------------------
 
 const meta: Meta = {
-	title: 'Foundation/Colors',
+	title: 'Design Tokens/Colors',
 	parameters: { layout: 'padded' },
 }
 

@@ -1,5 +1,7 @@
+import { Suspense, type ReactElement } from 'react'
 import { getDefaultProps } from '@/hooks/useProps'
 import { render, reset, screen, within } from '@/tests/test-utils'
+import { Button } from '@/components/core/Button'
 import { Section } from './Section'
 
 describe('Section', () => {
@@ -10,7 +12,7 @@ describe('Section', () => {
 	})
 
 	it('always renders the root through Container, ignoring its own "as" prop', () => {
-		// `Section.tsx` reads `others` off `extractOtherProps(rest)` but never
+		// `Section.tsx` reads `others` off `extractOthers(rest)` but never
 		// its sibling `as` — the root is hardcoded to `<Box as={Container}>`.
 		const { container } = render(
 			// `as` is typed `never` on `Section` (no `defaults.as` in its specs),
@@ -55,9 +57,8 @@ describe('Section', () => {
 		expect(container.firstElementChild).toBeInTheDocument()
 	})
 
-	// `orderSection` always wraps content items in a `body` element that sits
-	// beside the heading; only 2+ items get an extra `description` wrapper
-	// inside that body.
+	// content items sit directly in the `body` element beside the heading;
+	// only text gets a `description` wrapper, so items are never wrapped together
 	it('places a single non-string content child directly in a body beside the heading', () => {
 		render(
 			<Section title="t">
@@ -72,7 +73,7 @@ describe('Section', () => {
 		expect(body?.parentElement).toBe(heading.parentElement)
 	})
 
-	it('wraps two or more non-string content children in a shared container inside the body', () => {
+	it('places two or more non-string content children side by side in the body, with no extra wrapper', () => {
 		render(
 			<Section title="t">
 				<span>First</span>
@@ -81,20 +82,20 @@ describe('Section', () => {
 		)
 
 		const heading = screen.getByRole('heading', { name: 't' }),
-			first = screen.getByText('First'),
-			description = first.parentElement,
-			body = description?.parentElement
+			body = screen.getByText('First').parentElement
 
-		expect(screen.getByText('Second').parentElement).toBe(description)
+		expect(screen.getByText('Second').parentElement).toBe(body)
 		expect(body).not.toBe(heading.parentElement)
 		expect(body?.parentElement).toBe(heading.parentElement)
 	})
 
-	it('groups up to two Section.Button children into a CTA button group', () => {
+	it('groups Button children of Section.Footer into a CTA button group', () => {
 		render(
 			<Section title="t">
-				<Section.Button>Learn more</Section.Button>
-				<Section.Button>View more</Section.Button>
+				<Section.Footer>
+					<Button>Learn more</Button>
+					<Button>View more</Button>
+				</Section.Footer>
 			</Section>
 		)
 
@@ -104,42 +105,239 @@ describe('Section', () => {
 		expect(within(group).getByRole('button', { name: 'View more' })).toBeInTheDocument()
 	})
 
-	// `orderSection`'s `buttons` push is gated with `else if (buttons.length < 2)`
-	// — a THIRD `Section.Button` matches `child.type === Button` so it never
-	// falls into the `content` branch either; it is silently dropped from the
-	// render entirely, not merely excluded from the CTA group.
-	it('silently drops a third Section.Button beyond the first two', () => {
+	// `partitionFooter` keeps at most 2 Buttons (commit aca30a6); extras are dropped
+	it('keeps only the first two footer Buttons and drops the third', () => {
 		render(
 			<Section title="t">
-				<Section.Button>One</Section.Button>
-				<Section.Button>Two</Section.Button>
-				<Section.Button>Three</Section.Button>
+				<Section.Footer>
+					<Button>One</Button>
+					<Button>Two</Button>
+					<Button>Three</Button>
+				</Section.Footer>
 			</Section>
 		)
 
 		expect(screen.getAllByRole('button')).toHaveLength(2)
+		expect(screen.getByRole('button', { name: 'One' })).toBeInTheDocument()
+		expect(screen.getByRole('button', { name: 'Two' })).toBeInTheDocument()
 		expect(screen.queryByRole('button', { name: 'Three' })).not.toBeInTheDocument()
 	})
 
-	it('assigns a single Section.Button no priority (hasPriority requires 2+ buttons)', () => {
+	describe('alignText', () => {
+		// `--section-align` lives on the `inner` element, which only layouts with
+		// an inner wrapper (hero, banner, content-form, ...) render
+		const align = (container: HTMLElement) =>
+			(container.querySelector('.section__inner') as HTMLElement).style.getPropertyValue('--section-align')
+
+		it('publishes alignText as the --section-align custom property on the inner element, not the root', () => {
+			const { container } = render(<Section layout="hero" title="t" alignText="center">content</Section>)
+
+			expect(align(container)).toBe('center')
+			expect((container.firstElementChild as HTMLElement).style.getPropertyValue('--section-align')).toBe('')
+		})
+
+		it.each(['left', 'right'] as const)('passes "%s" through unchanged', alignText => {
+			const { container } = render(<Section layout="hero" title="t" alignText={ alignText }>content</Section>)
+
+			expect(align(container)).toBe(alignText)
+		})
+
+		it('sets no --section-align when alignText is unset, with a styled control that sets it', () => {
+			const { container: plain } = render(<Section layout="hero" title="t">content</Section>)
+			const { container: aligned } = render(<Section layout="hero" title="t" alignText="right">content</Section>)
+
+			expect(align(plain)).toBe('')
+			expect(align(aligned)).toBe('right')
+		})
+
+		it('defaults content-form to left and banner to center', () => {
+			const { container: form } = render(<Section layout="content-form" title="t">content</Section>)
+			const { container: banner } = render(<Section layout="banner" title="t">content</Section>)
+
+			expect(align(form)).toBe('left')
+			expect(align(banner)).toBe('center')
+		})
+
+		it('lets an explicit alignText beat the layout default', () => {
+			const { container } = render(<Section layout="banner" title="t" alignText="right">content</Section>)
+
+			expect(align(container)).toBe('right')
+		})
+
+		it('renders no inner element in the default layout, so there is nowhere to publish it', () => {
+			const { container } = render(<Section title="t" alignText="center">content</Section>)
+
+			expect(container.querySelector('.section__inner')).toBeNull()
+			expect(container.querySelector('[style*="--section-align"]')).toBeNull()
+		})
+
+		it('does not leak alignText onto the DOM as an attribute', () => {
+			const { container } = render(<Section title="t" alignText="center">content</Section>)
+
+			expect(container.firstElementChild).not.toHaveAttribute('aligntext')
+			expect(container.firstElementChild).not.toHaveAttribute('alignText')
+		})
+	})
+
+	it('assigns a single footer Button no priority (hasPriority requires 2+ buttons)', () => {
 		render(
 			<Section title="t">
-				<Section.Button>Solo</Section.Button>
+				<Section.Footer>
+					<Button>Solo</Button>
+				</Section.Footer>
 			</Section>
 		)
 		expect(screen.getByRole('button', { name: 'Solo' })).not.toHaveAttribute('data-priority')
 	})
 
-	it('assigns the CTA group\'s two buttons distinct priorities (primary, then secondary)', () => {
+	it('assigns the footer\'s two buttons distinct priorities (primary, then secondary)', () => {
 		render(
 			<Section title="t">
-				<Section.Button>First</Section.Button>
-				<Section.Button>Second</Section.Button>
+				<Section.Footer>
+					<Button>First</Button>
+					<Button>Second</Button>
+				</Section.Footer>
 			</Section>
 		)
 
 		expect(screen.getByRole('button', { name: 'First' })).toHaveAttribute('data-priority', 'primary')
 		expect(screen.getByRole('button', { name: 'Second' })).toHaveAttribute('data-priority', 'secondary')
+	})
+
+	// the FAQs hero case: the builder can't see through `Suspense`, the footer doesn't need to
+	it('keeps non-Button footer content in the footer, ahead of the button group', () => {
+		render(
+			<Section title="t">
+				<Section.Footer>
+					<Suspense fallback={ null }>
+						<input aria-label="Search" />
+					</Suspense>
+					<Button>Go</Button>
+				</Section.Footer>
+			</Section>
+		)
+
+		const input = screen.getByRole('textbox', { name: 'Search' })
+		expect(input.parentElement?.nextElementSibling).toBe(screen.getByRole('group'))
+	})
+
+	it('treats a Button outside Section.Footer as ordinary content, not a CTA', () => {
+		render(
+			<Section title="t">
+				<Button>Loose</Button>
+			</Section>
+		)
+
+		expect(screen.getByRole('button', { name: 'Loose' })).toBeInTheDocument()
+		expect(screen.queryByRole('group')).not.toBeInTheDocument()
+	})
+
+	// `Section` publishes `{ revealFrom, size }` to `Section.Footer` through its
+	// context; `size` is "lg" for the hero layout and "md" for every other one.
+	describe('footer button size from Section context', () => {
+		const footer = (
+			<Section.Footer>
+				<Button>Go</Button>
+			</Section.Footer>
+		)
+
+		// Button reflects `size` through inline CSS tokens, not a data attribute,
+		// so compare against a standalone Button of the expected size rather than
+		// hand-typing theme values.
+		const tracking = (ui: ReactElement) => {
+			const { unmount } = render(ui),
+				value = screen.getByRole('button').style.getPropertyValue('--button-tracking')
+			unmount()
+			return value
+		}
+
+		it('sizes the footer buttons like a Button size="lg" in the hero layout', () => {
+			const lg = tracking(<Button size="lg">Go</Button>),
+				md = tracking(<Button size="md">Go</Button>)
+			expect(lg).not.toBe('')
+			expect(lg).not.toBe(md)
+
+			expect(tracking(<Section layout="hero" title="t">{ footer }</Section>)).toBe(lg)
+		})
+
+		it('sizes the footer buttons like a Button size="md" in the default layout', () => {
+			const md = tracking(<Button size="md">Go</Button>)
+			expect(md).not.toBe('')
+
+			expect(tracking(<Section title="t">{ footer }</Section>)).toBe(md)
+		})
+
+		it('sizes the footer buttons like a Button size="md" in hero-split, which is not "hero"', () => {
+			const md = tracking(<Button size="md">Go</Button>)
+
+			expect(tracking(<Section layout="hero-split" title="t">{ footer }</Section>)).toBe(md)
+		})
+
+		it('throws when Section.Footer is rendered outside a Section', () => {
+			const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
+			expect(() => render(footer)).toThrow('<Section.Footer /> must be a direct child of <Section>')
+			spy.mockRestore()
+		})
+
+		// Section only provides context to a footer it finds among its direct
+		// children, so one returned from another component throws even though
+		// it sits inside <Section> on the page
+		it('throws the direct-child error when Section.Footer is returned from another component', () => {
+			const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
+			const Actions = () => footer
+
+			expect(() => render(<Section title="t"><Actions /></Section>)).toThrow(
+				'Section: <Section.Footer /> must be a direct child of <Section>; it can\'t be returned from another component'
+			)
+			spy.mockRestore()
+		})
+	})
+
+	describe('layout="hero-split"', () => {
+		const renderSplit = () => render(
+			<Section eyebrow="New" layout="hero-split" title="Split headline">
+				Split description
+				<Section.Footer>
+					<Button>Join</Button>
+				</Section.Footer>
+			</Section>
+		)
+
+		it('renders the title as an h1 like the other hero layout', () => {
+			renderSplit()
+			expect(screen.getByRole('heading', { level: 1, name: 'Split headline' })).toBeInTheDocument()
+		})
+
+		it('tags the headline with the global h1-display class', () => {
+			renderSplit()
+			expect(screen.getByRole('heading', { level: 1 })).toHaveClass('h1-display')
+		})
+
+		it('does not add the display class to the headline of other layouts', () => {
+			render(<Section layout="hero" title="Plain hero">content</Section>)
+			expect(screen.getByRole('heading', { level: 1 })).not.toHaveClass('h1-display')
+		})
+
+		it('keeps the headline and description in one column and the CTA in the other', () => {
+			renderSplit()
+
+			const heading = screen.getByRole('heading', { level: 1 }),
+				description = screen.getByText('Split description'),
+				cta = screen.getByRole('button', { name: 'Join' })
+
+			// one shared Grid.Item holds header + body; the footer lives in a different one
+			const textColumn = heading.parentElement
+			expect(textColumn).toContainElement(screen.getByText('New'))
+			expect(textColumn).toContainElement(description)
+			expect(textColumn).not.toContainElement(cta)
+			expect(heading.parentElement?.parentElement).toContainElement(cta)
+		})
+
+		it('renders the headline once only, not duplicated into both columns', () => {
+			renderSplit()
+			expect(screen.getAllByRole('heading')).toHaveLength(1)
+			expect(screen.getAllByRole('button')).toHaveLength(1)
+		})
 	})
 
 	describe('unstyled forwarding to Container', () => {
@@ -187,7 +385,7 @@ describe('Section', () => {
 
 	it('wraps header and content in two separate Grid.Items for the split layout', () => {
 		render(
-			<Section layout="split" title="Split title">
+			<Section layout="content-split" title="Split title">
 				A split description.
 			</Section>
 		)

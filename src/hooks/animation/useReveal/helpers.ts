@@ -27,7 +27,7 @@ export interface RevealCounter {
 	reserve: (total: number) => number | undefined
 }
 
-// the index travels as the attribute's value — `extractOtherProps` strips
+// the index travels as the attribute's value — `extractOthers` strips
 // `style` off components, but an unrecognised `data-*` prop reaches the DOM
 export const revealItem = (
 	index: number,

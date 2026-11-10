@@ -1,9 +1,9 @@
 import { buildScript } from './buildScript'
-import { ScriptInjector } from './ScriptInjector'
 import { expect } from 'storybook/test'
-import type { ColorScheme } from '@/lib/theme'
+import { ScriptInjector } from './ScriptInjector'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+import type { ColorScheme } from '@/lib/theme/types'
 
 // `ScriptInjector` currently has no sibling in `document/` that also needs a
 // `ColorScheme` option list, so this stays inlined rather than living in a
@@ -57,8 +57,8 @@ const meta: Meta<typeof ScriptInjector> = {
 				'Forwarded to `buildScript` as its `scheme` fallback. When omitted, `buildScript` delegates to `configDocument` (see `../utils.ts`), which merges in `DEFAULT_DOCUMENT_CONFIG`\'s `scheme` (`DEFAULT_COLOR_SCHEME`, currently `"dark"`).',
 		},
 	},
-	// `ScriptInjector` is a plain function component (no `factory()`/
-	// `polymorphic()` usage, no `.setDefaults`), and `scheme` itself
+	// `ScriptInjector` is a plain function component (no `polymorphic()`
+	// usage, no `.set({ defaultProps: ... })`), and `scheme` itself
 	// has no default parameter value in the component's own signature — it's
 	// left `undefined` and delegated straight to `buildScript`, which merges
 	// it through `configDocument`'s `DEFAULT_DOCUMENT_CONFIG` (see

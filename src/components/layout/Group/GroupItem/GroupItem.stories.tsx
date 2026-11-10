@@ -2,13 +2,14 @@ import { Component } from 'react'
 import { expect, within } from 'storybook/test'
 import { getDefaultProps } from '@/hooks/useProps'
 import { Group } from '../Group'
+import { BOOLEAN_OPTIONS } from '../options.story'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import moduleClasses from '../Group.module.scss'
 
-// `Group.Item` has no enum-valued or boolean props of its own — just
-// `children` (plus the polymorphic `as`/Box escape hatches) — so there is
-// nothing to move into the shared `Group/options.story.ts`.
+// `Group.Item` has no enum-valued props of its own — just `children` (plus the
+// polymorphic Box escape hatches). The only enumerated values here are the
+// `unstyled` booleans, which come from the shared `Group/options.story.ts`.
 
 const Row = ({ children }: { children: ReactNode }) => (
 	<div style={ { display: 'flex', gap: 24, flexWrap: 'wrap' } }>
@@ -17,7 +18,7 @@ const Row = ({ children }: { children: ReactNode }) => (
 )
 
 // A plain label wrapper — `Group.Item` DOES require real context
-// (`useGroupCtx`, a REQUIRED `createRootCtx` reader), so every story except
+// (`useGroupCtx`, a REQUIRED `createCompoundCtx` reader), so every story except
 // `RequiresGroupParent` mounts it as a literal, direct JSX child of a real
 // `<Group>`, matching the default `childName`/`provider` pair `Group`
 // registers (`GroupItem.displayName` / `GroupProvider`).
@@ -31,11 +32,12 @@ const Labeled = ({ label, children }: { label: string, children: ReactNode }) =>
 )
 
 // `Group.Item`'s own base class. `GroupItem.tsx` calls `useGroupCtx(NAME)` to
-// read `{ baseName, rootName }` off `Group`'s `createRootCtx`, then renders
-// `styles(rootName, { classes, props })` with `styles(baseName, true)` for
-// the root selector — `rootName` is `'Group'` (the enclosing `<Group>`'s own
-// name, or its `rootName` override) and `baseName` is derived by stripping
-// that rootName off `Group.Item`'s own dotted `NAME` (`'Group.Item'` →
+// read `{ baseName, rootName }` off `Group`'s `createCompoundCtx`, builds its
+// styles via `useStyles({ context, props, withRootName: true })`, then renders
+// `styles(context.baseName, true)` for the root selector — `RootProvider`
+// always sets `rootName: name` (`'Group'`, the context's own registered
+// name; there is no override) and `baseName` is derived by stripping
+// that name off `Group.Item`'s own dotted `NAME` (`'Group.Item'` →
 // `'.Item'` → `'item'`, lowercased). `nameClassBase` then composes
 // `inkq-group__item` — a real, hashed selector (`Group.module.scss`'s
 // `&__item` block has its own declarations).
@@ -48,12 +50,12 @@ const ROOT_SELECTOR = '.inkq-group__item'
 // reads that real, wrapped type straight off the component itself.
 // `GroupItemSpecs` declares `isCompound: true` with no `defaults.as`, so the
 // generic call signature's non-polymorphic branch types `as` as `never`, and
-// `GroupItem.setDefaults({})` registers no defaults at all.
+// `GroupItem.set({ displayName: NAME })` registers no defaults at all.
 type GroupItemStoryProps = Parameters<typeof Group.Item>[0]
 type Story = StoryObj<GroupItemStoryProps>
 
 // Local, stories-file-only error boundary — mirrors the `RenderErrorBoundary`
-// pattern used elsewhere in this codebase for a REQUIRED `createRootCtx`
+// pattern used elsewhere in this codebase for a REQUIRED `createCompoundCtx`
 // reader (`useRootCtx`, not `useSafeRootCtx`). `useGroupCtx` throws
 // synchronously during render when there's no enclosing `<Group>`, so only
 // the misuse case in `RequiresGroupParent` needs to be wrapped in it.
@@ -83,11 +85,11 @@ const meta: Meta<GroupItemStoryProps> = {
 	argTypes: {
 		as: {
 			control: false,
-			description: 'NOT part of `Group.Item`\'s accepted props. `GroupItemSpecs` declares `isCompound: true` with no `defaults.as`, which is the codebase-wide signal for a compound part with a fixed tag — `polymorphic()`\'s non-polymorphic call-signature branch then types `as` as `never`, so only `undefined` is assignable and passing a tag is a type error. `GroupItem` correspondingly hardcodes `as="div"` on its `Box` and takes only `{ others }` from `extractOtherProps`. This is the same deliberate contract used by `Grid.Item`, `Timeline.Item`, `Table.Row`/`Table.Cell`, `Button.Section` and the `Accordion` parts — not an oversight. See the `FixedTag` story.',
+			description: 'NOT part of `Group.Item`\'s accepted props. `GroupItemSpecs` declares `isCompound: true` with no `defaults.as`, which is the codebase-wide signal for a compound part with a fixed tag — `polymorphic()`\'s non-polymorphic call-signature branch then types `as` as `never`, so only `undefined` is assignable and passing a tag is a type error. `GroupItem` correspondingly hardcodes `as="div"` on its `Box` and takes only `{ others }` from `extractOthers`. This is the same deliberate contract used by `Grid.Item`, `Timeline.Item`, `Table.Row`/`Table.Cell`, `Button.Section` and the `Accordion` parts — not an oversight. See the `FixedTag` story.',
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Group.Item`\'s own props. The semantic base class (`inkq-group__item`) is ALWAYS emitted regardless of this prop — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it. See the `Unstyled` story.',
+			description: 'Part of the factory\'s `FactoryContract` (`_PolymorphicContract.unstyled`), not `Group.Item`\'s own props. The semantic base class (`inkq-group__item`) is emitted regardless of this prop (`namespace ?? baseName`). When `unstyled` is true, `Group.Item` loses the CSS-module-hashed class and the unhashed boolean-shorthand `inkq-item` config class. It sets no tokens, and `unstyled` reaches its `Box` via `others` (no `data-*` to drop). See the `Unstyled` story.',
 		},
 	},
 	args: {
@@ -138,15 +140,35 @@ export const FixedTag: Story = {
 }
 
 // `unstyled` does NOT remove `Group.Item`'s semantic base class
-// (`inkq-group__item`) — per `getClassName.tsx` the base class is always
-// emitted. It only suppresses the CSS-module-hashed class normally appended
-// alongside it. `Group.Item` makes exactly one `styles(...)` call, so the
-// root element is the only one to check here.
+// (`inkq-group__item`) — per `getClassName.tsx` the base class
+// (`namespace ?? baseName`) is emitted regardless. It also suppresses the
+// CSS-module-hashed class normally appended alongside it and the boolean-
+// shorthand `inkq-item` config class (asserted below). `Group.Item` makes exactly one `styles(...)` call
+// (`styles(baseName, true)`, `baseName` resolving to `'item'` via
+// `useGroupCtx`), so the root element is the only one to check here.
+//
+// That call's boolean config ALSO computes a literal, unhashed GLOBAL
+// `inkq-item` class (`getConfigClasses`'s boolean-shorthand branch,
+// `getBaseClass('item', 'inkq')` — the same generic utility class
+// `styles/_base.scss` declares padding/layout rules for, shared with
+// `Container`'s own `styles('wrapper', true)`-driven `inkq-wrapper`).
+//
+// **`getClassName.tsx` has been revised since an earlier pass of this
+// story — verify against the live file before trusting this comment.**
+// Current `getConfigClasses` order: `if (check.isUnstyled) return` runs
+// FIRST, unconditionally, BEFORE the boolean-shorthand branch (`if (typeof
+// config === 'boolean' && config) return getBaseClass(...)`) — so `inkq-item`
+// is now suppressed entirely when `unstyled`, same as `Container`'s
+// `inkq-wrapper`. It is still never hashed (this branch never calls
+// `getStyleClass`), so "present only when styled" and "never hashed" are two
+// independent, both-true facts here — don't confuse the class's presence
+// with the separate, still-`unstyled`-gated module-hash toggle on
+// `inkq-group__item` itself, asserted below.
 export const Unstyled: Story = {
 	parameters: { controls: { exclude: ['unstyled'] } },
 	render: (args) => (
 		<Row>
-			{ ([true, false] as const).map(unstyled => (
+			{ BOOLEAN_OPTIONS.map(unstyled => (
 				<Labeled key={ String(unstyled) } label={ String(unstyled) }>
 					<Group.Item { ...args } unstyled={ unstyled }>{ `unstyled=${unstyled}` }</Group.Item>
 				</Labeled>
@@ -171,15 +193,23 @@ export const Unstyled: Story = {
 		await expect(unstyledRoot).toHaveClass('inkq-group__item')
 		expect(hasModuleClass(styledRoot, 'inkq-group__item')).toBe(true)
 		expect(hasModuleClass(unstyledRoot, 'inkq-group__item')).toBe(false)
+
+		// The boolean-config-derived `inkq-item` global class is present only
+		// when styled — `getConfigClasses` now checks `check.isUnstyled` FIRST,
+		// before the boolean-shorthand branch, so this class is suppressed
+		// entirely when `unstyled`, even though it was never hashed to begin
+		// with.
+		await expect(styledRoot).toHaveClass('inkq-item')
+		await expect(unstyledRoot).not.toHaveClass('inkq-item')
 	},
 }
 
 /**
  * `Group.Item` reads `Group`'s context via `useGroupCtx(NAME)` —
- * `createRootCtx`'s REQUIRED reader (`useRootCtx`, not `useSafeRootCtx`) —
+ * `createCompoundCtx`'s REQUIRED reader (`useRootCtx`, not `useSafeRootCtx`) —
  * which throws synchronously during render when there's no enclosing
- * `<Group>`: `` `<${componentName} /> must be rendered inside <${name}>` ``,
- * i.e. exactly `<Group.Item /> must be rendered inside <Group>` (`NAME` is
+ * `<Group>`: `` `${name}: <${component} /> must be a direct child of <${name}>; …` ``,
+ * i.e. `<Group.Item /> must be a direct child of <Group>` (`NAME` is
  * `'Group.Item'`, the context's own registered `name` is `'Group'`). Only
  * this story renders `Group.Item` standalone — every other story in this
  * file wraps it in a real `<Group>` — and only the misuse case itself is
@@ -196,6 +226,6 @@ export const RequiresGroupParent: Story = {
 		const canvas = within(canvasElement),
 			alert = await canvas.findByRole('alert')
 
-		await expect(alert).toHaveTextContent('<Group.Item /> must be rendered inside <Group>')
+		await expect(alert).toHaveTextContent('<Group.Item /> must be a direct child of <Group>')
 	},
 }

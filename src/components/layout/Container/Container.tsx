@@ -1,8 +1,7 @@
-import { useProps, extractOtherProps } from '@/hooks/useProps'
-import { useStyles } from '@/hooks/useStyles'
-import { polymorphic } from '@/lib/component'
+import { extractOthers } from '@/hooks/useProps'
+import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
-import type { ListProps } from '@/lib/component/factory/types'
+import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Container.module.scss'
 
 const NAME = 'Container' as const,
@@ -19,37 +18,41 @@ interface ContainerProps {
 interface ContainerSpecs {
 	defaults: {
 		as: typeof TAG
-		props: ListProps<typeof DEFAULT_PROPS>
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: ContainerProps
+	selectors: ContainerSelectors
 }
 
-export const Container = polymorphic<ContainerSpecs>(_props => {
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props })
+type ContainerSelectors =
+	| 'root' | 'wrapper'
 
-	const { children, fullWidth, ...rest } = props
-	const { as, others } = extractOtherProps(rest)
+export const Container = polymorphic<ContainerSpecs>((_props, { useProps, useStyles }) => {
+	const props = useProps(_props)
+	const styles = useStyles({ props })
+
+	const { as, children, fullWidth, ...rest } = props
+	const others = extractOthers(rest)
 	const global = { block: fullWidth }
 
 	return (
 		<Box
-			as={ as }
-			attributes={ {
-				data: { block: !!fullWidth || null },
-			} }
 			{ ...styles('root', { global }) }
 			{ ...others }
+			as={ as }
+			attributes={ { data: { block: !!fullWidth || null } } }
 		>
 			<div { ...styles('wrapper', true) }>
 				{ children }
 			</div>
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
-Container.displayName = NAME
-Container.setDefaults({ props: DEFAULT_PROPS })
+Container.set({
+	defaultProps: DEFAULT_PROPS,
+	displayName: NAME,
+})
 
 export declare namespace Container {
 	export type Props = ContainerProps

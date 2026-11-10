@@ -2,19 +2,28 @@
 .inkq-grid {
 	$name: &;
 
-	--grid-cols: auto-fit;
-	--grid-item-width: minmax(var(--inkq-breakpoint-min), 1fr);
-
 	align-items: start;
 	display: grid;
-	gap: var(--inkq-space-grid);
-	grid-template-columns: repeat(var(--grid-cols), var(--grid-item-width));
+	gap: var(--grid-gap, var(--inkq-space-grid));
+	grid-template-columns: var(--grid-cols, repeat(auto-fit, minmax(0, 1fr)));
+
+	&--sidebar:has(> :nth-child(2):last-child):has(> aside) {
+		& > :is(aside) {
+			grid-column: span 1;
+		}
+
+		& > :not(aside) {
+			grid-column: span 3;
+		}
+	}
 }
 
 .inkq-grid-item {
 	$name: &;
 
+	grid-column: var(--grid-span-col);
+
 	& > :first-child {
-		margin-top: 0;
+		margin-block-start: 0;
 	}
 }

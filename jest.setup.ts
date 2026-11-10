@@ -19,7 +19,11 @@ class IntersectionObserverMock implements IntersectionObserver {
 	takeRecords = jest.fn((): IntersectionObserverEntry[] => [])
 }
 
-Object.defineProperty(window, 'IntersectionObserver', {
+// suites marked `@jest-environment node` (server-render tests) have no
+// `window`; the `global` definitions below still cover them
+const hasWindow = typeof window !== 'undefined'
+
+if (hasWindow) Object.defineProperty(window, 'IntersectionObserver', {
 	writable: true,
 	configurable: true,
 	value: IntersectionObserverMock,
@@ -28,4 +32,25 @@ Object.defineProperty(global, 'IntersectionObserver', {
 	writable: true,
 	configurable: true,
 	value: IntersectionObserverMock,
+})
+
+// jsdom has no `ResizeObserver` either. `Sidebar` constructs one in a layout
+// effect to measure its active row, so without a stub that render throws.
+// This stub never reports a resize, and jsdom lays nothing out, so every row
+// measures 0×0 — assert on whether the highlight renders, not on its box.
+class ResizeObserverMock implements ResizeObserver {
+	observe = jest.fn()
+	unobserve = jest.fn()
+	disconnect = jest.fn()
+}
+
+if (hasWindow) Object.defineProperty(window, 'ResizeObserver', {
+	writable: true,
+	configurable: true,
+	value: ResizeObserverMock,
+})
+Object.defineProperty(global, 'ResizeObserver', {
+	writable: true,
+	configurable: true,
+	value: ResizeObserverMock,
 })

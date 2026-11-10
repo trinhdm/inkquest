@@ -1,7 +1,7 @@
 import { expect, within } from 'storybook/test'
 import { getDefaultProps } from '@/hooks/useProps'
 import { Navbar } from './Navbar'
-import { NAV_ROUTES } from '@/utils/navigation'
+import { HEADER_GLOBAL_NAV, NavRoutes, type NavRoute } from '@/utils/navigation'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import moduleClasses from './Navbar.module.scss'
@@ -21,12 +21,54 @@ const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 	</div>
 )
 
+// Verified against the live `filterNavigation` (`src/utils/navigation.ts`): with NO
+// `routes` at all, `Navbar.tsx`'s own `filterNavigation(routes)` call hits
+// `filterNavigation`'s `isEmptyReturn = true` DEFAULT (Navbar never overrides it), so
+// `!routes?.length` short-circuits to `[]` — an unfiltered, routeless `<Navbar>` renders
+// NO menu items at all, not "the full tree" (see the dedicated `NoRoutes` story). A
+// meaningful `Default` therefore needs an EXPLICIT, representative `routes` list.
+// This one includes `Discover`'s and `Community`'s own children (unlike
+// `FilteredRoutes`' narrower `HEADER_GLOBAL_NAV` list), so at least one dropdown trigger
+// survives the filter. `Marketplace` has no route of its own, so it is never kept
+// itself: its only child, `Browse work` (`/marketplace`), is hoisted to the top level.
+const DEFAULT_ROUTES = [
+	NavRoutes.DISCOVER, NavRoutes.DISCOVER_STYLE,
+	NavRoutes.MARKETPLACE,
+	NavRoutes.COMMUNITY, NavRoutes.COMMUNITY_EVENTS, NavRoutes.COMMUNITY_FEED, NavRoutes.COMMUNITY_SPOTLIGHTS,
+]
+
+// A route that appears NOWHERE in `NAVIGATION_DATA` — unlike every real `NavRoute`
+// (all of them are used somewhere in the tree, several only as a child of a
+// parent whose own route is not in the list, like `User`, which still surfaces via
+// `filterNavigation`'s flattening branch; see the `NoMatchingRoutes` story below), this
+// one guarantees a genuinely empty filtered result. Cast because `NavRoute` is a closed
+// union of the real app routes.
+const UNMATCHED_ROUTE = '/does-not-exist' as NavRoute
+
+// `Navbar` can render TWO menus: the main navigation built from `routes` (given the semantic
+// `inkq-navbar__menu` class through `styles('menu')` and the id `${ useId() }-nav`), and a
+// user menu in the auth column (an `Avatar` trigger, id `${ useId() }-user`, no `className`)
+// that only exists when `useAuth()` has a `user`. No story provides an `AuthProvider`, so
+// the default context (`user: null`) applies: the user menu is absent and the auth buttons
+// (or the login/signup tip) show instead. Queries about the main navigation are still scoped
+// to the `inkq-navbar__menu` menu, so they hold if a user menu is ever added to a story.
+// The user menu has no stories yet.
+const MAIN_MENU_SELECTOR = '.inkq-navbar__menu'
+
+const queryMainMenu = (root: HTMLElement) => root.querySelector<HTMLElement>(MAIN_MENU_SELECTOR)
+
+const getMainMenu = (root: HTMLElement) => {
+	const menu = queryMainMenu(root)
+	if (!menu) throw new Error(`${ MAIN_MENU_SELECTOR } is not in the canvas`)
+	return menu
+}
+
 // `Navbar.Props` (the `declare namespace` export) is just the raw `NavbarProps`
 // interface — it doesn't include `as`/`unstyled`/`attributes`/etc., which only
 // exist on the actual accepted prop type, `PolymorphicProps<NavbarProps, C>`.
 // `Parameters<typeof Navbar>[0]` reads that real, wrapped type straight off the
-// component itself — the generic call signature's default `C` resolves to
-// `'nav'` here, since `NavbarSpecs`'s `defaults.as` is `'nav'`.
+// component itself. It fills `C` with its constraint (`ElementType`), not the
+// default `'nav'`, so `as` is any `ElementType` here.
 type NavbarStoryProps = Parameters<typeof Navbar>[0]
 type Story = StoryObj<NavbarStoryProps>
 
@@ -35,20 +77,31 @@ const meta: Meta<NavbarStoryProps> = {
 	title: 'Navigation/Navbar',
 	// Full-bleed bar: centering it in the canvas misrepresents the layout, so
 	// every story overrides the global `layout: 'centered'` default.
-	parameters: { layout: 'padded' },
+	// `Navbar.tsx` calls `usePathname()` (`next/navigation`) unconditionally
+	// (`pathname.slice(1)`), and `@storybook/nextjs-vite` only provides the App Router
+	// context that hook reads when `parameters.nextjs.appDirectory` is truthy — without
+	// it the pathname is `null` and the component throws. So every story in this file
+	// gets it from here; `LoginPath`/`SignupPath` override the pathname.
+	parameters: {
+		layout: 'padded',
+		nextjs: {
+			appDirectory: true,
+			navigation: { pathname: NavRoutes.HOME },
+		},
+	},
 	argTypes: {
 		routes: {
 			control: 'multi-select',
-			options: Object.values(NAV_ROUTES),
-			description: 'Allow-list handed to `filterNavigation(routes, NAVIGATION_DATA)`. Omitted/empty means "no filtering" — the full nav tree renders. Filtering is shallow-first: an item is kept only if its OWN `route` is in the list (so the route-less `User` item is always dropped), and its children are then filtered by the same list.',
+			options: Object.values(NavRoutes),
+			description: 'Allow-list handed to `filterNavigation(routes)`. `Navbar` passes only `routes` — leaving `layout` at `\'dropdown\'`, `isEmptyReturn` at `true` and `navitems` at `NAVIGATION_DATA` — so omitted/empty means NO items render at all (see `NoRoutes`), not "the full tree". A parent whose own route is not in the list (`Marketplace`, which has none, or `User`) is never itself kept, but its OWN matching children still surface, FLATTENED to the top level, if any of ITS children match (see `NoMatchingRoutes`). This prop only drives the main navigation (its `Menu` gets the id `${ useId() }-nav`); the user menu `Navbar` renders for a signed-in user (id `${ useId() }-user`) is built from the `User` routes instead.',
 		},
 		as: {
 			control: false,
-			description: '`Navbar` forwards `as` to its root `<Box>` via `extractOtherProps`, so the rendered tag genuinely changes — see `AsElement`. Note `Navbar` also hardcodes `role="navigation"` on that same root `<Box>`, independent of `as` — that\'s the only reason `getAllByRole(\'navigation\')` still resolves the `as="div"`/`as="section"` cases in `AsElement`, which otherwise carry no implicit navigation landmark role.',
+			description: '`Navbar.tsx` destructures `as` and passes it to its root `<Box>` (`as={ as }`), so the rendered tag genuinely changes — see `AsElement`. `Navbar` also sets `role={ as === \'nav\' ? undefined : \'navigation\' }` on that same root `<Box>`: a real `<nav>` relies on its implicit landmark role and carries no `role` attribute, while any other tag gets an explicit `role="navigation"` — that\'s the only reason `getAllByRole(\'navigation\')` resolves the `as="div"`/`as="section"` cases in `AsElement`, which otherwise carry no implicit navigation landmark role.',
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Navbar`\'s own `NavbarProps`. The semantic base class (`inkq-navbar`, `inkq-navbar__wrapper`, `inkq-navbar__inner`, `inkq-navbar__col`, `inkq-navbar__menu`) is ALWAYS emitted regardless — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it, and only where `Navbar.module.scss` actually declares a hash to suppress. The render tree is root → wrapper (`styles(\'wrapper\', true)`, which ALSO unconditionally emits a global `inkq-wrapper` class) → inner → col ×3 → menu (`styles(\'menu\')`, no config). `Navbar.module.scss` declares only `.inkq-navbar`, `&__inner`, and `&__col` — `&__wrapper`/`&__menu` have no SCSS rule at all, so those two never carry a module hash, styled or unstyled. See the `Unstyled` story.',
+			description: 'Comes from `FactoryContract` (via `_PolymorphicContract`), not `Navbar`\'s own `NavbarProps`. The semantic classes (`inkq-navbar`, `inkq-navbar__wrapper`, `inkq-navbar__inner`, `inkq-navbar__col`, `inkq-navbar__menu`, `inkq-navbar__buttons`, and on `/login`/`/signup` `inkq-navbar__tip`) are still emitted regardless; `unstyled` also reaches the root `<Box>` through `others`, where it would drop non-state `data-*` attributes (`Navbar` sets none). `Navbar` defines no tokens, so there are none to drop. `Navbar.tsx` does not forward `unstyled` to the nested `Menu`/`Button.Group`, so those keep their own styling. The render tree is root → wrapper (`styles(\'wrapper\', true)`) → inner → the logo col, then the `<Menu>` (when there are items) and the auth col. `menu` (`styles(\'menu\')`, no config) is applied to that `<Menu>`, which sits directly in `inner` with no `col` around it, and `buttons` (`styles(\'buttons\')`, no config) is applied to the auth `Button.Group` inside the auth col — both land on the nested component\'s own root. So there are 2 `col` divs per bar. `styles(\'wrapper\', true)` is the BOOLEAN-shorthand config form — `getConfigClasses` now checks `check.isUnstyled` FIRST, before the boolean-shorthand branch, so the global `inkq-wrapper` class it emits is suppressed entirely when `unstyled`, same as any object-config class. For the other plain `styles(selector)` calls (no config) the effect is dropping the CSS-module hash normally appended alongside, and only where `Navbar.module.scss` actually declares a rule to hash — `&__inner`/`&__col`/`&__buttons`/`&__tip` do (`tip` is a plain `styles(\'tip\')` call rendered only on `/login`/`/signup`, see `LoginPath`/`SignupPath`); `&__wrapper`/`&__menu` have no SCSS rule at all, so those two never carry a hash, styled or unstyled. See the `Unstyled` story.',
 		},
 	},
 	args: {
@@ -59,112 +112,253 @@ const meta: Meta<NavbarStoryProps> = {
 export default meta
 
 /**
- * No `routes`, so `filterNavigation` short-circuits and the entire
- * `NAVIGATION_DATA` tree renders: 7 top-level entries, 3 of which
- * (`Discover`, `Community`, `User`) get a dropdown trigger `<button>`.
+ * `DEFAULT_ROUTES` includes `Discover`'s and `Community`'s own children, so both
+ * survive `filterNavigation` WITH a non-empty `menu` and render a dropdown trigger;
+ * `Marketplace` has no route, so it is replaced by its only child, `Browse work`, which
+ * stays a plain link. 3 top-level entries, 2 dropdown triggers (`Discover`, `Community`).
+ *
+ * The main `Menu` has the id `${ useId() }-nav` (so its items are prefixed with it). A user
+ * menu (`-user`) would only render for a signed-in user, which no story provides. These
+ * assertions are scoped to the main navigation menu either way.
  *
  * Note: `Navbar` passes `{ ...styles('menu') }` (a `className`/`style` pair)
- * to `<Menu>`. `Menu.tsx` destructures `className` out of its own props
- * BEFORE spreading `...rest` onto its root `<ul>` — so that className never
- * lands on the `<ul>` itself at all. Instead it's forwarded as the `className`
- * prop of every top-level `MenuItem`, which `getClassName.tsx`'s
- * `inheritClasses` logic then uses to rename each item's own root class from
- * `inkq-menu-item` to `inkq-navbar__menu-item` (since `'menu-item'.startsWith('menu')`).
- * Assertions below stick to roles/ARIA rather than literal class names for
- * that reason.
+ * to `<Menu>`. `Menu.tsx` destructures `className` out of its own props, so it is
+ * not spread onto the root through `others` — but it hands its full props to
+ * `useStyles`, so the root `<ul>`'s own `inkq-menu` class is replaced by
+ * `inkq-navbar__menu`. `className` is also forwarded as the `className` prop of
+ * every top-level `MenuItem`, which `getClassName.tsx`'s `inheritClasses` logic
+ * then uses to rename each item's own root class from `inkq-menu-item` to
+ * `inkq-navbar__menu-item` (since `'menu-item'.startsWith('menu')`).
+ * Assertions below stick to roles/ARIA rather than literal class names.
  */
 export const Default: Story = {
+	args: { routes: DEFAULT_ROUTES },
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement),
 			nav = canvas.getByRole('navigation')
 
 		await expect(nav.tagName).toBe('NAV')
 
-		const menubar = within(nav).getByRole('menubar')
-		await expect(within(menubar).getAllByRole('menuitem')).toHaveLength(7)
+		// Closed dropdown submenus are mounted but hidden by CSS, so only the top
+		// level counts here.
+		const menubar = getMainMenu(canvasElement)
+		await expect(within(menubar).getAllByRole('menuitem').map(item => item.textContent)).toEqual([
+			'Discover', 'Browse work', 'Community',
+		])
+		await expect(within(menubar).getAllByRole('button')).toHaveLength(2)
 
-		// The two `Button.Group` auth buttons. `Button.tsx` only sets an
+		// The two `Button.Group` auth buttons. `Navbar.tsx` now renders both
+		// with an `href` (`<Button href="/login" variant="text">Log in</Button>`,
+		// `<Button href="/signup">Sign up</Button>`), so `Button.tsx` takes its
+		// link branch and renders an `<a>` via `next/link` — whose implicit
+		// ARIA role is `link`, not `button`. `Button.tsx` only sets an
 		// `aria-label` when `showLabel && ariaLabel.length` (`aria = { label:
 		// !!(showLabel && ariaLabel.length) ? ariaLabel : undefined }`), and
 		// `Navbar` renders these with no `showLabel` at all — so NO `aria-label`
-		// is emitted here. The `getByRole('button', { name })` queries below
+		// is emitted here. The `getByRole('link', { name })` queries below
 		// still pass because Testing Library's accessible-name computation
-		// falls back to the button's own text content when there's no explicit
-		// `aria-label`.
-		await expect(canvas.getByRole('button', { name: 'Log in' })).toBeInTheDocument()
-		await expect(canvas.getByRole('button', { name: 'Sign up' })).toBeInTheDocument()
-		await expect(canvas.getAllByRole('button')).toHaveLength(5)
+		// falls back to the link's own text content when there's no explicit
+		// `aria-label`. With both auth buttons now links, the only remaining
+		// `button`-role elements on the bar are the 2 dropdown triggers
+		// asserted just above.
+		await expect(canvas.getByRole('link', { name: 'Log in' })).toBeInTheDocument()
+		await expect(canvas.getByRole('link', { name: 'Sign up' })).toBeInTheDocument()
 	},
 }
 
 /**
- * The exact `routes` allow-list used by the app shell (`src/app/layout.tsx`).
- * Every child route is excluded, so no kept item retains a non-empty `menu` —
- * no dropdown triggers survive. `filterNavigation` computes each kept item's
- * `menu` as `item.menu && filterNavigation(routes, item.menu)`: `Discover`
- * and `Community` both HAD a `menu` array, so they get filtered down to `[]`
- * (all their children's routes are excluded); `Marketplace` had no `menu` at
- * all, so it alone gets `undefined`. Either way `MenuItem.tsx` gates its
- * dropdown trigger on `isDropdown = !!menu?.length`, so both `[]` and
- * `undefined` render as a plain link — the assertions below hold regardless.
+ * `Navbar.tsx` calls `usePathname()` (`next/navigation`) and, on `/login`, swaps the
+ * `Button.Group` of auth buttons for a `tip` `<span>` ("New to Inkquest?") plus ONE
+ * outline `Button` linking to `/signup`. `@storybook/nextjs-vite` only supplies the
+ * App Router pathname context when `parameters.nextjs.appDirectory` is truthy; the meta
+ * sets that for every story (at `/`), and this story (and `SignupPath`) override only
+ * the pathname.
  */
-export const FilteredRoutes: Story = {
-	args: {
-		routes: [
-			NAV_ROUTES.DISCOVER,
-			NAV_ROUTES.MARKETPLACE,
-			NAV_ROUTES.COMMUNITY,
-		],
-	},
+export const LoginPath: Story = {
+	parameters: { nextjs: { appDirectory: true, navigation: { pathname: '/login' } } },
 	play: async ({ canvasElement }) => {
-		const canvas = within(canvasElement),
-			menubar = canvas.getByRole('menubar'),
-			items = within(menubar).getAllByRole('menuitem')
+		const canvas = within(canvasElement)
 
-		await expect(items.map(item => item.textContent)).toEqual([
-			'Discover', 'Marketplace', 'Community',
-		])
+		await expect(canvas.getByText('New to Inkquest?')).toBeInTheDocument()
+		await expect(canvasElement.querySelectorAll('.inkq-navbar__tip')).toHaveLength(1)
 
-		// `Discover`'s only child (`/discover/style`) isn't in the allow-list, so
-		// the item is flattened to a plain link — no trigger anywhere.
-		await expect(within(menubar).queryAllByRole('button')).toHaveLength(0)
-		await expect(canvas.getAllByRole('button')).toHaveLength(2)
+		const signUp = canvas.getByRole('link', { name: 'Sign up' })
+		await expect(signUp).toHaveAttribute('href', '/signup')
+
+		// A single link — the login/signup pair (`.inkq-navbar__buttons`) is absent.
+		await expect(canvas.queryByRole('link', { name: 'Log in' })).not.toBeInTheDocument()
+		await expect(canvasElement.querySelector('.inkq-navbar__buttons')).toBeNull()
 	},
 }
 
-export const SingleRoute: Story = {
-	args: { routes: [NAV_ROUTES.MARKETPLACE] },
+/**
+ * The mirror of `LoginPath`: on `/signup` the `tip` reads "Already have an account?"
+ * and the single outline `Button` reads "Login" and links to `/login`.
+ */
+export const SignupPath: Story = {
+	parameters: { nextjs: { appDirectory: true, navigation: { pathname: '/signup' } } },
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement)
+
+		await expect(canvas.getByText('Already have an account?')).toBeInTheDocument()
+		await expect(canvasElement.querySelectorAll('.inkq-navbar__tip')).toHaveLength(1)
+
+		const login = canvas.getByRole('link', { name: 'Login' })
+		await expect(login).toHaveAttribute('href', '/login')
+
+		await expect(canvas.queryByRole('link', { name: 'Sign up' })).not.toBeInTheDocument()
+		await expect(canvasElement.querySelector('.inkq-navbar__buttons')).toBeNull()
+	},
 }
 
 /**
- * Edge case: `routes` that match nothing. `filterNavigation` returns `[]`, and
- * `Navbar` guards the menu with `!!navItems.length`, so the `<Menu>` is not
- * rendered at all — only the logo column and the auth buttons remain.
+ * The `auth` toolbar global (`.storybook/preview.tsx`) wraps every story in an `AuthProvider`.
+ * `globals: { auth: 'in' }` logs in `MOCK_ACCOUNT` for this story only. The Log in / Sign up
+ * group goes away and the avatar menu takes its place. Log out is a `button` that calls the
+ * mocked `logout`, so it shows up in the Actions panel and never touches the server.
  *
- * `/settings` is a deliberate choice: it exists in `NAV_ROUTES`, but only as a
- * child of the route-less `User` item, which `filterNavigation` drops outright
- * (it keys off `item.route` before ever recursing into `item.menu`).
+ * `Log out` sits in a closed dropdown (`visibility: hidden` until it opens), so it is queried
+ * with `hidden: true`. The avatar trigger is `aria-hidden`, so it has no name: it is found by id.
  */
-export const NoMatchingRoutes: Story = {
-	args: { routes: [NAV_ROUTES.SETTINGS] },
+export const LoggedIn: Story = {
+	args: { routes: DEFAULT_ROUTES },
+	globals: { auth: 'in' },
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement)
+		await expect(canvasElement.querySelector('[id$="-user-trigger"]')).not.toBeNull()
+		await expect(canvas.queryByRole('link', { name: 'Log in' })).not.toBeInTheDocument()
+		await expect(canvas.queryByRole('link', { name: 'Sign up' })).not.toBeInTheDocument()
+		await expect(canvasElement.querySelector('.inkq-navbar__buttons')).toBeNull()
+		const logOut = canvas.getByRole('menuitem', { name: 'Log out', hidden: true })
+		await expect(logOut.tagName).toBe('BUTTON')
+	},
+}
+/**
+ * Logged in on `/login`: the tip and the outline button are for visitors who are not in yet,
+ * so neither shows. Only the avatar menu is left in the right-hand column.
+ */
+export const LoggedInOnLogin: Story = {
+	globals: { auth: 'in' },
+	parameters: { nextjs: { appDirectory: true, navigation: { pathname: '/login' } } },
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement)
+		await expect(canvasElement.querySelector('[id$="-user-trigger"]')).not.toBeNull()
+		await expect(canvas.queryByText('New to Inkquest?')).not.toBeInTheDocument()
+		await expect(canvasElement.querySelectorAll('.inkq-navbar__tip')).toHaveLength(0)
+		await expect(canvas.queryByRole('link', { name: 'Sign up' })).not.toBeInTheDocument()
+	},
+}
+
+/**
+ * Edge case: NO `routes` at all. `filterNavigation`'s `isEmptyReturn` defaults to
+ * `true`, and `Navbar.tsx` never overrides it, so `!routes?.length` short-circuits to
+ * an EMPTY array — not "the full tree". `Navbar` guards its middle column with
+ * `!!navitems.length`, so no main `<Menu>` renders at all; only the logo column and the
+ * auth buttons remain (there is no signed-in user, so no user menu).
+ */
+export const NoRoutes: Story = {
+	args: { routes: undefined },
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement)
 
 		await expect(canvas.getByRole('navigation')).toBeInTheDocument()
-		await expect(canvas.queryByRole('menubar')).not.toBeInTheDocument()
-		await expect(canvas.queryAllByRole('menuitem')).toHaveLength(0)
+		await expect(queryMainMenu(canvasElement)).toBeNull()
 
-		await expect(canvas.getAllByRole('button')).toHaveLength(2)
-		await expect(canvas.getByText('logo')).toBeInTheDocument()
+		// The two auth buttons carry `href` (see `Default`'s play function),
+		// so they render as `<a>`s with an implicit `link` role, not `button`.
+		await expect(canvas.getByRole('link', { name: 'Log in' })).toBeInTheDocument()
+		await expect(canvas.getByRole('link', { name: 'Sign up' })).toBeInTheDocument()
 	},
 }
 
 /**
- * `Navbar` forwards `as` to its root `<Box>` (via `extractOtherProps`), so the
- * rendered tag genuinely changes. `Navbar` also hardcodes `role="navigation"`
- * on that same root `<Box>`, independent of `as` — that's the ONLY reason
- * `getAllByRole('navigation')` resolves the `as="div"`/`as="section"` cases
- * below, since neither tag carries an implicit navigation landmark role.
+ * The `HEADER_GLOBAL_NAV` allow-list (`@/utils/navigation`), which `Header` applies as
+ * its default `navbar` routes. Every child route is excluded, so no kept item
+ * retains a non-empty `menu` — no dropdown triggers survive. In its default
+ * `'dropdown'` layout, `filterNavigation`'s inner `filterNavitems` computes each
+ * item's `submenu` as `item.menu && filterNavitems(item.menu, routes)`: `Discover`
+ * and `Community` both HAD a `menu` array, so they get filtered down to `[]`
+ * (all their children's routes are excluded); `Marketplace` has no route, so it is
+ * never kept itself and is replaced by its only child, `Browse work`
+ * (`/marketplace`), which has no `menu` and so gets `undefined`. Either way
+ * `MenuItem.tsx` gates its dropdown trigger on `isDropdown = !!menu?.length`, so both
+ * `[]` and `undefined` render as a plain link — the assertions below hold regardless.
+ */
+export const FilteredRoutes: Story = {
+	args: { routes: HEADER_GLOBAL_NAV },
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			menubar = getMainMenu(canvasElement),
+			items = within(menubar).getAllByRole('menuitem')
+
+		await expect(items.map(item => item.textContent)).toEqual([
+			'Discover', 'Browse work', 'Community',
+		])
+
+		// `Discover`'s children (`/discover/artists`, `/discover/style`) aren't in the
+		// allow-list, so the item is flattened to a plain link — no trigger anywhere in
+		// the main menu. The two auth buttons carry `href` (see `Default`'s play
+		// function) and render as `<a>`s.
+		await expect(within(menubar).queryAllByRole('button')).toHaveLength(0)
+		await expect(canvas.getByRole('link', { name: 'Log in' })).toBeInTheDocument()
+		await expect(canvas.getByRole('link', { name: 'Sign up' })).toBeInTheDocument()
+	},
+}
+
+/**
+ * `Marketplace` has no route of its own, so the single route `/marketplace` keeps only its
+ * child `Browse work`, hoisted to the top level: one plain link, no trigger.
+ */
+export const SingleRoute: Story = {
+	args: { routes: [NavRoutes.MARKETPLACE] },
+	play: async ({ canvasElement }) => {
+		const menubar = getMainMenu(canvasElement),
+			items = within(menubar).getAllByRole('menuitem')
+
+		await expect(items.map(item => item.textContent)).toEqual(['Browse work'])
+		await expect(items[0]).toHaveAttribute('href', NavRoutes.MARKETPLACE)
+		await expect(within(menubar).queryAllByRole('button')).toHaveLength(0)
+	},
+}
+
+/**
+ * Edge case: `routes` that match NOTHING anywhere in `NAVIGATION_DATA`.
+ * `filterNavigation` returns `[]`, and `Navbar` guards the menu with
+ * `!!navitems.length`, so the main `<Menu>` is not rendered at all — only the logo
+ * column and the auth buttons remain.
+ *
+ * `NavRoutes.USER_SETTINGS` (`/settings`) is deliberately NOT used here even though it
+ * "matches nothing" at the TOP level: it's a real child of the `User` item (whose own
+ * route, `/profile`, is not in the list), and `filterNavigation`'s recursive
+ * `filterNavitems` FLATTENS an unmatched parent's own matching children to the top
+ * level whenever `submenu` is non-empty (`else if (submenu) list.push(...submenu)`) —
+ * so `routes: [USER_SETTINGS]` actually renders ONE menu item (`Settings`), not zero.
+ * Every real `NavRoute` is used somewhere in the tree this same way, so a genuinely
+ * unmatched fixture needs a route that isn't a `NavRoute` at all (`UNMATCHED_ROUTE`).
+ */
+export const NoMatchingRoutes: Story = {
+	args: { routes: [UNMATCHED_ROUTE] },
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement)
+
+		await expect(canvas.getByRole('navigation')).toBeInTheDocument()
+		await expect(queryMainMenu(canvasElement)).toBeNull()
+
+		// The two auth buttons carry `href` (see `Default`'s play function), so
+		// they render as `<a>`s with an implicit `link` role, not `button`.
+		await expect(canvas.getByRole('link', { name: 'Log in' })).toBeInTheDocument()
+		await expect(canvas.getByRole('link', { name: 'Sign up' })).toBeInTheDocument()
+	},
+}
+
+/**
+ * `Navbar.tsx` destructures `as` and passes it to its root `<Box>` (`as={ as }`),
+ * so the rendered tag genuinely changes. `Navbar` also sets
+ * `role={ as === 'nav' ? undefined : 'navigation' }` on that same root `<Box>`: the real
+ * `<nav>` relies on its implicit landmark role and has NO `role` attribute, while the
+ * `div` and `section` get an explicit `role="navigation"` — that's the ONLY reason
+ * `getAllByRole('navigation')` resolves them, since neither tag carries an implicit
+ * navigation landmark role.
  */
 export const AsElement: Story = {
 	render: (args) => (
@@ -191,25 +385,35 @@ export const AsElement: Story = {
 		await expect(asNav.tagName).toBe('NAV')
 		await expect(asDiv.tagName).toBe('DIV')
 		await expect(asSection.tagName).toBe('SECTION')
+
+		// The `<nav>` is a landmark by itself; only the other tags need the explicit role.
+		await expect(asNav).not.toHaveAttribute('role')
+		await expect(asDiv).toHaveAttribute('role', 'navigation')
+		await expect(asSection).toHaveAttribute('role', 'navigation')
 	},
 }
 
 /**
  * `unstyled` never removes the semantic base classes (`inkq-navbar`,
- * `inkq-navbar__wrapper`, `inkq-navbar__inner`, `inkq-navbar__col`) — it only
- * suppresses the CSS-module hash normally appended alongside them, and only
- * where `Navbar.module.scss` actually declares a rule to hash. Render tree:
- * root → wrapper (`styles('wrapper', true)`) → inner → col ×3. The wrapper's
- * `&__wrapper` selector has no SCSS declaration at all, so it never carries a
- * module hash, styled or unstyled alike — but the boolean `styles('wrapper',
- * true)` config ALSO unconditionally emits a literal, unhashed global
- * `inkq-wrapper` class (identical mechanism to `Container`/`Footer`'s own
- * wrapper), present regardless of `unstyled`. `&__inner`/`&__col` DO have
- * their own SCSS declarations, so they behave as expected: a real
- * CSS-module hash is appended when styled and suppressed when `unstyled`.
+ * `inkq-navbar__wrapper`, `inkq-navbar__inner`, `inkq-navbar__col`, `inkq-navbar__buttons`).
+ * Render tree: root → wrapper (`styles('wrapper', true)`) → inner → the logo col, the
+ * `Menu` (directly in `inner`, no col around it) and the auth col, so 2 cols, with
+ * `buttons` (`styles('buttons')`) landing on the auth `Button.Group`'s own root inside
+ * the auth col, not on that col div itself. `styles('wrapper', true)` is the
+ * BOOLEAN-shorthand config form — `getConfigClasses` in `getClassName.tsx` now checks
+ * `check.isUnstyled` FIRST, before the boolean-shorthand branch, so the literal global
+ * `inkq-wrapper` class it emits is suppressed entirely when `unstyled` (identical
+ * mechanism to `Container`/`Footer`'s own wrapper). The wrapper's `&__wrapper` selector
+ * has no SCSS declaration at all, so it never carries a module hash either way.
+ * `&__inner`/`&__col`/`&__buttons` DO have their own plain (config-less) SCSS
+ * declarations, so THOSE behave as expected: a real CSS-module hash is appended when
+ * styled and suppressed when `unstyled`, with the base class always present either way.
  */
 export const Unstyled: Story = {
 	parameters: { controls: { exclude: ['unstyled'] } },
+	// Explicit `routes` so the `Menu` renders too; it isn't wrapped in a col, so the col
+	// count is 2 either way.
+	args: { routes: DEFAULT_ROUTES },
 	render: (args) => (
 		<Row>
 			<Group label="true">
@@ -244,9 +448,12 @@ export const Unstyled: Story = {
 
 		// Wrapper (`inkq-navbar__wrapper`): base class always present; NO
 		// module hash ever exists to suppress (`&__wrapper` has no SCSS rule).
-		// The boolean-config global `inkq-wrapper` class is unconditional.
-		await expect(unstyledWrapper).toHaveClass('inkq-navbar__wrapper', 'inkq-wrapper')
+		// The boolean-config global `inkq-wrapper` class is present ONLY WHEN STYLED —
+		// `getConfigClasses` now checks `check.isUnstyled` FIRST, before the boolean-shorthand branch.
+		//
 		await expect(styledWrapper).toHaveClass('inkq-navbar__wrapper', 'inkq-wrapper')
+		await expect(unstyledWrapper).toHaveClass('inkq-navbar__wrapper')
+		await expect(unstyledWrapper).not.toHaveClass('inkq-wrapper')
 		expect(hasModuleClass(unstyledWrapper, 'inkq-navbar__wrapper')).toBe(false)
 		expect(hasModuleClass(styledWrapper, 'inkq-navbar__wrapper')).toBe(false)
 
@@ -263,11 +470,25 @@ export const Unstyled: Story = {
 		const unstyledCols = unstyledInner.querySelectorAll('.inkq-navbar__col'),
 			styledCols = styledInner.querySelectorAll('.inkq-navbar__col')
 
-		// Col (`inkq-navbar__col`): base class always present, 3 per bar;
-		// module hash only when styled.
-		await expect(unstyledCols).toHaveLength(3)
-		await expect(styledCols).toHaveLength(3)
+		// Col (`inkq-navbar__col`): base class always present, 2 per bar (logo and
+		// auth; the `Menu` between them has no col); module hash only when styled.
+		await expect(unstyledCols).toHaveLength(2)
+		await expect(styledCols).toHaveLength(2)
 		expect(hasModuleClass(unstyledCols[0], 'inkq-navbar__col')).toBe(false)
 		expect(hasModuleClass(styledCols[0], 'inkq-navbar__col')).toBe(true)
+
+		// `buttons` (`inkq-navbar__buttons`) is NOT asserted here like
+		// `inner`/`col` above: it lands on the auth `Button.Group`'s own root,
+		// which independently carries its OWN `inkq-button-group` CSS-module
+		// hash and `module` config classes (orientation/size) regardless of
+		// THIS `Navbar`'s `unstyled` state (`Button.Group`'s own `unstyled` prop
+		// is never set by `Navbar`) — so a simple "any extra class beyond the
+		// base" check doesn't cleanly distinguish styled from unstyled here the
+		// way it does for `inner`/`col`.
+		const unstyledButtons = unstyledRoot.querySelector('.inkq-navbar__buttons') as HTMLElement,
+			styledButtons = styledRoot.querySelector('.inkq-navbar__buttons') as HTMLElement
+
+		await expect(unstyledButtons).toHaveClass('inkq-navbar__buttons')
+		await expect(styledButtons).toHaveClass('inkq-navbar__buttons')
 	},
 }

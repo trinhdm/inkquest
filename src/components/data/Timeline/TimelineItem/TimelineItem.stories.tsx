@@ -47,7 +47,7 @@ const meta: Meta<TimelineItemStoryProps> = {
 	argTypes: {
 		title: {
 			control: 'text',
-			description: 'Optional. Genuinely conditional — `{ title && (<span {...styles(\'title\')}>{title}</span>) }` — the element itself is entirely absent from the DOM when omitted (unlike `Quote`\'s `author`/`Statistic`\'s `caption`, which always render an empty element). See the `TitlePresence` story.',
+			description: 'Optional. Genuinely conditional — `{ title && (<span {...styles(\'title\')}>{title}</span>) }` — the element itself is entirely absent from the DOM when omitted (unlike `Statistic`\'s `caption`, which always renders an empty element). See the `TitlePresence` story.',
 		},
 		content: {
 			control: 'text',
@@ -119,7 +119,7 @@ export const Bullet: Story = {
 		<Row>
 			<Group label="custom bullet">
 				<Timeline>
-					<Timeline.Item { ...args } bullet={ <Icon type="confirm" /> } />
+					<Timeline.Item { ...args } bullet={ <Icon type="check" /> } />
 				</Timeline>
 			</Group>
 			<Group label="default (empty marker)">
@@ -148,7 +148,7 @@ export const Bullet: Story = {
 // per `getClassName.tsx`, the base class is now ALWAYS emitted. It only
 // suppresses the CSS-module-hashed class normally appended alongside it, for
 // every one of the seven selectors `TimelineItem.tsx` styles — unlike
-// `Quote`/`Statistic`'s `caption`, all seven have a real declaration in
+// `Statistic`'s `caption`, all seven have a real declaration in
 // `Timeline.module.scss`, so all seven genuinely carry a hash when styled.
 export const Unstyled: Story = {
 	parameters: { controls: { exclude: ['unstyled'] } },

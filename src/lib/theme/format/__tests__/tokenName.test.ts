@@ -47,29 +47,41 @@ describe('formatToken', () => {
 
 		it('also explodes an already-hyphenated middle segment the same way', () => {
 			expect(formatToken({ path: ['fontFamily', 'sans-serif', 'stack'] })).toBe(
-				'--font-family-family-sans-serif-stack'
+				'--font-family-sans-serif-stack'
 			)
 		})
 
-		it('BUG: duplicates a word when the FIRST path segment itself is multi-word, because the token name is built from the raw first segment while the route\'s split remainder is reattached alongside it', () => {
-			// path[0] 'borderRadius' -> kebab 'border-radius' -> name = 'border-radius'
-			// route splits 'borderRadius' into ['border', 'radius'] too, and
-			// formatToken does `[name, ...route.slice(1)]`, re-including 'radius'
+		// the token is built from the split route alone, so a multi-word FIRST
+		// segment contributes its words exactly once
+		it('splits a multi-word first segment without repeating any of its words', () => {
 			expect(formatToken({ path: ['borderRadius', 'topLeft', '150.5'] })).toBe(
-				'--border-radius-radius-top-left-150.5'
+				'--border-radius-top-left-150.5'
 			)
-		})
-
-		it('BUG: the same first-segment duplication happens for "fontFamily" as the leading segment', () => {
 			expect(formatToken({ path: ['fontFamily', 'nested', 'weight'] })).toBe(
-				'--font-family-family-nested-weight'
+				'--font-family-nested-weight'
 			)
 		})
 
-		it('deduplicates identical words produced by splitting, but only within the flattened route -- the name+route reassembly can still reintroduce a duplicate', () => {
-			// 'colorRed' -> ['color', 'red']; final 'red' segment collides with
-			// the split 'red', so the Set removes the duplicate from route itself
-			expect(formatToken({ path: ['colorRed', 'other', 'red'] })).toBe('--color-red-red-other')
+		// the real theme relies on this: every `font` group key is followed by a
+		// `fontFamily` / `fontSize` / `fontWeight` key, so splitting yields `font`
+		// twice in a row, and a word that repeats the one directly before it is dropped
+		it('collapses a group word repeated by its camelCase child key', () => {
+			expect(formatToken({ path: ['font', 'fontFamily', 'display'], prefix: 'inkq' })).toBe(
+				'--inkq-font-family-display'
+			)
+			expect(formatToken({ path: ['font', 'fontSize', 'h1', 'base'], prefix: 'inkq' })).toBe(
+				'--inkq-font-size-h1'
+			)
+		})
+
+		// only a back-to-back repeat is dropped, so the same word later in the
+		// path is a real segment and stays
+		it('keeps a later, non-adjacent repeat of a word after a segment has been split', () => {
+			expect(formatToken({ path: ['colorRed', 'other', 'red'] })).toBe('--color-red-other-red')
+		})
+
+		it('keeps a repeated word when no segment is split', () => {
+			expect(formatToken({ path: ['space', 'gap', 'gap'] })).toBe('--space-gap-gap')
 		})
 	})
 

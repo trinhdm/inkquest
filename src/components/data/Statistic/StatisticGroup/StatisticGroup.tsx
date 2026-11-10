@@ -1,53 +1,83 @@
-import { useProps, extractOtherProps } from '@/hooks/useProps'
-import { useStyles } from '@/hooks/useStyles'
-import { polymorphic } from '@/lib/component'
-import { Group } from '@/components/layout'
+import { extractOthers } from '@/hooks/useProps'
+import { getSharedTokens, type StatisticTokens } from '../utils'
+import { polymorphic } from '@/lib/component/factory'
+import { Group, GROUP_CASCADE_PROPS } from '@/components/layout/Group'
 import { StatisticGroupProvider, type StatisticGroupContext } from './StatisticGroup.context'
-import type { ListProps } from '@/lib/component/factory/types'
+import type { PropsDefaultList } from '@/lib/component/factory/types'
+import type { Statistic } from '../Statistic'
 import classes from '../Statistic.module.scss'
 
-const NAME = 'Statistic.Group' as const
+const NAME = 'Statistic.Group' as const,
+	TAG = 'div' as const
+
 const DEFAULT_PROPS = {
 	animated: true,
+	as: TAG,
 	columns: 4,
 	divider: true,
 	duration: 3000,
 	once: false,
+	order: 'descend',
+	size: 'lg',
 	stagger: 200,
 } as const
 
 interface StatisticGroupProps
-	extends Omit<Group.Props, 'childName' | 'provider' | 'valuesCtx'>,
-		Pick<StatisticGroupContext, 'order' | 'size'> {}
-
-type StatisticGroupSpecs = {
-	defaults: { props: ListProps<typeof DEFAULT_PROPS> }
-	isCompound: true
-	props: StatisticGroupProps
+	extends Group.CompoundProps {
+	order?: Statistic.Props['order']
+	size?: Statistic.Props['size']
 }
 
-export const StatisticGroup = polymorphic<StatisticGroupSpecs>(_props => {
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props })
+interface StatisticGroupSpecs {
+	defaults: {
+		as: typeof TAG
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
+	}
+	isGroup: true
+	props: StatisticGroupProps
+	selectors: StatisticGroupSelectors
+	tokens: StatisticGroupTokens
+}
 
-	const { children, order, size, ...rest } = props
-	const { others } = extractOtherProps(rest)
+type StatisticGroupSelectors =
+	| 'root'
+
+type StatisticGroupTokens = {
+	root: StatisticTokens[keyof StatisticTokens]
+}
+
+const tokens = getSharedTokens('group')
+
+export const StatisticGroup = polymorphic<StatisticGroupSpecs>((_props, { useProps, useStyles }) => {
+	const props = useProps(_props)
+	const styles = useStyles({ props, tokens })
+
+	const {
+		as, children, order,
+		size, unstyled,
+		...rest
+	} = props
+
+	const others = extractOthers(rest, GROUP_CASCADE_PROPS)
 
 	return (
 		<Group
 			{ ...styles('root') }
 			{ ...others }
+			as={ as }
 			childName="Statistic"
 			provider={ StatisticGroupProvider }
-			valuesCtx={ { order, size } }
+			values={ { order, size, unstyled } }
 		>
 			{ children }
 		</Group>
 	)
-}, classes)
+}, { name: NAME, classes })
 
-StatisticGroup.displayName = NAME
-StatisticGroup.setDefaults({ props: DEFAULT_PROPS })
+StatisticGroup.set({
+	defaultProps: DEFAULT_PROPS,
+	displayName: NAME,
+})
 
 export declare namespace StatisticGroup {
 	export type Context = StatisticGroupContext

@@ -1,0 +1,346 @@
+@use 'sass:map';
+@use 'sass:meta';
+
+//	text
+
+@mixin fontSize($size: null) {
+	$fontSizes: (
+		body: var(--inkq-font-size-body),
+		caption: var(--inkq-font-size-caption),
+		control: var(--inkq-font-size-control),
+		label: var(--inkq-font-size-label),
+	);
+
+	@if meta.type-of($size) == 'string' {
+		$fontSize: map.get($fontSizes, $size);
+
+		@if $fontSize {
+			font-size: $fontSize;
+		}
+	}
+}
+
+@mixin caption($size: null) {
+	color: var(--inkq-color-text-tertiary);
+	font: var(--inkq-text-caption);
+	letter-spacing: var(--inkq-font-tracking-wide);
+	text-transform: uppercase;
+	text-wrap: balance;
+
+	@include fontSize($size);
+}
+
+@mixin eyebrow($size: null) {
+	color: var(--inkq-color-text-tertiary);
+	display: inline-block;
+	font: var(--inkq-text-eyebrow);
+	letter-spacing: var(--inkq-font-tracking-wide);
+	text-transform: uppercase;
+	text-wrap: pretty;
+
+	@include fontSize($size);
+}
+
+@mixin label($size: null) {
+	color: var(--inkq-color-action);
+	display: inline-block;
+	font-family: var(--inkq-font-family-mono);
+	font-weight: var(--inkq-font-weight-bold);
+	letter-spacing: var(--inkq-font-tracking-wide);
+	line-height: var(--inkq-font-leading-label);
+	text-transform: uppercase;
+	text-wrap: pretty;
+
+	@include fontSize($size);
+}
+
+@mixin prose($size: null) {
+	color: var(--inkq-color-text-secondary);
+	font: var(--inkq-text-prose);
+	text-wrap: pretty;
+
+	@include fontSize($size);
+}
+
+//	content
+
+@mixin blurb($marginBottom: var(--inkq-space-grid)) {
+	align-items: baseline;
+	display: flex;
+    background-color: var(--inkq-background-surface);
+    border: 1px solid var(--inkq-border);
+    border-radius: var(--inkq-border-radius-md);
+	font-size: var( --inkq-font-size-body);
+    gap: var(--inkq-space-group);
+    margin-block-end: $marginBottom;
+	padding: var(--inkq-space-group-lg);
+
+	&:last-child {
+		margin-block-end: 0;
+	}
+}
+
+@mixin list {
+	display: flex;
+	flex-direction: column;
+	list-style-type: disc;
+	margin-block: var(--inkq-gutter-content);
+	padding-inline-start: var(--inkq-indent-list);
+	row-gap: var(--inkq-gutter-list);
+
+	li {
+		display: list-item;
+	}
+
+	&:first-child {
+		margin-block-start: 0;
+	}
+
+	&:last-child {
+		margin-block-end: 0;
+	}
+}
+
+@mixin navmenu {
+	$name: &;
+
+	border-bottom: 1px solid var(--inkq-border);
+	min-height: var(--inkq-subnav-size);
+	z-index: 15;
+
+	&,
+	&__inner {
+		align-items: center;
+		display: flex;
+		position: relative;
+	}
+
+	&__inner {
+		column-gap: var(--inkq-space-menu);
+		max-width: fit-content;
+	}
+}
+
+@mixin navitem ($navitem-font-size: null) {
+	$name: &;
+
+	align-items: center;
+	border-bottom: 2px solid transparent;
+	column-gap: var(--inkq-space-icon);
+	cursor: pointer;
+	display: inline-flex;
+    flex-shrink: 0;
+	height: 100%;
+	padding-inline: var(--inkq-space-icon);
+	position: relative;
+
+	&__label {
+		color: var(--inkq-color-link);
+		display: block;
+		font: var(--inkq-text-navigation);
+		text-decoration: none;
+		white-space: nowrap;
+
+		@if $navitem-font-size {
+			font-size: $navitem-font-size;
+		}
+
+		#{$name}:where([data-active]) & {
+			color: var(--inkq-color-link-hover);
+			font-weight: var(--inkq-font-weight-bold);
+		}
+	}
+
+	&:hover {
+		color: var(--inkq-color-link-hover);
+	}
+}
+
+//	layout
+
+@mixin item-block {
+	background-color: var(--inkq-background-card);
+	border-radius: var(--inkq-border-radius-md);
+	border: 1px solid var(--inkq-border);
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-3);
+	height: 100%;
+	justify-content: space-between;
+	overflow: hidden;
+	padding: var(--space-7);
+	position: relative;
+}
+
+@mixin step {
+	align-items: start;
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	justify-content: start;
+	padding-block-start: var(--space-4);
+	position: relative;
+	row-gap: var(--space-3);
+}
+
+//	lines
+
+@mixin underline($animated: null, $colors: null) {
+	--underline-transition: var(--duration-gradual) var(--easing-out) var(--duration-fast);
+
+	$line-color: var(--link-color);
+	$line-color-hover: var(--link-color-hover, var(--link-color));
+
+	@if $colors {
+		@if meta.type-of($colors) == 'map' {
+			@if map.has-key($colors, 'base') {
+				$line-color: map.get($colors, 'base');
+			}
+
+			@if map.has-key($colors, 'hover') {
+				$line-color-hover: map.get($colors, 'hover');
+			}
+		} @else if meta.type-of($colors) == 'string' {
+			$line-color: $colors;
+			$line-color-hover: $colors;
+		}
+	}
+
+	display: inline-block;
+	max-width: fit-content;
+	overflow: hidden clip;
+	position: relative;
+	text-wrap: pretty;
+
+	&::after {
+		background-color: $line-color;
+		content: '';
+		display: block;
+		height: 1px;
+		inset: 0;
+		inset-block-start: auto;
+		pointer-events: none;
+		position: absolute;
+		transition: background-color var(--underline-transition);
+		user-select: none;
+		width: 100%;
+		will-change: background-color;
+	}
+
+	&:hover::after {
+		background-color: $line-color-hover;
+	}
+
+	@if $animated {
+		&::after {
+			transition: background-color var(--underline-transition),
+				transform var(--underline-transition);
+			will-change: background-color, transform;
+		}
+
+		&:disabled::after {
+			background-color: transparent;
+			transform: translateX(-101%);
+		}
+
+		&:not(:disabled, [data-loading]) {
+			cursor: pointer;
+			// transition-duration: var(--duration-gradual);
+
+			@if $animated == 'in' or $animated == true {
+				&::after {
+					transform: translateX(-101%);
+				}
+
+				&:hover::after {
+					transform: translateX(0);
+				}
+			} @else if $animated == 'out' {
+				&::after {
+					transform: translateX(0);
+				}
+
+				&:hover::after {
+					transform: translateX(-101%);
+				}
+			}
+		}
+	}
+}
+
+@mixin rail($anchor: 'bottom', $config: null) {
+	$rail-color: var(--inkq-color-action);
+	$rail-scale: 1;
+	$rail-size: 2px;
+	$rail-transition: var(--duration-gradual) var(--easing-out) var(--duration-fast);
+
+	@if meta.type-of($config) == 'map' {
+		@if map.has-key($config, 'color') {
+			$rail-color: map.get($config, 'color');
+		}
+
+		@if map.has-key($config, 'scale') {
+			$rail-scale: map.get($config, 'scale');
+		}
+
+		@if map.has-key($config, 'size') {
+			$rail-size: map.get($config, 'size');
+		}
+
+		@if map.has-key($config, 'transition') {
+			$rail-transition: map.get($config, 'transition');
+		}
+	}
+
+	background-color: $rail-color;
+	display: block;
+	pointer-events: none;
+	position: absolute;
+	transition: opacity $rail-transition, transform $rail-transition;
+	user-select: none;
+	z-index: 5;
+
+	// $rail-inset: calc(#{$rail-scale} * #{$rail-size});
+	$rail-inset: 0;
+
+	@if $anchor == 'bottom' or $anchor == 'top' {
+		height: $rail-size;
+		inset-inline: 0;
+		transform: scaleX(#{$rail-scale});
+
+		@if $anchor == 'bottom' {
+			inset-block: auto $rail-inset;
+			transform-origin: left bottom;
+		} @else {
+			inset-block: $rail-inset auto;
+			transform-origin: left top;
+		}
+	} @else if $anchor == 'left' or $anchor == 'right' {
+		inset-block: 0;
+		transform: scaleY(#{$rail-scale});
+		width: $rail-size;
+
+		@if $anchor == 'left' {
+			inset-inline: $rail-inset auto;
+			transform-origin: left top;
+		} @else {
+			inset-inline: auto $rail-inset;
+			transform-origin: right top;
+		}
+	}
+}
+
+//	misc
+
+@mixin hidden {
+	border-width: 0;
+	clip: rect(0, 0, 0, 0);
+	clip-path: inset(50%);
+	height: 1px;
+	margin: -1px;
+	overflow: hidden;
+	padding: 0;
+	position: absolute;
+	white-space: nowrap;
+	width: 1px;
+}

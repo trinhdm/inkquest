@@ -1,95 +1,112 @@
-import {
-	memo,
-	type ComponentType,
-	type CSSProperties,
-	type NamedExoticComponent,
-	type ReactNode,
-} from 'react'
-
-import { setDefaultProps } from '@/hooks/useProps'
+import { memo, type ComponentType, type ReactNode } from 'react'
+import { useProps as usePropsHook, setDefaultProps } from '@/hooks/useProps'
+import { useStyles as useStylesHook, type StyleOptions } from '@/hooks/useStyles'
+import { useVariants as useVariantsHook } from '@/hooks/useVariants'
+import { keyHasValue } from '@/utils/helpers'
 import { POLYMORPHIC_MARKER } from './constants'
-import type { AsPolymorphic, SpecDefaultProps, Specs } from './types'
-import type { DistributiveOmit, WithDefaults } from '@/types/utils'
+import type { DistributiveOmit } from '@/types/utils'
 
-type _CommonProps = {
-	children?: ReactNode
-	className?: string
-	id?: string
-	style?: CSSProperties
-	unstyled?: boolean
-}
-
-type _ComponentProps<S extends Specs> =
-	S['props']
-	& AsPolymorphic<S>
-	& _CommonProps
-
-type _AsDefaultProps<S extends Specs> =
-	AsPolymorphic<S> extends { as?: never }
-		? { as?: never }
-		: Required<AsPolymorphic<S>>
-
-type _DefaultProps<S extends Specs> =
-	Partial<DistributiveOmit<S['props'], 'as'>>
-	& Required<Pick<S['props'], SpecDefaultProps<S> & keyof S['props']>>
-	& _AsDefaultProps<S>
-
-type _MethodSetDefault<S extends Specs> =
-	[SpecDefaultProps<S>] extends [never]
-		? { props?: _DefaultProps<S> }
-		: { props: _DefaultProps<S> }
-
-type _Component<S extends Specs> =
-	NamedExoticComponent<_ComponentProps<S>>
-
-export interface MethodsBase<
-	S extends Specs,
-	C = _Component<S>,
-	P = _ComponentProps<S>,
-	D = _MethodSetDefault<S>
-> {
-	classes?: Record<string, string>
-	setDefaults: (args: D) => D
-	withProps: (props: P) => C
-}
-
-export type SubcomponentsBase<
-	S extends Specs,
-	List = S['subcomponents']
-> = List extends Record<string, unknown>
-	? List
-	: Record<string, never>
+import type {
+	FactoryAsComponent, FactoryComponent, FactorySubcomponents,
+	FactoryMethods, FactoryPropsList, Specs, SpecsDefaultProps,
+	WithDefaults,
+} from './types'
 
 type _FactoryComponent<S extends Specs> =
-	& _Component<S>
-	& SubcomponentsBase<S>
-	& MethodsBase<S>
+	& FactoryComponent<S>
+	& FactorySubcomponents<S>
+	& FactoryMethods<S>
+
+type _FactoryAs<S extends Specs> =
+	& DistributiveOmit<FactoryPropsList<S>, 'as'>
+	& FactoryAsComponent<S>
 
 type _FactoryProps<S extends Specs> =
-	WithDefaults<_ComponentProps<S>, SpecDefaultProps<S>>
+	WithDefaults<_FactoryAs<S>, SpecsDefaultProps<S>>
+
+interface _BaseFactoryStyles<S extends Specs>
+	extends Omit<StyleOptions<S>, 'classes'> {}
+
+interface _RootFactoryStyles<S extends Specs> {
+	context?: never | null
+	name?: FactoryConfig<S>['name']
+	withRootName?: never
+}
+
+interface _CompoundFactoryStyles<S extends Specs> {
+	context: NonNullable<_BaseFactoryStyles<S>['context']>
+	name?: never
+	withRootName?: true
+}
+
+type _NamedFactoryStyles<S extends Specs> =
+	| _RootFactoryStyles<S>
+	| _CompoundFactoryStyles<S>
+
+type _FactoryStyles<S extends Specs> =
+	& Omit<_BaseFactoryStyles<S>, 'context'>
+	& _NamedFactoryStyles<S>
+
+type _FactoryTarget<S extends Specs> =
+	(_props: _FactoryProps<S>, tools: _FactoryTools<S>) => ReactNode
+
+interface _FactoryTools<S extends Specs> {
+	useProps: <P extends object = _FactoryProps<S>>(_props?: P) => P
+	useStyles: (options: _FactoryStyles<S>) => ReturnType<typeof useStylesHook<S>>
+	useVariants: () => void
+}
+
+export interface FactoryConfig<S extends Specs> {
+	readonly classes?: StyleOptions<S>['classes']
+	name: string
+}
 
 export const createFactory = <
-	T extends Specs,
-	C extends object = _FactoryComponent<T>
+	S extends Specs,
+	C extends object = _FactoryComponent<S>
 >(
-	target: (props: _FactoryProps<T>) => ReactNode,
-	classes?: Record<string, string>
+	target: _FactoryTarget<S>,
+	{ classes, name }: FactoryConfig<S>,
 ) => {
-	type FC = _FactoryComponent<T>
+	type FC = _FactoryComponent<S>
 
-	const BaseComponent = memo(target) as unknown as FC
+	const tooling = (_props: _FactoryProps<S>): _FactoryTools<S> => ({
+		useProps: function useProps(props) {
+			return usePropsHook(name, (props ?? _props) as NonNullable<typeof props>)
+		},
+		useStyles: function useStyles(options) {
+			let scope = options.name ?? name
+
+			if (keyHasValue(options, { withRootName: true }))
+				({ context: { rootName: scope } } = options)
+
+			const args = { ...options, classes: classes as StyleOptions<S>['classes'] }
+			return useStylesHook<S>(scope, args)
+		},
+		useVariants: function useVariants() {
+			return useVariantsHook(name)
+		},
+	})
+
+	const Render = (_props: _FactoryProps<S>) => target(_props, tooling(_props))
+	const BaseComponent = memo(Render) as unknown as FC
+
+	BaseComponent.displayName = name
 	Object.defineProperty(BaseComponent, POLYMORPHIC_MARKER, { value: true })
 
-	if (classes) BaseComponent.classes = classes
+	BaseComponent.set = args => {
+		let { displayName } = BaseComponent
 
-	BaseComponent.setDefaults = args => {
-		const { displayName } = BaseComponent
+		if (keyHasValue(args, 'displayName') && displayName !== name) {
+			BaseComponent.displayName = args.displayName
+			;({ displayName } = BaseComponent)
+		}
 
-		if (!displayName)
-			throw new Error('cannot set defaultProps: missing `displayName`')
+		if (keyHasValue(args, 'defaultProps') && !!displayName)
+			setDefaultProps(displayName, args.defaultProps)
 
-		if (args?.props && Object.keys(args.props).length)
-			setDefaultProps(displayName, args.props)
+		if (keyHasValue(args, 'subcomponents'))
+			Object.assign(BaseComponent, args.subcomponents)
 
 		return args
 	}

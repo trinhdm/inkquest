@@ -1,23 +1,29 @@
-import { createRootCtx } from '@/lib/component'
-import type { AnimationOptions } from '@/hooks/animation'
-
-export type AccordionGroupLayout =
-	'default' | 'steps'
+import { createCompoundCtx } from '@/lib/component/context'
+import type { Accordion } from '../Accordion'
+import type { AnimateInViewConfig } from '@/hooks/animation'
 
 export type AccordionGroupType =
 	'single' | 'multiple'
 
+type SharedAccordionProp =
+	| 'collapsible'
+	| 'disabled'
+	| 'index'
+	| 'layout'
+	| 'onItemToggle'
+	| 'open'
+	| 'order'
+	| 'size'
+
 export interface AccordionGroupContext
-	extends Pick<AnimationOptions, 'index' | 'unstyled' | 'withinView'> {
-	collapsible?: boolean
-	disabled?: boolean
-	layout?: AccordionGroupLayout
-	onItemToggle?: (index: number, open: boolean) => void
-	open?: boolean
-}
+	extends
+		Pick<Accordion.Props, SharedAccordionProp>,
+		Pick<AnimateInViewConfig, 'unstyled' | 'withinView'> {}
 
 export const {
 	RootProvider: AccordionGroupProvider,
 	useSafeRootCtx: useAccordionGroupCtx,
 	useRootProps: useAccordionGroupProps,
-} = createRootCtx<AccordionGroupContext>('Accordion.Group')
+} = createCompoundCtx<AccordionGroupContext>('Accordion.Group')
+
+export const useAccordionGroup = () => ({ useAccordionGroupCtx, useAccordionGroupProps })

@@ -1,0 +1,21 @@
+@use '@/styles/utils' as global;
+@use '../shared' as shared;
+
+.inkq-form {
+	$name: &;
+
+	&__status {
+		color: var(--inkq-color-text-secondary);
+		font: var(--inkq-text-body);
+		text-wrap: pretty;
+	}
+
+	&__message {
+		align-items: center;
+		animation: fadeInUp var(--duration-fast) var(--easing) forwards;
+		column-gap: var(--inkq-gutter-item);
+		display: flex;
+		margin-block-start: var(--inkq-gutter-content);
+        opacity: 0;
+	}
+}

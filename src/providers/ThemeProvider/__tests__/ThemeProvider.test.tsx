@@ -1,9 +1,9 @@
 import { use } from 'react'
 import { render, screen } from '@testing-library/react'
-import { ThemeProvider, useTheme } from '../ThemeProvider'
+import { useTheme, ThemeProvider } from '../ThemeProvider'
+import { tokens } from '@/lib/theme/reference'
 import { ThemeContext } from '../theme.context'
 import { DEFAULT_THEME } from '../constants'
-import { tokens } from '@/lib/theme'
 
 // Consumes the public `useTheme()` contract and renders a handful of its
 // fields as text so assertions can be made through the DOM like a real

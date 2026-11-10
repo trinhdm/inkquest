@@ -1,10 +1,10 @@
 import { render, reset, screen } from '@/tests/test-utils'
-import { polymorphic } from '@/lib/component'
+import { polymorphic } from '@/lib/component/factory'
 import { Box } from './Box'
 import type { ReactNode } from 'react'
 
 // `Box` itself (`definePolymorphic`, not `polymorphic`/`factory`) doesn't
-// call `useVariants`/`setDefaults`, so there's no variant-style or
+// call `useVariants`/`.set()`, so there's no variant-style or
 // component-defaults registry state of its own to reset — unlike the
 // `factory()` components (`Button`, `Badge`, `Card`, `Icon`). The
 // "unstyled forwarding" block below does render one minimal `polymorphic()`
@@ -182,8 +182,7 @@ describe('Box', () => {
 			<div data-testid="marked" data-received-unstyled={ String(!!unstyled) }>
 				{ children }
 			</div>
-		))
-		Marked.displayName = 'Marked'
+		), { name: 'Marked' })
 
 		it('forwards unstyled to an "as" target marked with POLYMORPHIC_MARKER', () => {
 			render(<Box as={ Marked } unstyled>Content</Box>)

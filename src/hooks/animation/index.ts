@@ -1,3 +1,4 @@
+export { useCountdown } from './useCountdown'
 export { useCountUp } from './useCountUp'
 export { useReplayInView } from './useReplayInView'
 
@@ -11,7 +12,8 @@ export {
 export {
 	revealMargin,
 	REVEAL_LEAD,
+	type AnimateInViewConfig,
 	type AnimationOptions,
 	type MaybeAnimationProps,
-	type ReplayInViewOptions,
+	type ReplayAnimateInViewConfig,
 } from './constants'

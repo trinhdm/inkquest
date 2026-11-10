@@ -1,5 +1,5 @@
 import { configDocument, type DocumentConfig } from '../utils'
-import type { ColorScheme } from '@/lib/theme'
+import type { ColorScheme } from '@/lib/theme/types'
 
 export const schemeControls = (args: DocumentConfig = {}) => {
 	const {
@@ -24,6 +24,10 @@ export const schemeControls = (args: DocumentConfig = {}) => {
 			if (typeof document === 'undefined') return defaultScheme
 			const data = document.documentElement.getAttribute(`data-${lsKey}`)
 			return data === 'light' || data === 'dark' ? data : defaultScheme
+		},
+		getAltScheme: (scheme?: ColorScheme) => {
+			const stored = scheme ?? defaultScheme
+			return stored === 'dark' ? 'light' : 'dark'
 		},
 		applyScheme: (scheme: ColorScheme) =>
 			void document.documentElement.setAttribute(`data-${lsKey}`, scheme),

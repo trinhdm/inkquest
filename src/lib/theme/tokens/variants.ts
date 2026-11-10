@@ -27,22 +27,38 @@ const DEFAULT_PALETTE: VariantTokens = {
 	color: { base: 'inherit', hover: 'inherit' },
 }
 
+export const VARIANT_ORDER: Record<
+	Extract<Variant, 'solid' | 'outline' | 'ghost'>,
+	Priority
+> = {
+	solid: 'primary',
+	outline: 'secondary',
+	ghost: 'tertiary',
+}
+
 const TONE_ACCESSORS: Record<Tone, ToneAccessor> = {
-	neutral: {
+	cta: {
 		base: () => alias.color.text(),
 		strong: () => alias.border('strong'),
 		emphasis: () => alias.color.action(),
 		subtle: () => alias.background.card(),
 		dim: () => alias.border(),
 	},
-	action: fromMixture(alias.accent),
+	neutral: {
+		...fromMixture(alias.secondary),
+		dim: () => alias.border(),
+	},
+	accent: fromMixture(alias.accent),
 	danger: fromMixture(alias.color.danger),
 	warning: fromMixture(alias.color.warning),
 	success: fromMixture(alias.color.success),
 	info: fromMixture(alias.color.info),
 }
 
-const PRIORITY_SHAPES: Record<Priority, (tone: ToneAccessor) => Partial<VariantTokens>> = {
+const PRIORITY_SHAPES: Record<
+	Priority,
+	(tone: ToneAccessor) => Partial<VariantTokens>
+> = {
 	primary: tone => ({
 		background: {
 			base:	tone.base(),
@@ -74,13 +90,16 @@ const PRIORITY_SHAPES: Record<Priority, (tone: ToneAccessor) => Partial<VariantT
 	}),
 }
 
-const SPECIAL_VARIANTS: Record<'light' | 'dark', (tone: ToneAccessor) => Partial<VariantTokens>> = {
+const SPECIAL_VARIANTS: Record<
+	Extract<Variant, 'light' | 'dark' | 'text'>,
+	(tone: ToneAccessor) => Partial<VariantTokens>
+> = {
 	light: tone => ({
 		background:	tone.subtle(),
 		border:		'currentColor',
 		color: {
-			base:	tone.base(),
-			hover:	alias.color.text(),
+			base:	tone.dim(),
+			hover:	tone.strong(),
 		},
 	}),
 	dark: tone => ({
@@ -91,44 +110,44 @@ const SPECIAL_VARIANTS: Record<'light' | 'dark', (tone: ToneAccessor) => Partial
 			hover:	alias.color.text(),
 		},
 	}),
-}
-
-const STRUCTURAL_VARIANTS: Record<'solid' | 'outline' | 'ghost', Priority> = {
-	solid: 'primary',
-	outline: 'secondary',
-	ghost: 'tertiary',
+	text: () => ({
+		background: 'transparent',
+		border:		'transparent',
+		color: {
+			base:	alias.color.link(),
+			hover:	alias.color.link('hover'),
+		},
+	}),
 }
 
 const mergePalette = (palette: Partial<VariantTokens>): VariantTokens =>
 	deepMerge(DEFAULT_PALETTE, palette)
 
-const resolveVariants = ({ variant, priority }: Omit<VariantPalette, 'palette'>) => {
-	let tone: Tone = 'action'
-	const isSpecial = variant in SPECIAL_VARIANTS,
-		isStructural = variant in STRUCTURAL_VARIANTS
+const resolveVariants = ({ priority, tone, variant }: Omit<VariantPalette, 'palette'>) => {
+	let color: Tone = tone ?? 'accent',
+		role: Priority = priority ?? 'primary'
 
-	if (isSpecial)
-		return SPECIAL_VARIANTS[variant as keyof typeof SPECIAL_VARIANTS](TONE_ACCESSORS[tone])
+	const isOrdered = variant in VARIANT_ORDER,
+		isSpecial = variant in SPECIAL_VARIANTS
 
-	let role: Priority = priority ?? 'primary'
-	tone = variant as Tone
-
-	if (isStructural) {
-		const target = (Object.keys(STRUCTURAL_VARIANTS) as (keyof typeof STRUCTURAL_VARIANTS)[])
-			.find(key => STRUCTURAL_VARIANTS[key] === priority)
-
-		role = STRUCTURAL_VARIANTS[target ?? variant as keyof typeof STRUCTURAL_VARIANTS]
-		tone = role === 'primary' ? 'action' : 'neutral'
+	if (isSpecial) {
+		const specialty = variant as keyof typeof SPECIAL_VARIANTS
+		return SPECIAL_VARIANTS[specialty](TONE_ACCESSORS[color])
 	}
 
-	const result = PRIORITY_SHAPES[role](TONE_ACCESSORS[tone]),
-		palette = mergePalette(result)
+	if (isOrdered) {
+		const target = (Object.keys(VARIANT_ORDER) as (keyof typeof VARIANT_ORDER)[])
+			.find(key => VARIANT_ORDER[key] === priority)
 
-	return palette
+		role = VARIANT_ORDER[target ?? variant as keyof typeof VARIANT_ORDER]
+		color = tone ?? (role === 'primary' ? 'accent' : 'cta')
+	}
+
+	return PRIORITY_SHAPES[role](TONE_ACCESSORS[color])
 }
 
-const resolvePalette = ({ variant, priority }: Omit<VariantPalette, 'palette'>) => {
-	const result = resolveVariants({ priority, variant }),
+const resolvePalette = ({ priority, tone, variant }: Omit<VariantPalette, 'palette'>) => {
+	const result = resolveVariants({ priority, tone, variant }),
 		palette = mergePalette(result)
 
 	return palette
@@ -137,33 +156,52 @@ const resolvePalette = ({ variant, priority }: Omit<VariantPalette, 'palette'>) 
 export interface VariantPalette {
 	palette: Partial<VariantTokens>
 	priority?: Priority
+	tone?: Tone
 	variant: Variant
 }
 
 export const enumerateVariantPalettes = (): VariantPalette[] => {
-	const priorities = ['primary', 'secondary', 'tertiary'] as const,
-		semanticTones = ['danger', 'warning', 'success', 'info'] as const
+	const priorities = Object.values(VARIANT_ORDER) satisfies Priority[],
+		tones = Object.keys(TONE_ACCESSORS) as (keyof typeof TONE_ACCESSORS)[] satisfies Tone[]
 
-	const special = (Object.keys(SPECIAL_VARIANTS) as (keyof typeof SPECIAL_VARIANTS)[]),
-		structural = (Object.keys(STRUCTURAL_VARIANTS) as (keyof typeof STRUCTURAL_VARIANTS)[])
+	const foundation = Object.keys(VARIANT_ORDER) as (keyof typeof VARIANT_ORDER)[],
+		specialty = Object.keys(SPECIAL_VARIANTS) as (keyof typeof SPECIAL_VARIANTS)[]
 
-	const semantic = semanticTones.flatMap(tone =>
-		priorities.map(priority => ({
-			variant: tone as Variant,
-			palette: resolvePalette({ priority, variant: tone as Variant }),
-			priority,
-		}))
+	const base = foundation.map(variant => ({
+		variant,
+		palette: resolvePalette({ variant }),
+	}))
+
+	const specialized = tones.flatMap(tone => {
+		const isCTA = tone === 'cta',
+			isNeutral = tone === 'neutral'
+
+		return specialty
+			.filter(variant => {
+				switch (variant) {
+					case 'light':	return !isCTA
+					case 'text':	return isNeutral
+					default:		return !isCTA && !isNeutral
+				}
+			})
+			.map(variant => ({
+				tone,
+				variant,
+				palette: resolvePalette({ tone, variant }),
+			}))
+	})
+
+	const ordered = tones.flatMap(tone =>
+		priorities.map(priority => {
+			const variant = foundation.find(key => VARIANT_ORDER[key] === priority) ?? 'solid'
+			return {
+				tone,
+				variant,
+				priority,
+				palette: resolvePalette({ priority, tone, variant }),
+			}
+		})
 	)
 
-	const structured = structural.map(variant => ({
-		variant: variant as Variant,
-		palette: resolvePalette({ variant: variant as Variant }),
-	}))
-
-	const specialize = special.map(variant => ({
-		variant: variant as Variant,
-		palette: resolvePalette({ variant: variant as Variant }),
-	}))
-
-	return [...structured, ...specialize, ...semantic]
+	return [...base, ...specialized, ...ordered]
 }

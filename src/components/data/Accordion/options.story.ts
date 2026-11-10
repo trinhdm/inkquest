@@ -14,12 +14,38 @@ export const INDICATOR_OPTIONS: readonly NonNullable<Accordion.Props['indicator'
 	'chevron', 'plus', 'none',
 ]
 
-export const LAYOUT_OPTIONS: readonly NonNullable<Accordion.Props['layout']>[] = [
-	'default', 'steps',
+export const INDICATOR_POSITION_OPTIONS: readonly NonNullable<Accordion.Props['indicatorPosition']>[] = [
+	'left', 'right',
 ]
 
-export const TYPE_OPTIONS: readonly NonNullable<Accordion.Group.Props['type']>[] = [
-	'single', 'multiple',
+export const LAYOUT_OPTIONS: readonly NonNullable<Accordion.Props['layout']>[] = [
+	'default', 'blockquote', 'steps',
 ]
 
 export const BOOLEAN_OPTIONS = [true, false] as const
+
+// `Accordion.Group.Props['collapsible']` is `AccordionGroupType | false` —
+// `'single'`/`'multiple'` pick the disclosure mode, `false` makes every item
+// in the group permanently open and non-interactive.
+export const COLLAPSIBLE_OPTIONS: readonly NonNullable<Accordion.Group.Props['collapsible']>[] = [
+	'single', 'multiple', false,
+]
+
+// Shared between `Accordion.Props['size']` and `Accordion.Group.Props['size']`
+// — read off the namespace type itself rather than re-declared by hand.
+export const SIZE_OPTIONS: readonly NonNullable<Accordion.Group.Props['size']>[] = [
+	'sm', 'md', 'lg',
+]
+
+// Shared between `Accordion.Props['order']` and `Accordion.Group.Props['order']`
+// (`HeadingOrder`) — read off the namespace type itself rather than
+// re-declared by hand.
+export const ORDER_OPTIONS: readonly NonNullable<Accordion.Group.Props['order']>[] = [
+	1, 2, 3, 4, 5,
+]
+
+// `--accordion-title-size` resolves to `var(--inkq-font-size-h<order + step>)`
+// (see `getSharedTokens` in `utils.ts`), but the typography properties only
+// define heading sizes h1-h5. A resolved level above this value points at a
+// token that does not exist, so stories must not assert on it.
+export const MAX_TITLE_SIZE_LEVEL = 5

@@ -1,8 +1,8 @@
 import { aliasVar, token } from './utils'
 import type {
-	AccentTokens, BackgroundTokens,
-	BorderColorTokens, BorderRadiusTokens, ColorTokens,
-	LayoutTokens, SpaceTokens, TypographyTokens,
+	AccentTokens, BackgroundTokens, ColorTokens,
+	BorderColorTokens, BorderRadiusTokens,
+	LayoutTokens, TypographyTokens,
 } from '../tokens'
 
 type FontTokens = TypographyTokens['font']
@@ -32,16 +32,20 @@ const propertyTokens = {
 }
 
 // limit component usage to only semantic tokens
-export const semanticTokens = {
+const semanticTokens = {
+	breakpoint: token.path<ReturnType<LayoutTokens['breakpoint']>>(aliasVar, 'breakpoint'),
+	container: token.path<ReturnType<LayoutTokens['container']>>(aliasVar, 'container'),
+	space: token.path<ReturnType<LayoutTokens['space']>>(aliasVar, 'space'),
+
 	background: {
 		page: token.endPath(aliasVar, 'background', 'page'),
 		card: token.optPath<BackgroundTokens['card']>(aliasVar, 'background', 'card'),
 	},
-	breakpoint: token.path<ReturnType<LayoutTokens['breakpoint']>>(aliasVar, 'breakpoint'),
-	container: token.path<ReturnType<LayoutTokens['container']>>(aliasVar, 'container'),
 	color: {
 		text: token.optPath<ColorTokens['text']>(aliasVar, 'color', 'text'),
 		link: token.optPath<ColorTokens['link']>(aliasVar, 'color', 'link'),
+		placeholder: token.endPath(aliasVar, 'color', 'placeholder'),
+
 		action: token.optPath<ColorTokens['action']>(aliasVar, 'color', 'action'),
 		danger: token.optPath<ColorTokens['danger']>(aliasVar, 'color', 'danger'),
 		success: token.optPath<ColorTokens['success']>(aliasVar, 'color', 'success'),
@@ -60,7 +64,7 @@ export const semanticTokens = {
 	motion: {
 		interactive: token.endPath(aliasVar, 'motion', 'interactive'),
 	},
-}
+} as const
 
 /** References into already-built semantic tokens. Nesting mirrors config/'s composition — a new semantic category needs a matching entry here. */
 export const aliasTokens = {

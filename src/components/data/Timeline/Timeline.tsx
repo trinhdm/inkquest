@@ -1,11 +1,10 @@
-import { useProps, extractOtherProps } from '@/hooks/useProps'
-import { useStyles } from '@/hooks/useStyles'
-import { filterChildren } from '@/lib/component'
-import { polymorphic } from '@/lib/component'
+import { extractOthers } from '@/hooks/useProps'
+import { filterChildren } from '@/lib/component/children'
+import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import { TimelineItem } from './TimelineItem'
 import type { ReactNode } from 'react'
-import type { ListProps } from '@/lib/component/factory/types'
+import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Timeline.module.scss'
 
 const NAME = 'Timeline' as const,
@@ -15,6 +14,10 @@ const DEFAULT_PROPS = {
 	as: TAG,
 } as const
 
+const SUBCOMPONENTS = {
+	Item: TimelineItem,
+} as const
+
 interface TimelineProps {
 	children: ReactNode
 }
@@ -22,20 +25,22 @@ interface TimelineProps {
 interface TimelineSpecs {
 	defaults: {
 		as: typeof TAG
-		props: ListProps<typeof DEFAULT_PROPS>
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: TimelineProps
-	subcomponents: {
-		Item: typeof TimelineItem
-	}
+	selectors: TimelineSelectors
+	subcomponents: typeof SUBCOMPONENTS
 }
 
-export const Timeline = polymorphic<TimelineSpecs>(_props => {
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props })
+type TimelineSelectors =
+	| 'root'
 
-	const { children, ...rest } = props
-	const { as, others } = extractOtherProps(rest)
+export const Timeline = polymorphic<TimelineSpecs>((_props, { useProps, useStyles }) => {
+	const props = useProps(_props)
+	const styles = useStyles({ props })
+
+	const { as, children, ...rest } = props
+	const others = extractOthers(rest)
 
 	return (
 		<Box
@@ -44,14 +49,17 @@ export const Timeline = polymorphic<TimelineSpecs>(_props => {
 			as={ as }
 			attributes={ { data: { timeline: true } } }
 		>
-			{ filterChildren(children, TimelineItem.displayName).map(child => child) }
+			{ filterChildren(children, TimelineItem.displayName, { name: NAME })
+				.map(child => child) }
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
-Timeline.displayName = NAME
-Timeline.Item = TimelineItem
-Timeline.setDefaults({ props: DEFAULT_PROPS })
+Timeline.set({
+	defaultProps: DEFAULT_PROPS,
+	displayName: NAME,
+	subcomponents: SUBCOMPONENTS,
+})
 
 export declare namespace Timeline {
 	export type Props = TimelineProps

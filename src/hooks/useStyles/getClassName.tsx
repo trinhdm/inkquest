@@ -1,10 +1,11 @@
 import cx, { type ClassValue } from 'clsx'
 import { isObject, toKebabCase } from '@/utils/helpers'
 import type { SharedConfig } from './useStyles'
+import type { SpecsContract } from '@/lib/component/factory/types'
 
-const getBaseClass = <P extends object, V extends object>(
-	name: SharedConfig<P, V>['name'],
-	prefix: SharedConfig<P, V>['prefix'],
+const getBaseClass = <S extends SpecsContract>(
+	name: SharedConfig<S>['name'],
+	prefix: SharedConfig<S>['prefix'],
 ): string => {
 	let baseName = toKebabCase(name)
 
@@ -14,12 +15,12 @@ const getBaseClass = <P extends object, V extends object>(
 	return baseName
 }
 
-const nameClassBase = <P extends object, V extends object>({
+const nameClassBase = <S extends SpecsContract>({
 	check,
 	name,
 	prefix,
 	selector,
-}: SharedConfig<P, V>): string => {
+}: SharedConfig<S>): string => {
 	let classBase = getBaseClass(name, prefix)
 
 	if (!check.isRoot)
@@ -28,23 +29,23 @@ const nameClassBase = <P extends object, V extends object>({
 	return classBase
 }
 
-const getStyleClass = <P extends object, V extends object>(
+const getStyleClass = <S extends SpecsContract>(
 	baseName: string,
-	args: SharedConfig<P, V>
+	args: SharedConfig<S>
 ): string | undefined => {
 	const { check, classes } = args
 	if (check.isUnstyled || !classes || !Object.hasOwn(classes, baseName)) return
 	return classes[baseName]
 }
 
-type SelectorConfig<P extends object, V extends object> =
-	Omit<SharedConfig<P, V>, 'config'>
-	& { config: Extract<SharedConfig<P, V>['config'], object> }
+type SelectorConfig<S extends SpecsContract> =
+	Omit<SharedConfig<S>, 'config'>
+	& { config: Extract<SharedConfig<S>['config'], object> }
 
-const formatConfigClass = <P extends object, V extends object>(
+const formatConfigClass = <S extends SpecsContract>(
 	modifier: NonNullable<Exclude<ClassValue, object>>,
-	key: keyof SelectorConfig<P, V>['config'],
-	args: SelectorConfig<P, V>
+	key: keyof SelectorConfig<S>['config'],
+	args: SelectorConfig<S>
 ): string | undefined => {
 	const { name, prefix } = args,
 		mod = `${modifier}`
@@ -62,9 +63,9 @@ const formatConfigClass = <P extends object, V extends object>(
 	return styleName ?? baseName
 }
 
-const getConfigClass = <P extends object, V extends object>(
-	key: keyof SelectorConfig<P, V>['config'],
-	args: SelectorConfig<P, V>
+const getConfigClass = <S extends SpecsContract>(
+	key: keyof SelectorConfig<S>['config'],
+	args: SelectorConfig<S>
 ): string | undefined => {
 	const { config } = args
 
@@ -94,19 +95,18 @@ const getConfigClass = <P extends object, V extends object>(
 	return formatConfigClass(values, key, args)
 }
 
-const hasConfig = <P extends object, V extends object>(
-	args: SharedConfig<P, V>
-): args is SelectorConfig<P, V> =>
+const hasConfig = <S extends SpecsContract>(
+	args: SharedConfig<S>
+): args is SelectorConfig<S> =>
 	!!args.config && isObject(args.config)
 
-const getConfigClasses = <P extends object, V extends object>(
-	args: SharedConfig<P, V>
+const getConfigClasses = <S extends SpecsContract>(
+	args: SharedConfig<S>
 ): string | undefined => {
-	const { config, prefix, selector } = args
+	const { check, config, prefix, selector } = args
 
-	if (typeof config === 'boolean')
-		return getBaseClass(selector, prefix)
-
+	if (check.isUnstyled) return
+	else if (typeof config === 'boolean' && config) return getBaseClass(selector, prefix)
 	else if (!hasConfig(args)) return
 
 	const classList = [],
@@ -120,28 +120,50 @@ const getConfigClasses = <P extends object, V extends object>(
 	return cx(...classList)
 }
 
-type InheritConfig<P extends object, V extends object> =
-	Omit<SharedConfig<P, V>, 'props'>
-	& { props: P & Record<'className', string> }
+type InheritConfig<S extends SpecsContract> =
+	Omit<SharedConfig<S>, 'props'>
+	& { props: S['props'] & Record<'className', string> }
 
-const canInherit = <P extends object, V extends object>(
-	args: SharedConfig<P, V>
-): args is InheritConfig<P, V> =>
+interface InheritedClasses {
+	passthrough: string[]
+	semantics: string[]
+}
+
+const canInherit = <S extends SpecsContract>(
+	args: SharedConfig<S>
+): args is InheritConfig<S> =>
 	'className' in args.props && typeof args.props.className === 'string'
 
-const inheritClasses = <P extends object, V extends object>({
+const inheritClasses = <S extends SpecsContract>({
 	check,
 	name,
 	prefix,
 	props,
 	selector,
-}: InheritConfig<P, V>): string[] => {
+}: InheritConfig<S>): InheritedClasses => {
 	const { className } = props,
 		classList = className.split(/\s+/).filter(Boolean)
 
-	if (!classList.length) return []
+	if (!classList.length) return { passthrough: [], semantics: [] }
 
-	const [semantic] = classList,
+	const semanticOf = (cn: string) => {
+		if (!prefix) return ''
+		if (cn.startsWith(`${prefix}-`)) return cn
+
+		const index = cn.lastIndexOf(`__${prefix}-`)
+		return index > -1 ? cn.slice(index + 2) : ''
+	}
+
+	const isPrefixed = (cn: string) => !!semanticOf(cn)
+	const isExtendable = (cn: string) => isPrefixed(cn) && !semanticOf(cn).includes('--')
+	const isSemantic = (cn: string) => check.isRoot
+		? (!prefix || isPrefixed(cn))
+		: isExtendable(cn)
+
+	const semantics = classList.filter(cn => isSemantic(cn)),
+		passthrough = check.isRoot ? classList.filter(cn => !isSemantic(cn)) : []
+
+	const [semantic = ''] = semantics,
 		index = semantic.indexOf('__'),
 		slot = index > -1 ? semantic.slice(index + 2) : '',
 		self = toKebabCase(name)
@@ -149,39 +171,34 @@ const inheritClasses = <P extends object, V extends object>({
 	let suffix = '',
 		element = ''
 
-	// Extend the inherited slot only when this component is a named sub-part of it
-	// (`menu` -> `menu-item`); an unrelated component keeps the parent's slot name.
 	if (slot && self.startsWith(slot)) {
 		suffix = `__${slot}`
 		element = `__${self}`
 	}
 
-	const isExtendable = (cn: string) =>
-		!!prefix && cn.startsWith(prefix) && !cn.includes('--')
+	const inherited = semantics.map(cn => {
+		const root = suffix && cn.endsWith(suffix)
+			? `${cn.slice(0, -suffix.length)}${element}`
+			: cn
 
-	return classList
-		.filter(cn => check.isRoot
-			? (!check.isUnstyled || (!!prefix && cn.startsWith(prefix)))
-			: isExtendable(cn)
-		)
-		.map(cn => {
-			const root = suffix && cn.endsWith(suffix)
-				? `${cn.slice(0, -suffix.length)}${element}`
-				: cn
+		return check.isRoot ? root : `${root}__${selector}`
+	})
 
-			return check.isRoot ? root : `${root}__${selector}`
-		})
+	return { passthrough, semantics: inherited }
 }
 
-export const getClassName = <P extends object, V extends object>(
-	args: SharedConfig<P, V>
+export const getClassName = <S extends SpecsContract>(
+	args: SharedConfig<S>
 ): string => {
 	const baseName = nameClassBase(args),
 		styleName = getStyleClass(baseName, args),
 		configNames = getConfigClasses(args)
 
-	const inherited = canInherit(args) ? inheritClasses(args) : [],
-		[namespace, ...modules] = inherited
+	const { passthrough, semantics } = canInherit(args)
+		? inheritClasses(args)
+		: { passthrough: [], semantics: [] }
+
+	const [namespace, ...modules] = semantics
 
 	const classList = [
 		namespace ?? baseName,
@@ -189,5 +206,5 @@ export const getClassName = <P extends object, V extends object>(
 		configNames,
 	]
 
-	return cx(...classList, ...modules)
+	return cx(...classList, ...modules, ...passthrough)
 }

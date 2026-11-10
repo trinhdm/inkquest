@@ -3,7 +3,8 @@ import { render, reset, screen } from '@/tests/test-utils'
 import { Accordion } from '../Accordion'
 
 describe('Accordion.Content', () => {
-	reset('Accordion', 'Accordion.Title', 'Accordion.Content')
+	// `Accordion.Title` renders a real `Icon` for its default "plus" indicator.
+	reset('Accordion', 'Accordion.Title', 'Accordion.Content', 'Icon')
 
 	it('renders as a labelled region containing its children', () => {
 		render(

@@ -1,0 +1,72 @@
+@use '@/styles/utils' as global;
+@use '../shared' as shared;
+
+.inkq-choice {
+    @include shared.form-control;
+
+	$name: &;
+
+    --choice-size: 1rem;
+
+    align-items: center;
+	appearance: none;
+    display: flex;
+    height: var(--choice-size);
+	justify-content: center;
+    margin: 0;
+    position: relative;
+    transition: var(--form-control-transition-bg-border);
+    width: var(--choice-size);
+
+    &::before {
+        background-color: var(--form-control-border-active);
+        content: '';
+        height: var(--choice-check-size);
+        transform: scale(0);
+        transition: transform var(--duration-instant) var(--form-control-easing);
+        width: var(--choice-check-size);
+    }
+
+    &:checked {
+        --form-control-background-disabled: #{global.disable(var(--form-control-background-active))};
+        --form-control-border-disabled: var(--form-control-border-hover);
+
+        background-color: var(--form-control-background-active);
+        border-color: var(--form-control-border-active);
+
+        &::before {
+            transform: scale(1);
+        }
+    }
+
+    &:disabled {
+        background-color: var(--form-control-background-disabled);
+        border-color: var(--form-control-border-disabled);
+
+        &::before {
+            background-color: var(--form-control-border-disabled);
+        }
+    }
+
+    &:is([type="checkbox"]) {
+        &,
+        &::before {
+            border-radius: 0;
+        }
+
+        &::before {
+            --choice-check-size: calc(.375 * var(--choice-size));
+        }
+    }
+
+    &:is([type="radio"]) {
+        &,
+        &::before {
+            border-radius: 50%;
+        }
+
+        &::before {
+            --choice-check-size: calc(.5 * var(--choice-size));
+        }
+    }
+}

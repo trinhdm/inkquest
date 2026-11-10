@@ -1,10 +1,9 @@
 import Image from 'next/image'
-import { useProps, extractOtherProps } from '@/hooks/useProps'
-import { useStyles } from '@/hooks/useStyles'
-import { polymorphic } from '@/lib/component'
+import { extractOthers } from '@/hooks/useProps'
+import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import type { ComponentProps } from 'react'
-import type { ListProps } from '@/lib/component/factory/types'
+import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Card.module.scss'
 
 const NAME = 'Card' as const,
@@ -12,52 +11,64 @@ const NAME = 'Card' as const,
 
 const DEFAULT_PROPS = {
 	as: TAG,
-	hasTitleAlt: false,
+	isAltTitle: false,
 } as const
 
 interface CardProps {
 	caption?: string
 	elevated?: boolean
-	hasTitleAlt?: boolean
 	image?: ComponentProps<typeof Image>
+	isAltTitle?: boolean
 	title: string
 }
 
 interface CardSpecs {
 	defaults: {
 		as: typeof TAG
-		props: ListProps<typeof DEFAULT_PROPS>
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: CardProps
+	selectors: CardSelectors
 }
 
-export const Card = polymorphic<CardSpecs>(_props => {
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props })
+type CardSelectors =
+	| 'root' | 'wrapper'
+	| 'image' | 'image-caption'
+	| 'info' | 'title' | 'caption'
+
+export const Card = polymorphic<CardSpecs>((_props, { useProps, useStyles }) => {
+	const props = useProps(_props)
+	const styles = useStyles({ props })
 
 	const {
+		as,
 		caption,
 		children,
-		hasTitleAlt,
 		image,
+		isAltTitle,
 		title,
 		...rest
 	} = props
 
-	const { as, others } = extractOtherProps(rest)
-	const altDefault = hasTitleAlt ? title : '[ PHOTO ]'
+	const others = extractOthers(rest)
+
+	const alt = isAltTitle ? title : '[ PHOTO ]',
+		altText = image?.alt ?? alt
 
 	return (
-		<Box as={ as } { ...styles('root') } { ...others }>
+		<Box { ...styles('root') } { ...others } as={ as }>
 			<div { ...styles('wrapper') }>
 				<div { ...styles('image') }>
-					{ image && <Image { ...image } /> }
+					{ image && <Image { ...image } alt={ altText } /> }
 					<span { ...styles('image-caption') }>
-						{ image?.alt ?? altDefault }
+						{ altText }
 					</span>
 				</div>
+
 				<div { ...styles('info') }>
-					<h3 { ...styles('title') }>{ title }</h3>
+					<h3 { ...styles('title', { global: { h5: true } }) }>
+						{ title }
+					</h3>
 					{ caption && (
 						<span { ...styles('caption', true) }>{ caption }</span>
 					) }
@@ -65,10 +76,12 @@ export const Card = polymorphic<CardSpecs>(_props => {
 			</div>
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
-Card.displayName = NAME
-Card.setDefaults({ props: DEFAULT_PROPS })
+Card.set({
+	defaultProps: DEFAULT_PROPS,
+	displayName: NAME,
+})
 
 export declare namespace Card {
 	export type Props = CardProps

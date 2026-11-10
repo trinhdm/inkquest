@@ -1,17 +1,20 @@
-import { useMemo, type CSSProperties } from 'react'
 import { useTheme } from '@/providers/ThemeProvider'
 import { getClassName } from './getClassName'
 import { getStyle } from './getStyle'
 import { keyHasValue, pluralizeKeys } from '@/utils/helpers'
+import type { CSSProperties } from 'react'
 import type { ClassValue } from 'clsx'
 import type { PluralizeKeys } from '@/types/utils'
-import type { SiteThemeConfig, ThemeCSSConfig } from '@/lib/theme'
+import type { SiteThemeConfig } from '@/lib/theme/types'
+import type { SpecsContext, SpecsContract, SpecsSelectors } from '@/lib/component/factory/types'
+import type { TokensConfig } from '@/lib/component/tokens'
 
-interface StyleOptions<P extends object, V extends object = object> {
-	readonly classes?: Record<string, string>
+export interface StyleOptions<S extends SpecsContract> {
+	readonly classes?: [SpecsSelectors<S>] extends [never] ? never : Record<string, string>
+	context?: SpecsContext<S> | null
 	prefix?: string
-	props: P
-	tokens?: ThemeCSSConfig<P, V>
+	props: S['props']
+	tokens?: TokensConfig<S>
 }
 
 interface SelectorConfigScope {
@@ -29,8 +32,8 @@ interface SelectorArgs {
 	selector: string
 }
 
-export interface SharedConfig<P extends object, V extends object = object>
-	extends SelectorArgs, StyleOptions<P, V> {
+export interface SharedConfig<S extends SpecsContract>
+	extends SelectorArgs, StyleOptions<S> {
 	name: string
 	theme: SiteThemeConfig
 }
@@ -40,58 +43,51 @@ interface StyleResult {
 	style?: CSSProperties
 }
 
-type StyleResults<S extends SelectorArgs['selector']> =
-	S extends typeof ROOT_SELECTOR
+type AnyStyleResult =
+	| StyleResult
+	| PluralizeKeys<StyleResult>
+
+type StyleResults<T extends SelectorArgs['selector']> =
+	T extends typeof ROOT_SELECTOR
 		? PluralizeKeys<StyleResult>
 		: StyleResult
 
-type StyleFn = <S extends SelectorArgs['selector']>(
-	selector: S,
-	config?: SelectorArgs['config']
-) => StyleResults<S>
+export type StyleFn<S extends SpecsContract> = <T extends SpecsSelectors<S>>(
+	selector: T,
+	config?: SelectorArgs['config'],
+) => StyleResults<T>
 
 const ROOT_SELECTOR = 'root'
 
-const isUnstyled = <P extends object>(props: StyleOptions<P>['props']): boolean =>
-	keyHasValue(props, { unstyled: true })
-
-export const useStyles = <P extends object, V extends object = object>(
+export const useStyles = <S extends SpecsContract>(
 	name: string,
-	opts: StyleOptions<P, V>
-): StyleFn => {
+	options: StyleOptions<S>
+): StyleFn<S> => {
 	const theme = useTheme()
+	const prefix = options.prefix ?? theme.prefix,
+		opts = { ...options, name, prefix, theme }
 
-	return useMemo<StyleFn>(() => {
-		const prefix = opts.prefix ?? theme.prefix,
-			sharedArgs = { ...opts, name, prefix, theme },
-			cache = new Map<string, ReturnType<StyleFn>>()
+	const styleSelector = <T extends SpecsSelectors<S>>(
+		selector: T,
+		config?: SelectorArgs['config']
+	): StyleResults<T> => {
+		const check = {
+			isRoot: selector === ROOT_SELECTOR,
+			isUnstyled: keyHasValue(options.props, { unstyled: true }),
+		}
 
-		return ((selector, config) => {
-			let cacheKey = `${selector}:`
-			if (config) cacheKey += JSON.stringify(config)
+		const args: SharedConfig<S> = { ...opts, check, config, selector }
+		const values: StyleResult = {
+			className: getClassName<S>(args),
+			style: getStyle<S>(args),
+		}
 
-			const cached = cache.get(cacheKey)
-			if (cached) return cached
+		const result: AnyStyleResult = check.isRoot
+			? pluralizeKeys(values)
+			: values
 
-			const check = {
-				isRoot: selector === ROOT_SELECTOR,
-				isUnstyled: isUnstyled(opts.props),
-			}
+		return result as StyleResults<T>
+	}
 
-			const args: SharedConfig<P, V> = { ...sharedArgs, check, config, selector }
-
-			const values: ReturnType<StyleFn> = {
-				className: getClassName(args),
-				style: getStyle(args),
-			}
-
-			const result: ReturnType<StyleFn> = check.isRoot
-				? pluralizeKeys(values)
-				: values
-
-			cache.set(cacheKey, result)
-			return result
-		})
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [name, opts.props, opts.classes, opts.prefix, opts.tokens, theme])
+	return styleSelector
 }

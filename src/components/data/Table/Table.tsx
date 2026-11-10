@@ -1,18 +1,17 @@
-import { useProps, extractOtherProps } from '@/hooks/useProps'
-import { useStyles } from '@/hooks/useStyles'
-import { polymorphic } from '@/lib/component'
+import { extractOthers } from '@/hooks/useProps'
+import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import { TableCell } from './TableCell'
 import { TableRow } from './TableRow'
 import type { ReactNode } from 'react'
-import type { ListProps } from '@/lib/component/factory/types'
 import classes from './Table.module.scss'
 
 const NAME = 'Table' as const,
 	TAG = 'table' as const
 
-const DEFAULT_PROPS = {
-	as: TAG,
+const SUBCOMPONENTS = {
+	Cell: TableCell,
+	Row: TableRow,
 } as const
 
 interface TableProps {
@@ -20,41 +19,48 @@ interface TableProps {
 }
 
 interface TableSpecs {
-	defaults: {
-		as: typeof TAG
-		props: ListProps<typeof DEFAULT_PROPS>
-	}
 	props: TableProps
-	subcomponents: {
-		Cell: typeof TableCell
-		Row: typeof TableRow
-	}
+	selectors: TableSelectors
+	subcomponents: typeof SUBCOMPONENTS
 }
 
-export const Table = polymorphic<TableSpecs>(_props => {
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props })
+type TableSelectors =
+	| 'root'
+
+export const Table = polymorphic<TableSpecs>((_props, { useProps, useStyles }) => {
+	const props = useProps(_props)
+	const styles = useStyles({ props })
 
 	const { children, ...rest } = props
-	const { as, others } = extractOtherProps(rest)
+	const others = extractOthers(rest)
 
 	return (
 		<Box
-			as={ as }
 			{ ...styles('root') }
 			{ ...others }
+			as={ TAG }
 		>
 			<tbody>{ children }</tbody>
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
-Table.displayName = NAME
-Table.Cell = TableCell
-Table.Row = TableRow
-Table.setDefaults({ props: DEFAULT_PROPS })
+Table.set({
+	displayName: NAME,
+	subcomponents: SUBCOMPONENTS,
+})
 
 export declare namespace Table {
 	export type Props = TableProps
 	export type Specs = TableSpecs
+
+	export namespace Cell {
+		export type Props = TableCell.Props
+		export type Specs = TableCell.Specs
+	}
+
+	export namespace Row {
+		export type Props = TableRow.Props
+		export type Specs = TableRow.Specs
+	}
 }

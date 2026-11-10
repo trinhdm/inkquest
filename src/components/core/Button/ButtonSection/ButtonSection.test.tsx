@@ -40,7 +40,7 @@ describe('Button.Section', () => {
 		const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
 
 		expect(() => render(<Button.Section left>Icon</Button.Section>))
-			.toThrow(/must be rendered inside <Button>/)
+			.toThrow(/must be a direct child of <Button>/)
 
 		consoleError.mockRestore()
 	})

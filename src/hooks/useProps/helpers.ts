@@ -1,18 +1,15 @@
 import cx from 'clsx'
 import type { CSSProperties, ElementType, ReactNode } from 'react'
-import type { DistributiveOmit } from '@/types/utils'
-import type { SpecsContract } from '@/lib/component/factory/types'
+import type { DistributiveOmit, PluralizeKeys } from '@/types/utils'
+import type { ReplayAnimateInViewConfig } from '../animation'
 
 interface DOMStyleProps {
 	className?: string
 	style?: CSSProperties
 }
 
-type SpecStyleProps =
-	Pick<SpecsContract, 'classNames' | 'styles'>
-
 interface StyleAliasInput
-	extends SpecStyleProps, DOMStyleProps {}
+	extends DOMStyleProps, PluralizeKeys<DOMStyleProps> {}
 
 type RenamedProps<T> =
 	Omit<T, keyof StyleAliasInput> & DOMStyleProps
@@ -64,63 +61,65 @@ export const styleProps = <T extends object>(
 	return filterProps(aliasedProps)
 }
 
-type OtherPropsList<E extends ElementType> = {
+type OtherPropsList<E extends ElementType = ElementType> = {
 	as?: E
 	childName?: string
 	children?: ReactNode
 	displayName?: string
+	idx?: Record<string, string>
 	loading?: boolean
-	revealFrom?: number
-	withinView?: boolean
 }
 
-type OtherProps<E extends ElementType> =
-	StyleAliasInput & OtherPropsList<E>
+type OtherProps<E extends ElementType = ElementType> =
+	StyleAliasInput
+	& ReplayAnimateInViewConfig
+	& OtherPropsList<E>
 
-type ExtractOtherPropNames =
-	| 'as'
-	| 'children'
-	| 'withinView'
+const RESERVED_PROPS = [
+	'amount',
+	'animated',
+	'as',
+	'childName',
+	'children',
+	'className',
+	'classNames',
+	'displayName',
+	'delay',
+	'duration',
+	'idx',
+	'index',
+	'initial',
+	'lead',
+	'loading',
+	'margin',
+	'once',
+	'revealFrom',
+	'root',
+	'stagger',
+	'style',
+	'styles',
+	'withinView',
+] as const satisfies readonly (keyof OtherProps)[]
 
-type OtherExtractedProps<E extends ElementType> =
-	Pick<OtherPropsList<E>, ExtractOtherPropNames>
+const RESERVED = new Set<string>(RESERVED_PROPS)
 
-function extractOthers<T extends object, E extends ElementType = ElementType>(
-	rest: T & OtherProps<E>
-): OtherExtractedProps<E> & {
-	others: DistributiveOmit<T, keyof OtherProps<E>>
+export type ReservedProp =
+	typeof RESERVED_PROPS[number]
+
+export type ExtractedOtherProps<T, K extends ReservedProp = never> =
+	DistributiveOmit<T, Exclude<ReservedProp, K>>
+
+//	`keep` is the escape hatch for a component that forwards `others`
+//	to another component rather than to the DOM — i.e. `StatisticGroup`
+export const extractOthers = <
+	T extends object,
+	E extends ElementType = ElementType,
+	K extends ReservedProp = never,
+>(rest: T & OtherProps<E>, keep?: readonly K[]): ExtractedOtherProps<T, K> => {
+	const kept = keep?.length ? new Set<string>(keep) : undefined
+	const props = Object.fromEntries(
+		Object.entries(rest).filter(([key]) => !RESERVED.has(key) || !!kept?.has(key))
+	) as ExtractedOtherProps<T, K>
+
+	return filterProps(props)
 }
-function extractOthers(rest: OtherProps<ElementType>) {
-	const {
-		as,
-		childName,
-		children,
-		className,
-		classNames,
-		displayName,
-		loading,
-		revealFrom,
-		style,
-		styles,
-		withinView,
-		...props
-	} = rest
-
-	const others = filterProps(props)
-
-	return {
-		as,
-		others,
-		withinView,
-	}
-}
-
-interface ExtractOtherPropsFn {
-	<T extends object, E extends ElementType = ElementType>(
-		rest: T & OtherProps<E>
-	): OtherExtractedProps<E> & {
-		others: DistributiveOmit<T, keyof OtherProps<E>>
-	}
-}
-
-export const extractOtherProps: ExtractOtherPropsFn = extractOthers

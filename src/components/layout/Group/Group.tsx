@@ -1,23 +1,21 @@
 import {
-	useMemo,
-	useRef,
-	Children,
-	type CSSProperties,
-	type ElementType,
-	type ReactElement,
-	type ReactNode,
+	useMemo, useRef,
+	type ElementType, type ReactElement, type ReactNode,
 } from 'react'
 
-import { useProps, extractOtherProps } from '@/hooks/useProps'
-import { useReplayInView, type MaybeAnimationProps, } from '@/hooks/animation'
-import { useStyles } from '@/hooks/useStyles'
-import { filterChildren, withProvider, type RootProviderFn } from '@/lib/component'
-import { polymorphic } from '@/lib/component'
-import { setThemeCSS } from '@/lib/theme'
+import { useReplayInView, type MaybeAnimationProps } from '@/hooks/animation'
+import { countChildren, filterChildren } from '@/lib/component/children'
+import { defineTokens } from '@/lib/component/tokens'
+import { extractOthers, type ReservedProp } from '@/hooks/useProps'
+import { keyHasValue } from '@/utils/helpers'
+import { polymorphic } from '@/lib/component/factory'
+import { withProvider } from '@/lib/component/context'
 import { Box } from '@/components/polymorphic/Box'
 import { GroupItem } from './GroupItem'
 import { GroupProvider, type GroupContext } from './Group.context'
-import type { ListProps, PolymorphicProps } from '@/lib/component/factory/types'
+import type { JustifyContent, Orientation } from '@/types/shared'
+import type { PolymorphicProps, PropsDefaultList } from '@/lib/component/factory/types'
+import type { RootProviderFn } from '@/lib/component/context'
 import classes from './Group.module.scss'
 
 const NAME = 'Group' as const,
@@ -28,28 +26,41 @@ const DEFAULT_PROPS = {
 	childName: GroupItem.displayName,
 	divider: false,
 	provider: GroupProvider,
-	valuesCtx: {},
+	values: {},
 } as const
+
+const SUBCOMPONENTS = {
+	Item: GroupItem,
+} as const
+
+export const GROUP_CASCADE_PROPS = [
+	'amount', 'initial', 'once', 'root',
+	'animated', 'delay', 'duration', 'index', 'stagger',
+	'lead', 'revealFrom', 'withinView',
+] as const satisfies readonly ReservedProp[]
+
+const GROUP_TAGS: readonly ElementType[] = ['fieldset', 'hgroup', 'optgroup']
 
 interface BaseGroupProps {
 	children: ReactNode
 	columns?: number
 	divider?: boolean
+	header?: ReactNode
 	fullWidth?: boolean
-	justify?: CSSProperties['justifyContent']
-	orientation?: 'horizontal' | 'vertical'
+	justify?: JustifyContent
+	orientation?: Orientation
 }
 
 interface CompoundGroupProps {
 	childName?: never
 	provider?: never
-	valuesCtx?: never
+	values?: never
 }
 
-interface NamedGroupProps<Ctx extends GroupContext = GroupContext>  {
+interface NamedGroupProps<Ctx extends GroupContext = GroupContext> {
 	childName: string
 	provider?: RootProviderFn<Ctx>
-	valuesCtx?: Partial<Ctx>
+	values?: Partial<Ctx>
 }
 
 type NestedGroupProps<Ctx extends GroupContext = GroupContext> =
@@ -61,80 +72,92 @@ type GroupProps<Ctx extends GroupContext = GroupContext> =
 	& NestedGroupProps<Ctx>
 	& MaybeAnimationProps
 
-type GroupSpecs = {
+interface GroupSpecs {
 	defaults: {
 		as: typeof TAG
-		props: ListProps<typeof DEFAULT_PROPS>
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
-	props: GroupProps
-	subcomponents: {
-		Item: typeof GroupItem
-	}
+	// isGroup: true
+	props: GroupProps<GroupContext>
+	selectors: GroupSelectors
+	subcomponents: typeof SUBCOMPONENTS
+	tokens: GroupTokens
 }
 
-const tokens = setThemeCSS<GroupSpecs>((theme, props) => {
-	const { columns, children, orientation } = props
-	const hasColumns = !!(columns && columns > 0)
-	let numCols: number | undefined = hasColumns ? columns : undefined
+type GroupSelectors =
+	| 'root'
 
-	if (!!orientation && !hasColumns) {
-		const count = Children.count(children)
+type GroupTokens = {
+	root:
+		| '--group-item-count'
+		| '--group-justify'
+}
+
+const tokens = defineTokens<GroupSpecs>()(({ props }) => {
+	const {
+		childName, children,
+		columns, justify, orientation,
+	} = props
+
+	const hasColumns = !!(columns && columns > 0)
+	let numCols
+
+	if (hasColumns) {
+		numCols = columns
+	} else if (!!orientation) {
+		const count = countChildren(children, childName)
 		numCols = count > 1 ? count - 1 : count
 	}
 
 	return {
 		root: {
 			'--group-item-count': numCols,
+			'--group-justify': justify ?? undefined,
 		},
 	}
 })
 
-export const GroupBase = polymorphic<GroupSpecs>(_props => {
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props, tokens })
+export const GroupBase = polymorphic<GroupSpecs>((_props, { useProps, useStyles }) => {
+	const props = useProps(_props)
+	const styles = useStyles({ props, tokens })
 
 	const {
-		amount,
-		animated,
-		childName,
-		children,
-		columns,
-		divider,
-		duration,
-		fullWidth,
-		once,
-		orientation,
-		provider: Provider,
-		stagger,
-		unstyled,
-		valuesCtx,
+		as, amount, animated,
+		childName, children, columns,
+		divider, duration, fullWidth,
+		header, justify, once,
+		orientation, provider: Provider,
+		stagger, values,
 		...rest
 	} = props
 
-	const { as, others } = extractOtherProps(rest)
-
-	const aria = { orientation }
-	const data = {
-		block: !!fullWidth || null,
-		divide: !!divider || null,
-	}
-
-	const items = filterChildren(children, childName),
-		total = items.length
+	const others = extractOthers(rest)
 
 	// one observer for the whole group, so children stagger off a single t=0
 	// rather than each racing its own IntersectionObserver
 	const ref = useRef<HTMLDivElement>(null)
 	const withinView = useReplayInView(ref, { amount, once })
 
+	const items = filterChildren(children, childName, { name: NAME }),
+		total = items.length
+
+	const isUnstyled = useMemo(
+		() => (!!(keyHasValue(values, { unstyled: true }) ? values.unstyled : props.unstyled)),
+		[props.unstyled, values]
+	)
+
 	// one context value per child — memoised on `total` so identities stay
 	// stable across renders even though each child gets its own object
 	const ctxValues = useMemo(
 		() => Array.from({ length: total }, (_, index) => ({
-			animated, duration, index, stagger, unstyled, withinView,
-			...valuesCtx,
+			animated, duration, index, stagger, withinView,
+			...values,
+			unstyled: isUnstyled,
 		})),
-		[animated, duration, stagger, total, unstyled, valuesCtx, withinView]
+		[
+			animated, duration, stagger, total,
+			isUnstyled, values, withinView,
+		]
 	)
 
 	return (
@@ -142,31 +165,44 @@ export const GroupBase = polymorphic<GroupSpecs>(_props => {
 			{ ...styles('root') }
 			{ ...others }
 			as={ as }
-			attributes={ { aria, data } }
+			attributes={ {
+				aria: { orientation },
+				data: {
+					block: !!fullWidth || null,
+					divide: !!divider || null,
+				}
+			} }
 			ref={ ref }
-			role="group"
+			role={ !!as && GROUP_TAGS.includes(as) ? undefined : 'group' }
+			unstyled={ isUnstyled }
 		>
+			{ header }
 			{ withProvider(items, Provider, ctxValues) }
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
 type GroupComponent =
-	& (<Ctx extends GroupContext, U extends ElementType = typeof TAG>(
-		props: PolymorphicProps<GroupProps<Ctx>, U>
-	) => ReactElement)
+	& (<
+		Ctx extends GroupContext,
+		U extends ElementType = typeof TAG
+	>(props: PolymorphicProps<GroupProps<Ctx>, U>) => ReactElement)
 	& typeof GroupBase
 
 export const Group = GroupBase as unknown as GroupComponent
 
-Group.displayName = NAME
-Group.Item = GroupItem
-Group.setDefaults({ props: DEFAULT_PROPS })
+Group.set({
+	defaultProps: DEFAULT_PROPS,
+	displayName: NAME,
+	subcomponents: SUBCOMPONENTS,
+})
 
 export declare namespace Group {
 	export type Context = GroupContext
 	export type Props<Ctx extends GroupContext = GroupContext> = GroupProps<Ctx>
 	export type Specs = GroupSpecs
+
+	export type CompoundProps = Omit<Group.Props, 'childName' | 'header' | 'provider' | 'values'>
 
 	export namespace Item {
 		export type Props = GroupItem.Props

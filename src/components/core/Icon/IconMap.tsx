@@ -6,12 +6,13 @@ import {
 	Ban, Globe, LoaderCircle, RotateCw,
 	Bell, Bookmark, Calendar, Camera, Clock, MapPin,
 	CircleAlert, MessageCircle, MessageCircleQuestionMark, TriangleAlert,
-	ClipboardList, Copy, Funnel, Search, Trash,
-	Cog, Lock, Ruler, Settings, Wrench,
-	Download, Image, Link, Share, Tag,
-	Ellipse, GripVertical, LayoutGrid, List, Rows3, StretchHorizontal,
-	Flag, Mail, MailPlus, Paperclip, Pen, Phone, Send,
-	Heart, Moon, Star, Sun,
+	ClipboardList, Copy, File, Funnel, Search, Trash,
+	Cog, Lock, Pipette, Ruler, Wrench,
+	Download, Hash, Image, Link, Share, Tag,
+	Ellipse, GripVertical, LayoutGrid, List, StretchHorizontal,
+	Flag, Mail, MailPlus, Paperclip, Pen, Phone, Printer, Send,
+	Heart, Moon, Star, Sun, WandSparkles,
+	// Rows3, Settings,
 } from 'lucide-react'
 
 const ARROW_ICON_MAP = {
@@ -29,7 +30,7 @@ const NAVIGATION_ICON_MAP = {
 	...ARROW_ICON_MAP,
 	add: Plus,
 	close: X,
-	confirm: Check,
+	check: Check,
 	remove: Minus,
 
 	'alert-tooltip': CircleAlert,
@@ -56,7 +57,6 @@ const USER_SETTING_MAP = {
 const ACTION_MAP = {
 	attach: Paperclip,
 	block: Ban,
-	call: Phone,
 	comment: MessageCircle,
 	copy: Copy,
 	delete: Trash,
@@ -68,6 +68,8 @@ const ACTION_MAP = {
 	like: Heart,
 	notify: Bell,
 	paste: ClipboardList,
+	phone: Phone,
+	print: Printer,
 	refresh: RotateCw,
 	report: Flag,
 	save: Bookmark,
@@ -77,10 +79,13 @@ const ACTION_MAP = {
 
 const CONTROL_ICON_MAP = {
 	calendar: Calendar,
+	color: Pipette,
+	file: File,
 	filter: Funnel,
 	grid: LayoutGrid,
 	hidden: EyeOff,
 	list: List,
+	number: Hash,
 	price: Tag,
 	row: StretchHorizontal,
 	search: Search,
@@ -101,7 +106,9 @@ export const ICON_MAP = {
 	rating: Star,
 	ruler: Ruler,
 	time: Clock,
+	'wand-sparkles': WandSparkles,
 	wrench: Wrench,
 }
 
-export type IconType = keyof typeof ICON_MAP
+export type { LucideProps } from 'lucide-react'
+export type LucideType = keyof typeof ICON_MAP

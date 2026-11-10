@@ -1,6 +1,6 @@
 import { getSchemeCSS } from './cache'
 import type { ComponentProps } from 'react'
-import type { SiteTheme } from '@/lib/theme'
+import type { SiteTheme } from '@/lib/theme/types'
 
 interface StyleInlinerProps
 	extends ComponentProps<'style'> {

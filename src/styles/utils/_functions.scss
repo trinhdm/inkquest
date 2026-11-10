@@ -1,0 +1,104 @@
+@use "sass:list";
+@use 'sass:map';
+@use 'sass:meta';
+
+@function is-opacity($value) {
+	@if meta.type-of($value) == 'number' and $value >= 0 and $value <= 1 {
+		@return true;
+	}
+	@return false;
+}
+
+//	colors
+
+@function to-mix($colors, $weights, $space: srgb) {
+	@if meta.type-of($colors) != 'list' or list.length($colors) < 2 {
+		@error 'Colors must be provided as a list, and it must have at least two colors.';
+	}
+
+	$color1: list.nth($colors, 1);
+	$color2: list.nth($colors, 2);
+
+	$weight1: null;
+	$weight2: null;
+
+	@if meta.type-of($weights) == 'list' and list.length($weights) >= 1 {
+		$weight1: list.nth($weights, 1);
+		$weight2: if(sass(list.length($weights) >= 2): list.nth($weights, 2);
+			else: null);
+	} @else if meta.type-of($weights) == 'number' {
+		$weight1: $weights;
+	}
+
+	@if $weight1 == null and $weight2 == null {
+		$weight1: 50%;
+	}
+
+	$group1: if(sass($weight1 != null): #{$color1} #{$weight1};
+		else: #{$color1});
+
+	$group2: if(sass($weight2 != null): #{$color2} #{$weight2};
+		else: #{$color2});
+
+	@return color-mix(in #{$space}, #{$group1}, #{$group2});
+}
+
+@function to-rgb($value, $alpha: null, $rgb: ()) {
+	$rgb-map: (
+		'r': 'r',
+		'g': 'g',
+		'b': 'b',
+	);
+
+	$map: if(sass(meta.type-of($rgb) == 'map'): map.merge($rgb-map, $rgb);
+		else: $rgb-map);
+
+	$r: map.get($map, 'r');
+	$g: map.get($map, 'g');
+	$b: map.get($map, 'b');
+	$channels: "from #{$value} #{$r} #{$g} #{$b}";
+
+	@if is-opacity($alpha) {
+		@return rgb(from #{$value} #{$r} #{$g} #{$b} / #{$alpha});
+	}
+
+	@return rgb(from #{$value} #{$r} #{$g} #{$b});
+}
+
+@function disable($color) {
+	@return to-rgb($color, var(--inkq-opacity-disabled));
+}
+
+@function shadow-focus($color) {
+	$spread: calc(var(--space-1) - var(--form-control-border-width));
+	@return 0 0 0 #{$spread} to-rgb($color, .25);
+}
+
+@function autofill($color) {
+	@return 0 0 0 100px #{$color} inset;
+}
+
+@function severity($tier) {
+	$base: transparent;
+	$color: $base;
+
+	$tiers: (
+		0: $base,
+		1: var(--inkq-color-danger-muted),
+		2: var(--inkq-color-danger-tint),
+		3: var(--inkq-color-warning-muted),
+		4: var(--inkq-color-warning-active),
+		5: var( --inkq-color-success-muted),
+		6: var( --inkq-color-success),
+	);
+
+	@if meta.type-of($tier) == 'number' {
+		@if map.has-key($tiers, $tier) {
+			$color: map.get($tiers, $tier);
+		} @else if $tier < 0 {							//	i.e. `$tier: -1` for last value
+			$color: list.nth(map.values($tiers), $tier);
+		}
+	}
+
+	@return $color;
+}

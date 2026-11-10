@@ -1,40 +1,50 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
-import { useProps, extractOtherProps } from '@/hooks/useProps'
 import { useReplayInView } from '@/hooks/animation'
-import { useStyles } from '@/hooks/useStyles'
-import { filterChildren, withProvider } from '@/lib/component'
-import { polymorphic } from '@/lib/component'
+import { extractOthers } from '@/hooks/useProps'
+import { filterChildren } from '@/lib/component/children'
+import { getSharedTokens, type AccordionTokens as AccordionGroupTokens } from '../utils'
+import { polymorphic } from '@/lib/component/factory'
+import { withProvider } from '@/lib/component/context'
 import { AccordionGroupProvider } from './AccordionGroup.context'
 import { Box } from '@/components/polymorphic/Box'
-import type { ListProps } from '@/lib/component/factory/types'
+import type { Accordion } from '../Accordion'
+import type { AccordionGroupContext, AccordionGroupType } from './AccordionGroup.context'
+import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from '../Accordion.module.scss'
 
-import type {
-	AccordionGroupContext,
-	AccordionGroupLayout,
-	AccordionGroupType,
-} from './AccordionGroup.context'
+const NAME = 'Accordion.Group' as const,
+	TAG = 'div' as const
 
-const NAME = 'Accordion.Group' as const
 const DEFAULT_PROPS = {
-	collapsible: true,
+	as: TAG,
+	collapsible: 'single',
 	defaultOpen: 0,
-	type: 'single',
+	order: 3,
+	size: 'md',
 } as const
 
 interface AccordionGroupProps {
-	collapsible?: boolean
+	collapsible?: AccordionGroupType | false
 	defaultOpen?: number | number[]
-	disabled?: boolean
-	layout?: AccordionGroupLayout
-	type?: AccordionGroupType
+	disabled?: Accordion.Props['disabled']
+	layout?: Accordion.Props['layout']
+	order?: Accordion.Props['order']
+	size?: Accordion.Props['size']
 }
 
-type AccordionGroupSpecs = {
-	defaults: { props: ListProps<typeof DEFAULT_PROPS> }
-	isCompound: true
+interface AccordionGroupSpecs {
+	defaults: {
+		as: typeof TAG
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
+	}
+	isGroup: true
 	props: AccordionGroupProps
+	selectors: AccordionGroupSelectors
+	tokens: AccordionGroupTokens
 }
+
+type AccordionGroupSelectors =
+	| 'root'
 
 const handleOpenItems = (value?: AccordionGroupProps['defaultOpen']): number[] =>
 	typeof value === 'number'
@@ -42,29 +52,27 @@ const handleOpenItems = (value?: AccordionGroupProps['defaultOpen']): number[] =
 		: Array.isArray(value)
 			? value : []
 
-export const AccordionGroup = polymorphic<AccordionGroupSpecs>(_props => {
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props })
+const tokens = getSharedTokens('group')
+
+export const AccordionGroup = polymorphic<AccordionGroupSpecs>((_props, { useProps, useStyles }) => {
+	const props = useProps(_props)
+	const styles = useStyles({ props, tokens })
 
 	const {
-		children,
-		collapsible,
-		defaultOpen,
-		disabled,
-		layout,
-		type,
-		unstyled,
+		as, children, collapsible,
+		defaultOpen, disabled, layout,
+		order, size, unstyled,
 		...rest
 	} = props
 
-	const { others } = extractOtherProps(rest)
+	const others = extractOthers(rest)
 
 	const root = useRef<HTMLDivElement>(null)
 	const withinView = useReplayInView(root)
 
 	const [openItems, setOpenItems] = useState<number[]>(() => {
 		const indices = handleOpenItems(defaultOpen)
-		return type === 'multiple' ? indices : indices.slice(0, 1)
+		return collapsible === 'single' ? indices.slice(0, 1) : indices
 	})
 
 	const handleItemToggle = useCallback((
@@ -72,25 +80,27 @@ export const AccordionGroup = polymorphic<AccordionGroupSpecs>(_props => {
 		next: boolean
 	) => {
 		setOpenItems(prev => {
-			if (type === 'single') return next ? [index] : []
+			if (!collapsible) return [...prev]
+			else if (collapsible === 'single') return next ? [index] : []
 			return next ? [...prev, index] : prev.filter(i => i !== index)
 		})
-	}, [type])
+	}, [collapsible])
 
-	const items = filterChildren(children, 'Accordion'),
+	const items = filterChildren(children, 'Accordion', { name: NAME }),
 		total = items.length
 
 	const ctxValues = useMemo(
 		() => Array.from({ length: total }, (_, index): AccordionGroupContext => ({
-			collapsible, disabled, index, layout,
+			collapsible: typeof collapsible === 'string',
+			disabled, index, layout,
 			onItemToggle: handleItemToggle,
 			open: openItems.includes(index),
-			unstyled, withinView,
+			order, size, unstyled, withinView,
 		})),
 		[
 			collapsible, disabled, handleItemToggle,
-			layout, openItems, total,
-			unstyled, withinView,
+			layout, openItems, order, size,
+			total, unstyled, withinView,
 		]
 	)
 
@@ -98,20 +108,23 @@ export const AccordionGroup = polymorphic<AccordionGroupSpecs>(_props => {
 		<Box
 			{ ...styles('root') }
 			{ ...others }
-			as="div"
+			as={ as }
 			attributes={ { data: { group: true } } }
 			ref={ root }
 		>
 			{ withProvider(items, AccordionGroupProvider, ctxValues) }
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
-AccordionGroup.displayName = NAME
-AccordionGroup.setDefaults({ props: DEFAULT_PROPS })
+AccordionGroup.set({
+	defaultProps: DEFAULT_PROPS,
+	displayName: NAME,
+})
 
 export declare namespace AccordionGroup {
 	export type Context = AccordionGroupContext
 	export type Props = AccordionGroupProps
 	export type Specs = AccordionGroupSpecs
+	export type Type = AccordionGroupType
 }

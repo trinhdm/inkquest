@@ -1,9 +1,7 @@
 .inkq-container {
 	$name: &;
 
-	&__wrapper {
-		& > :first-child {
-			margin-top: 0;
-		}
+	&__wrapper > :first-child {
+		margin-block-start: 0;
 	}
 }

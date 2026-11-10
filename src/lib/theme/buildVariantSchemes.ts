@@ -1,35 +1,27 @@
-import { enumerateVariantPalettes } from './tokens/variants'
+import { enumerateVariantPalettes, VARIANT_ORDER } from './tokens/variants'
 import { toKebabCase } from '@/utils/helpers'
 import { tokenGenerator } from './generate'
 import type { CssRule } from './types'
 
-const VARIANT_ORDER = {
-	solid: 'primary',
-	outline: 'secondary',
-	ghost: 'tertiary',
-}
-
 export const buildVariantSchemes = (name?: string, prefix?: string): CssRule[] => {
 	const namespace = !!name ? toKebabCase(name) : 'variant',
-		rootClass = !!prefix ? `${prefix}-${namespace}` : namespace,
-		palettes = enumerateVariantPalettes()
+		className = !!prefix ? `${prefix}-${namespace}` : namespace,
+		scope = name ? `.${className}` : ''
 
-	const targets = new Set()
+	const palettes = enumerateVariantPalettes(),
+		variants = new Set()
 
-	return palettes.map(({ palette, priority, variant }) => {
+	return palettes.map(({ palette, priority, tone, variant }) => {
 		const selectors = [],
-			vars = tokenGenerator(palette, namespace)
+			root = `${scope}[data-variant="${variant}"]`
 
-		let selector = `[data-variant="${variant}"]`
-		if (name) selector = `.${rootClass}${selector}`
-
-		if (!targets.has(selector)) {
-			selectors.push(selector)
-			targets.add(selector)
+		if (!variants.has(root)) {
+			selectors.push(root)
+			variants.add(root)
 		}
 
 		if (priority) {
-			selectors.push(`${selector}:is([data-priority="${priority}"])`)
+			if (!tone) selectors.push(`${root}:is([data-priority="${priority}"])`)
 		} else if (variant in VARIANT_ORDER) {
 			const list = Object.keys(VARIANT_ORDER).reduce<string[]>((acc, k) => {
 				if (k !== variant) acc.push(`[data-variant="${k}"]`)
@@ -37,9 +29,15 @@ export const buildVariantSchemes = (name?: string, prefix?: string): CssRule[] =
 			}, []).join(`, `)
 
 			const order = VARIANT_ORDER[variant as keyof typeof VARIANT_ORDER]
-			selectors.push(`[data-priority="${order}"]:is(${list})`)
+			selectors.push(`${scope}[data-priority="${order}"]:is(${list})`)
 		}
 
-		return { selector: selectors.join(',\n'), vars }
+		if (tone)
+			selectors.push(`${root}:is([data-tone="${tone}"])`)
+
+		return {
+			selector: selectors.join(',\n'),
+			vars: tokenGenerator(palette, namespace),
+		}
 	})
 }

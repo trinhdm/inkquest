@@ -1,0 +1,574 @@
+import { Component, useState } from 'react'
+import { expect, fn, userEvent, within } from 'storybook/test'
+import { getDefaultProps } from '@/hooks/useProps'
+import { Field } from '../Field'
+import { BOOLEAN_OPTIONS, ICON_POSITION_OPTIONS, INPUT_TYPE_OPTIONS, SIZE_OPTIONS } from '../Field/options.story'
+import type { ReactNode } from 'react'
+import type { Meta, StoryObj } from '@storybook/nextjs-vite'
+
+const Row = ({ children }: { children: ReactNode }) => (
+	<div style={ { display: 'flex', gap: 24, flexWrap: 'wrap' } }>
+		{ children }
+	</div>
+)
+
+const Group = ({ label, children }: { label: string, children: ReactNode }) => (
+	<div style={ { display: 'flex', flexDirection: 'column', gap: 8 } }>
+		<span style={ { font: 'var(--inkq-text-control)', letterSpacing: '.15em', textTransform: 'uppercase', opacity: 0.6 } }>
+			{ label }
+		</span>
+		{ children }
+	</div>
+)
+
+interface ErrorBoundaryState {
+	message?: string
+}
+
+// A `TextInput` outside a `Field` throws. A raw, uncaught throw would take the
+// whole canvas down, so the misuse story wraps it in this local boundary.
+class RenderErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryState> {
+	state: ErrorBoundaryState = {}
+
+	static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+		return { message: error.message }
+	}
+
+	render() {
+		if (this.state.message)
+			return <span data-testid="text-input-error">{ this.state.message }</span>
+		return this.props.children
+	}
+}
+
+// Raw `Parameters<typeof Field.Input>[0]`: `Omit` over it would turn every
+// prop into `any` (`as` resolves to `ElementType`).
+type InputStoryProps = Parameters<typeof Field.Input>[0]
+
+type Story = StoryObj<InputStoryProps>
+
+type FieldWrap = Partial<Pick<Field.Props, 'caption' | 'disabled' | 'error' | 'loading' | 'readonly' | 'required' | 'size'>>
+
+const read = (el: Element, token: string) =>
+	(el as HTMLElement).style.getPropertyValue(token)
+
+// A `TextInput` is always rendered inside a `Field`, which supplies the id, the
+// label and the shared state.
+const inputTemplate = (args: InputStoryProps, id: string, field: FieldWrap = {}) => (
+	<Field id={ id } label="Name" { ...field }>
+		<Field.Input { ...args } />
+	</Field>
+)
+
+// `NAME` is the undotted `'TextInput'` (it feeds the class names).
+const inputDefaults = getDefaultProps<Field.Input.Props>('TextInput')
+
+const meta: Meta<InputStoryProps> = {
+	component: Field.Input,
+	title: 'Form/Field/Field.Input',
+	argTypes: {
+		name: {
+			control: 'text',
+			description: 'Required. Forwarded to the `<input>`.',
+		},
+		placeholder: {
+			control: 'text',
+			description: 'Forwarded to the `<input>`.',
+		},
+		autoComplete: {
+			control: 'text',
+			description: 'Forwarded to the `<input>`. Use `current-password` on sign-in and `new-password` on sign-up so password managers fill the right value.',
+		},
+		value: {
+			control: 'text',
+			description: 'Makes the input controlled. With no `onChange` it is rendered `readonly` automatically so React does not warn. See the `ReadOnly` and `Controlled` stories.',
+		},
+		onChange: {
+			control: false,
+			description: 'Called once per keystroke. See the `Typing` and `Controlled` stories.',
+		},
+		type: {
+			control: 'select',
+			options: INPUT_TYPE_OPTIONS,
+			description: 'Registered default `\'text\'`. A Field (or Field.Group) `type` is used when the input sets none. Every type except `text` gets an icon; for `password` it is a show/hide button. See the `Types` and `PasswordToggle` stories.',
+		},
+		iconPosition: {
+			control: 'select',
+			options: ICON_POSITION_OPTIONS,
+			description: 'Only for icon types (anything but `text`). Sets `--form-control-icon-inset` on the icon span that follows the input (`0 auto` left, the default; `auto 0` right). See the `IconPosition` story.',
+		},
+		readonly: {
+			control: false,
+			description: 'Not accepted on a TextInput (`never`). Set `readonly` on the Field only; the `<input>` reads it from context. See the `ReadOnly` story.',
+		},
+		disabled: {
+			control: false,
+			description: 'Not accepted on a TextInput (`never`). Set `disabled` on the Field only; the input reads it from context. See the `Disabled` story.',
+		},
+		required: {
+			control: false,
+			description: 'Not accepted on a TextInput (`never`). Set `required` on the Field only; it gives the input the native `required` attribute and `aria-required`. See the `Required` story.',
+		},
+		loading: {
+			control: false,
+			description: 'Not accepted on a TextInput (`never`). Set `loading` on the Field only; it shows the spinner beside the input and sets `aria-busy`. See the `Loading` story.',
+		},
+		size: {
+			control: 'select',
+			options: SIZE_OPTIONS,
+			description: 'Sizes `--form-control-padding`. Its own `size` beats its Field\'s. See the `Sizes` and `InheritedSize` stories.',
+		},
+		unstyled: {
+			control: 'boolean',
+			description: 'Drops the input\'s hashed module class and its tokens. Takes the Field\'s value when not set.',
+		},
+	},
+	args: {
+		...inputDefaults,
+		name: 'name',
+		placeholder: 'Jane Doe',
+	},
+	render: args => inputTemplate(args, 'name'),
+}
+
+export default meta
+
+export const Default: Story = {
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement),
+			input = canvas.getByRole('textbox', { name: 'Name' })
+
+		await expect(input).toHaveAttribute('type', 'text')
+		await expect(input).toHaveAttribute('name', 'name')
+		await expect(input).toHaveAttribute('placeholder', 'Jane Doe')
+		// the id comes from the surrounding Field, which is what the label points at
+		await expect(input).toHaveAttribute('id', 'name-control')
+		await expect(input).toBeEnabled()
+		await expect(input).not.toBeRequired()
+		await expect(input).not.toHaveAttribute('readonly')
+		await expect(input).not.toHaveAttribute('aria-invalid')
+
+		// plain text has no type icon (the icon span would follow the input)
+		await expect(input.nextElementSibling).toBeNull()
+	},
+}
+
+// Each type is set explicitly, so the minimal props are spelled out rather
+// than spreading `args`. Every type but `text` renders an icon: a span just
+// after the input, which for `password` holds a show/hide toggle button.
+export const Types: Story = {
+	parameters: {
+		layout: 'padded',
+		controls: { exclude: ['type'] },
+	},
+	render: () => (
+		<Row>
+			{ INPUT_TYPE_OPTIONS.map(type => (
+				<Group key={ type } label={ type }>
+					<Field id={ `type-${type}` } label="Input">
+						<Field.Input name={ `type-${type}` } type={ type } />
+					</Field>
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const inputs = canvasElement.querySelectorAll('input')
+
+		expect(inputs).toHaveLength(INPUT_TYPE_OPTIONS.length)
+
+		for (const [index, type] of INPUT_TYPE_OPTIONS.entries()) {
+			const input = inputs[index],
+				icon = input.nextElementSibling
+
+			await expect(input).toHaveAttribute('type', type)
+
+			if (type === 'text') await expect(icon).toBeNull()
+			else {
+				await expect(icon).toBeInTheDocument()
+				await expect(icon?.querySelector('svg')).toBeInTheDocument()
+			}
+		}
+	},
+}
+
+export const IconPosition: Story = {
+	parameters: { controls: { exclude: ['iconPosition'] } },
+	render: () => (
+		<Row>
+			<Group label="undefined (default: left)">
+				<Field id="icon-default" label="Email">
+					<Field.Input name="icon-default" type="email" />
+				</Field>
+			</Group>
+			{ ICON_POSITION_OPTIONS.map(iconPosition => (
+				<Group key={ iconPosition } label={ iconPosition }>
+					<Field id={ `icon-${iconPosition}` } label="Email">
+						<Field.Input iconPosition={ iconPosition } name={ `icon-${iconPosition}` } type="email" />
+					</Field>
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const [defaultInput, leftInput, rightInput] = within(canvasElement).getAllByRole('textbox')
+
+		// `ICON_POSITION_OPTIONS` is `['left', 'right']`, mapped in order.
+		// the token sits on the icon span, which follows the input
+		await expect(read(defaultInput.nextElementSibling as Element, '--form-control-icon-inset')).toBe('0 auto')
+		await expect(read(leftInput.nextElementSibling as Element, '--form-control-icon-inset')).toBe('0 auto')
+		await expect(read(rightInput.nextElementSibling as Element, '--form-control-icon-inset')).toBe('auto 0')
+	},
+}
+
+// In a Field with `layout="inline"` the label floats inside the control, so the
+// input renders no type icon (nor password toggle) at all.
+export const InlineLayout: Story = {
+	parameters: { controls: { exclude: ['type', 'iconPosition'] } },
+	render: () => (
+		<Row>
+			<Group label="Field layout=default">
+				<Field id="inline-default" label="Email">
+					<Field.Input name="inline-default" type="email" />
+				</Field>
+			</Group>
+			<Group label="Field layout=inline">
+				<Field id="inline-inline" label="Email" layout="inline">
+					<Field.Input name="inline-inline" type="email" />
+				</Field>
+			</Group>
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const [defaultInput, inlineInput] = within(canvasElement).getAllByRole('textbox')
+
+		await expect(defaultInput.nextElementSibling?.querySelector('svg')).toBeInTheDocument()
+		await expect(inlineInput.nextElementSibling).toBeNull()
+	},
+}
+
+// The password icon is a real button after the input: Tab reaches it, and a
+// click, Enter or Space shows or hides the password. It is disabled with its
+// input.
+export const PasswordToggle: Story = {
+	args: { type: 'password' },
+	parameters: { controls: { exclude: ['disabled', 'type'] } },
+	render: args => (
+		<Row>
+			{ BOOLEAN_OPTIONS.map(disabled => (
+				<Group key={ String(disabled) } label={ String(disabled) }>
+					{ inputTemplate({ ...args, name: `password-${disabled}` }, `password-${disabled}`, { disabled }) }
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement)
+		// `BOOLEAN_OPTIONS` is `[true, false]`, mapped in order.
+		const [, input] = canvas.getAllByLabelText('Name'),
+			[locked, toggle] = canvas.getAllByRole('button', { name: 'Show password' })
+		await expect(locked).toBeDisabled()
+		// the toggle sits in the icon span, which follows the input
+		await expect(input.nextElementSibling).toBe(toggle.parentElement)
+		await userEvent.click(toggle)
+		await expect(input).toHaveAttribute('type', 'text')
+		await expect(toggle).toHaveAttribute('aria-pressed', 'true')
+		await userEvent.click(input)
+		await userEvent.tab()
+		await expect(toggle).toHaveFocus()
+		await userEvent.keyboard('{Enter}')
+		await expect(input).toHaveAttribute('type', 'password')
+		await expect(toggle).toHaveAttribute('aria-pressed', 'false')
+	},
+}
+
+export const Disabled: Story = {
+	parameters: { controls: { exclude: ['disabled'] } },
+	render: args => (
+		<Row>
+			{ BOOLEAN_OPTIONS.map(disabled => (
+				<Group key={ String(disabled) } label={ String(disabled) }>
+					{ inputTemplate({ ...args, name: `disabled-${disabled}` }, `disabled-${disabled}`, { disabled }) }
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const inputs = within(canvasElement).getAllByRole('textbox')
+
+		expect(inputs).toHaveLength(2)
+
+		// `BOOLEAN_OPTIONS` is `[true, false]`, mapped in order.
+		const [off, on] = inputs
+
+		await expect(off).toBeDisabled()
+		await expect(on).toBeEnabled()
+
+		await userEvent.type(off, 'x')
+		await expect(off).toHaveValue('')
+
+		await userEvent.type(on, 'x')
+		await expect(on).toHaveValue('x')
+	},
+}
+
+// `required`, `disabled` and `readonly` are set on the Field only. A required
+// Field gives the input both the native attribute and `aria-required`.
+export const Required: Story = {
+	parameters: { controls: { exclude: ['required'] } },
+	render: args => (
+		<Row>
+			{ BOOLEAN_OPTIONS.map(required => (
+				<Group key={ String(required) } label={ String(required) }>
+					{ inputTemplate({ ...args, name: `required-${required}` }, `required-${required}`, { required }) }
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const [yes, no] = within(canvasElement).getAllByRole('textbox')
+
+		// `BOOLEAN_OPTIONS` is `[true, false]`, mapped in order.
+		await expect(yes).toBeRequired()
+		await expect(no).not.toBeRequired()
+	},
+}
+
+// A `readonly` Field (set on the Field, not the input) is focusable and visible, but takes no typing.
+export const ReadOnly: Story = {
+	parameters: { controls: { exclude: ['readonly'] } },
+	render: args => (
+		<Row>
+			{ BOOLEAN_OPTIONS.map(readonly => (
+				<Group key={ String(readonly) } label={ String(readonly) }>
+					{ inputTemplate({ ...args, name: `readonly-${readonly}` }, `readonly-${readonly}`, { readonly }) }
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const [locked, editable] = within(canvasElement).getAllByRole('textbox')
+
+		// `BOOLEAN_OPTIONS` is `[true, false]`, mapped in order.
+		await expect(locked).toHaveAttribute('readonly')
+		await expect(editable).not.toHaveAttribute('readonly')
+
+		await userEvent.type(locked, 'x')
+		await expect(locked).toHaveValue('')
+
+		await userEvent.type(editable, 'x')
+		await expect(editable).toHaveValue('x')
+	},
+}
+
+// `value` with no `onChange` would make React warn about a frozen input, so the
+// component renders it `readonly` for you. With an `onChange` it stays editable.
+export const ValueWithoutOnChange: Story = {
+	parameters: { controls: { exclude: ['value', 'onChange'] } },
+	render: args => (
+		<Row>
+			<Group label="value, no onChange">
+				{ inputTemplate({ ...args, name: 'value-fixed', value: 'fixed' }, 'value-fixed') }
+			</Group>
+			<Group label="value + onChange">
+				{ inputTemplate({ ...args, name: 'value-editable', value: 'editable', onChange: () => {} }, 'value-editable') }
+			</Group>
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const [fixed, editable] = within(canvasElement).getAllByRole('textbox')
+
+		await expect(fixed).toHaveAttribute('readonly')
+		await userEvent.type(fixed, 'x')
+		await expect(fixed).toHaveValue('fixed')
+
+		await expect(editable).not.toHaveAttribute('readonly')
+	},
+}
+
+// Uncontrolled: the DOM owns the value; `onChange` still fires once per key.
+export const Typing: Story = {
+	args: { onChange: fn() },
+	play: async ({ args, canvasElement }) => {
+		const input = within(canvasElement).getByRole('textbox')
+
+		await userEvent.type(input, 'hello')
+
+		await expect(input).toHaveValue('hello')
+		await expect(args.onChange).toHaveBeenCalledTimes(5)
+	},
+}
+
+const ControlledInput = ({ onChange }: { onChange?: Field.Input.Props['onChange'] }) => {
+	const [value, setValue] = useState('')
+
+	return (
+		<Field id="controlled" label="Name">
+			<Field.Input
+				name="controlled"
+				onChange={ event => {
+					setValue(event.target.value)
+					onChange?.(event)
+				} }
+				value={ value }
+			/>
+		</Field>
+	)
+}
+
+export const Controlled: Story = {
+	args: { onChange: fn() },
+	parameters: { controls: { exclude: ['value'] } },
+	render: args => <ControlledInput onChange={ args.onChange } />,
+	play: async ({ args, canvasElement }) => {
+		const input = within(canvasElement).getByRole('textbox')
+
+		await userEvent.type(input, 'abc')
+
+		await expect(input).toHaveValue('abc')
+		await expect(args.onChange).toHaveBeenCalledTimes(3)
+	},
+}
+
+// The spinner is an `svg` in the control wrapper. A plain `text` input has no
+// type icon, so the wrapper holds an `svg` only while loading.
+export const Loading: Story = {
+	parameters: { controls: { exclude: ['loading'] } },
+	render: args => (
+		<Row>
+			{ BOOLEAN_OPTIONS.map(loading => (
+				<Group key={ String(loading) } label={ String(loading) }>
+					{ inputTemplate({ ...args, name: `loading-${loading}` }, `loading-${loading}`, { loading }) }
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const [loading, idle] = within(canvasElement).getAllByRole('textbox')
+
+		// `BOOLEAN_OPTIONS` is `[true, false]`, mapped in order.
+		await expect(loading.parentElement?.querySelectorAll('svg')).toHaveLength(1)
+		await expect(idle.parentElement?.querySelectorAll('svg')).toHaveLength(0)
+	},
+}
+
+// `error` lives on the Field: it flags the input invalid and describes it. The
+// description is read out with a visually hidden `Error: ` prefix.
+export const Errors: Story = {
+	parameters: { controls: { exclude: ['name'] } },
+	render: args => (
+		<Row>
+			<Group label="error">
+				{ inputTemplate({ ...args, name: 'error-set' }, 'error-set', { error: 'Enter your name' }) }
+			</Group>
+			<Group label="undefined">
+				{ inputTemplate({ ...args, name: 'error-none' }, 'error-none') }
+			</Group>
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const [withError, without] = within(canvasElement).getAllByRole('textbox')
+
+		await expect(withError).toHaveAttribute('aria-invalid', 'true')
+		await expect(withError).toHaveAccessibleDescription('Error: Enter your name')
+
+		await expect(without).not.toHaveAttribute('aria-invalid')
+		await expect(without).not.toHaveAttribute('aria-describedby')
+	},
+}
+
+// Own `size` beats the Field's. Every Field here is `md`, so a non-`md` own
+// size must show up in the padding token and the `md` one must not.
+export const Sizes: Story = {
+	parameters: { controls: { exclude: ['size'] } },
+	render: args => (
+		<Row>
+			{ SIZE_OPTIONS.map(size => (
+				<Group key={ size } label={ size }>
+					{ inputTemplate({ ...args, name: `size-${size}`, size }, `size-${size}`, { size: 'md' }) }
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const inputs = within(canvasElement).getAllByRole('textbox')
+
+		expect(inputs).toHaveLength(SIZE_OPTIONS.length)
+
+		// `SIZE_OPTIONS` is `['sm', 'md', 'lg']`, mapped in order.
+		for (const [index, size] of SIZE_OPTIONS.entries()) {
+			const padding = read(inputs[index], '--form-control-padding')
+
+			await expect(padding).toContain(`var(--inkq-field-padding-${size})`)
+
+			if (size !== 'md') await expect(padding).not.toContain('var(--inkq-field-padding-md)')
+		}
+	},
+}
+
+// With no `size` of its own, the input takes the Field's.
+export const InheritedSize: Story = {
+	parameters: { controls: { exclude: ['size'] } },
+	render: args => (
+		<Row>
+			{ SIZE_OPTIONS.map(size => (
+				<Group key={ size } label={ `Field size=${size}` }>
+					{ inputTemplate({ ...args, name: `inherited-${size}` }, `inherited-${size}`, { size }) }
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const inputs = within(canvasElement).getAllByRole('textbox')
+
+		for (const [index, size] of SIZE_OPTIONS.entries())
+			await expect(read(inputs[index], '--form-control-padding')).toContain(`var(--inkq-field-padding-${size})`)
+	},
+}
+
+// Tab order only: a disabled input is skipped, a read-only one is reached.
+export const KeyboardFocus: Story = {
+	parameters: { controls: { exclude: ['name'] } },
+	render: args => (
+		<Row>
+			{ inputTemplate({ ...args, name: 'focus-a' }, 'focus-a') }
+			{ inputTemplate({ ...args, name: 'focus-b' }, 'focus-b', { disabled: true }) }
+			{ inputTemplate({ ...args, name: 'focus-c' }, 'focus-c', { readonly: true }) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const [first, skipped, readonly] = within(canvasElement).getAllByRole('textbox')
+
+		await userEvent.tab()
+		await expect(first).toHaveFocus()
+
+		await userEvent.tab()
+		await expect(skipped).not.toHaveFocus()
+		await expect(readonly).toHaveFocus()
+	},
+}
+
+// A `TextInput` reads its Field from context, so on its own it throws.
+export const RequiresFieldParent: Story = {
+	parameters: { layout: 'padded' },
+	render: args => (
+		<Row>
+			<Group label="inside a Field (valid)">
+				{ inputTemplate(args, 'valid-input') }
+			</Group>
+			<Group label="standalone: throws (guarded by useFieldCtx)">
+				<RenderErrorBoundary>
+					<Field.Input { ...args } />
+				</RenderErrorBoundary>
+			</Group>
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement)
+
+		await expect(canvas.getByRole('textbox', { name: 'Name' })).toBeInTheDocument()
+
+		const fallback = await canvas.findByTestId('text-input-error')
+		await expect(fallback).toHaveTextContent('<TextInput /> must be a direct child of <Field>')
+	},
+}

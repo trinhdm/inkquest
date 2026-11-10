@@ -53,6 +53,11 @@ describe('hexCodeStrategy', () => {
 		const entries = hexCodeStrategy.run({ path: ['red'], value: '#ff0000' }, dispatchGenerator)
 		expect(entries).toEqual([{ name: '--red-100', value: '#ff0000' }])
 	})
+
+	it('forwards the prefix into the token name', () => {
+		const entries = hexCodeStrategy.run({ path: ['red'], prefix: 'inkq', value: '#ff0000' }, dispatchGenerator)
+		expect(entries).toEqual([{ name: '--inkq-red-100', value: '#ff0000' }])
+	})
 })
 
 describe('nestedObjectStrategy', () => {
@@ -112,6 +117,17 @@ describe('numericArrayStrategy', () => {
 	it('for a value in (0, 1], labels the step as a percentage but leaves the value un-rem-converted', () => {
 		const entries = numericArrayStrategy.run({ path: ['opacity'], value: [0.2, 1] }, dispatchGenerator)
 		expect(entries).toEqual([
+			{ name: '--opacity-20', value: '0.2' },
+			{ name: '--opacity-1', value: '1' },
+		])
+	})
+
+	// 0 alone fails the (0, 1] check, so it only counts as a percentage when
+	// every step in its scale lies in [0, 1] — compare the radius case below
+	it('for 0 in a scale whose steps all lie in [0, 1], labels it 0 and leaves the value un-rem-converted', () => {
+		const entries = numericArrayStrategy.run({ path: ['opacity'], value: [0, 0.2, 1] }, dispatchGenerator)
+		expect(entries).toEqual([
+			{ name: '--opacity-0', value: '0' },
 			{ name: '--opacity-20', value: '0.2' },
 			{ name: '--opacity-1', value: '1' },
 		])

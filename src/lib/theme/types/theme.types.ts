@@ -1,8 +1,8 @@
 import { COLOR_TOKENS, THEME_SCHEMES } from '../scales'
 import type { CSSProperties } from 'react'
-import type { AtLeastOneKeyOf } from '@/types/utils'
+import type { ApiTokens } from '../reference'
+import type { AtLeastOneKeyOf, ExtractFrom } from '@/types/utils'
 import type { CSSVars, HexCode, Unit } from '@/types/shared'
-import type { SemanticTokens, ShorthandTokens } from '../reference'
 
 export type ThemeName =
 	typeof THEME_SCHEMES[number]
@@ -45,30 +45,22 @@ export interface SiteTheme {
 
 	opacity: number[]
 	radius: number[]
+
+	// iconSize: BaseStyleValues<number, Size, 'md'>
+	iconSize: number[]
 	screenSize: number[]
 }
 
 export interface SiteThemeConfig
-	extends SemanticTokens {
-	// css: SemanticTokens
+	extends ApiTokens {
 	prefix?: string
-	presets: ShorthandTokens
-
 	prefixSelector: (name: string) => string
-
-	// subcomponents?: Record<string, {
-	// 	cssVars?: (theme: SiteTheme, props: unknown, ctx: unknown) => Partial<Record<string, CSSVars>>
-	// }>
 }
 
-type ThemeSizeScale =
-	| 'xxs'
-	| 'xs'
-	| 'sm'
-	| 'md'
-	| 'lg'
-	| 'xl'
-	| 'xxl'
+export type ConfigOptions<K extends keyof SiteThemeConfig, T extends string> =
+	SiteThemeConfig[K] extends (...args: any[]) => unknown
+		? ExtractFrom<Parameters<SiteThemeConfig[K]>, T>
+		: never
 
 type ThemeLineHeight =
 	| 'exact'
@@ -93,32 +85,32 @@ type ThemeEasing =
 type StyleValues<
 	Keys extends PropertyKey,
 	V,
-	Name extends PropertyKey = PropertyKey,
+	UnitName extends PropertyKey = PropertyKey,
 > =
 	V extends `${number}${Unit}`
 		? ConsistentValues<Keys, true>
-		: Name extends ConsistentProperty
+		: UnitName extends ConsistentProperty
 			? ConsistentValues<Keys, true, number extends V ? V : undefined>
 			: AtLeastOneKeyOf<Keys, V>
 
 type BaseStyleValues<
 	V,
 	Keys extends PropertyKey,
-	RK extends Keys | undefined = undefined,
-	Name extends PropertyKey = PropertyKey,
+	ReqKey extends Keys | undefined = undefined,
+	UnitName extends PropertyKey = PropertyKey,
 > =
 	| V
-	| (RK extends Keys
-		? Extract<StyleValues<Keys, V, Name>, Record<RK, unknown>>
-		: StyleValues<Keys, V, Name>)
+	| (ReqKey extends Keys
+		? Extract<StyleValues<Keys, V, UnitName>, Record<ReqKey, unknown>>
+		: StyleValues<Keys, V, UnitName>)
 
 type StyleList<
 	P extends keyof CSSProperties,
 	Keys extends PropertyKey,
-	RK extends Keys | undefined = undefined,
-	Name extends PropertyKey = PropertyKey,
+	ReqKey extends Keys | undefined = undefined,
+	UnitName extends PropertyKey = PropertyKey,
 > =
-	BaseStyleValues<CSSProperties[P], Keys, RK, Name>
+	BaseStyleValues<CSSProperties[P], Keys, ReqKey, UnitName>
 
 // consistent value helpers
 
@@ -129,7 +121,7 @@ type ConsistentProperty =
 type ConsistentType<
 	K extends PropertyKey,
 	Optional extends boolean = false,
-	T extends unknown = undefined,
+	T = undefined,
 > =
 	T extends undefined
 		? never
@@ -151,7 +143,7 @@ type ConsistentUnit<
 type ConsistentValues<
 	K extends PropertyKey,
 	Optional extends boolean = false,
-	T extends unknown = undefined,
+	T = undefined,
 	U extends string = Unit,
 > =
 	| ConsistentType<K, Optional, T>

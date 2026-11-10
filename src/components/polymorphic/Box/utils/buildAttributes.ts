@@ -1,14 +1,12 @@
 import { keyHasValue } from '@/utils/helpers'
 import { prefixAttributes } from './prefixAttributes'
-import type { ElementType } from 'react'
-import type { SpecAttributes } from '@/types/shared'
+import type { PolymorphicContract } from '@/lib/component/factory/types'
 
-/** the only fields these helpers read off a component's props */
-export interface AttrSource {
-	as?: ElementType
-	attributes?: SpecAttributes
-	unstyled?: boolean
-}
+export interface AttrSource
+	extends Pick<PolymorphicContract, 'as' | 'attributes' | 'unstyled'> {}
+
+type DataAttribute =
+	NonNullable<AttrSource['attributes']>['data']
 
 // attributes that reflect functional/interaction state, not visual styling —
 // kept even when `unstyled`, unlike every other entry in a component's `data` bag
@@ -16,6 +14,8 @@ const STATE_KEYS = new Set([
 	'busy', 'checked', 'disabled', 'expanded',
 	'invalid', 'loading', 'pressed', 'readonly',
 	'required', 'selected',
+	//	custom data-attrs for storing strings
+	'keep', 'tooltip',
 ])
 const DISABLEABLE_TAGS: readonly string[] = [
 	'button', 'fieldset', 'input',
@@ -29,8 +29,8 @@ interface CheckOptions {
 
 // unstyled attributes only
 const keepStateAttrs = (
-	data: SpecAttributes['data'],
-	check: CheckOptions
+	data: DataAttribute,
+	check: CheckOptions,
 ) => {
 	if (!check.isUnstyled || !data) return data
 
@@ -44,8 +44,8 @@ const keepStateAttrs = (
 }
 
 const getDataAttrs = (
-	data: SpecAttributes['data'],
-	check: CheckOptions
+	data: DataAttribute,
+	check: CheckOptions,
 ) => {
 	const dataList = keepStateAttrs(data, check)
 	return prefixAttributes(dataList, 'data')
@@ -53,7 +53,7 @@ const getDataAttrs = (
 
 const getNativeAttrs = (
 	_props: AttrSource,
-	check: CheckOptions
+	check: CheckOptions,
 ) => {
 	const attrs = new Map<string, unknown>()
 

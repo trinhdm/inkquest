@@ -1,22 +1,29 @@
 import type { CSSProperties } from 'react'
-import type { CSSVars } from '@/types/shared'
+import type { CSSVariable, Heading, Size, SizeRange } from '@/types/shared'
 import type { COLOR_TOKENS } from '../scales'
 
 export type TokenVar =
-	`var(${keyof CSSVars})`
+	`var(${CSSVariable})`
 
 export type TokenVariableShape =
 	| `${TokenVar}`
 	| `${TokenVar} ${TokenVar}`
 
+export type TokenHeadingShape<T extends Heading = Heading> =
+	Record<T, TokenVariableShape>
+
+export type TokenSizeShape<S extends SizeRange = Size> =
+	Record<S, TokenVariableShape>
+
 type TokenItem<T extends keyof CSSProperties = 'color'> =
 	CSSProperties[T]
 
 export type TokenState =
-	| 'hover'
 	| 'active'
 	| 'disable'
+	| 'error'
 	| 'focus'
+	| 'hover'
 	| 'pressed'
 	| 'select'
 
@@ -35,6 +42,7 @@ interface ColorMixtures {
 	bright: string
 	dim: string
 	muted: string
+	dull: string
 	shade: string
 	tint: string
 }

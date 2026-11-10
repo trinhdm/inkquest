@@ -1,8 +1,7 @@
-import { useProps, extractOtherProps } from '@/hooks/useProps'
-import { useStyles } from '@/hooks/useStyles'
-import { polymorphic } from '@/lib/component'
-import { Box } from '@/components/polymorphic/Box'
 import { useRef, type ReactNode } from 'react'
+import { extractOthers } from '@/hooks/useProps'
+import { polymorphic } from '@/lib/component/factory'
+import { Box } from '@/components/polymorphic/Box'
 import classes from '../Timeline.module.scss'
 
 const NAME = 'Timeline.Item' as const
@@ -16,16 +15,22 @@ interface TimelineItemProps {
 interface TimelineItemSpecs {
 	isCompound: true
 	props: TimelineItemProps
+	selectors: TimelineItemSelectors
 }
 
-export const TimelineItem = polymorphic<TimelineItemSpecs>(_props => {
+type TimelineItemSelectors =
+	| 'root'
+	| 'body' | 'title' | 'content'
+	| 'marker' | 'bullet' | 'rail'
+
+export const TimelineItem = polymorphic<TimelineItemSpecs>((_props, { useProps, useStyles }) => {
 	const itemRef = useRef<HTMLDivElement>(null)
 
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props })
+	const props = useProps(_props)
+	const styles = useStyles({ props })
 
 	const { bullet, content, title, ...rest } = props
-	const { others } = extractOtherProps(rest)
+	const others = extractOthers(rest)
 
 	return (
 		<Box
@@ -50,10 +55,9 @@ export const TimelineItem = polymorphic<TimelineItemSpecs>(_props => {
 			</div>
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
-TimelineItem.displayName = NAME
-TimelineItem.setDefaults({})
+TimelineItem.set({ displayName: NAME })
 
 export declare namespace TimelineItem {
 	export type Props = TimelineItemProps

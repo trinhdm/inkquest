@@ -1,6 +1,6 @@
-import { deepMerge } from '@/utils/helpers/objects'
-import { presets, tokens, type SiteThemeConfig } from '@/lib/theme'
-import { toKebabCase } from '@/utils/helpers'
+import { deepMerge, toKebabCase } from '@/utils/helpers/format'
+import { tokens } from '@/lib/theme/reference'
+import type { SiteThemeConfig } from '@/lib/theme/types'
 
 // interface ThemeValidator<T,> {
 // 	(theme: Partial<T>): asserts theme is T
@@ -42,12 +42,11 @@ export const handleTheme = <T extends object>(
 	prefix?: string
 ): SiteThemeConfig & { config: T } => {
 	const prefixSelector = (name: string) => getPrefixSelector(name, prefix)
-	const options: SiteThemeConfig & { config: T }= {
+	const options: SiteThemeConfig & { config: T } = {
 		...tokens,
 		config: theme,
 		prefix,
 		prefixSelector,
-		presets,
 	}
 
 	return options

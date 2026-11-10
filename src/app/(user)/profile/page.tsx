@@ -1,4 +1,19 @@
+'use client'
+
+import { Section } from '@/components/layout/Section'
 
 export default function Profile() {
-	return <main><h1>Profile</h1></main>
+	const pageID = 'profile'
+
+	return (
+		<>
+			<Section
+				id={ `${pageID}-hero` }
+				layout="hero"
+				title="Profile"
+			>
+				profile
+			</Section>
+		</>
+	)
 }

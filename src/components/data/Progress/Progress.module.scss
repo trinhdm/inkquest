@@ -1,0 +1,33 @@
+.inkq-progress {
+	$name: &;
+
+	appearance: none;
+    height: var(--progress-bar-height, 1px);
+	width: var(--progress-bar-width);
+
+	&--fixed {
+		position: fixed;
+		inset: var(--progress-bar-inset);
+		transform: var(--progress-bar-rotate);
+		z-index: 200;
+	}
+
+	//	background track
+	&::-webkit-progress-bar {
+		background-color: transparent;
+	}
+
+	//	fill bar
+	&::-webkit-progress-value {
+		background-color: var(--inkq-color-action);
+	}
+
+	//	firefox fallback
+	&::-moz-progress-bar {
+		background-color: var(--inkq-color-action);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		display: none;
+	}
+}

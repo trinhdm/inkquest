@@ -24,10 +24,10 @@ const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 	</div>
 )
 
-// `Card`'s root class always has its own SCSS declaration (`.inkq-card {
-// position: relative; ... }`), so it reliably reaches the root regardless of
-// `unstyled` — unlike `Container`'s root, which has no own declaration at
-// all.
+// `getClassName.tsx` emits the base class (`nameClassBase`, `inkq-card`) on
+// the root no matter what the SCSS declares or whether `unstyled` is set, so
+// it is a reliable selector. (`Card.module.scss` also happens to have an
+// `.inkq-card` rule, which is what gives a hashed module class to suppress.)
 const ROOT_SELECTOR = '.inkq-card'
 const IMAGE_CAPTION_SELECTOR = '.inkq-card__image-caption'
 
@@ -35,10 +35,9 @@ const IMAGE_CAPTION_SELECTOR = '.inkq-card__image-caption'
 // interface — it doesn't include `as`/`unstyled`/`attributes`/etc., which
 // only exist on the actual accepted prop type, `PolymorphicProps<CardProps,
 // C>`. `Parameters<typeof Card>[0]` reads that real, wrapped type straight
-// off the component itself — the generic call signature's default `C`
-// resolves to `'div'` here, since `CardSpecs`'s `defaults.as` is `'div'`
-// (`Card.tsx`'s local `TAG` constant), matching `const DEFAULT_PROPS = { as:
-// TAG, hasTitleAlt: false }` and `Card.setDefaults({ props: DEFAULT_PROPS })`.
+// off the component itself. It fills `C` with its constraint (`ElementType`),
+// not the default `'div'` (`Card.tsx`'s local `TAG` constant), so `as` is any
+// `ElementType` here.
 type CardStoryProps = Parameters<typeof Card>[0]
 type Story = StoryObj<CardStoryProps>
 
@@ -48,7 +47,7 @@ const meta: Meta<CardStoryProps> = {
 	argTypes: {
 		title: {
 			control: 'text',
-			description: 'Required. Rendered as the card\'s `<h3>` heading, and also feeds the caption-fallback chain when `hasTitleAlt` is set — see the `ImageCaptionPrecedence` story.',
+			description: 'Required. Rendered as the card\'s `<h3>` heading, and also feeds the caption-fallback chain when `isAltTitle` is set — see the `ImageCaptionPrecedence` story.',
 		},
 		caption: {
 			control: 'text',
@@ -56,15 +55,15 @@ const meta: Meta<CardStoryProps> = {
 		},
 		image: {
 			control: 'object',
-			description: 'Raw `next/image` props (`ComponentProps<typeof Image>`), spread directly onto an `<Image />`. When `image.alt` is present it takes precedence over the caption-fallback chain driven by `hasTitleAlt` (`image?.alt ?? altDefault`) — see the `ImageCaptionPrecedence` story.',
+			description: 'Raw `next/image` props (`ComponentProps<typeof Image>`), spread onto an `<Image />` — except `alt`, which `Card.tsx` always overrides with its resolved `altText` (`image?.alt ?? alt`). When `image.alt` is present it wins over the fallback chain driven by `isAltTitle`; the same `altText` becomes both the rendered `<img alt>` and the visible image caption. See the `ImageAlt` and `ImageCaptionPrecedence` stories.',
 		},
-		hasTitleAlt: {
+		isAltTitle: {
 			control: 'boolean',
-			description: 'Controls the image caption\'s fallback text when `image.alt` is absent: `altDefault = hasTitleAlt ? title : \'[ PHOTO ]\'`. The rendered caption text is `image?.alt ?? altDefault` — an explicit `image.alt` always wins regardless of this prop. See the `HasTitleAlt` and `ImageCaptionPrecedence` stories.',
+			description: 'Controls the fallback alt text when `image.alt` is absent: `alt = isAltTitle ? title : \'[ PHOTO ]\'`. The resolved text is `altText = image?.alt ?? alt` — an explicit `image.alt` always wins regardless of this prop — and is used for both the image caption and the `<img alt>`. See the `IsAltTitle`, `ImageAlt` and `ImageCaptionPrecedence` stories.',
 		},
 		elevated: {
 			control: 'boolean',
-			description: '**Probable source bug, verified against the live `Card.tsx`**: declared on `CardProps` but never destructured or read anywhere in the component body — it falls straight through `extractOtherProps(rest)`\'s `others` and gets spread onto the rendered root element as `elevated={true}`/`elevated={false}`. Since `elevated` isn\'t a recognized DOM/ARIA attribute, React silently DROPS it (booleans on unknown attributes are not rendered) and logs a dev-mode warning instead — it never actually reaches the DOM as `elevated=""` or similar. It has no visual or behavioral effect of any kind (no class, no style, no `data-*` attribute, no rendered DOM attribute), so no story exercises it beyond this doc note — asserting "elevated" behavior here would document something the component doesn\'t actually do.',
+			description: '**Probable source bug, verified against the live `Card.tsx`**: declared on `CardProps` but never destructured or read anywhere in the component body — it falls straight through `extractOthers(rest)`\'s `others` and gets spread onto the rendered root element as `elevated={true}`/`elevated={false}`. Since `elevated` isn\'t a recognized DOM/ARIA attribute, React silently DROPS it (booleans on unknown attributes are not rendered) and logs a dev-mode warning instead — it never actually reaches the DOM as `elevated=""` or similar. It has no visual or behavioral effect of any kind (no class, no style, no `data-*` attribute, no rendered DOM attribute), so no story exercises it beyond this doc note — asserting "elevated" behavior here would document something the component doesn\'t actually do.',
 		},
 	},
 	args: {
@@ -90,7 +89,7 @@ export const WithoutImage: Story = {
 		const canvas = within(canvasElement)
 
 		await expect(canvas.queryByRole('img')).not.toBeInTheDocument()
-		// `hasTitleAlt` stays at its registered default (`false`) here, so the
+		// `isAltTitle` stays at its registered default (`false`) here, so the
 		// caption falls all the way through to the literal placeholder.
 		await expect(canvas.getByText('[ PHOTO ]')).toBeInTheDocument()
 	},
@@ -119,11 +118,13 @@ export const CaptionPresence: Story = {
 	},
 }
 
-// `image?.alt ?? altDefault`, where `altDefault = hasTitleAlt ? title :
-// '[ PHOTO ]'` — three distinct branches of the same precedence chain.
-// `image.alt` is a required field on `next/image`'s own prop type, so the
-// only way to exercise the `hasTitleAlt` branches is to omit `image`
-// entirely (which also makes `image?.alt` undefined via optional chaining).
+// `altText = image?.alt ?? alt`, where `alt = isAltTitle ? title :
+// '[ PHOTO ]'` — three distinct branches of the same precedence chain,
+// checked here through the visible caption. `image.alt` is a required field
+// on `next/image`'s own prop type, so this story reaches the fallback
+// branches by omitting `image` entirely (which makes `image?.alt` undefined
+// via optional chaining). The `ImageAlt` story below covers the same chain
+// through the rendered `<img alt>`.
 export const ImageCaptionPrecedence: Story = {
 	parameters: { layout: 'padded' },
 	render: () => (
@@ -131,14 +132,14 @@ export const ImageCaptionPrecedence: Story = {
 			<Group label="image.alt set (wins over everything)">
 				<Card
 					title="Card title"
-					hasTitleAlt
+					isAltTitle
 					image={ { src: '/globe.svg', alt: 'Explicit image alt', width: 160, height: 160 } }
 				/>
 			</Group>
-			<Group label="no image, hasTitleAlt (falls back to title)">
-				<Card title="Card title" hasTitleAlt />
+			<Group label="no image, isAltTitle (falls back to title)">
+				<Card title="Card title" isAltTitle />
 			</Group>
-			<Group label="no image, !hasTitleAlt (literal placeholder)">
+			<Group label="no image, !isAltTitle (literal placeholder)">
 				<Card title="Card title" />
 			</Group>
 		</Row>
@@ -156,13 +157,56 @@ export const ImageCaptionPrecedence: Story = {
 	},
 }
 
-export const HasTitleAlt: Story = {
-	parameters: { controls: { exclude: ['hasTitleAlt'] } },
+// The same precedence chain, asserted on the rendered `<img alt>` rather than
+// the caption: `Card.tsx` renders `<Image { ...image } alt={ altText } />`, so
+// the attribute always carries the resolved `altText`. `image.alt` is
+// required by `next/image`'s types, so the two fallback groups cast an
+// `image` object that has no `alt` — plain JS callers can do the same.
+const imageWithoutAlt = {
+	src: '/globe.svg',
+	width: 160,
+	height: 160,
+} as unknown as NonNullable<Card.Props['image']>
+
+export const ImageAlt: Story = {
+	parameters: { layout: 'padded' },
+	render: () => (
+		<Row>
+			<Group label="image.alt set (wins over isAltTitle)">
+				<Card
+					title="Card title"
+					isAltTitle
+					image={ { ...imageWithoutAlt, alt: 'Explicit image alt' } }
+				/>
+			</Group>
+			<Group label="no image.alt, isAltTitle (title)">
+				<Card title="Card title" isAltTitle image={ imageWithoutAlt } />
+			</Group>
+			<Group label="no image.alt, !isAltTitle (placeholder)">
+				<Card title="Card title" image={ imageWithoutAlt } />
+			</Group>
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const images = within(canvasElement).getAllByRole('img')
+
+		await expect(images).toHaveLength(3)
+
+		const [explicitAlt, titleAlt, placeholderAlt] = images
+
+		await expect(explicitAlt).toHaveAttribute('alt', 'Explicit image alt')
+		await expect(titleAlt).toHaveAttribute('alt', 'Card title')
+		await expect(placeholderAlt).toHaveAttribute('alt', '[ PHOTO ]')
+	},
+}
+
+export const IsAltTitle: Story = {
+	parameters: { controls: { exclude: ['isAltTitle'] } },
 	render: (args) => (
 		<Row>
-			{ BOOLEAN_OPTIONS.map(hasTitleAlt => (
-				<Group key={ String(hasTitleAlt) } label={ String(hasTitleAlt) }>
-					<Card { ...args } image={ undefined } hasTitleAlt={ hasTitleAlt } />
+			{ BOOLEAN_OPTIONS.map(isAltTitle => (
+				<Group key={ String(isAltTitle) } label={ String(isAltTitle) }>
+					<Card { ...args } image={ undefined } isAltTitle={ isAltTitle } />
 				</Group>
 			)) }
 		</Row>
@@ -207,10 +251,12 @@ export const AsElement: Story = {
 
 // `unstyled` does NOT remove `Card`'s own semantic base classes (`inkq-card`,
 // `inkq-card__wrapper`, `inkq-card__image`, `inkq-card__title`, ...) — the
-// base class is always emitted regardless of `unstyled`; only the
-// CSS-module-hashed class normally appended alongside it is suppressed, and
-// only where a hash exists to suppress in the first place (verified against
-// the live `Card.module.scss`).
+// base class is not gated on `unstyled`; the CSS-module-hashed class normally
+// appended alongside it is suppressed, and only where a hash exists to
+// suppress in the first place (verified against the live `Card.module.scss`).
+// `unstyled` ALSO suppresses config-driven global classes: `getConfigClasses`
+// (`getClassName.tsx`) returns early when `check.isUnstyled`, which drops the
+// title's `inkq-h5` and the caption's `inkq-caption` (asserted below).
 export const Unstyled: Story = {
 	parameters: {
 		layout: 'padded',
@@ -239,9 +285,8 @@ export const Unstyled: Story = {
 
 		// Detect the REAL compiled CSS-module hash, keyed off the actual
 		// `Card.module.scss` export map — not a naive "any extra class"
-		// heuristic (`getConfigClasses` in `getClassName.tsx` emits
-		// modifier/global classes regardless of `unstyled`, so "any class
-		// beyond the base" is a false positive).
+		// heuristic (a styled element can also carry global config classes such
+		// as `inkq-h5`/`inkq-caption`, which are not the module hash).
 		const hasModuleClass = (el: Element, base: string) => {
 			const moduleClass = (moduleClasses as Record<string, string>)[base]
 			return !!moduleClass && el.classList.contains(moduleClass)
@@ -276,14 +321,17 @@ export const Unstyled: Story = {
 		expect(hasModuleClass(styledTitle, 'inkq-card__title')).toBe(true)
 		expect(hasModuleClass(unstyledTitle, 'inkq-card__title')).toBe(false)
 
-		// **Source quirk, verified against `Card.module.scss`**: the `info` and
-		// `caption` selectors `Card.tsx` calls `styles('info')`/`styles('caption',
-		// true)` for have NO matching rule in the stylesheet at all (only
-		// `root`/`wrapper`/`image`/`image-caption`/`title` do) — `getStyleClass()`
-		// finds no compiled hash to append regardless of `unstyled`, so neither
-		// instance ever carries a module class for this selector. Asserting a
-		// suppression difference here would document behavior the component
-		// doesn't actually have.
+		// `Card.tsx` styles the title with `styles('title', { global: { h5:
+		// true } })`, which adds the global `inkq-h5` class only when styled.
+		await expect(styledTitle).toHaveClass('inkq-h5')
+		await expect(unstyledTitle).not.toHaveClass('inkq-h5')
+
+		// The `caption` selector (`styles('caption', true)`) has NO matching
+		// rule in `Card.module.scss` (only `root`/`wrapper`/`image`/
+		// `image-caption`/`title` do), so neither instance carries a module
+		// class for it. Its suppression difference is the global `inkq-caption`
+		// class `config: true` adds, which `getConfigClasses` drops when
+		// unstyled.
 		const styledCaption = styledRoot.querySelector('.inkq-card__caption') as HTMLElement,
 			unstyledCaption = unstyledRoot.querySelector('.inkq-card__caption') as HTMLElement
 
@@ -291,5 +339,8 @@ export const Unstyled: Story = {
 		await expect(unstyledCaption).toHaveClass('inkq-card__caption')
 		expect(hasModuleClass(styledCaption, 'inkq-card__caption')).toBe(false)
 		expect(hasModuleClass(unstyledCaption, 'inkq-card__caption')).toBe(false)
+
+		await expect(styledCaption).toHaveClass('inkq-caption')
+		await expect(unstyledCaption).not.toHaveClass('inkq-caption')
 	},
 }

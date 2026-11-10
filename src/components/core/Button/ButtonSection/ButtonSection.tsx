@@ -1,8 +1,9 @@
-import { useButtonCtx } from '../Button.context'
-import { useProps, extractOtherProps } from '@/hooks/useProps'
-import { useStyles } from '@/hooks/useStyles'
-import { polymorphic } from '@/lib/component'
+import { useButton } from '../Button.context'
+import { extractOthers } from '@/hooks/useProps'
+import { keyHasValue } from '@/utils/helpers'
+import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
+import type { Button } from '../Button'
 import classes from '../Button.module.scss'
 
 const NAME = 'Button.Section' as const
@@ -21,35 +22,47 @@ type ButtonSectionProps = (
 	| RightSectionProps
 )
 
-type ButtonSectionSpecs = {
+interface ButtonSectionSpecs {
+	context: Button.Context
 	isCompound: true
 	props: ButtonSectionProps
+	selectors: ButtonSectionSelectors
 }
 
-export const ButtonSection = polymorphic<ButtonSectionSpecs>(_props => {
-	const { baseName, rootName } = useButtonCtx(NAME)
-	const props = useProps(NAME, _props)
-	const styles = useStyles(rootName, { classes, props })
+type ButtonSectionSelectors =
+	| 'section'
 
-	const { children, left, right, ...rest } = props
-	const { others } = extractOtherProps(rest)
+export const ButtonSection = polymorphic<ButtonSectionSpecs>((_props, { useProps, useStyles }) => {
+	const { useButtonCtx, useButtonProps } = useButton()
 
-	const data = { side: left ? 'left' : 'right' }
+	const context = useButtonCtx(NAME)
+	const props = useProps(useButtonProps(_props))
+	const styles = useStyles({ context, props, withRootName: true })
+
+	const {
+		children,
+		left, right,
+		...rest
+	} = props
+
+	const others = extractOthers(rest)
+	const isRight = keyHasValue(props, { right: true })
 
 	return (
 		<Box
-			{ ...styles(baseName) }
+			{ ...styles(context.baseName) }
 			{ ...others }
 			as="span"
-			attributes={ { data } }
+			attributes={ { data: {
+				side: isRight ? 'right' : 'left',
+			} } }
 		>
 			{ children }
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
-ButtonSection.displayName = NAME
-ButtonSection.setDefaults({})
+ButtonSection.set({ displayName: NAME })
 
 export declare namespace ButtonSection {
 	export type Props = ButtonSectionProps

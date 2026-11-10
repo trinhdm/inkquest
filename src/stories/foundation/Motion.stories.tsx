@@ -1,18 +1,24 @@
-// Foundation/Motion.
+// Design Tokens/Motion.
 //
 // Same class of gap as Typography's `font.display/title/body/label`: the
-// declared semantic accessor `tokens.motion.interactive()`
-// (`reference/semantic.ts` -> `--inkq-motion-interactive`) has no backing
-// value. `MotionTokens` (`tokens/motion/index.ts` = `TransitionPropertyTokens`
-// + `TransitionPresetTokens`) has no `interactive` key at all — the real,
-// generated transition vars are `--inkq-motion-background`,
-// `--inkq-motion-border`, `--inkq-motion-color`, `--inkq-motion-opacity`,
-// `--inkq-motion-transform`, `--inkq-motion-box`, `--inkq-motion-colors`.
-// Documented (and demonstrated live, via computed-value readback) rather
-// than silently worked around.
-import { base } from '@/lib/theme/reference'
-import { DURATION_SCALE, EASE_SCALE, tokens } from '@/lib/theme'
+// declared semantic accessor `alias.motion.interactive()`
+// (`reference/semantic.ts` -> `--inkq-motion-interactive`) still has no
+// backing value. `MotionTokens` (`tokens/motion/index.ts` =
+// `TransitionPropertyTokens` + `TransitionPresetTokens`) has no `interactive`
+// key at all — the real, generated transition vars are
+// `--inkq-motion-background`, `-border`, `-color`, `-opacity`, `-transform`
+// (properties, `tokens/motion/transitions/properties.ts`) and `-box`,
+// `-colors` (presets, `tokens/motion/presets.ts`). Documented (and
+// demonstrated live, via computed-value readback) rather than silently
+// worked around.
+//
+// Typed accessors for the real vars: `alias.transition.{background,border,
+// color,transform}` (`reference/semantic.ts`) and
+// `tokens.presets.motion('box' | 'colors')` (`reference/api.ts`).
+// `--inkq-motion-opacity` has no accessor, so it uses the literal var name.
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { alias, base, tokens } from '@/lib/theme/reference'
+import { DURATION_SCALE, EASE_SCALE } from '@/lib/theme/scales'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
 const metaStyle: CSSProperties = { fontSize: 11, opacity: 0.6, fontFamily: 'monospace', marginTop: 4 }
@@ -26,7 +32,7 @@ const ResolvedVar = ({ varName }: { varName: string }) => {
 		if (!el) return
 		const computed = getComputedStyle(el).getPropertyValue(varName).trim()
 		setValue(computed.length ? computed : '(empty — not emitted by buildSchemes)')
-	})
+	}, [setValue, varName])
 
 	return <span ref={ ref } style={ metaStyle }>{ varName } -&gt; { value }</span>
 }
@@ -39,22 +45,24 @@ const SemanticMotionToken = () => (
 				width: 96,
 				height: 48,
 				borderRadius: 8,
-				background: tokens.color.action(),
-				transition: tokens.motion.interactive(),
+				background: alias.color.action(),
+				transition: alias.motion.interactive(),
 			} }
 		/>
-		<div style={ metaStyle }>tokens.motion.interactive()</div>
+		<div style={ metaStyle }>alias.motion.interactive()</div>
 		<ResolvedVar varName="--inkq-motion-interactive" />
 	</div>
 )
 
 interface HoverDemoProps {
 	label: string
+	path: string
 	varName: string
+	value: string
 }
 
-/** A real hover-driven animation using an actual internal transition preset var. */
-const HoverDemo = ({ label, varName }: HoverDemoProps) => (
+/** A real hover-driven animation using an actual transition token. */
+const HoverDemo = ({ label, path, varName, value }: HoverDemoProps) => (
 	<div>
 		<div
 			className="foundation-motion-demo"
@@ -62,11 +70,11 @@ const HoverDemo = ({ label, varName }: HoverDemoProps) => (
 				width: 80,
 				height: 48,
 				borderRadius: 8,
-				background: tokens.color.action(),
-				transition: `var(${ varName })`,
+				background: alias.color.action(),
+				transition: value,
 			} }
 		/>
-		<div style={ metaStyle }>{ label } — <code>var({ varName })</code> (hover the box)</div>
+		<div style={ metaStyle }>{ label } — <code>{ path }</code> (hover the box)</div>
 		<ResolvedVar varName={ varName } />
 		<style>{ `
 			.foundation-motion-demo:hover {
@@ -80,18 +88,24 @@ const HoverDemo = ({ label, varName }: HoverDemoProps) => (
 const InternalPresets = () => (
 	<div>
 		<p style={ { fontSize: 12, opacity: 0.7, maxWidth: 680, marginBottom: 16 } }>
-			Internal — the transition property/preset tokens actually emitted as CSS
+			The transition property and preset tokens actually emitted as CSS
 			(<code>tokens/motion/transitions/properties.ts</code>,{ ' ' }
-			<code>tokens/motion/presets.ts</code>), referenced by literal CSS variable name since
-			there is no typed accessor for them beyond the (unwired) <code>tokens.motion.interactive</code>.
+			<code>tokens/motion/presets.ts</code>). The properties are reachable through{ ' ' }
+			<code>alias.transition</code> and the presets through <code>tokens.presets.motion</code>;
+			neither is the (unwired) <code>alias.motion.interactive</code>. <code>motion.opacity</code>{ ' ' }
+			is emitted but has no accessor, so it is referenced by literal variable name. Each property
+			token composes a duration and the base easing; <code>background</code>, <code>border</code> and{ ' ' }
+			<code>color</code> use the <code>default</code> duration, <code>opacity</code> and{ ' ' }
+			<code>transform</code> the <code>instant</code> one.
 		</p>
 		<div style={ { display: 'flex', gap: 32, flexWrap: 'wrap' } }>
-			<HoverDemo label="motion.background" varName="--inkq-motion-background" />
-			<HoverDemo label="motion.border" varName="--inkq-motion-border" />
-			<HoverDemo label="motion.color" varName="--inkq-motion-color" />
-			<HoverDemo label="motion.transform" varName="--inkq-motion-transform" />
-			<HoverDemo label="motion.box (preset)" varName="--inkq-motion-box" />
-			<HoverDemo label="motion.colors (preset)" varName="--inkq-motion-colors" />
+			<HoverDemo label="motion.background" path="alias.transition.background()" varName="--inkq-motion-background" value={ alias.transition.background() } />
+			<HoverDemo label="motion.border" path="alias.transition.border()" varName="--inkq-motion-border" value={ alias.transition.border() } />
+			<HoverDemo label="motion.color" path="alias.transition.color()" varName="--inkq-motion-color" value={ alias.transition.color() } />
+			<HoverDemo label="motion.opacity (no accessor)" path="var(--inkq-motion-opacity)" varName="--inkq-motion-opacity" value="var(--inkq-motion-opacity)" />
+			<HoverDemo label="motion.transform" path="alias.transition.transform()" varName="--inkq-motion-transform" value={ alias.transition.transform() } />
+			<HoverDemo label="motion.box (preset)" path="tokens.presets.motion('box')" varName="--inkq-motion-box" value={ tokens.presets.motion('box') } />
+			<HoverDemo label="motion.colors (preset)" path="tokens.presets.motion('colors')" varName="--inkq-motion-colors" value={ tokens.presets.motion('colors') } />
 		</div>
 	</div>
 )
@@ -114,7 +128,7 @@ const PrimitiveMotionScale = () => (
 							width: 64,
 							height: 32,
 							borderRadius: 6,
-							background: tokens.color.action(),
+							background: alias.color.action(),
 							transition: `transform ${ base.duration(key) } linear`,
 						} }
 					/>
@@ -136,7 +150,7 @@ const PrimitiveMotionScale = () => (
 							width: 64,
 							height: 32,
 							borderRadius: 6,
-							background: tokens.color.action(),
+							background: alias.color.action(),
 							transition: `transform .6s ${ base.easing(key) }`,
 						} }
 					/>
@@ -150,8 +164,58 @@ const PrimitiveMotionScale = () => (
 	</div>
 )
 
+// Global motion styles from `src/styles/_base.scss` (loaded via
+// `.storybook/preview.tsx` -> `_global.scss`).
+const GlobalMotionStyles = () => (
+	<div>
+		<p style={ { fontSize: 12, opacity: 0.7, maxWidth: 680, marginBottom: 16 } }>
+			<code>src/styles/_base.scss</code> consumes the motion tokens directly. Links transition with{ ' ' }
+			<code>--inkq-motion-colors</code> and <code>svg</code> with <code>--inkq-motion-color</code>.
+			Disabled elements (<code>:disabled</code>, <code>[aria-disabled=&quot;true&quot;]</code>,{ ' ' }
+			<code>[data-disabled]</code>) set <code>transition: none</code>. The loader and the CTA underline use
+			the primitive <code>--duration-*</code> and <code>--easing-out</code> variables rather than a semantic
+			token. Keyframes defined there: <code>fadeIn</code>, <code>fadeOut</code>, <code>spin</code>.
+		</p>
+
+		<h4 style={ { fontSize: 13, marginBottom: 8 } }>.inkq-loader</h4>
+		<p style={ { fontSize: 12, opacity: 0.7, maxWidth: 680, marginBottom: 12 } }>
+			Hidden (<code>opacity: 0</code>) until an ancestor has <code>data-loading</code>; then it fades in
+			(<code>--duration-default</code>, <code>--easing-out</code>, <code>--duration-instant</code> delay) and
+			spins for 2s per turn, starting after <code>--duration-gradual</code> minus{ ' ' }
+			<code>--duration-default</code>.
+		</p>
+		<div style={ { display: 'flex', gap: 32, marginBottom: 32 } }>
+			<div data-loading>
+				<span className="inkq-loader" style={ { fontSize: 24 } }>◐</span>
+				<div style={ metaStyle }>inside [data-loading]</div>
+			</div>
+			<div>
+				<span className="inkq-loader" style={ { fontSize: 24 } }>◐</span>
+				<div style={ metaStyle }>no [data-loading] (stays hidden)</div>
+			</div>
+		</div>
+
+		<h4 style={ { fontSize: 13, marginBottom: 8 } }>[data-cta] links</h4>
+		<p style={ { fontSize: 12, opacity: 0.7, maxWidth: 680, marginBottom: 12 } }>
+			An underline slides in on hover over <code>--duration-gradual</code> with{ ' ' }
+			<code>--easing-out</code> (hover the link).
+		</p>
+		<a href="#motion-demo" data-cta>Call to action</a>
+
+		<h4 style={ { fontSize: 13, marginTop: 32, marginBottom: 8 } }>JS reveal variables</h4>
+		<p style={ { fontSize: 12, opacity: 0.7, maxWidth: 680 } }>
+			Inside <code>[data-js-animate] [data-js-reveal]</code>, under{ ' ' }
+			<code>prefers-reduced-motion: no-preference</code>, <code>_base.scss</code> defines{ ' ' }
+			<code>--reveal-distance</code> (1rem), <code>--reveal-duration</code> (.4s),{ ' ' }
+			<code>--reveal-stagger</code> (.2s) and <code>--reveal-state</code>, and derives{ ' ' }
+			<code>--reveal-delay</code> / <code>--reveal-motion</code> per <code>[data-reveal-item]</code> from{ ' ' }
+			<code>--reveal-index</code>. These are global stylesheet variables, not theme tokens.
+		</p>
+	</div>
+)
+
 const meta: Meta = {
-	title: 'Foundation/Motion',
+	title: 'Design Tokens/Motion',
 	parameters: { layout: 'padded' },
 }
 
@@ -167,6 +231,11 @@ export const Semantic: Story = {
 export const Presets: Story = {
 	name: 'Presets actually in use — motion.*',
 	render: () => <InternalPresets />,
+}
+
+export const GlobalStyles: Story = {
+	name: 'Global motion styles — _base.scss',
+	render: () => <GlobalMotionStyles />,
 }
 
 export const Primitives: Story = {

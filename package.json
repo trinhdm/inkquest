@@ -18,7 +18,7 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "typecheck:watch": "tsc --watch",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit && tsc --noEmit -p e2e/tsconfig.json"
   },
   "dependencies": {
     "@stripe/react-stripe-js": "^6.8.0",
@@ -29,6 +29,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
     "framer-motion": "^12.42.2",
+    "html-react-parser": "^6.1.8",
     "lucide-react": "^1.26.0",
     "next": "16.2.11",
     "playwright": "^1.61.1",
@@ -68,6 +69,7 @@
     "jest-axe": "^11.0.0",
     "jest-environment-jsdom": "^29.7.0",
     "next-auth": "^4.24.15",
+    "remark-gfm": "^4.0.1",
     "sass": "^1.102.0",
     "storybook": "^10.5.9",
     "stylelint": "^17.14.1",

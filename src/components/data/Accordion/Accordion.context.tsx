@@ -1,30 +1,34 @@
-import { createRootCtx } from '@/lib/component'
+import { createCompoundCtx } from '@/lib/component/context'
+import type { Accordion } from './Accordion'
 import type { AnimationOptions } from '@/hooks/animation'
 
-export type AccordionIndicator =
-	| 'chevron'
-	| 'plus'
-	| 'none'
-
-export interface AccordionIds {
+interface AccordionIds {
 	content: string
 	root: string
 	title: string
 }
 
+type SharedAccordionProp =
+	| 'collapsible'
+	| 'disabled'
+	| 'indicator'
+	| 'indicatorPosition'
+	| 'layout'
+	| 'order'
+	| 'size'
+
 export interface AccordionContext
-	extends Pick<AnimationOptions, 'unstyled'> {
-	collapsible?: boolean
-	disabled?: boolean
+	extends
+		Pick<Accordion.Props, SharedAccordionProp>,
+		Pick<AnimationOptions, 'unstyled'> {
 	handleToggle: () => void
 	idx: AccordionIds
-	indicator?: AccordionIndicator
+	index: NonNullable<Accordion.Props['index']>
 	isOpen: boolean
-	step?: `${number}`
 }
 
 export const {
 	RootProvider: AccordionProvider,
 	useRootCtx: useAccordionCtx,
 	useRootProps: useAccordionProps,
-} = createRootCtx<AccordionContext>('Accordion')
+} = createCompoundCtx<AccordionContext>('Accordion')

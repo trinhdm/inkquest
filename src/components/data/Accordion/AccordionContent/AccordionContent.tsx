@@ -1,9 +1,11 @@
 import { useAccordionCtx } from '../Accordion.context'
-import { useProps, extractOtherProps } from '@/hooks/useProps'
-import { useStyles } from '@/hooks/useStyles'
-import { polymorphic } from '@/lib/component'
+import { defineTokens } from '@/lib/component/tokens'
+import { extractOthers } from '@/hooks/useProps'
+import { polymorphic } from '@/lib/component/factory'
+import { withInlineWrap } from '@/lib/component/children'
 import { Box } from '@/components/polymorphic/Box'
 import type { ReactNode } from 'react'
+import type { Accordion } from '../Accordion'
 import classes from '../Accordion.module.scss'
 
 const NAME = 'Accordion.Content' as const
@@ -13,21 +15,68 @@ interface AccordionContentProps {
 }
 
 interface AccordionContentSpecs {
+	context: Accordion.Context
 	isCompound: true
 	props: AccordionContentProps
+	selectors: AccordionContentSelectors
+	tokens: AccordionContentTokens
 }
 
-export const AccordionContent = polymorphic<AccordionContentSpecs>(_props => {
-	const { idx, isOpen } = useAccordionCtx(NAME)
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props })
+type AccordionContentSelectors =
+	| 'root' | 'wrapper' | 'inner'
 
+type AccordionContentTokens = {
+	root:
+		| '--accordion-content-indent'
+		| '--accordion-content-padding'
+		| '--accordion-content-size'
+}
+
+const tokens = defineTokens<AccordionContentSpecs>()(({ context, theme }) => {
+	if (!context) return {}
+
+	const { layout, size } = context
+	let contentIndent, contentSize
+
+	if (layout === 'steps')
+		contentIndent = 'calc(var(--accordion-column-width) + var(--accordion-title-gap))'
+
+	if (!!size) {
+		const fontSize = []
+
+		if (layout === 'blockquote') {
+			fontSize.push('caption')
+		} else {
+			fontSize.push('body')
+			if (size === 'lg') fontSize.push(size)
+		}
+
+		contentSize = theme.fontSize(...fontSize as Parameters<typeof theme.fontSize>)
+	}
+
+	return {
+		root: {
+			'--accordion-content-indent': contentIndent,
+			'--accordion-content-padding': theme.space('icon'),
+			'--accordion-content-size': contentSize,
+		},
+	}
+})
+
+export const AccordionContent = polymorphic<AccordionContentSpecs>((_props, { useProps, useStyles }) => {
+	const context = useAccordionCtx(NAME)
+	const props = useProps(_props)
+	const styles = useStyles({ context, props, tokens })
+
+	const { idx, isOpen } = useAccordionCtx(NAME)
 	const { children, ...rest } = props
-	const { others } = extractOtherProps(rest)
+	const others = extractOthers(rest)
+
+	const clsx = { global: { prose: true } }
 
 	return (
 		<Box
-			{ ...styles('root') }
+			{ ...styles('root', clsx) }
 			{ ...others }
 			as="div"
 			attributes={ { aria: { labelledby: idx.title } } }
@@ -36,15 +85,14 @@ export const AccordionContent = polymorphic<AccordionContentSpecs>(_props => {
 		>
 			<div { ...styles('wrapper') } inert={ !isOpen || undefined }>
 				<div { ...styles('inner') }>
-					{ typeof children === 'string' ? <p>{ children }</p> : children }
+					{ withInlineWrap(children) }
 				</div>
 			</div>
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
-AccordionContent.displayName = NAME
-AccordionContent.setDefaults({})
+AccordionContent.set({ displayName: NAME })
 
 export declare namespace AccordionContent {
 	export type Props = AccordionContentProps

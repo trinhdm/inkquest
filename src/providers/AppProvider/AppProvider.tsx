@@ -5,7 +5,7 @@ import { StyleInliner, VariantStyleInliner } from '@/components/document/StyleIn
 import { ThemeProvider } from '../ThemeProvider'
 import { DEFAULT_THEME } from '@/providers/ThemeProvider/constants'
 import { PREFIX_CSS_SELECTOR } from '@/utils/constants'
-import type { SiteTheme } from '@/lib/theme'
+import type { SiteTheme } from '@/lib/theme/types'
 
 interface AppProviderProps {
 	children: ReactNode

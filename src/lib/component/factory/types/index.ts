@@ -1,7 +1,14 @@
 export type {
-	AsPolymorphic, IsPolymorphic,
-	SpecDefaultAs, SpecDefaultProps,
-	Specs, SpecsConstraint, SpecsContract,
+	Specs, SpecsContract,
+	SpecsContext, SpecsDefaultAs, SpecsDefaultProps,
+	SpecsSelectors, SpecsTokens, SpecsTokenGroups,
 } from './specs.types'
 
-export type { ListProps, PolymorphicProps } from './props.types'
+export type {
+	FactoryAsComponent, FactoryComponent, FactorySubcomponents,
+	FactoryDisplayName, FactoryMethods, FactoryPropsList,
+} from './factory.types'
+
+export type { IsPolymorphic, PropsDefaultList } from './props.types'
+export type { PolymorphicContract, PolymorphicProps } from './polymorphic.types'
+export type { WithDefaults } from './helpers.types'

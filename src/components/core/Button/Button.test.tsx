@@ -1,9 +1,27 @@
 import { getDefaultProps } from '@/hooks/useProps'
+import userEvent from '@testing-library/user-event'
 import { render, reset, screen } from '@/tests/test-utils'
+import { tokens } from '@/lib/theme/reference'
+import Link from 'next/link'
+import type { ReactElement } from 'react'
 import { Button } from './Button'
 
+// wraps the real `next/link` so a test can read the props Button forwards to it;
+// rendering still goes through the real component
+jest.mock('next/link', () => {
+	const React = jest.requireActual('react')
+	const { default: ActualLink } = jest.requireActual('next/link')
+	const Spy = jest.fn((props: object) => React.createElement(ActualLink, props))
+	return { __esModule: true, default: Spy }
+})
+
 describe('Button', () => {
-	reset('Button')
+	// this suite also renders real `Button.Group`/`Button.Section` compound
+	// parts (see the nested describes below), so their registries need
+	// resetting too, alongside `Button`'s own.
+	reset('Button', 'Button.Group', 'Button.Section')
+
+	const tracking = (el: HTMLElement) => el.style.getPropertyValue('--button-tracking')
 
 	it('renders its children', () => {
 		render(<Button>Save</Button>)
@@ -29,10 +47,80 @@ describe('Button', () => {
 		expect(screen.getByRole('link', { name: 'Go to profile' })).toHaveAttribute('href', '/profile')
 	})
 
-	it('reflects variant and priority as data attributes for CSS targeting', () => {
-		render(<Button variant="danger" priority="primary">Delete</Button>)
+	describe('link path', () => {
+		const linkProps = () => jest.mocked(Link).mock.lastCall?.[0]
+
+		beforeEach(() => jest.mocked(Link).mockClear())
+
+		it('opens an external http(s) href in a new tab with a safe rel', () => {
+			render(<Button href={ 'https://example.com/docs' as Button.Props['href'] }>Docs</Button>)
+			const link = screen.getByRole('link', { name: 'Docs' })
+
+			expect(link).toHaveAttribute('href', 'https://example.com/docs')
+			expect(link).toHaveAttribute('target', '_blank')
+			expect(link).toHaveAttribute('rel', 'noopener noreferrer')
+		})
+
+		it('keeps an internal href in the same tab, with no target or rel', () => {
+			render(<Button href="/profile">Profile</Button>)
+			const link = screen.getByRole('link', { name: 'Profile' })
+
+			expect(link).toHaveAttribute('href', '/profile')
+			expect(link).not.toHaveAttribute('target')
+			expect(link).not.toHaveAttribute('rel')
+		})
+
+		it('keeps a hash href in the same tab, with no target or rel', () => {
+			render(<Button href={ '#top' as Button.Props['href'] }>Top</Button>)
+			const link = screen.getByRole('link', { name: 'Top' })
+
+			expect(link).not.toHaveAttribute('target')
+			expect(link).not.toHaveAttribute('rel')
+		})
+
+		it('does not open non-http schemes such as mailto: in a new tab', () => {
+			render(<Button href={ 'mailto:hi@example.com' as Button.Props['href'] }>Mail</Button>)
+			const link = screen.getByRole('link', { name: 'Mail' })
+
+			expect(link).toHaveAttribute('href', 'mailto:hi@example.com')
+			expect(link).not.toHaveAttribute('target')
+		})
+
+		it('forwards prefetch, replace and scroll to next/link', () => {
+			render(<Button href="/profile" prefetch={ false } replace scroll={ false }>Profile</Button>)
+
+			expect(linkProps()).toEqual(expect.objectContaining({
+				href: '/profile',
+				prefetch: false,
+				replace: true,
+				scroll: false,
+			}))
+		})
+
+		it('forwards onNavigate to next/link', () => {
+			const onNavigate = jest.fn()
+			render(<Button href="/profile" onNavigate={ onNavigate }>Profile</Button>)
+
+			expect(linkProps()?.onNavigate).toBe(onNavigate)
+		})
+
+		it('does not render a native button when href is set', () => {
+			render(<Button href="/profile">Profile</Button>)
+			expect(screen.queryByRole('button')).not.toBeInTheDocument()
+		})
+	})
+
+	// FIX: this test passed `variant="danger"`, but "danger" is a `Tone`, not a
+	// `Variant` — `Variant` is solid/outline/ghost/light/dark/text. It only
+	// type-checked because Jest strips types without checking them. Split into
+	// the two props the component actually takes, and added the `data-tone`
+	// assertion the original was reaching for. `variant="outline"` rather than
+	// the default "solid", so the assertion fails if the prop stops forwarding.
+	it('reflects variant, tone and priority as data attributes for CSS targeting', () => {
+		render(<Button variant="outline" tone="danger" priority="primary">Delete</Button>)
 		const button = screen.getByRole('button', { name: 'Delete' })
-		expect(button).toHaveAttribute('data-variant', 'danger')
+		expect(button).toHaveAttribute('data-variant', 'outline')
+		expect(button).toHaveAttribute('data-tone', 'danger')
 		expect(button).toHaveAttribute('data-priority', 'primary')
 	})
 
@@ -75,6 +163,60 @@ describe('Button', () => {
 		expect(container.querySelector('svg')).toBeInTheDocument()
 	})
 
+	describe('loading', () => {
+		it('is announced as aria-disabled but stays natively enabled, so it keeps focus', () => {
+			render(<Button loading>Save</Button>)
+			const button = screen.getByRole('button')
+
+			expect(button).toHaveAttribute('aria-disabled', 'true')
+			expect(button).not.toBeDisabled()
+			expect(button).not.toHaveAttribute('data-disabled')
+		})
+
+		it('is not aria-disabled when idle', () => {
+			render(<Button>Save</Button>)
+			expect(screen.getByRole('button')).not.toHaveAttribute('aria-disabled', 'true')
+		})
+
+		it('swallows clicks, so the consumer onClick never runs', async () => {
+			const user = userEvent.setup()
+			const onClick = jest.fn()
+			const { rerender } = render(<Button loading onClick={ onClick }>Save</Button>)
+
+			await user.click(screen.getByRole('button'))
+			expect(onClick).not.toHaveBeenCalled()
+
+			// positive control: once loading ends, the same handler fires
+			rerender(<Button onClick={ onClick }>Save</Button>)
+			await user.click(screen.getByRole('button'))
+			expect(onClick).toHaveBeenCalledTimes(1)
+		})
+
+		it('does not print while loading', async () => {
+			const user = userEvent.setup()
+			const print = jest.spyOn(window, 'print').mockImplementation(() => {})
+
+			try {
+				render(<Button action="print" loading>Print</Button>)
+				await user.click(screen.getByRole('button'))
+				expect(print).not.toHaveBeenCalled()
+			} finally {
+				print.mockRestore()
+			}
+		})
+
+		it('hides the spinner when unstyled, while keeping data-loading', () => {
+			const { container, rerender } = render(<Button unstyled loading>Save</Button>)
+
+			expect(container.querySelector('svg')).not.toBeInTheDocument()
+			expect(screen.getByRole('button')).toHaveAttribute('data-loading', '')
+
+			// positive control: the styled button does render the spinner
+			rerender(<Button loading>Save</Button>)
+			expect(container.querySelector('svg')).toBeInTheDocument()
+		})
+	})
+
 	it('omits data-loading entirely when not loading', () => {
 		render(<Button>Save</Button>)
 		expect(screen.getByRole('button')).not.toHaveAttribute('data-loading')
@@ -112,14 +254,146 @@ describe('Button', () => {
 	})
 
 	describe('size', () => {
-		it('applies a size-specific class that changes when size changes', () => {
+		it('applies size-specific design tokens that change when size changes', () => {
 			const { rerender } = render(<Button>Save</Button>)
-			const smClassName = screen.getByRole('button').className
+			// registered default is `size: 'md'`, not `sm`
+			expect(tracking(screen.getByRole('button'))).toBe(tokens.letterSpacing('display'))
 
 			rerender(<Button size="lg">Save</Button>)
-			const lgClassName = screen.getByRole('button').className
+			expect(tracking(screen.getByRole('button'))).toBe(tokens.letterSpacing('stat'))
+		})
+	})
 
-			expect(smClassName).not.toBe(lgClassName)
+	describe('animate', () => {
+		it('reflects the direction as data-animate for CSS targeting', () => {
+			render(<Button animate="right">Next</Button>)
+			expect(screen.getByRole('button')).toHaveAttribute('data-animate', 'right')
+		})
+
+		// the token lives on the `inner` span (the element wrapping the label), not the root;
+		// with no sections the label is a bare text node, so getByText finds that span
+		const translate = (text: string) =>
+			screen.getByText(text).style.getPropertyValue('--button-icon-translate')
+
+		it('sets the icon-translate token on the inner element only when animate is set', () => {
+			const { rerender } = render(<Button animate="left">Back</Button>)
+
+			expect(translate('Back')).toMatch(/^calc\(.+ - .+\)$/)
+			expect(translate('Back')).toContain(tokens.space('icon'))
+			expect(screen.getByRole('button').style.getPropertyValue('--button-icon-translate')).toBe('')
+
+			rerender(<Button>Back</Button>)
+			expect(screen.getByRole('button')).not.toHaveAttribute('data-animate')
+			expect(translate('Back')).toBe('')
+		})
+
+		it('negates the distance when animating left, and not when animating right', () => {
+			const { rerender } = render(<Button animate="left">Go</Button>)
+			expect(translate('Go')).toMatch(/^calc\(-1 \* calc\(/)
+
+			rerender(<Button animate="right">Go</Button>)
+			expect(translate('Go')).not.toContain('-1 *')
+			expect(translate('Go')).toContain(tokens.space('icon'))
+		})
+
+		it('changes the translate distance with size', () => {
+			const { rerender } = render(<Button animate="right" size="sm">Next</Button>)
+			const small = translate('Next')
+			expect(small).not.toBe('')
+
+			rerender(<Button animate="right" size="lg">Next</Button>)
+			expect(translate('Next')).not.toBe('')
+			expect(translate('Next')).not.toBe(small)
+		})
+	})
+
+	describe('action / hasIcon', () => {
+		const iconOf = (el: HTMLElement) => el.querySelector('svg')
+
+		it('defaults hasIcon to true in the registry', () => {
+			expect(getDefaultProps<Button.Props>('Button')).toMatchObject({ hasIcon: true })
+		})
+
+		it('renders no icon for a plain button, as a control for the action cases', () => {
+			render(<Button>Plain</Button>)
+			expect(iconOf(screen.getByRole('button'))).toBeNull()
+		})
+
+		it('prepends a copy icon in a left section for action="copy"', () => {
+			render(<Button action="copy">Copy link</Button>)
+			const button = screen.getByRole('button', { name: 'Copy link' })
+			const icon = iconOf(button)
+
+			expect(icon).toHaveClass('lucide-copy')
+			expect(icon?.closest('[data-side]')).toHaveAttribute('data-side', 'left')
+			expect(screen.getByText('Copy link')).toBeInTheDocument()
+		})
+
+		it('prepends a printer icon for action="print"', () => {
+			render(<Button action="print">Print</Button>)
+			expect(iconOf(screen.getByRole('button'))).toHaveClass('lucide-printer')
+		})
+
+		it('renders an action button with several children, keeping each one', () => {
+			render(<Button action="copy">Copy <b>it</b></Button>)
+			const button = screen.getByRole('button', { name: 'Copy it' })
+
+			expect(iconOf(button)).toHaveClass('lucide-copy')
+			expect(button.querySelector('b')).toHaveTextContent('it')
+		})
+
+		it('never changes the children it was given, so re-renders add no extra icons', () => {
+			const children = ['Copy ', <b key="b">it</b>]
+			const { rerender } = render(<Button action="copy">{ children }</Button>)
+			rerender(<Button action="copy">{ children }</Button>)
+
+			expect(screen.getByRole('button', { name: 'Copy it' }).querySelectorAll('svg')).toHaveLength(1)
+			expect(children).toHaveLength(2)
+		})
+
+		it('omits the action icon when hasIcon is false, keeping the label', () => {
+			render(<Button action="copy" hasIcon={ false }>Copy link</Button>)
+			const button = screen.getByRole('button', { name: 'Copy link' })
+
+			expect(iconOf(button)).toBeNull()
+		})
+
+		it('calls window.print and the consumer onClick for action="print"', async () => {
+			const user = userEvent.setup()
+			const print = jest.spyOn(window, 'print').mockImplementation(() => {})
+			const onClick = jest.fn()
+
+			try {
+				render(<Button action="print" onClick={ onClick }>Print</Button>)
+				await user.click(screen.getByRole('button', { name: 'Print' }))
+
+				expect(onClick).toHaveBeenCalledTimes(1)
+				expect(print).toHaveBeenCalledTimes(1)
+			} finally {
+				print.mockRestore()
+			}
+		})
+
+		it('does not call window.print for action="copy", nor for a plain button', async () => {
+			const user = userEvent.setup()
+			const print = jest.spyOn(window, 'print').mockImplementation(() => {})
+			const onClick = jest.fn()
+
+			try {
+				render(
+					<>
+						<Button action="copy" onClick={ onClick }>Copy</Button>
+						<Button>Plain</Button>
+					</>
+				)
+				await user.click(screen.getByRole('button', { name: 'Copy' }))
+				await user.click(screen.getByRole('button', { name: 'Plain' }))
+
+				expect(onClick).toHaveBeenCalledTimes(1)
+				expect(print).not.toHaveBeenCalled()
+			} finally {
+				print.mockRestore()
+			}
 		})
 	})
 
@@ -130,15 +404,16 @@ describe('Button', () => {
 		// sees `unstyled` on that Box's own incoming props and its `keepStateAttrs`
 		// filtering correctly applies to Button's root element, the same as
 		// `Badge.tsx` (see `Badge.test.tsx`).
-		it('drops decorative data attributes (variant, priority, block) but keeps loading, a state attribute', () => {
+		it('drops decorative data attributes (variant, tone, priority, block) but keeps loading, a state attribute', () => {
 			render(
-				<Button unstyled variant="danger" priority="primary" fullWidth loading>
+				<Button unstyled variant="outline" tone="danger" priority="primary" fullWidth loading>
 					Save
 				</Button>
 			)
 			const button = screen.getByRole('button')
 
 			expect(button).not.toHaveAttribute('data-variant')
+			expect(button).not.toHaveAttribute('data-tone')
 			expect(button).not.toHaveAttribute('data-priority')
 			expect(button).not.toHaveAttribute('data-block')
 			expect(button).toHaveAttribute('data-loading', '')
@@ -222,7 +497,8 @@ describe('Button', () => {
 			const grouped = screen.getByRole('button', { name: 'Grouped' })
 			const standalone = screen.getByRole('button', { name: 'Standalone' })
 
-			expect(grouped.className).not.toBe(standalone.className)
+			expect(tracking(grouped)).toBe(tokens.letterSpacing('stat'))
+			expect(tracking(standalone)).toBe(tokens.letterSpacing('display'))
 		})
 
 		it('renders a group role for assistive tech', () => {
@@ -240,13 +516,13 @@ describe('Button', () => {
 			const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
 
 			expect(() => render(<Button.Section left>Icon</Button.Section>)).toThrow(
-				/must be rendered inside <Button>/
+				/must be a direct child of <Button>/
 			)
 
 			consoleError.mockRestore()
 		})
 
-		// `ButtonSection.setDefaults({})` registers no defaults on purpose. An
+		// `ButtonSection.set({ displayName })` registers no `defaultProps` on purpose. An
 		// earlier `{ left: true }` default could never be overridden: `useProps`
 		// fills defaults in before merging the caller's props and only overwrites
 		// keys the caller actually passed, and `<Button.Section right>` passes no
@@ -265,6 +541,18 @@ describe('Button', () => {
 
 			expect(screen.getByText('L')).toHaveAttribute('data-side', 'left')
 			expect(screen.getByText('R')).toHaveAttribute('data-side', 'right')
+		})
+
+		it('defaults to the left side when neither left nor right is passed', () => {
+			const Section = Button.Section as unknown as (props: { children: string }) => ReactElement
+			render(
+				<Button>
+					<Section>Icon</Section>
+					Label
+				</Button>
+			)
+
+			expect(screen.getByText('Icon')).toHaveAttribute('data-side', 'left')
 		})
 
 		// Guards the fix above at its root: if a `left` default is ever
@@ -287,7 +575,7 @@ describe('Button', () => {
 			expect(screen.getByText('First')).toBeInTheDocument()
 			expect(screen.queryByText('Second')).not.toBeInTheDocument()
 			expect(consoleWarn).toHaveBeenCalledWith(
-				expect.stringContaining('multiple Button.Section[left] found')
+				'Button: ignoring repeated Button.Section[left]; only the first is rendered.'
 			)
 
 			consoleWarn.mockRestore()

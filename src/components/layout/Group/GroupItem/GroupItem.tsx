@@ -1,9 +1,9 @@
 import { useGroupCtx } from '../Group.context'
-import { useProps, extractOtherProps } from '@/hooks/useProps'
-import { useStyles } from '@/hooks/useStyles'
-import { polymorphic } from '@/lib/component'
+import { extractOthers } from '@/hooks/useProps'
+import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import type { ReactNode } from 'react'
+import type { Group } from '../Group'
 import classes from '../Group.module.scss'
 
 const NAME = 'Group.Item' as const
@@ -13,27 +13,31 @@ interface GroupItemProps {
 }
 
 interface GroupItemSpecs {
+	context: Group.Context
 	isCompound: true
 	props: GroupItemProps
+	selectors: GroupItemSelectors
 }
 
-export const GroupItem = polymorphic<GroupItemSpecs>(_props => {
-	const { baseName, rootName } = useGroupCtx(NAME)
-	const props = useProps(NAME, _props)
-	const styles = useStyles(rootName, { classes, props })
+type GroupItemSelectors =
+	| 'item'
+
+export const GroupItem = polymorphic<GroupItemSpecs>((_props, { useProps, useStyles }) => {
+	const context = useGroupCtx(NAME)
+	const props = useProps(_props)
+	const styles = useStyles({ context, props, withRootName: true })
 
 	const { children, ...rest } = props
-	const { others } = extractOtherProps(rest)
+	const others = extractOthers(rest)
 
 	return (
-		<Box { ...styles(baseName, true) } { ...others } as="div">
+		<Box { ...styles(context.baseName, true) } { ...others } as="div">
 			{ children }
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
-GroupItem.displayName = NAME
-GroupItem.setDefaults({})
+GroupItem.set({ displayName: NAME })
 
 export declare namespace GroupItem {
 	export type Props = GroupItemProps

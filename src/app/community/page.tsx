@@ -1,4 +1,6 @@
+import { redirect } from 'next/navigation'
+import { NavRoutes } from '@/utils/navigation'
 
 export default function Community() {
-	return <main><h1>Community</h1></main>
+	redirect(NavRoutes.COMMUNITY_FEED)
 }

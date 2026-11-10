@@ -1,18 +1,42 @@
 import { getDefaultProps } from '@/hooks/useProps'
 import { render, reset, screen } from '@/tests/test-utils'
+import { COMPANY_NAME, SocialBrands } from '@/utils/constants'
 import { Footer } from './Footer'
 
 describe('Footer', () => {
-	reset('Footer')
+	// `Footer` always renders `Footer.Area` (info + legal), which in turn
+	// renders `Logo`, `Icon` (social links), and `Menu`/`MenuItem` — all real
+	// factory components whose registries need resetting alongside `Footer`'s own.
+	reset('Footer', 'Footer.Area', 'Logo', 'Icon', 'Menu', 'Menu.Item', 'Menu.Label')
 
 	it('renders the tagline', () => {
 		render(<Footer />)
 		expect(screen.getByText('Find your artist. Own the ink.')).toBeInTheDocument()
 	})
 
-	it('renders the copyright notice', () => {
+	it('renders the copyright notice with the current year and the company name', () => {
 		render(<Footer />)
-		expect(screen.getByText('© 2026 Inkquest, Inc.')).toBeInTheDocument()
+		const currentYear = new Date().getFullYear()
+		expect(screen.getByText(`© ${ currentYear } ${ COMPANY_NAME }`)).toBeInTheDocument()
+	})
+
+	it.each([
+		['instagram', SocialBrands.INSTAGRAM],
+		['tiktok', SocialBrands.TIKTOK],
+		['x', SocialBrands.X],
+	])('names the default %s social link after the company and the brand', (type, brand) => {
+		render(<Footer />)
+
+		const link = screen.getByRole('link', { name: `${ COMPANY_NAME } on ${ brand }` })
+		expect(link).toHaveAttribute('href', `https://${ type }.com/inkquest`)
+		expect(link).toHaveAttribute('target', '_blank')
+	})
+
+	it('renders exactly the three default social links, none of them nameless', () => {
+		render(<Footer />)
+
+		const socials = screen.getAllByRole('link', { name: new RegExp(` on (${ Object.values(SocialBrands).join('|') })$`) })
+		expect(socials).toHaveLength(3)
 	})
 
 	it('renders as the registered default tag (footer)', () => {

@@ -1,0 +1,102 @@
+import {
+	isValidElement, Children,
+	useId, useMemo, useState,
+	type ComponentType, type ReactNode,
+} from 'react'
+
+import { extractOthers } from '@/hooks/useProps'
+import { getTabIds } from '../utils'
+import { polymorphic } from '@/lib/component/factory'
+import { toKebabCase } from '@/utils/helpers'
+import { Box } from '@/components/polymorphic/Box'
+import { TabGroupProvider, type TabGroupContext } from './TabGroup.context'
+import { TabPanel, TabPanelProvider } from '../TabPanel'
+import type { PropsDefaultList } from '@/lib/component/factory/types'
+import classes from '../Tab.module.scss'
+
+const NAME = 'Tab.Group' as const,
+	TAG = 'div' as const
+
+const DEFAULT_PROPS = {
+	as: TAG,
+	defaultActive: 0,
+} as const
+
+interface TabGroupProps {
+	defaultActive?: number
+	id?: string
+}
+
+interface TabGroupSpecs {
+	defaults: {
+		as: typeof TAG
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
+	}
+	isGroup: true
+	props: TabGroupProps
+	selectors: TabGroupSelectors
+}
+
+type TabGroupSelectors =
+	| 'root'
+
+const isPanel = (child: ReactNode) =>
+	isValidElement(child) && (child.type as ComponentType).displayName === TabPanel.displayName
+
+export const TabGroup = polymorphic<TabGroupSpecs>((_props, { useProps, useStyles }) => {
+	const props = useProps(_props)
+	const styles = useStyles({ props })
+
+	const {
+		as, children,
+		defaultActive,
+		id, unstyled,
+		...rest
+	} = props
+
+	const others = extractOthers(rest)
+
+	const [active, setActive] = useState(() => defaultActive)
+
+	const generated = useId()
+	const uid = toKebabCase(`tab-${id ?? generated}`)
+
+	const ctxValues = useMemo(() => ({
+		active, onSelect: setActive,
+		uid, unstyled,
+	}), [active, uid, unstyled])
+
+	let panelIndex = 0
+	const content = Children.map(children, child => {
+		if (!isPanel(child)) return child
+
+		const index = panelIndex++,
+			value = { idx: getTabIds(uid, index), isActive: active === index, unstyled }
+
+		return <TabPanelProvider value={ value }>{ child }</TabPanelProvider>
+	})
+
+	return (
+		<Box
+			{ ...styles('root') }
+			{ ...others }
+			as={ as }
+			id={ uid }
+		>
+			<TabGroupProvider value={ ctxValues }>
+				{ content }
+			</TabGroupProvider>
+		</Box>
+	)
+}, { name: NAME, classes })
+
+TabGroup.set({
+	defaultProps: DEFAULT_PROPS,
+	displayName: NAME,
+})
+
+export declare namespace TabGroup {
+	export type Context = TabGroupContext
+	export type Props = TabGroupProps
+	export type Specs = TabGroupSpecs
+}

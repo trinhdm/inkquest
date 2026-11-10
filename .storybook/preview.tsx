@@ -1,8 +1,9 @@
 import { useEffect } from 'react'
 import { inkqDark } from './theme'
-import { schemeControls } from '../src/components/document/ScriptInjector'
+import { schemeControls } from '../src/components/document/ScriptInjector/schemeControls'
 import { AppProvider } from '../src/providers/AppProvider'
 import { DEFAULT_COLOR_SCHEME, JS_ANIMATE_KEY } from '../src/components/document/constants'
+import { fontVariables } from '../src/styles/fonts'
 import type { Addon_StorySortComparatorV7 } from 'storybook/internal/types'
 import type { Preview } from '@storybook/nextjs-vite'
 import '../src/styles/_global.scss'
@@ -25,9 +26,13 @@ const decorators: Preview['decorators'] = [(Story, context) => {
 	// preview iframe without remounting anything.
 	const scheme = context.globals[SCHEME_GLOBAL] ?? DEFAULT_COLOR_SCHEME
 
+	// The font variable classes mirror `src/app/layout.tsx`, which puts them
+	// on `<html>`. The `@font-face` rules themselves come from importing
+	// `src/styles/fonts`, so they also reach docs pages that render no story.
 	useEffect(() => {
 		schemeControls().applyScheme(scheme)
 		document.documentElement.setAttribute(`data-${JS_ANIMATE_KEY}`, '')
+		document.documentElement.classList.add(...fontVariables.split(' '))
 	}, [scheme])
 
 	// `AppProvider` now renders `<StyleInliner />` and `<VariantStyleInliner />`
@@ -80,7 +85,8 @@ const preview: Preview = {
 			// below that is alphabetical. Within any title group: Docs first,
 			// then nested subcomponent groups (e.g. 'Core/Button/Button.Group'),
 			// then the group's own stories in the order they're declared in
-			// the file.
+			// the file. The sidebar separators before 'Core', 'Design Tokens'
+			// and 'Document' live in `manager-head.html`, keyed on those names.
 			storySort: (a, b) => {
 				// Everything this comparator needs must be declared INSIDE it,
 				// and in plain JS. Storybook serialises the function and
@@ -90,13 +96,15 @@ const preview: Preview = {
 				// annotation survives into that eval as `SyntaxError:
 				// Unexpected token ':'`. Keep this body annotation-free.
 				const CATEGORY_ORDER = [
-					'Foundation',
+					'Overview',
 					'Core',
+					'Data',
+					'Form',
 					'Layout',
 					'Navigation',
-					'Data',
-					'Polymorphic',
+					'Design Tokens',
 					'Document',
+					'Polymorphic',
 				]
 
 				// Ranks are derived inline from `indexOf` rather than via a

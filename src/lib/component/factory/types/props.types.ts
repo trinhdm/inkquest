@@ -1,30 +1,19 @@
-import type { JSX, JSXElementConstructor, ReactNode } from 'react'
-import type { AsPolymorphic, SpecDefaultAs, SpecsContract } from './specs.types'
-import type { DEFAULT_TAG } from '../constants'
+import type { ElementType } from 'react'
+import type { SpecsDefaultAs } from './specs.types'
 
-type _ElementProps<C> =
-	C extends keyof JSX.IntrinsicElements
-		? JSX.IntrinsicElements[C]
-		: C extends JSXElementConstructor<infer P>
-			? P
-			: object
+//	default props
 
-type _TagName<C> =
-	[C] extends [undefined]
-		? typeof DEFAULT_TAG
-		: NonNullable<C>
+export type IsPolymorphic<S> =
+	S extends { defaults: { as: ElementType } }
+		? true
+		: false
 
+export type AsPolymorphic<S> =
+	IsPolymorphic<S> extends true
+		? { as?: SpecsDefaultAs<S> }
+		: { as?: never }
 
-export type PolymorphicProps<P, C> =
-	& Omit<SpecsContract, 'props'>
-	& {
-		as?: 'as' extends keyof P ? P['as'] : C
-		children?: ReactNode
-	}
-	& Omit<P, 'as'>
-	& Omit<_ElementProps<_TagName<C>>, 'as' | keyof P>
-
-export type ListProps<S> =
-	AsPolymorphic<S> extends { as?: SpecDefaultAs<S> }
+export type PropsDefaultList<S> =
+	AsPolymorphic<S> extends { as?: SpecsDefaultAs<S> }
 		? Exclude<keyof S, 'as'>
 		: keyof S

@@ -19,7 +19,7 @@ const eslintConfig = defineConfig([
   {
     rules: {
       '@typescript-eslint/no-namespace': ['error', { allowDeclarations: true }],
-      'no-empty-object-type': ['error', { allowInterfaces: 'with-single-extends' }]
+      '@typescript-eslint/no-empty-object-type': ['error', { allowInterfaces: 'with-single-extends' }]
     },
   },
   ...storybook.configs["flat/recommended"]

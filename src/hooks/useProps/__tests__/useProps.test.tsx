@@ -83,7 +83,7 @@ describe('useProps', () => {
 	// know the two are meant to be exclusive. The default survives untouched
 	// alongside the caller's flag. This is documented, current behavior of
 	// `useProps` — the actual fix belongs in the component's own
-	// `setDefaults` call (as it did for `ButtonSection`, which now defaults
+	// `.set({ defaultProps })` call (as it did for `ButtonSection`, which now defaults
 	// to `{}`), not in this hook.
 	it('bleeds a defaulted flag through when the caller only passes the mutually-exclusive counterpart', () => {
 		setDefaultProps('UsePropsFixture.Side', { left: true })

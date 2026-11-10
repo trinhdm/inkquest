@@ -1,13 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 //	general
 
-export type DeepRequired<T> = T extends Function
-	? T
-	: T extends Array<infer InferredArrayType>
-		? DeepRequired<InferredArrayType>[]
-		: T extends object
-			? { [K in keyof T]-?: DeepRequired<T[K]> }
-			: T
+import type { PrimitiveName } from '../shared'
 
 
 //	strings
@@ -17,17 +12,119 @@ type ContainSubstr<S extends string, Sub extends string> =
 		? true
 		: false
 
-export type RemoveSubstr<S extends string, Sub extends string> =
+type RemoveSubstr<S extends string, Sub extends string> =
 	S extends `${infer Before}${Sub}${infer After}`
 		? `${Before}${After}`
 		: S
 
 
+//	tuples
+
+export type FilterTuple<T extends readonly unknown[], Exclude> =
+	T extends readonly [infer Head, ...infer Tail]
+		? Head extends Exclude
+			? FilterTuple<Tail, Exclude>					//	skip it
+			: [Head, ...FilterTuple<Tail, Exclude>]			//	keep it
+		: []
+
+
+//	unions
+
+export type ExcludeIn<Union extends string, Sub extends string> =
+	Union extends `${string}${Sub}${string}`
+		? never
+		: Union
+
+
+//	arrays
+
+export type ExtractFrom<T extends unknown[], V extends PrimitiveName> =
+	T extends unknown
+		? V extends T[number]
+			? T
+			: never
+	: never
+
+export type UnpackArray<T> =
+	T extends (infer U)[] ? U : T
+
+
 //	objects
+
+//	isolates keys and make them required
+export type RequiredPick<T, K extends keyof T> =
+	Required<Pick<T, K>>
+
+//	forces picked keys to be required, but keep all the other keys intact
+export type RequireSome<T, K extends keyof T> =
+	Omit<T, K> & Required<Pick<T, K>>
+
+//	picks only the required keys of a type
+export type PickRequired<T, K extends keyof T> = {
+	[P in K as object extends Pick<T, P> ? never : P]: T[P]
+}
+
+//	deep
+
+export type DeepRequired<T> =
+	T extends () => void
+		? T
+		: T extends Array<infer InferredArrayType>
+			? DeepRequired<InferredArrayType>[]
+			: T extends object
+				? { [K in keyof T]-?: DeepRequired<T[K]> }
+				: T
+
+export type DeepMerge<T, U> = {
+	[K in keyof T | keyof U]: K extends keyof U
+		? K extends keyof T
+			? T[K] extends Record<string, any>
+				? U[K] extends Record<string, any>
+					? DeepMerge<T[K], U[K]>
+					: U[K]
+				: U[K]
+			: U[K]
+		: K extends keyof T
+			? T[K]
+			: never
+}
+
+export type DeepMap<V> =
+	Map<string, V | DeepMap<V>>
+
+//	narrowing shape
+
+export type AtLeastOneKeyOf<Keys extends PropertyKey, V> = {
+	[K in Keys]: Partial<Record<Keys, V>> & Record<K, V>
+}[Keys]
+
+//	a value whose own keys are worth checking: an object, but not a function or array
+type IsRecordLike<T> =
+	[T] extends [(...args: any[]) => any] ? false
+		: [T] extends [readonly unknown[]] ? false
+			: [T] extends [object] ? true
+				: false
+
+//	every key of V must exist in T, checked into nested plain objects too
+export type NoExcessKeys<T, V> = {
+	[K in keyof V]: K extends keyof T
+		? IsRecordLike<NonNullable<T[K]>> extends true
+			? IsRecordLike<NonNullable<V[K]>> extends true
+				? NoExcessKeys<NonNullable<T[K]>, NonNullable<V[K]>>
+				: unknown
+			: unknown
+		: never
+}
+
+//	renaming keys
 
 export type PluralizeKeys<T> = {
 	[K in keyof T as K extends string ? `${K}s` : K]: T[K]
 }
+
+export type AsPluralKeys<T extends object, K extends keyof T> =
+	& Omit<T, K>
+	& PluralizeKeys<Pick<T, K>>
 
 export type RewriteKeysWithout<Sub extends string, T> = {
 	[K in keyof T as K extends string
@@ -37,15 +134,12 @@ export type RewriteKeysWithout<Sub extends string, T> = {
 		: K]: T[K]
 }
 
-export type AtLeastOneKeyOf<Keys extends PropertyKey, V> = {
-	[K in Keys]: Partial<Record<Keys, V>> & Record<K, V>
-}[Keys]
-
 
 // Forces the checker to eagerly flatten an intersection/conditional chain
 // into one plain object type. Doesn't change what the type *is* — same
 // members, same values — only how much re-walking is needed to display it.
-export type Simplify<T> = { [K in keyof T]: T[K] } & {}
+export type Simplify<T> =
+	{ [K in keyof T]: T[K] } & {}
 
 
 type IsUnion<T, U = T> =
@@ -68,10 +162,3 @@ export type OneKeyOf<E> =
 // object (keyof a union is the intersection of its keys), which kills `Extract`/`in` narrowing.
 export type DistributiveOmit<T, K extends PropertyKey> =
 	T extends unknown ? Omit<T, K> : never
-
-export type WithDefaults<P, K extends PropertyKey> =
-	[K] extends [never]
-		? P
-		: P extends unknown
-			? Omit<P, K> & Required<Pick<P, K & keyof P>>
-			: never

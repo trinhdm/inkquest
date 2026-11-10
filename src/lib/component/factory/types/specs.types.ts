@@ -1,77 +1,79 @@
-import type { CSSProperties, ElementType, Ref } from 'react'
-import type { CSSVars, SpecAttributes } from '@/types/shared'
+import type { ElementType } from 'react'
+import type { CSSVariable } from '@/types/shared'
+import type { RootCtxValue, SafeRootCtxValue } from '../../context'
 
 // specs
+
 export interface SpecsContract {
-	attributes?: SpecAttributes
-	classNames?: string
-	id?: string
-	props: Record<string, unknown>
-	ref?: any
-	styles?: CSSProperties
-	unstyled?: boolean
-}
-
-interface _BaseSpecs<T = unknown, P extends object = object> {
-	attributes?: SpecAttributes
-	ctx?: unknown
-	id?: string
-	props: P
-	ref?: Ref<TagElement<T>>
-}
-
-interface _CompoundSpecs<P extends object = object>
-	extends _BaseSpecs<unknown, P> {
-	classNames?: never
-	defaults?: {
-		as?: never
-		props?: PropertyKey
-	}
-	isCompound: true
-	styles?: never
-	subcomponents?: never
-	tokens?: never
-}
-
-interface _RootSpecs<T = unknown, P extends object = object>
-	extends _BaseSpecs<T, P> {
-	classNames?: SpecsContract['classNames']
+	context?: any
 	defaults?: {
 		as?: any
 		props?: PropertyKey
 	}
-	isCompound?: false
-	styles?: SpecsContract['styles']
-	subcomponents?: Record<string, unknown>
-	tokens?: CSSVars
+	isCompound?: boolean
+	props: Record<string, any>
+	selectors?: string
+	subcomponents?: Record<string, any>
+	tokens?: Record<string, CSSVariable>
 }
 
-export type Specs<T = unknown, P extends object = object> =
-	| _RootSpecs<T, P>
-	| _CompoundSpecs<P>
+interface _BaseSpecs<P extends object = object> {
+	context?: SpecsContract['context']
+	props: P
+	selectors?: SpecsContract['selectors']
+	tokens?: SpecsContract['tokens']
+}
+
+interface _CompoundSpecs {
+	defaults?: SpecsContract['defaults'] & {
+		as?: never
+	}
+	isCompound: true
+	isGroup?: false
+	subcomponents?: never
+}
+
+interface _GroupSpecs {
+	defaults?: SpecsContract['defaults'] & {
+		as?: any
+	}
+	isCompound?: false
+	isGroup: true
+	subcomponents?: never
+}
+
+interface _RootSpecs {
+	defaults?: SpecsContract['defaults'] & {
+		as?: any
+	}
+	isCompound?: false
+	isGroup?: false
+	subcomponents?: SpecsContract['subcomponents']
+}
+
+type _ComponentSpecs =
+	| _RootSpecs
+	| _CompoundSpecs
+	| _GroupSpecs
+
+export type Specs<P extends object = object> =
+	& _BaseSpecs<P>
+	& _ComponentSpecs
 
 
-// polymorphism
+//	individual specs
 
-export type IsPolymorphic<S> =
-	S extends { defaults: { as: ElementType } }
-		? true
-		: false
+export type SpecsContext<S, N extends string = string> =
+	'context' extends keyof S
+		? RootCtxValue<S['context']> | SafeRootCtxValue<S['context'], N>
+		: undefined
 
-export type AsPolymorphic<S> =
-	IsPolymorphic<S> extends true
-		? { as?: SpecDefaultAs<S> }
-		: { as?: never }
-
-export type SpecsConstraint<T extends { props: object }> =
-	Specs & { defaults?: { props?: keyof T['props'] } }
-
-export type SpecDefaultAs<S, Fallback = never> =
+export type SpecsDefaultAs<S, Fallback = never> =
 	S extends { defaults: { as: infer C extends ElementType } }
 		? C
 		: Fallback
 
-export type SpecDefaultProps<S> =
+export type SpecsDefaultProps<S> =
 	S extends {
 		defaults: { props: infer K },
 		props: infer P
@@ -79,33 +81,38 @@ export type SpecDefaultProps<S> =
 		? Extract<K, keyof P>
 		: never
 
+export type SpecsSelectors<S> =
+	'selectors' extends keyof S
+		? NonNullable<S['selectors']>
+		: never
 
-type _CommonTag =
-	| 'a' | 'button' | 'div' | 'nav' | 'span' | 'svg'
+type _TokenSelector<T> =
+	[T] extends [never] ? PropertyKey : T
 
-// type _CommonTag =
-// 	| 'a' | 'button'
-// 	| 'article' | 'aside' | 'nav'
-// 	| 'details' | 'progress' | 'summary'
-// 	| 'dialog' | 'div' | 'section'
-// 	| 'blockquote' | 'p' | 'span'
-// 	| 'form' | 'input' | 'option' | 'select' | 'textarea'
-// 	| 'img' | 'svg'
-// 	| 'ol' | 'ul' | 'li'
-// // 	// | 'h1' | 'h2' | 'h3'
+export type TokenValue =
+	number | string | undefined
 
-type _ElementTagMap =
-	SVGElementTagNameMap & HTMLElementTagNameMap
+type _TokensGroup<V, T> = {
+	[K in keyof V]: K extends _TokenSelector<T>
+		? V[K] extends CSSVariable
+			? Record<V[K], TokenValue>
+			: never
+		: { [E in K & string as `selector '${E}' is not declared in Specs['selectors']`]: never }
+}
 
-type TagElement<T> =
-	T extends _CommonTag
-		? _ElementTagMap[T]
-		: T extends keyof _ElementTagMap
-			? _ElementTagMap[T]
-			: unknown
+export type TokensNever =
+	Record<PropertyKey, never>
 
+type TokensList<V, T = never> =
+	| _TokensGroup<V, T>
+	| TokensNever
 
-// type NonSemanticAttrs =
-// 	| 'about' | 'content' | 'datatype' | 'inlist' | 'prefix' | 'property'
-// 	| 'resource' | 'rev' | 'typeof' | 'vocab'
-// 	| 'color' | 'results' | 'security' | 'unselectable'
+export type SpecsTokens<S> =
+	'tokens' extends keyof S
+		? TokensList<NonNullable<S['tokens']>, SpecsSelectors<S>>
+		: TokensNever
+
+export type SpecsTokenGroups<S> =
+	'tokens' extends keyof S
+		? _TokensGroup<NonNullable<S['tokens']>, SpecsSelectors<S>>
+		: TokensNever

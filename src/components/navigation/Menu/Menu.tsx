@@ -1,10 +1,13 @@
-import { useProps, extractOtherProps } from '@/hooks/useProps'
-import { useStyles } from '@/hooks/useStyles'
-import { polymorphic } from '@/lib/component'
+import { usePathname } from 'next/navigation'
+import { extractOthers } from '@/hooks/useProps'
+import { polymorphic } from '@/lib/component/factory'
+import { isKeyOf, toSlug } from '@/utils/helpers'
 import { Box } from '@/components/polymorphic/Box'
 import { MenuItem } from './MenuItem'
-import type { ListProps } from '@/lib/component/factory/types'
-import type { NavigationItem } from '@/utils/navigation'
+import type { ReactNode } from 'react'
+import type { NavigationItem, NavRoute } from '@/utils/navigation'
+import type { Orientation } from '@/types/shared'
+import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Menu.module.scss'
 
 const NAME = 'Menu' as const,
@@ -12,57 +15,90 @@ const NAME = 'Menu' as const,
 
 const DEFAULT_PROPS = {
 	as: TAG,
+	depth: 0,
 	hasDropdowns: true,
 } as const
 
 interface MenuProps {
+	active?: NavigationItem['route']
+	depth?: number
 	hasDropdowns?: boolean
 	items: NavigationItem['menu']
+	orientation?: Orientation
+	triggers?: Partial<Record<NavRoute, ReactNode>>
 }
 
 interface MenuSpecs {
 	defaults: {
 		as: typeof TAG
-		props: ListProps<typeof DEFAULT_PROPS>
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: MenuProps
+	selectors: MenuSelectors
 }
 
-export const Menu = polymorphic<MenuSpecs>(_props => {
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props })
+type MenuSelectors =
+	| 'root'
+
+export const Menu = polymorphic<MenuSpecs>((_props, { useProps, useStyles }) => {
+	const pathname = usePathname()
+	const props = useProps(_props)
+	const styles = useStyles({ props })
 
 	const {
-		className,
-		hasDropdowns,
-		items,
+		active, as, className,
+		depth, hasDropdowns, id,
+		items, orientation, triggers,
 		...rest
 	} = props
 
-	const { others } = extractOtherProps(rest)
-	// const isActive = pathname === route
+	const others = extractOthers(rest)
+	const isSurface = depth === 0 && !!orientation
+
+	const clsx = {
+		module: { [`${orientation}`]: isSurface || null },
+	}
+
+	const currentRoute = typeof active === 'string' || active === null
+		? active
+		: (pathname as NavigationItem['route'])
 
 	return (
 		<Box
-			as={ TAG }
-			role="menubar"
-			{ ...styles('root') }
+			{ ...styles('root', clsx) }
 			{ ...others }
+			as={ as }
+			id={ id }
+			role="menubar"
 		>
-			{ items?.map(item => (
-				<MenuItem
-					key={ item.label }
-					className={ className }
-					hasDropdowns={ hasDropdowns }
-					{ ...item }
-				/>
-			)) }
+			{ items?.map(item => {
+				const { label, route } = item,
+					itemID = id && `${id}-${toSlug(label)}`
+
+				const hasTrigger = !!(triggers && route && isKeyOf(triggers, route)),
+					trigger = hasTrigger ? triggers[route] : undefined
+
+				return (
+					<MenuItem
+						{ ...item }
+						active={ currentRoute }
+						className={ className }
+						depth={ depth }
+						hasDropdowns={ hasDropdowns }
+						id={ itemID }
+						key={ label }
+						trigger={ trigger }
+					/>
+				)
+			}) }
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
-Menu.displayName = NAME
-Menu.setDefaults({ props: DEFAULT_PROPS })
+Menu.set({
+	defaultProps: DEFAULT_PROPS,
+	displayName: NAME,
+})
 
 export declare namespace Menu {
 	export type Props = MenuProps

@@ -1,10 +1,11 @@
+import { useMemo, type KeyboardEvent, type ReactNode } from 'react'
+import { ChevronDown, Plus } from 'lucide-react'
 import { useAccordionCtx } from '../Accordion.context'
-import { useProps, extractOtherProps } from '@/hooks/useProps'
-import { useStyles } from '@/hooks/useStyles'
-import { polymorphic } from '@/lib/component'
+import { defineTokens } from '@/lib/component/tokens'
+import { extractOthers } from '@/hooks/useProps'
+import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
-import { Icon } from '@/components/core'
-import type { KeyboardEvent, ReactNode } from 'react'
+import type { Accordion } from '../Accordion'
 import classes from '../Accordion.module.scss'
 
 const NAME = 'Accordion.Title' as const
@@ -14,26 +15,55 @@ interface AccordionTitleProps {
 }
 
 interface AccordionTitleSpecs {
+	context: Accordion.Context
 	isCompound: true
 	props: AccordionTitleProps
+	selectors: AccordionTitleSelectors
+	tokens: AccordionTitleTokens
 }
 
-export const AccordionTitle = polymorphic<AccordionTitleSpecs>(_props => {
-	const {
-		collapsible,
-		disabled,
-		handleToggle,
-		idx,
-		indicator,
-		isOpen,
-		step,
-	} = useAccordionCtx(NAME)
+type AccordionTitleSelectors =
+	| 'root' | 'step' | 'text' | 'indicator'
 
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props })
+type AccordionTitleTokens = {
+	root:
+		| '--accordion-title-direction'
+	text:
+		| '--accordion-title-indent'
+}
+
+const tokens = defineTokens<AccordionTitleSpecs>()(({ context }) => {
+	if (!context) return {}
+
+	const { indicatorPosition, layout } = context
+	let titleIndent
+
+	if (!!layout && layout !== 'default')
+		titleIndent = 0
+
+	return {
+		root: {
+			'--accordion-title-direction': indicatorPosition === 'left' ? 'row-reverse' : undefined,
+		},
+		text: {
+			'--accordion-title-indent': titleIndent,
+		},
+	}
+})
+
+export const AccordionTitle = polymorphic<AccordionTitleSpecs>((_props, { useProps, useStyles }) => {
+	const context = useAccordionCtx(NAME)
+	const props = useProps(_props)
+	const styles = useStyles({ context, props, tokens })
+
+	const {
+		collapsible, disabled, handleToggle,
+		idx, index, indicator,
+		isOpen, layout, order,
+	} = context
 
 	const { children, ...rest } = props
-	const { others } = extractOtherProps(rest)
+	const others = extractOthers(rest)
 
 	const sharedProps = { ...styles('root'), ...others, id: idx.title },
 		indicateClass = { [`${indicator}`]: indicator !== 'none' },
@@ -46,8 +76,13 @@ export const AccordionTitle = polymorphic<AccordionTitleSpecs>(_props => {
 		const group = event.currentTarget.closest('[data-group]')
 		if (!group) return
 
-		const titles = [...group.querySelectorAll<HTMLButtonElement>('button[data-title]')],
+		const titles = [...group.children]
+				.map(item => document.getElementById(`${item.id}-title`))
+				.filter((title): title is HTMLButtonElement =>
+					title instanceof HTMLButtonElement && !title.disabled),
 			current = titles.indexOf(event.currentTarget)
+
+		if (current < 0) return
 
 		let next = -1
 		switch (event.key) {
@@ -62,8 +97,14 @@ export const AccordionTitle = polymorphic<AccordionTitleSpecs>(_props => {
 		titles[next]?.focus()
 	}
 
+	const step = useMemo(() => {
+		if (layout !== 'steps') return
+		const i = index + 1
+		return (i > 9 ? `${i}` : `0${i}`) as `${number}`
+	}, [index, layout])
+
 	const stepEl = !!step && <span { ...styles('step') }>{ step }</span>,
-		textEl = <span { ...styles('text') }>{ children }</span>,
+		textEl = <span { ...styles('text', { global: `inkq-h${order}` }) }>{ children }</span>,
 		titleItems = <>{ stepEl }{ textEl }</>
 
 	if (interactive) {
@@ -80,7 +121,7 @@ export const AccordionTitle = polymorphic<AccordionTitleSpecs>(_props => {
 
 				{ (indicator !== 'none') && (
 					<span { ...styles('indicator', { selector: indicateClass }) }>
-						<Icon type={ indicator === 'plus' ? 'add' : 'caret-down' } />
+						<Box as={ indicator === 'plus' ? Plus : ChevronDown } />
 					</span>
 				) }
 			</Box>
@@ -96,10 +137,9 @@ export const AccordionTitle = polymorphic<AccordionTitleSpecs>(_props => {
 			{ titleItems }
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
-AccordionTitle.displayName = NAME
-AccordionTitle.setDefaults({})
+AccordionTitle.set({ displayName: NAME })
 
 export declare namespace AccordionTitle {
 	export type Props = AccordionTitleProps

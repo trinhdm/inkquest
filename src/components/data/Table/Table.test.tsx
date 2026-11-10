@@ -1,4 +1,3 @@
-import { getDefaultProps } from '@/hooks/useProps'
 import { render, reset, screen } from '@/tests/test-utils'
 import { Table } from './Table'
 
@@ -19,13 +18,13 @@ describe('Table', () => {
 		expect(screen.getByText('Cell B')).toBeInTheDocument()
 	})
 
-	it('renders as a table by default per its registered defaults', () => {
+	// Table registers no default props: it hardcodes `as={ TAG }` on its Box
+	it('always renders a <table> element, since the tag is hardcoded rather than a default prop', () => {
 		const { container } = render(
 			<Table>
 				<Table.Row><Table.Cell>Cell</Table.Cell></Table.Row>
 			</Table>
 		)
-		expect(getDefaultProps<Table.Props & { as: string }>('Table').as).toBe('table')
 		expect(container.firstChild?.nodeName).toBe('TABLE')
 	})
 
@@ -36,19 +35,6 @@ describe('Table', () => {
 			</Table>
 		)
 		expect(container.querySelector('table > tbody')).toBeInTheDocument()
-	})
-
-	it('renders as a custom element when `as` is overridden, even though the hardcoded <tbody> then nests invalidly', () => {
-		// `Table.tsx` always wraps `children` in a literal `<tbody>`, regardless
-		// of `as` — overriding away from `table` produces an invalid-nesting
-		// dev warning (`<tbody>` outside a `<table>`), which is suppressed here
-		// since it's expected noise, not a failure signal for this assertion.
-		const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
-
-		const { container } = render(<Table as="section">Content</Table>)
-		expect(container.querySelector('section')).toBeInTheDocument()
-
-		consoleError.mockRestore()
 	})
 
 	describe('Table.Row', () => {

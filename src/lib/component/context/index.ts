@@ -1,4 +1,3 @@
-export { createRootCtx } from './createRootCtx'
-export { extractChildrenText, filterChildren } from './children'
+export { createCompoundCtx } from './createCompoundCtx'
 export { withProvider } from './withProvider'
-export type { RootProviderFn, RootProviderProps } from './createRootCtx'
+export type { RootCtxValue, RootProviderFn, SafeRootCtxValue } from './createCompoundCtx'

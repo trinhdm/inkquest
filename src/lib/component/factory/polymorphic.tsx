@@ -1,46 +1,43 @@
-import {
-	createFactory,
-	type MethodsBase,
-	type SubcomponentsBase,
-} from './createFactory'
-
+import { createFactory } from './createFactory'
+import type { ElementType, ReactElement } from 'react'
 import type {
-	IsPolymorphic,
-	PolymorphicProps,
-	SpecDefaultAs,
-	SpecsConstraint,
+	FactoryDisplayName,
+	FactoryMethods, FactorySubcomponents,
+	IsPolymorphic, PolymorphicProps,
+	Specs, SpecsDefaultAs,
 } from './types'
 
-import type { BaseProps } from './definePolymorphic'
-import type { ElementType, ReactElement } from 'react'
+type SpecsConstraint<T extends { props: object }> =
+	Specs & { defaults?: { props?: keyof T['props'] } }
 
-const polymorphicFactory = <T extends SpecsConstraint<T>>(
-	target: Parameters<typeof createFactory<T>>[0],
-	classes?: Record<string, string>
-) => {
-	type C = SpecDefaultAs<T, ElementType>
-	type P<U> = PolymorphicProps<T['props'], U>
+const polymorphicFactory = <
+	S extends SpecsConstraint<S>,
+	F extends typeof createFactory<S> = typeof createFactory<S>,
+	T extends Parameters<F> = Parameters<F>
+>(target: T[0], config: T[1]) => {
+	type C = SpecsDefaultAs<S, ElementType>
+	type P<U> = PolymorphicProps<S['props'], U>
 
-	type _Component = IsPolymorphic<T> extends true
+	type _Component = IsPolymorphic<S> extends true
 		? <U extends ElementType = C>(props: P<U>) => ReactElement
 		: (props: P<never>) => ReactElement
 
-	type _Subcomponents = SubcomponentsBase<T>
-	type _Methods = MethodsBase<T, _Component, P<C>>
-	type _Properties = BaseProps<P<unknown>>
+	type _Subcomponents = FactorySubcomponents<S>
+	type _Methods = FactoryMethods<S, _Component, P<C>>
+	type _Properties = Required<FactoryDisplayName>
 
-	type PolymorphicComponent =
+	type _PolymorphicComponent =
 		& _Component
 		& _Subcomponents
 		& _Methods
 		& _Properties
 
-	return createFactory<T, PolymorphicComponent>(target, classes)
+	return createFactory<S, _PolymorphicComponent>(target, config)
 }
 
 export const polymorphic = <
-	T extends SpecsConstraint<T>,
-	U extends typeof polymorphicFactory<T> = typeof polymorphicFactory<T>,
-	P extends Parameters<U>[0] = Parameters<U>[0],
->(target: P, classes?: Record<string, string>) =>
-	polymorphicFactory<T>(target as P, classes)
+	S extends SpecsConstraint<S>,
+	F extends typeof polymorphicFactory<S> = typeof polymorphicFactory<S>,
+	T extends Parameters<F> = Parameters<F>
+>(target: T[0], config: T[1]) =>
+	polymorphicFactory<S>(target, config)

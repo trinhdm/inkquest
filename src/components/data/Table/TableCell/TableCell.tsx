@@ -1,6 +1,5 @@
-import { useProps, extractOtherProps } from '@/hooks/useProps'
-import { useStyles } from '@/hooks/useStyles'
-import { polymorphic } from '@/lib/component'
+import { extractOthers } from '@/hooks/useProps'
+import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import type { ReactNode } from 'react'
 import classes from '../Table.module.scss'
@@ -14,14 +13,18 @@ interface TableCellProps {
 interface TableCellSpecs {
 	isCompound: true
 	props: TableCellProps
+	selectors: TableCellSelectors
 }
 
-export const TableCell = polymorphic<TableCellSpecs>(_props => {
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props })
+type TableCellSelectors =
+	| 'root'
+
+export const TableCell = polymorphic<TableCellSpecs>((_props, { useProps, useStyles }) => {
+	const props = useProps(_props)
+	const styles = useStyles({ props })
 
 	const { children, ...rest } = props
-	const { others } = extractOtherProps(rest)
+	const others = extractOthers(rest)
 
 	return (
 		<Box
@@ -32,10 +35,9 @@ export const TableCell = polymorphic<TableCellSpecs>(_props => {
 			{ children }
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
-TableCell.displayName = NAME
-TableCell.setDefaults({})
+TableCell.set({ displayName: NAME })
 
 export declare namespace TableCell {
 	export type Props = TableCellProps

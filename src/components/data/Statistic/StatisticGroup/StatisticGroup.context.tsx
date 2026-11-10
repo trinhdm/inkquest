@@ -1,20 +1,17 @@
-import { createRootCtx } from '@/lib/component'
+import { createCompoundCtx } from '@/lib/component/context'
 import type { AnimationOptions } from '@/hooks/animation'
-
-export type StatisticGroupOrder =
-	'ascend' | 'descend'
-
-export type StatisticGroupSize =
-	'sm' | 'lg'
+import type { Statistic } from '../Statistic'
 
 export interface StatisticGroupContext
 	extends AnimationOptions {
-	order?: StatisticGroupOrder
-	size?: StatisticGroupSize
+	order?: Statistic.Props['order']
+	size?: Statistic.Props['size']
 }
 
 export const {
 	RootProvider: StatisticGroupProvider,
 	useSafeRootCtx: useStatisticGroupCtx,
 	useRootProps: useStatisticGroupProps,
-} = createRootCtx<StatisticGroupContext>('Statistic.Group')
+} = createCompoundCtx<StatisticGroupContext>('Statistic.Group')
+
+export const useStatisticGroup = () => ({ useStatisticGroupCtx, useStatisticGroupProps })

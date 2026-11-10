@@ -18,11 +18,10 @@ describe('Grid', () => {
 		expect(container.firstElementChild?.tagName).toBe('UL')
 	})
 
-	// `Grid.tsx` still imports `filterChildren` but its call site (line 42) is
-	// commented out — the actual render is a bare `{ children }` spread, so
-	// there is no filtering step at all: a plain, non-`Grid.Item` element
-	// child renders through untouched, same as a `Grid.Item`.
-	it('renders every child verbatim, including non-Grid.Item elements (filterChildren is dead code)', () => {
+	// `Grid.tsx` has no filtering step: the render is a bare `{ children }`,
+	// so a plain, non-`Grid.Item` child renders through untouched, same as a
+	// `Grid.Item`.
+	it('renders every child verbatim, including non-Grid.Item elements', () => {
 		render(
 			<Grid>
 				<Grid.Item>Item one</Grid.Item>
@@ -42,26 +41,59 @@ describe('Grid', () => {
 	})
 
 	// `columns` is published as the `--grid-cols` custom property on the root's
-	// inline `style`, via `setThemeCSS`'s `tokens` (see `Grid.tsx`) — NOT as a
-	// className modifier or a `data-*` attribute. `Grid.module.scss` reads it
-	// back through `repeat(var(--group-cols), ...)`.
-	it('publishes columns as the --grid-cols custom property on the root', () => {
+	// inline `style`, via `defineTokens` (see `Grid.tsx`) — NOT as a className
+	// modifier or a `data-*` attribute. The property holds the full track list.
+	it('publishes columns as the full track list in --grid-cols on the root', () => {
 		const { container } = render(<Grid columns={ 3 }>content</Grid>)
 		const root = container.firstElementChild as HTMLElement
 
-		expect(root.style.getPropertyValue('--grid-cols')).toBe('3')
+		expect(root.style.getPropertyValue('--grid-cols')).toBe('repeat(3, minmax(0, 1fr))')
 	})
 
-	it('leaves --grid-cols unset for a non-positive columns value, so the stylesheet default applies', () => {
+	it('falls back to repeat(auto-fit, ...) for unset or non-positive columns', () => {
 		const { container: zero } = render(<Grid columns={ 0 }>content</Grid>)
+		const { container: negative } = render(<Grid columns={ -2 }>content</Grid>)
 		const { container: unset } = render(<Grid>content</Grid>)
 
-		const zeroRoot = zero.firstElementChild as HTMLElement,
-			unsetRoot = unset.firstElementChild as HTMLElement
+		const expected = 'repeat(auto-fit, minmax(0, 1fr))'
+		for (const { container } of [{ container: zero }, { container: negative }, { container: unset }])
+			expect((container.firstElementChild as HTMLElement).style.getPropertyValue('--grid-cols')).toBe(expected)
+	})
 
-		expect(zeroRoot.style.getPropertyValue('--grid-cols')).toBe('')
-		expect(unsetRoot.style.getPropertyValue('--grid-cols')).toBe('')
-		expect(zeroRoot.className).toBe(unsetRoot.className)
+	describe('equalWidth', () => {
+		it('defaults to true in the registry', () => {
+			expect(getDefaultProps<Grid.Props>('Grid')).toMatchObject({ equalWidth: true })
+		})
+
+		it('wraps the track in repeat() when equalWidth is true (the default)', () => {
+			const { container } = render(<Grid columns={ 2 } equalWidth>content</Grid>)
+
+			expect((container.firstElementChild as HTMLElement).style.getPropertyValue('--grid-cols'))
+				.toBe('repeat(2, minmax(0, 1fr))')
+		})
+
+		it('sizes explicit columns to their content when equalWidth is false', () => {
+			const { container } = render(<Grid columns={ 2 } equalWidth={ false }>content</Grid>)
+
+			expect((container.firstElementChild as HTMLElement).style.getPropertyValue('--grid-cols'))
+				.toBe('repeat(2, auto)')
+		})
+
+		it('uses a string columns as the full track list, whatever equalWidth is', () => {
+			const { container: equal } = render(<Grid columns="1fr 2fr">content</Grid>)
+			const { container: loose } = render(<Grid columns="1fr 2fr" equalWidth={ false }>content</Grid>)
+
+			for (const container of [equal, loose])
+				expect((container.firstElementChild as HTMLElement).style.getPropertyValue('--grid-cols'))
+					.toBe('1fr 2fr')
+		})
+	})
+
+	it('uses four columns for layout="sidebar"', () => {
+		const { container } = render(<Grid layout="sidebar">content</Grid>)
+
+		expect((container.firstElementChild as HTMLElement).style.getPropertyValue('--grid-cols'))
+			.toBe('repeat(4, minmax(0, 1fr))')
 	})
 
 	describe('Grid.Item', () => {
@@ -70,14 +102,12 @@ describe('Grid', () => {
 			expect(screen.getByText('Item content')).toBeInTheDocument()
 		})
 
-		// **Probable source bug, verified against the live `GridItem.tsx`**:
-		// `GridItem` (`isCompound: true`, no `defaults.as`) destructures only
-		// `others` off `extractOtherProps(rest)` — it never reads the sibling
-		// `as` value that call also returns, so `as` is silently discarded and
-		// the root always renders through `<Box>`'s own default, `div`.
-		it('ignores its "as" prop and always renders a div (as is never read)', () => {
-			const { container } = render(<Grid.Item as={ 'li' as never }>Item content</Grid.Item>)
-			expect(container.firstElementChild?.tagName).toBe('DIV')
+		it('renders a div by default, and the element passed as `as` otherwise', () => {
+			const { container: plain } = render(<Grid.Item>Plain</Grid.Item>)
+			expect(plain.firstElementChild?.tagName).toBe('DIV')
+
+			const { container: listed } = render(<Grid.Item as="li">Listed</Grid.Item>)
+			expect(listed.firstElementChild?.tagName).toBe('LI')
 		})
 
 		it('composes inside a Grid, preserving each item\'s own content', () => {

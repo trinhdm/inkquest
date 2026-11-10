@@ -1,4 +1,6 @@
 .inkq-badge {
+	$name: &;
+
 	--badge-background: var(--variant-background);
 	--badge-border: var(--variant-border);
 	--badge-color: var(--variant-color);

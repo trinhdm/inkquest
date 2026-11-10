@@ -3,7 +3,7 @@ import type { Unit } from '@/types/shared'
 const pxUnitConverter = <const U extends Unit>(unit: U) => {
 	type UnitNum<T extends U = U> = `${number}${T}`
 
-	const calculate = (px: number): UnitNum<U> => {
+	const calculate = (px: number, round?: number): UnitNum<U> => {
 		let base = 16
 
 		if (typeof window !== 'undefined') {
@@ -11,12 +11,19 @@ const pxUnitConverter = <const U extends Unit>(unit: U) => {
 			base = parseFloat(computed.fontSize)
 		}
 
-		return `${px / base}${unit}` as UnitNum<U>
+		let value = px / base
+
+		if (typeof round === 'number') {
+			const step = 1/round
+			value = Math.ceil(value * step) / step
+		}
+
+		return `${value}${unit}` as UnitNum<U>
 	}
 
-	function convert(value: number): UnitNum<U>
-	function convert(value: string): string
-	function convert(value: number | string): UnitNum | string {
+	function convert(value: number, round?: number): UnitNum<U>
+	function convert(value: string, round?: number): string
+	function convert(value: number | string, round?: number): UnitNum | string {
 		const none = `0${unit}` as UnitNum<U>
 		let temp = undefined
 
@@ -25,7 +32,7 @@ const pxUnitConverter = <const U extends Unit>(unit: U) => {
 
 		switch (typeof value) {
 			case 'number':
-				return calculate(value)
+				return calculate(value, round)
 			case 'string':
 				if (value === '') return none
 
@@ -33,7 +40,7 @@ const pxUnitConverter = <const U extends Unit>(unit: U) => {
 				temp = parseFloat(temp)
 
 				if (!Number.isNaN(Number(temp)))
-					return calculate(temp)
+					return calculate(temp, round)
 
 				break
 		}

@@ -1,12 +1,11 @@
 'use client'
 
-import { useProps, extractOtherProps } from '@/hooks/useProps'
-import { useStyles } from '@/hooks/useStyles'
-import { filterNavigation, NavRoute } from '@/utils/navigation'
-import { polymorphic } from '@/lib/component'
+import { extractOthers } from '@/hooks/useProps'
+import { filterNavigation, type NavigationGroup } from '@/utils/navigation'
+import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import { Menu } from '../Menu'
-import type { ListProps } from '@/lib/component/factory/types'
+import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from './Subnav.module.scss'
 
 const NAME = 'Subnav' as const,
@@ -16,26 +15,31 @@ const DEFAULT_PROPS = {
 	as: TAG,
 } as const
 
-interface SubnavProps {
-	routes: NavRoute[]
-}
+interface SubnavProps
+	extends NavigationGroup {}
 
 interface SubnavSpecs {
 	defaults: {
 		as: typeof TAG
-		props: ListProps<typeof DEFAULT_PROPS>
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: SubnavProps
+	selectors: SubnavSelectors
 }
 
-export const Subnav = polymorphic<SubnavSpecs>(_props => {
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props })
+type SubnavSelectors =
+	| 'root' | 'wrapper' | 'inner'
+	| 'label' | 'menu'
 
-	const { routes, ...rest } = props
-	const { as, others } = extractOtherProps(rest)
+export const Subnav = polymorphic<SubnavSpecs>((_props, { useProps, useStyles }) => {
+	const props = useProps(_props)
+	const styles = useStyles({ props })
 
-	const navItems = filterNavigation(routes)
+	const { as, category, routes, ...rest } = props
+	const others = extractOthers(rest)
+	const navitems = filterNavigation(routes, 'breadcrumbs')
+
+	if (!navitems.length) return null
 
 	return (
 		<Box
@@ -45,26 +49,25 @@ export const Subnav = polymorphic<SubnavSpecs>(_props => {
 		>
 			<div { ...styles('wrapper', true) }>
 				<div { ...styles('inner') }>
-					{ !!navItems.length && (
-						<>
-							<span { ...styles('label') }>
-								{ navItems[0].label }
-							</span>
-							<Menu
-								hasDropdowns={ false }
-								items={ navItems }
-								{ ...styles('menu') }
-							/>
-						</>
-					) }
+					<span { ...styles('label') }>
+						{ category ?? navitems[0].label }
+					</span>
+
+					<Menu
+						{ ...styles('menu') }
+						hasDropdowns={ false }
+						items={ navitems }
+					/>
 				</div>
 			</div>
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
-Subnav.displayName = NAME
-Subnav.setDefaults({ props: DEFAULT_PROPS })
+Subnav.set({
+	defaultProps: DEFAULT_PROPS,
+	displayName: NAME,
+})
 
 export declare namespace Subnav {
 	export type Props = SubnavProps

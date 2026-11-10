@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react'
-import { createRootCtx } from '../createRootCtx'
+import { createCompoundCtx } from '../createCompoundCtx'
 import { withProvider } from '../withProvider'
 
 interface TestCtxValue {
@@ -12,7 +12,7 @@ const Consumer = ({ useRootCtx }: { useRootCtx: (name: string) => TestCtxValue &
 }
 
 describe('withProvider', () => {
-	const { RootProvider, useRootCtx } = createRootCtx<TestCtxValue>('TestRoot')
+	const { RootProvider, useRootCtx } = createCompoundCtx<TestCtxValue>('TestRoot')
 
 	it('wraps each item with its own Provider instance, matched to it by index', () => {
 		const items = [
@@ -55,5 +55,56 @@ describe('withProvider', () => {
 		expect(screen.getByText('A')).toBeInTheDocument()
 		expect(screen.getByText('B')).toBeInTheDocument()
 		expect(result).toHaveLength(1)
+	})
+
+	// dev-only guard: a Provider with a different number of values than items
+	// would hand some child an undefined value
+	describe('items/values length guard', () => {
+		let error: jest.SpyInstance
+
+		beforeEach(() => { error = jest.spyOn(console, 'error').mockImplementation(() => {}) })
+		afterEach(() => { error.mockRestore() })
+
+		const items = [<span key="a">A</span>, <span key="b">B</span>]
+		const build = (provider: typeof RootProvider | undefined, values: TestCtxValue[]) =>
+			withProvider<TestCtxValue, TestCtxValue>(items, provider, values)
+
+		it('logs the item and value counts when a Provider gets fewer values than items', () => {
+			build(RootProvider, [{ label: 'only one' }])
+			expect(error).toHaveBeenCalledWith('withProvider: got 2 items but 1 values')
+		})
+
+		it('logs when a Provider gets more values than items', () => {
+			build(RootProvider, [{ label: 'a' }, { label: 'b' }, { label: 'c' }])
+			expect(error).toHaveBeenCalledWith('withProvider: got 2 items but 3 values')
+		})
+
+		it('stays silent when the counts match', () => {
+			build(RootProvider, [{ label: 'a' }, { label: 'b' }])
+			expect(error).not.toHaveBeenCalled()
+		})
+
+		it('stays silent without a Provider, since values are unused then', () => {
+			// positive control: the same mismatch does log once a Provider is given
+			build(RootProvider, [{ label: 'only one' }])
+			expect(error).toHaveBeenCalled()
+			error.mockClear()
+
+			build(undefined, [{ label: 'only one' }])
+			expect(error).not.toHaveBeenCalled()
+		})
+
+		it('stays silent in production even with a mismatch', () => {
+			const env = process.env as { NODE_ENV?: string },
+				original = env.NODE_ENV
+
+			try {
+				env.NODE_ENV = 'production'
+				build(RootProvider, [{ label: 'only one' }])
+				expect(error).not.toHaveBeenCalled()
+			} finally {
+				env.NODE_ENV = original
+			}
+		})
 	})
 })

@@ -1,7 +1,10 @@
 import { expect, fn, userEvent, within } from 'storybook/test'
 import { getDefaultProps } from '@/hooks/useProps'
 import { Accordion } from './Accordion'
-import { BOOLEAN_OPTIONS, INDICATOR_OPTIONS, LAYOUT_OPTIONS, TYPE_OPTIONS } from './options.story'
+import {
+	BOOLEAN_OPTIONS, INDICATOR_OPTIONS, INDICATOR_POSITION_OPTIONS, LAYOUT_OPTIONS,
+	MAX_TITLE_SIZE_LEVEL, ORDER_OPTIONS, SIZE_OPTIONS,
+} from './options.story'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import classes from './Accordion.module.scss'
@@ -25,18 +28,20 @@ const Group = ({ label, children }: { label: string, children: ReactNode }) => (
 // `AccordionProps` interface — it doesn't include `as`/`unstyled`/
 // `attributes`/etc., which only exist on the actual accepted prop type,
 // `PolymorphicProps<AccordionProps, C>`. `Parameters<typeof Accordion>[0]`
-// reads that real, wrapped type straight off the component itself — the
-// generic call signature's default `C` resolves to `'div'` here, since
-// `AccordionSpecs`'s `defaults.as` is `'div'`.
+// reads that real, wrapped type straight off the component itself. It fills
+// `C` with its constraint (`ElementType`), not the default `'div'`, so `as`
+// is any `ElementType` here. The type is a union: `indicator: 'none'` forbids
+// `indicatorPosition` (`never`), so stories that set both from a loop cast
+// the spread back to this type.
 type AccordionStoryProps = Parameters<typeof Accordion>[0]
 type Story = StoryObj<AccordionStoryProps>
 
-// `Accordion` renders nothing (`buildAccordion` returns `null`) unless it
-// gets exactly one `Accordion.Title` and one `Accordion.Content` child — so
-// every "normal" story shares this fixed pair via `meta.render`, and only
-// the edge-case stories that are specifically about that contract (missing
-// title/content, extras, stray children, reversed order) supply their own
-// custom `render`.
+// `Accordion` renders no title/content pair (`buildAccordion` returns `null`)
+// unless `filterChildren` finds BOTH an `Accordion.Title` and an
+// `Accordion.Content` among its children — so every "normal" story shares
+// this fixed pair via `meta.render`, and only the edge-case stories that are
+// specifically about that contract (missing title/content, duplicates, stray
+// children, reversed order, fragments) supply their own custom `render`.
 const accordionTemplate = (args: AccordionStoryProps) => (
 	<Accordion { ...args }>
 		<Accordion.Title>What is your refund policy?</Accordion.Title>
@@ -56,7 +61,7 @@ const meta: Meta<AccordionStoryProps> = {
 	argTypes: {
 		collapsible: {
 			control: 'boolean',
-			description: 'Defaults to `true`. Setting it `false` makes the item PERMANENTLY open and untogglable, enforced in two places: `Accordion` pins `isOpen` to `true` outright (skipping `open`/`defaultOpen` entirely, controlled or not), and `handleToggle` returns immediately — so neither `onToggle` nor `onItemToggle` ever fires. `AccordionTitle` then branches on `interactive = collapsible !== false` and renders a plain `<div>` instead of a `<button>`, with no `aria-expanded`, no `aria-controls` and no indicator — nothing focusable that lies about being expandable. Contrast `disabled`, which KEEPS the `<button>`: a disabled item is still a disclosure, merely unavailable, whereas `collapsible={false}` means it was never a disclosure at all. Also inheritable from an enclosing `Accordion.Group`, via `AccordionGroupProvider` / `useAccordionGroupProps`: the group publishes its own `collapsible` through context, filled onto this `Accordion`\'s own raw props ONLY when the key is absent from them (own prop always wins). See `Accordion.Group`\'s `Collapsible` story.',
+			description: 'Defaults to `true`. Setting it `false` makes the item PERMANENTLY open and untogglable, enforced in two places: `Accordion` pins `isOpen` to `true` outright (skipping `open`/`defaultOpen` entirely, controlled or not), and `handleToggle` returns immediately — so neither `onToggle` nor `onItemToggle` ever fires. `AccordionTitle` then branches on `interactive = collapsible !== false` and renders a plain `<div>` instead of a `<button>`, with no `aria-expanded`, no `aria-controls` and no indicator — nothing focusable that lies about being expandable. Contrast `disabled`, which KEEPS the `<button>`: a disabled item is still a disclosure, merely unavailable, whereas `collapsible={false}` means it was never a disclosure at all. Also inheritable from an enclosing `Accordion.Group`, via `AccordionGroupProvider` / `useAccordionGroupProps`: the group publishes its own `collapsible` through context, filled onto this `Accordion`\'s own raw props ONLY when the key is absent from them (own prop always wins). See this file\'s `Collapsible` story and `Accordion.Group`\'s `Collapsible` story.',
 		},
 		defaultOpen: {
 			control: 'boolean',
@@ -72,37 +77,54 @@ const meta: Meta<AccordionStoryProps> = {
 		},
 		index: {
 			control: 'number',
-			description: 'Also inheritable from an enclosing `Accordion.Group`. Feeds `onItemToggle(index, next)` and, when `layout` is `\'steps\'`, the zero-padded `step` label. See the `StepPadding` story.',
+			description: 'Registered default `0`. Also inheritable from an enclosing `Accordion.Group` (which assigns each item its sequential index). Feeds `onItemToggle(index, next)`, the root\'s `data-index` attribute and, when `layout` is `\'steps\'`, the zero-padded step label that `Accordion.Title` works out itself from `index` + `layout` (it is no longer on the root, and is not read from context). See the `StepPadding` story.',
 		},
 		indicator: {
 			control: 'select',
 			options: INDICATOR_OPTIONS,
-			description: '`\'none\'` renders no indicator element at all; otherwise an `Icon` (`add` for `\'plus\'`, `caret-down` for `\'chevron\'`) inside a selector-scoped modifier class.',
+			description: 'Registered default `\'plus\'`. `\'none\'` renders no indicator element at all, and is typed to FORBID `indicatorPosition` (`indicatorPosition?: never`); otherwise a `lucide-react` icon (`Plus` for `\'plus\'`, `ChevronDown` for `\'chevron\'`) rendered via `<Box as={...}>` inside a selector-scoped modifier class.',
+		},
+		indicatorPosition: {
+			control: 'select',
+			options: INDICATOR_POSITION_OPTIONS,
+			description: 'Registered default `\'right\'`. Only valid with `indicator` `\'chevron\'` or `\'plus\'` (typed `never` with `\'none\'`). Published on `Accordion.context`; `Accordion.Title` sets its `--accordion-title-direction` token to `row-reverse` for `\'left\'` (and leaves it unset for `\'right\'`). See the `IndicatorPosition` story.',
 		},
 		layout: {
 			control: 'select',
 			options: LAYOUT_OPTIONS,
-			description: 'Also inheritable from an enclosing `Accordion.Group`. Only `\'steps\'` computes a `step` label; `\'default\'` (and unset) never does, regardless of `index`.',
+			description: 'Also inheritable from an enclosing `Accordion.Group`. Any layout other than `\'default\'` adds an `inkq-accordion--<layout>` modifier class to the root. `\'steps\'` makes `Accordion.Title` render a zero-padded step label from `index` (and `Accordion.Content` indent under the title text); `\'blockquote\'` drops the divider, zeroes the title gap/indent and uses the caption font size. `\'default\'` (and unset) never shows a step, regardless of `index`. See the `Layouts` and `Blockquote` stories.',
 		},
-		onItemToggle: { action: 'itemToggled' },
+		// No `action` here: an `action` argType would inject a function into
+		// `args.onItemToggle` for every story. Stories that assert on it pass
+		// their own `fn()`.
+		onItemToggle: {
+			control: false,
+			description: 'Called as `onItemToggle(index, next)` on every toggle. Enclosing `Accordion.Group`s supply one to track which items are open.',
+		},
 		onToggle: { action: 'toggled' },
 		open: {
 			control: 'boolean',
-			description: 'Setting this to a boolean (rather than leaving it `undefined`) switches `Accordion` into CONTROLLED mode (`isControlled = typeof open === \'boolean\'`): internal state is bypassed entirely, and `isOpen` always reflects this prop directly. `onToggle`/`onItemToggle` still fire on click. See the `Controlled` story.',
+			description: 'Setting this to a boolean (rather than leaving it `undefined`) switches `Accordion` into CONTROLLED mode (`isControlled = typeof open === \'boolean\'`): internal state is bypassed entirely, and `isOpen` always reflects this prop directly. `onToggle`/`onItemToggle` still fire on click. See the `Controlled` and `Open` stories.',
 		},
-		type: {
+		order: {
 			control: 'select',
-			options: TYPE_OPTIONS,
-			description: 'NOT inheritable from an enclosing `Accordion.Group` — `type` is absent from both `AccordionGroup.tsx`\'s own `ctxValues` and the `AccordionGroupContext` interface it publishes, unlike `collapsible`/`disabled`/`layout`. On `Accordion` itself it\'s a dead prop: destructured out of `props` and otherwise unused. Only `Accordion.Group`\'s own internal state logic (`handleItemToggle`) reads its OWN `type`, entirely independent of any per-`Accordion` `type` prop.',
+			options: ORDER_OPTIONS,
+			description: 'Registered default `3`. Published onto `Accordion.context` and read directly by `AccordionTitle`, which applies it as a global `inkq-h${order}` class name on the title text `<span>` (no actual heading element is rendered) — also feeds `getSharedTokens`\' `--accordion-title-size` token (`var(--inkq-font-size-h<level>)`), offset by `size` (`level = order + step`, where `step` is `{ sm: 2, md: 1, lg: 0 }[size]`). Only h1-h5 sizes are defined, so a resolved level above 5 points at a token that does not exist. Also inheritable from an enclosing `Accordion.Group` (own prop always wins). See the `Order` story.',
+		},
+		size: {
+			control: 'select',
+			options: SIZE_OPTIONS,
+			description: 'Registered default `\'md\'`. Feeds `getSharedTokens`\' shared CSS custom properties (`--accordion-column-width`, `--accordion-gap`, `--accordion-padding`, `--accordion-indicator-size`, `--accordion-title-size`, etc.) via a per-size `step` (`{ sm: 2, md: 1, lg: 0 }`) applied on top of `order`. Those tokens are only computed for a standalone `Accordion`: inside an `Accordion.Group` the item\'s root gets none (`{}`) and inherits the group root\'s through CSS. Also inheritable from an enclosing `Accordion.Group` (own prop always wins). Also read by `Accordion.Content` for `--accordion-content-size`. See the `Size` story.',
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `Accordion`\'s own `AccordionProps`. The semantic base classes (`inkq-accordion`, `inkq-accordion__wrapper`, `inkq-accordion__divider`) are ALWAYS emitted regardless of this prop — `unstyled` only suppresses the CSS-module-hashed class normally appended alongside it. See the `Unstyled` story.',
+			description: 'Part of `PolymorphicProps` (via the shared `FactoryContract`), not `Accordion`\'s own `AccordionProps`. Also inheritable from an enclosing `Accordion.Group`. The semantic base classes (`inkq-accordion`, `inkq-accordion__wrapper`, `inkq-accordion__divider`) are ALWAYS emitted regardless of this prop. `unstyled` drops the CSS-module-hashed class normally appended alongside each, the layout modifier class, and ALSO every token `getStyle` would compute for the root (the shared `--accordion-*` custom properties). `Accordion` destructures `unstyled` out instead of forwarding it to its root `Box`, so the root\'s `data-index`/`data-open` attributes are kept. Its own `styles()` calls pass no config classes, so there are none to drop here. See the `Unstyled` story.',
 		},
 	},
 	args: {
 		...getDefaultProps<Accordion.Props>('Accordion'),
-		onItemToggle: fn(),
+		// `onItemToggle` is left unset; only the stories that assert on it
+		// supply their own `fn()`.
 		onToggle: fn(),
 	},
 }
@@ -120,7 +142,7 @@ export const Indicators: Story = {
 		<Row>
 			{ INDICATOR_OPTIONS.map(indicator => (
 				<Group key={ indicator } label={ indicator }>
-					{ accordionTemplate({ ...args, indicator }) }
+					{ accordionTemplate({ ...args, indicator } as AccordionStoryProps) }
 				</Group>
 			)) }
 		</Row>
@@ -162,17 +184,189 @@ export const Layouts: Story = {
 	),
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement),
-			roots = canvasElement.querySelectorAll('.inkq-accordion')
+			roots = [...canvasElement.querySelectorAll<HTMLElement>('.inkq-accordion')],
+			titles = canvas.getAllByRole('button')
+
+		expect(roots).toHaveLength(3)
+		// `LAYOUT_OPTIONS` is `['default', 'blockquote', 'steps']`, mapped in
+		// order.
+		const [defaultRoot, blockquoteRoot, stepsRoot] = roots,
+			[defaultTitle, blockquoteTitle, stepsTitle] = titles
+
+		// The step label lives in the title; the root only carries
+		// `data-index` (and `data-open`), never `data-step`.
+		for (const root of roots) {
+			await expect(root).toHaveAttribute('data-index', '0')
+			await expect(root).not.toHaveAttribute('data-step')
+		}
+
+		// `default`: no layout modifier class, divider, no step label.
+		await expect(defaultRoot).not.toHaveClass('inkq-accordion--blockquote')
+		await expect(defaultRoot).not.toHaveClass('inkq-accordion--steps')
+		await expect(defaultRoot.querySelector('.inkq-accordion__divider')).toBeInTheDocument()
+		await expect(defaultTitle.querySelector('[class*="step"]')).not.toBeInTheDocument()
+
+		// `blockquote`: modifier class, NO divider, no step label.
+		await expect(blockquoteRoot).toHaveClass('inkq-accordion--blockquote')
+		await expect(blockquoteRoot.querySelector('.inkq-accordion__divider')).not.toBeInTheDocument()
+		await expect(blockquoteTitle.querySelector('[class*="step"]')).not.toBeInTheDocument()
+
+		// `steps`: modifier class, divider, step label from `index`.
+		await expect(stepsRoot).toHaveClass('inkq-accordion--steps')
+		await expect(stepsRoot.querySelector('.inkq-accordion__divider')).toBeInTheDocument()
+		await expect(stepsTitle.querySelector('[class*="step"]')).toHaveTextContent('01')
+	},
+}
+
+// `indicatorPosition` (registered default `'right'`) is only valid with a
+// visible indicator. `'left'` sets the title's `--accordion-title-direction`
+// to `row-reverse`; `'right'` leaves it unset. The `indicator: 'none'`
+// restriction is a type-level rule (`indicatorPosition?: never`), so it is
+// documented on the argType rather than rendered.
+export const IndicatorPosition: Story = {
+	parameters: {
+		layout: 'padded',
+		controls: { exclude: ['indicatorPosition'] },
+	},
+	render: args => (
+		<Row>
+			{ INDICATOR_POSITION_OPTIONS.map(indicatorPosition => (
+				<Group key={ indicatorPosition } label={ indicatorPosition }>
+					{ accordionTemplate({ ...args, indicatorPosition } as AccordionStoryProps) }
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const titles = within(canvasElement).getAllByRole('button')
+
+		expect(titles).toHaveLength(2)
+		// `INDICATOR_POSITION_OPTIONS` is `['left', 'right']`, mapped in order.
+		const [left, right] = titles
+
+		await expect(left.style.getPropertyValue('--accordion-title-direction')).toBe('row-reverse')
+		await expect(right.style.getPropertyValue('--accordion-title-direction')).toBe('')
+		await expect(left.querySelector('svg')).toBeInTheDocument()
+		await expect(right.querySelector('svg')).toBeInTheDocument()
+	},
+}
+
+// The real-world combination used by the legal changelog
+// (`indicatorPosition="left" layout="blockquote"`): no divider, a layout
+// modifier class, and zeroed title gap and indent. Compared with the default
+// layout at the same size, its column width and padding tokens differ.
+export const Blockquote: Story = {
+	parameters: { layout: 'padded' },
+	render: args => (
+		<Row>
+			<Group label="layout: default">
+				{ accordionTemplate({ ...args, layout: 'default' }) }
+			</Group>
+			<Group label="layout: blockquote, indicatorPosition: left">
+				{ accordionTemplate({ ...args, layout: 'blockquote', indicatorPosition: 'left' } as AccordionStoryProps) }
+			</Group>
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const roots = [...canvasElement.querySelectorAll<HTMLElement>('.inkq-accordion')],
+			titles = within(canvasElement).getAllByRole('button')
 
 		expect(roots).toHaveLength(2)
-		// `LAYOUT_OPTIONS` is `['default', 'steps']`, mapped in order.
-		const [defaultRoot, stepsRoot] = roots
+		const [defaultRoot, blockquoteRoot] = roots,
+			[defaultTitle, blockquoteTitle] = titles
 
-		await expect(defaultRoot).not.toHaveAttribute('data-step')
-		await expect(canvas.getAllByRole('button')[0].querySelector('[class*="step"]')).not.toBeInTheDocument()
+		const read = (el: HTMLElement, token: string) => el.style.getPropertyValue(token),
+			indentOf = (title: HTMLElement) =>
+				read(title.querySelector<HTMLElement>('.inkq-accordion-title__text')!, '--accordion-title-indent')
 
-		await expect(stepsRoot).toHaveAttribute('data-step', '01')
-		await expect(canvas.getAllByRole('button')[1].querySelector('[class*="step"]')).toHaveTextContent('01')
+		await expect(blockquoteRoot).toHaveClass('inkq-accordion--blockquote')
+		await expect(blockquoteRoot.querySelector('.inkq-accordion__divider')).not.toBeInTheDocument()
+		await expect(defaultRoot.querySelector('.inkq-accordion__divider')).toBeInTheDocument()
+
+		await expect(read(blockquoteRoot, '--accordion-title-gap')).toBe('0')
+		await expect(read(defaultRoot, '--accordion-title-gap')).not.toBe('0')
+		await expect(read(blockquoteRoot, '--accordion-column-width'))
+			.not.toBe(read(defaultRoot, '--accordion-column-width'))
+		await expect(read(blockquoteRoot, '--accordion-padding'))
+			.not.toBe(read(defaultRoot, '--accordion-padding'))
+
+		await expect(read(blockquoteTitle, '--accordion-title-direction')).toBe('row-reverse')
+		await expect(indentOf(blockquoteTitle)).toBe('0')
+		await expect(indentOf(defaultTitle)).toBe('')
+	},
+}
+
+// `HeadingOrder` (`1`-`5`, see `ORDER_OPTIONS`) is read straight off
+// `Accordion.context` by `AccordionTitle`, which only applies it as a global
+// `inkq-h${order}` class name on the title text `<span>` — no `<hN>` element
+// is ever rendered anywhere in the `Accordion` family, so there's no ARIA
+// `heading` role to query. Asserted instead against the one thing `order`
+// actually drives at the DOM level: `getSharedTokens`' `--accordion-title-size`
+// custom property (`var(--inkq-font-size-h<level>)`, `level = order + step`,
+// where `step` is `{ sm: 2, md: 1, lg: 0 }[size]`) — mirroring the `Size`
+// story's shape below. A standalone `Accordion` computes these tokens on its
+// own root; inside an `Accordion.Group` it would not (see that file).
+export const Order: Story = {
+	parameters: {
+		layout: 'padded',
+		controls: { exclude: ['order'] },
+	},
+	render: args => (
+		<Row>
+			{ ORDER_OPTIONS.map(order => (
+				<Group key={ order } label={ String(order) }>
+					{ accordionTemplate({ ...args, order }) }
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const roots = canvasElement.querySelectorAll('.inkq-accordion') as unknown as HTMLElement[]
+
+		expect(roots).toHaveLength(ORDER_OPTIONS.length)
+
+		// Registered default `size: 'md'` → `step` is `1`, so the resolved
+		// heading level is `order + 1` per `tokensBySize`/`getTokenGroup`.
+		for (const [i, order] of ORDER_OPTIONS.entries()) {
+			const level = order + 1
+			if (level > MAX_TITLE_SIZE_LEVEL) continue
+			await expect(roots[i]!.style.getPropertyValue('--accordion-title-size'))
+				.toBe(`var(--inkq-font-size-h${ level })`)
+		}
+	},
+}
+
+// `size` feeds `getSharedTokens`' shared CSS custom properties via a per-size
+// `step` (`{ sm: 2, md: 1, lg: 0 }`) applied on top of `order` — asserted here
+// against `--accordion-title-size` (`level = order + step`), which with the
+// registered default `order: 3` resolves to `h5`/`h4`/`h3` respectively.
+// The shared tokens are only computed for a standalone `Accordion` (inside an
+// `Accordion.Group` the item's root gets `{}` and inherits the group root's),
+// so every group here shows its real per-size token output.
+export const Size: Story = {
+	parameters: {
+		layout: 'padded',
+		controls: { exclude: ['size'] },
+	},
+	render: args => (
+		<Row>
+			{ SIZE_OPTIONS.map(size => (
+				<Group key={ size } label={ size }>
+					{ accordionTemplate({ ...args, size }) }
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const roots = canvasElement.querySelectorAll('.inkq-accordion')
+
+		expect(roots).toHaveLength(3)
+		// `SIZE_OPTIONS` is `['sm', 'md', 'lg']`, mapped in order.
+		const [sm, md, lg] = roots as unknown as HTMLElement[]
+
+		await expect(sm.style.getPropertyValue('--accordion-title-size')).toBe('var(--inkq-font-size-h5)')
+		await expect(md.style.getPropertyValue('--accordion-title-size')).toBe('var(--inkq-font-size-h4)')
+		await expect(lg.style.getPropertyValue('--accordion-title-size')).toBe('var(--inkq-font-size-h3)')
 	},
 }
 
@@ -239,7 +433,7 @@ export const DefaultOpen: Story = {
 // away from whatever this fixed `open` arg says, since the story doesn't
 // feed the click back into a new `open` value.
 export const Controlled: Story = {
-	args: { open: true },
+	args: { open: true, onItemToggle: fn() },
 	play: async ({ args, canvasElement }) => {
 		const canvas = within(canvasElement),
 			title = canvas.getByRole('button')
@@ -254,6 +448,109 @@ export const Controlled: Story = {
 		await expect(args.onToggle).toHaveBeenCalledWith(false)
 		await expect(args.onItemToggle).toHaveBeenCalledOnce()
 		await expect(args.onItemToggle).toHaveBeenCalledWith(0, false)
+	},
+}
+
+// Both values of the controlled `open` prop. A boolean `open` (either one)
+// switches `Accordion` into controlled mode, so each item's open state is
+// pinned to its own value; clicking still reports the requested next state
+// through `onToggle` but never moves the item.
+export const Open: Story = {
+	parameters: {
+		layout: 'padded',
+		controls: { exclude: ['open'] },
+	},
+	render: args => (
+		<Row>
+			{ BOOLEAN_OPTIONS.map(open => (
+				<Group key={ String(open) } label={ String(open) }>
+					{ accordionTemplate({ ...args, open }) }
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ args, canvasElement }) => {
+		const canvas = within(canvasElement),
+			titles = canvas.getAllByRole('button'),
+			roots = canvasElement.querySelectorAll('.inkq-accordion')
+
+		expect(titles).toHaveLength(2)
+		expect(roots).toHaveLength(2)
+		// `BOOLEAN_OPTIONS` is `[true, false]`, mapped in order.
+		const [openTitle, closedTitle] = titles,
+			[openRoot, closedRoot] = roots
+
+		await expect(openTitle).toHaveAttribute('aria-expanded', 'true')
+		await expect(closedTitle).toHaveAttribute('aria-expanded', 'false')
+		await expect(openRoot).toHaveAttribute('data-open')
+		await expect(closedRoot).not.toHaveAttribute('data-open')
+		await expect(openRoot.querySelector('[role="region"] > div')).not.toHaveAttribute('inert')
+		await expect(closedRoot.querySelector('[role="region"] > div')).toHaveAttribute('inert')
+
+		await userEvent.click(openTitle)
+		await expect(args.onToggle).toHaveBeenCalledTimes(1)
+		await expect(args.onToggle).toHaveBeenLastCalledWith(false)
+		await expect(openTitle).toHaveAttribute('aria-expanded', 'true')
+
+		await userEvent.click(closedTitle)
+		await expect(args.onToggle).toHaveBeenCalledTimes(2)
+		await expect(args.onToggle).toHaveBeenLastCalledWith(true)
+		await expect(closedTitle).toHaveAttribute('aria-expanded', 'false')
+	},
+}
+
+// Both values of `collapsible`. `false` pins `isOpen` to `true` and makes
+// `handleToggle` return early, and `AccordionTitle` renders a plain `<div>`
+// (still carrying `data-title`) instead of a `<button>`: no button role, no
+// `aria-expanded`, no indicator. `true` (the registered default) keeps the
+// closed-by-default disclosure `<button>`.
+export const Collapsible: Story = {
+	parameters: {
+		layout: 'padded',
+		controls: { exclude: ['collapsible'] },
+	},
+	render: args => (
+		<Row>
+			{ BOOLEAN_OPTIONS.map(collapsible => (
+				<Group key={ String(collapsible) } label={ String(collapsible) }>
+					{ accordionTemplate({ ...args, collapsible }) }
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ args, canvasElement }) => {
+		const canvas = within(canvasElement),
+			roots = canvasElement.querySelectorAll('.inkq-accordion')
+
+		expect(roots).toHaveLength(2)
+		// `BOOLEAN_OPTIONS` is `[true, false]`, mapped in order.
+		const [collapsibleRoot, fixedRoot] = roots as unknown as [HTMLElement, HTMLElement]
+
+		// Only the `true` item has a disclosure button; it starts closed.
+		await expect(canvas.getAllByRole('button')).toHaveLength(1)
+		const button = within(collapsibleRoot).getByRole('button')
+		await expect(button).toHaveAttribute('aria-expanded', 'false')
+		await expect(collapsibleRoot).not.toHaveAttribute('data-open')
+		await expect(collapsibleRoot.querySelector('[role="region"] > div')).toHaveAttribute('inert')
+		await expect(collapsibleRoot.querySelector('svg')).toBeInTheDocument()
+
+		// The `false` item: a `<div>` title, forced open, no indicator.
+		const fixedTitle = fixedRoot.querySelector<HTMLElement>('[data-title]')!
+		await expect(fixedTitle.tagName).toBe('DIV')
+		await expect(fixedTitle).not.toHaveAttribute('aria-expanded')
+		await expect(fixedTitle).not.toHaveAttribute('aria-controls')
+		await expect(fixedRoot).toHaveAttribute('data-open')
+		await expect(fixedRoot.querySelector('[role="region"] > div')).not.toHaveAttribute('inert')
+		await expect(fixedRoot.querySelector('svg')).not.toBeInTheDocument()
+
+		await userEvent.click(fixedTitle)
+		await expect(args.onToggle).not.toHaveBeenCalled()
+		await expect(fixedRoot).toHaveAttribute('data-open')
+
+		await userEvent.click(button)
+		await expect(args.onToggle).toHaveBeenCalledTimes(1)
+		await expect(args.onToggle).toHaveBeenCalledWith(true)
+		await expect(button).toHaveAttribute('aria-expanded', 'true')
 	},
 }
 
@@ -352,6 +649,7 @@ export const AccessibleRelationships: Story = {
 }
 
 export const Clickable: Story = {
+	args: { onItemToggle: fn() },
 	play: async ({ args, canvasElement }) => {
 		const canvas = within(canvasElement),
 			title = canvas.getByRole('button')
@@ -394,11 +692,12 @@ export const KeyboardActivation: Story = {
 	},
 }
 
-// `buildAccordion` warns and returns `null` when no `Accordion.Title` is
-// found among the children, but that `null` only replaces the title/content
-// PAIR — `Accordion`'s own root `Box`/`AccordionProvider`/wrapper `div`/
-// divider `span` shell still renders regardless, since `buildAccordion(...)`
-// is called from deep inside that structure, not as the whole return value.
+// `filterChildren` (called with `total: 2`) warns in development when it
+// doesn't find both parts, and `buildAccordion` returns `null` when the
+// title slot is empty — but that `null` only replaces the title/content PAIR.
+// `Accordion`'s own root `Box`/`AccordionProvider`/wrapper `div`/divider
+// `span` shell still renders regardless, since `buildAccordion(...)` is
+// called from deep inside that structure, not as the whole return value.
 export const MissingTitle: Story = {
 	parameters: { layout: 'padded' },
 	render: args => (
@@ -441,11 +740,11 @@ export const MissingContent: Story = {
 	},
 }
 
-// `filterChildren(children, [Title.displayName, Content.displayName])`
-// destructures the FIRST matched child of either type as `title`, the
-// SECOND as `content`, and everything after as `extras` — a second
-// `Accordion.Title` here lands in `extras` (dev-warned, not rendered), while
-// the original title/content pair still renders normally.
+// `filterChildren(children, [titleName, contentName])` gives each name ONE
+// slot, and the FIRST matching child fills it — later duplicates are dropped
+// silently (no warning), while the first title/content pair renders
+// normally. Both a repeated `Accordion.Title` and a repeated
+// `Accordion.Content` are shown.
 export const ExtraChildren: Story = {
 	parameters: { layout: 'padded' },
 	render: args => (
@@ -453,6 +752,7 @@ export const ExtraChildren: Story = {
 			<Accordion.Title>Primary title</Accordion.Title>
 			<Accordion.Content>Primary content</Accordion.Content>
 			<Accordion.Title>Duplicate title (dropped)</Accordion.Title>
+			<Accordion.Content>Duplicate content (dropped)</Accordion.Content>
 		</Accordion>
 	),
 	play: async ({ canvasElement }) => {
@@ -460,14 +760,16 @@ export const ExtraChildren: Story = {
 
 		await expect(canvas.getAllByRole('button')).toHaveLength(1)
 		await expect(canvas.getByRole('button')).toHaveTextContent('Primary title')
+		await expect(canvas.getAllByRole('region', { hidden: true })).toHaveLength(1)
 		await expect(canvas.queryByText('Duplicate title (dropped)')).not.toBeInTheDocument()
+		await expect(canvas.queryByText('Duplicate content (dropped)')).not.toBeInTheDocument()
 	},
 }
 
-// A child that's neither `Accordion.Title` nor `Accordion.Content` is
-// excluded from `filterChildren`'s result entirely (not rendered at all),
-// while still counting toward the "children outside of ..." dev warning via
-// `Children.count(children) > matched`.
+// `filterChildren` only keeps elements whose component name is in the list
+// it's given: a child that's neither `Accordion.Title` nor
+// `Accordion.Content` is dropped from the result (never rendered), and so are
+// plain string and number children, which have no component name to match.
 export const ChildrenOutsideSubcomponents: Story = {
 	parameters: { layout: 'padded' },
 	render: args => (
@@ -485,37 +787,86 @@ export const ChildrenOutsideSubcomponents: Story = {
 	},
 }
 
-// `[title, content, ...extras] = filterChildren(...)` is POSITIONAL, not
-// type-aware: the first matched element (of EITHER type) always becomes
-// `title`, the second always becomes `content`. With `Accordion.Content`
-// listed before `Accordion.Title`, the "title" slot actually holds the real
-// content element and vice-versa — `buildAccordion` renders `<>{title}
-// {content}</>` regardless, so the content block visually renders ABOVE the
-// interactive title button.
+// Plain string and number children have no component name, so
+// `filterChildren` drops them even when they sit next to a valid pair — the
+// title/content pair still renders, the loose text and number do not.
+export const PlainTextChildren: Story = {
+	parameters: { layout: 'padded' },
+	render: args => (
+		<Accordion { ...args }>
+			Loose text (never rendered)
+			<Accordion.Title>Title</Accordion.Title>
+			{ 42 }
+			<Accordion.Content>Content</Accordion.Content>
+		</Accordion>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement)
+
+		await expect(canvas.getAllByRole('button')).toHaveLength(1)
+		await expect(canvas.getByRole('button')).toHaveTextContent('Title')
+		await expect(canvas.getByText('Content')).toBeInTheDocument()
+		await expect(canvas.queryByText('Loose text (never rendered)')).not.toBeInTheDocument()
+		await expect(canvas.queryByText('42')).not.toBeInTheDocument()
+	},
+}
+
+// `filterChildren` looks inside Fragments, so a title and content wrapped in
+// one (or split across two) are still found and fill their slots.
+export const FragmentChildren: Story = {
+	parameters: { layout: 'padded' },
+	render: args => (
+		<Accordion { ...args }>
+			<>
+				<Accordion.Title>Fragment title</Accordion.Title>
+			</>
+			<>
+				<Accordion.Content>Fragment content</Accordion.Content>
+			</>
+		</Accordion>
+	),
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement)
+
+		await expect(canvas.getByRole('button')).toHaveTextContent('Fragment title')
+		await expect(canvas.getByRole('region', { hidden: true })).toHaveTextContent('Fragment content')
+	},
+}
+
+// `filterChildren` called with a list of names fills one FIXED slot per name
+// (title first, content second), whatever order the children are written in.
+// So `Accordion.Content` listed before `Accordion.Title` still renders the
+// title button first and the content region second.
 export const ReversedOrder: Story = {
 	parameters: { layout: 'padded' },
 	render: args => (
 		<Accordion { ...args }>
-			<Accordion.Content>This renders first.</Accordion.Content>
-			<Accordion.Title>This renders second.</Accordion.Title>
+			<Accordion.Content>Written first, rendered second.</Accordion.Content>
+			<Accordion.Title>Written second, rendered first.</Accordion.Title>
 		</Accordion>
 	),
 	play: async ({ canvasElement }) => {
 		const root = canvasElement.querySelector('.inkq-accordion__wrapper') as HTMLElement,
 			children = root.querySelectorAll(':scope > *:not(.inkq-accordion__divider)')
 
-		await expect(children[0]).toHaveAttribute('role', 'region')
-		await expect(children[1].tagName).toBe('BUTTON')
+		await expect(children).toHaveLength(2)
+		await expect(children[0].tagName).toBe('BUTTON')
+		await expect(children[1]).toHaveAttribute('role', 'region')
 	},
 }
 
 // `unstyled` does NOT remove `Accordion`'s own semantic base classes
 // (`inkq-accordion`, `inkq-accordion__wrapper`) — per `getClassName.tsx`,
-// the base class is now ALWAYS emitted. It only suppresses the CSS-module
-// hashed class normally appended alongside it — asserted here against the
-// REAL compiled export map (`Accordion.module.scss`), not a literal hash or
-// an "any extra class" heuristic (which false-positives on the always-on
-// `getConfigClasses` modifier/global classes).
+// the base class is ALWAYS emitted. It does suppress the CSS-module hashed
+// class normally appended alongside it — asserted here against the REAL
+// compiled export map (`Accordion.module.scss`), not a literal hash or an
+// "any extra class" heuristic — and, via `getStyle.tsx`, every token the
+// root would compute: the shared `--accordion-*` custom properties, which
+// are present on the styled root (a standalone item computes them) and absent
+// on the unstyled one. `Accordion` destructures `unstyled` out rather than
+// forwarding it to its root `Box`, so the root's `data-open` attribute
+// survives; that is asserted too (`defaultOpen` is set so there is one to
+// keep).
 export const Unstyled: Story = {
 	parameters: {
 		layout: 'padded',
@@ -525,7 +876,7 @@ export const Unstyled: Story = {
 		<Row>
 			{ BOOLEAN_OPTIONS.map(unstyled => (
 				<Group key={ String(unstyled) } label={ String(unstyled) }>
-					{ accordionTemplate({ ...args, unstyled }) }
+					{ accordionTemplate({ ...args, defaultOpen: true, unstyled }) }
 				</Group>
 			)) }
 		</Row>
@@ -542,5 +893,11 @@ export const Unstyled: Story = {
 		const hashed = classes['inkq-accordion']!
 		expect(styledRoot.classList.contains(hashed)).toBe(true)
 		expect(unstyledRoot.classList.contains(hashed)).toBe(false)
+
+		await expect((styledRoot as HTMLElement).style.getPropertyValue('--accordion-title-size')).not.toBe('')
+		await expect((unstyledRoot as HTMLElement).style.getPropertyValue('--accordion-title-size')).toBe('')
+
+		await expect(styledRoot).toHaveAttribute('data-open')
+		await expect(unstyledRoot).toHaveAttribute('data-open')
 	},
 }

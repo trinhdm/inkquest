@@ -1,4 +1,19 @@
+'use client'
+
+import { Section } from '@/components/layout/Section'
 
 export default function Marketplace() {
-	return <main><h1>Marketplace</h1></main>
+	const pageID = 'marketplace'
+
+	return (
+		<>
+			<Section
+				id={ `${pageID}-hero` }
+				layout="hero"
+				title="Marketplace"
+			>
+				Marketplace
+			</Section>
+		</>
+	)
 }

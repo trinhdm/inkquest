@@ -1,17 +1,22 @@
-import { useMemo, type CSSProperties, type ReactNode } from 'react'
-import { useProps, extractOtherProps } from '@/hooks/useProps'
-import { useStyles } from '@/hooks/useStyles'
-import { filterChildren, withProvider } from '@/lib/component'
-import { polymorphic } from '@/lib/component'
+import { useMemo, type ReactNode } from 'react'
+import { defineTokens } from '@/lib/component/tokens'
+import { extractOthers } from '@/hooks/useProps'
+import { filterChildren } from '@/lib/component/children'
+import { polymorphic } from '@/lib/component/factory'
 import { revealItemFrom } from '@/hooks/animation'
+import { withProvider } from '@/lib/component/context'
 import { Box } from '@/components/polymorphic/Box'
 import { ButtonGroupProvider, type ButtonGroupContext } from './ButtonGroup.context'
 import type { Button } from '../Button'
-import type { ListProps } from '@/lib/component/factory/types'
+import type { JustifyContent, Orientation } from '@/types/shared'
+import type { PropsDefaultList } from '@/lib/component/factory/types'
 import classes from '../Button.module.scss'
 
-const NAME = 'Button.Group' as const
+const NAME = 'Button.Group' as const,
+	TAG = 'div' as const
+
 const DEFAULT_PROPS = {
+	as: TAG,
 	hasPriority: true,
 	orientation: 'horizontal',
 } as const
@@ -26,16 +31,30 @@ interface ButtonGroupProps
 	extends Pick<Button.Props, 'disabled' | 'loading' | 'size'> {
 	children?: ReactNode
 	fullWidth?: boolean
-	hasPriority?: boolean
-	justify?: CSSProperties['justifyContent']
-	orientation?: 'horizontal' | 'vertical'
+	hasPriority?: boolean | 'reverse'
+	justify?: JustifyContent
+	orientation?: Orientation
 	revealFrom?: number
 }
 
-type ButtonGroupSpecs = {
-	defaults: { props: ListProps<typeof DEFAULT_PROPS> }
-	isCompound: true
+interface ButtonGroupSpecs {
+	defaults: {
+		as: typeof TAG
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
+	}
+	isGroup: true
 	props: ButtonGroupProps
+	selectors: ButtonGroupSelectors
+	tokens: ButtonGroupTokens
+}
+
+type ButtonGroupSelectors =
+	| 'root'
+
+type ButtonGroupTokens = {
+	root:
+		| '--button-group-gap'
+		| '--button-group-justify'
 }
 
 const derivePriority = (index: number): Button.Priority => {
@@ -44,45 +63,70 @@ const derivePriority = (index: number): Button.Priority => {
 	return PRIORITY_ROLES[i]
 }
 
-export const ButtonGroup = polymorphic<ButtonGroupSpecs>(_props => {
-	const props = useProps(NAME, _props)
-	const styles = useStyles(NAME, { classes, props })
+const tokens = defineTokens<ButtonGroupSpecs>()(({ props, theme }) => {
+	const { justify, size } = props
+	let buttonGroupGap
+
+	if (size) {
+		const groupGap: Record<Button.Size, string> = {
+			sm: theme.space('group'),
+			md: theme.space('group'),
+			lg: theme.space('group', 'lg'),
+		}
+
+		buttonGroupGap = groupGap[size]
+	}
+
+	return {
+		root: {
+			'--button-group-gap': buttonGroupGap,
+			'--button-group-justify': justify ?? undefined,
+		},
+	}
+})
+
+export const ButtonGroup = polymorphic<ButtonGroupSpecs>((_props, { useProps, useStyles }) => {
+	const props = useProps(_props)
+	const styles = useStyles({ props, tokens })
 
 	const {
-		children,
-		disabled,
-		fullWidth,
-		hasPriority,
-		loading,
-		orientation,
-		revealFrom,
-		size,
+		children, disabled, fullWidth,
+		hasPriority, justify, loading,
+		orientation, revealFrom, size,
 		unstyled,
 		...rest
 	} = props
 
-	const { others } = extractOtherProps(rest)
+	const others = extractOthers(rest)
 
-	const module = {
-		[`${orientation}`]: !!orientation || null,
-		[`${size}`]: size,
+	const clsx = {
+		module: { [`${orientation}`]: !!orientation || null },
 	}
 
-	const items = filterChildren(children, 'Button'),
+	const items = filterChildren(children, 'Button', { name: NAME }),
 		total = items.length
 
 	const ctxValues = useMemo(
-		() => Array.from({ length: total }, (_, index): ButtonGroupContext => ({
-			disabled, loading, size, unstyled,
-			priority: hasPriority ? derivePriority(index) : undefined,
-			...revealItemFrom(index, revealFrom),
-		})),
-		[disabled, hasPriority, loading, revealFrom, size, total, unstyled]
+		() => Array.from({ length: total }, (_, index): ButtonGroupContext => {
+			const i = hasPriority === 'reverse'
+				? total - (index + 1)
+				: index
+
+			return {
+				disabled, loading, size, unstyled,
+				priority: !!hasPriority ? derivePriority(i) : undefined,
+				...revealItemFrom(index, revealFrom),
+			}
+		}),
+		[
+			disabled, hasPriority, loading,
+			revealFrom, size, total, unstyled,
+		]
 	)
 
 	return (
 		<Box
-			{ ...styles('root', { module }) }
+			{ ...styles('root', clsx) }
 			{ ...others }
 			as="div"
 			attributes={ {
@@ -94,10 +138,12 @@ export const ButtonGroup = polymorphic<ButtonGroupSpecs>(_props => {
 			{ withProvider(items, ButtonGroupProvider, ctxValues) }
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
-ButtonGroup.displayName = NAME
-ButtonGroup.setDefaults({ props: DEFAULT_PROPS })
+ButtonGroup.set({
+	defaultProps: DEFAULT_PROPS,
+	displayName: NAME,
+})
 
 export declare namespace ButtonGroup {
 	export type Context = ButtonGroupContext

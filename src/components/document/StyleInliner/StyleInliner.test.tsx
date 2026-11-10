@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react'
-import { StyleInliner } from './StyleInliner'
 import { getSchemeCSS } from './cache'
-import type { SiteTheme } from '@/lib/theme'
+import { StyleInliner } from './StyleInliner'
+import type { SiteTheme } from '@/lib/theme/types'
 
 jest.mock('./cache', () => ({ getSchemeCSS: jest.fn() }))
 

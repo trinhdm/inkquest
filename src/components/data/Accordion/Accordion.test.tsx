@@ -1,5 +1,6 @@
 import userEvent from '@testing-library/user-event'
 import { render, reset, screen } from '@/tests/test-utils'
+import { getDefaultProps } from '@/hooks/useProps'
 import { Accordion } from './Accordion'
 
 const buildAccordion = (props: Partial<Accordion.Props> = {}) => (
@@ -10,7 +11,8 @@ const buildAccordion = (props: Partial<Accordion.Props> = {}) => (
 )
 
 describe('Accordion', () => {
-	reset('Accordion', 'Accordion.Title', 'Accordion.Content')
+	// `Accordion.Title` renders a real `Icon` for its default "plus" indicator.
+	reset('Accordion', 'Accordion.Title', 'Accordion.Content', 'Icon')
 
 	it('renders the title as a button and the content as a labelled region', () => {
 		render(buildAccordion())
@@ -123,7 +125,7 @@ describe('Accordion', () => {
 	it('throws when Accordion.Title is rendered outside an Accordion', () => {
 		const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
 		expect(() => render(<Accordion.Title>Orphan</Accordion.Title>)).toThrow(
-			'<Accordion.Title /> must be rendered inside <Accordion>'
+			'<Accordion.Title /> must be a direct child of <Accordion>'
 		)
 		spy.mockRestore()
 	})
@@ -131,58 +133,219 @@ describe('Accordion', () => {
 	it('throws when Accordion.Content is rendered outside an Accordion', () => {
 		const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
 		expect(() => render(<Accordion.Content>Orphan</Accordion.Content>)).toThrow(
-			'<Accordion.Content /> must be rendered inside <Accordion>'
+			'<Accordion.Content /> must be a direct child of <Accordion>'
 		)
 		spy.mockRestore()
 	})
 
-	it('warns and renders nothing but the wrapper chrome when Title or Content is missing', () => {
-		const spy = jest.spyOn(console, 'warn').mockImplementation(() => {})
-		render(<Accordion>Just some text</Accordion>)
+	// Accordion filters its children by name with `filterChildren(..., { total: 2 })`
+	// and renders nothing unless it finds BOTH a Title and a Content.
+	describe('child validation', () => {
+		let warn: jest.SpyInstance
 
-		expect(spy).toHaveBeenCalled()
-		expect(screen.queryByRole('button')).not.toBeInTheDocument()
-		spy.mockRestore()
-	})
+		beforeEach(() => { warn = jest.spyOn(console, 'warn').mockImplementation(() => {}) })
+		afterEach(() => { warn.mockRestore() })
 
-	it('warns about a missing Accordion.Title when there are no matching children at all', () => {
-		const spy = jest.spyOn(console, 'warn').mockImplementation(() => {})
-		render(<Accordion>{ null }</Accordion>)
+		it('renders nothing but the wrapper chrome, and warns, when given only text', () => {
+			render(<Accordion>Just some text</Accordion>)
 
-		expect(spy).toHaveBeenCalledWith(expect.stringContaining('no Accordion.Title found'))
-		spy.mockRestore()
-	})
+			expect(screen.queryByRole('button')).not.toBeInTheDocument()
+			expect(screen.queryByText('Just some text')).not.toBeInTheDocument()
+			expect(warn).toHaveBeenCalledWith('Accordion: 0 children found; a Accordion needs exactly 2 children.')
+		})
 
-	it('warns about multiple Accordion.Title/Accordion.Content found when more than one of each is given', () => {
-		const spy = jest.spyOn(console, 'warn').mockImplementation(() => {})
-		render(
-			<Accordion>
-				<Accordion.Title>One</Accordion.Title>
-				<Accordion.Title>Two</Accordion.Title>
-				<Accordion.Content>Body</Accordion.Content>
-			</Accordion>
-		)
+		it('renders nothing and warns when there are no children at all', () => {
+			render(<Accordion>{ null }</Accordion>)
 
-		expect(spy).toHaveBeenCalledWith(expect.stringContaining('multiple Accordion.Title, Accordion.Content found'))
-		spy.mockRestore()
-	})
+			expect(screen.queryByRole('button')).not.toBeInTheDocument()
+			expect(warn).toHaveBeenCalledWith('Accordion: 0 children found; a Accordion needs exactly 2 children.')
+		})
 
-	it('warns about children outside of Title/Content when an unrelated element is also passed', () => {
-		const spy = jest.spyOn(console, 'warn').mockImplementation(() => {})
-		render(
-			<Accordion>
-				<Accordion.Title>Section title</Accordion.Title>
-				<Accordion.Content>Section body</Accordion.Content>
-				<div>Extra child</div>
-			</Accordion>
-		)
+		it('renders nothing, not even the title, and warns when Accordion.Content is missing', () => {
+			render(<Accordion><Accordion.Title>Lonely title</Accordion.Title></Accordion>)
 
-		expect(spy).toHaveBeenCalledWith(expect.stringContaining('children outside of Accordion.Title, Accordion.Content detected'))
-		spy.mockRestore()
+			expect(screen.queryByText('Lonely title')).not.toBeInTheDocument()
+			expect(warn).toHaveBeenCalledWith('Accordion: 1 children found; a Accordion needs exactly 2 children.')
+		})
+
+		it('renders nothing, not even the content, and warns when Accordion.Title is missing', () => {
+			render(<Accordion><Accordion.Content>Lonely body</Accordion.Content></Accordion>)
+
+			expect(screen.queryByText('Lonely body')).not.toBeInTheDocument()
+			expect(warn).toHaveBeenCalledWith('Accordion: 1 children found; a Accordion needs exactly 2 children.')
+		})
+
+		it('stays silent for a well-formed Title + Content pair', () => {
+			render(buildAccordion())
+
+			expect(screen.getByRole('button', { name: 'Section title' })).toBeInTheDocument()
+			expect(warn).not.toHaveBeenCalled()
+		})
+
+		it('finds Title and Content when they are wrapped in a Fragment', () => {
+			render(
+				<Accordion>
+					<>
+						<Accordion.Title>Section title</Accordion.Title>
+						<Accordion.Content>Section body</Accordion.Content>
+					</>
+				</Accordion>
+			)
+
+			expect(screen.getByRole('button', { name: 'Section title' })).toBeInTheDocument()
+			expect(warn).not.toHaveBeenCalled()
+		})
+
+		it('always renders the Title before the Content, whatever order they were passed in', () => {
+			render(
+				<Accordion>
+					<Accordion.Content>Section body</Accordion.Content>
+					<Accordion.Title>Section title</Accordion.Title>
+				</Accordion>
+			)
+
+			const title = screen.getByRole('button', { name: 'Section title' }),
+				content = screen.getByRole('region', { name: 'Section title' })
+			expect(title.compareDocumentPosition(content) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+		})
+
+		it('drops an unrelated sibling element without rendering it, and warns about it', () => {
+			render(
+				<Accordion>
+					<Accordion.Title>Section title</Accordion.Title>
+					<Accordion.Content>Section body</Accordion.Content>
+					<div>Extra child</div>
+				</Accordion>
+			)
+
+			expect(screen.queryByText('Extra child')).not.toBeInTheDocument()
+			expect(screen.getByRole('button', { name: 'Section title' })).toBeInTheDocument()
+			expect(warn).toHaveBeenCalledTimes(1)
+			expect(warn).toHaveBeenCalledWith('Accordion: ignoring unrelated <div>.')
+		})
+
+		// filterChildren's array mode keeps the first match per name and drops the
+		// rest, warning about each repeat
+		it('renders only the first Title, and warns about the second, when two are given', () => {
+			render(
+				<Accordion>
+					<Accordion.Title>One</Accordion.Title>
+					<Accordion.Title>Two</Accordion.Title>
+					<Accordion.Content>Body</Accordion.Content>
+				</Accordion>
+			)
+
+			expect(screen.getByRole('button', { name: 'One' })).toBeInTheDocument()
+			expect(screen.queryByText('Two')).not.toBeInTheDocument()
+			expect(warn).toHaveBeenCalledTimes(1)
+			expect(warn).toHaveBeenCalledWith('Accordion: ignoring repeated Accordion.Title; only the first is rendered.')
+		})
 	})
 
 	it('renders an unpadded step number (no leading zero) once the index reaches double digits', () => {
 		render(buildAccordion({ layout: 'steps', index: 9 }))
 		expect(screen.getByText('10')).toBeInTheDocument()
+	})
+
+	// The root carries the shared `--accordion-*` tokens inline. Values below come from
+	// `tokensBySize` in `./utils.ts`: step = { sm: 2, md: 1, lg: 0 }, so md => column 8, gap 6, padding 5,
+	// indicator 20, title h(order + 1).
+	describe('shared inline tokens', () => {
+		const TOKENS = [
+			'--accordion-column-width',
+			'--accordion-title-gap',
+			'--accordion-indicator-size',
+			'--accordion-padding',
+			'--accordion-title-size',
+		] as const
+
+		// The root has no role or label, so find it by the id it builds from the
+		// `id` prop (`acc-<id>`). A missing root fails here, not as a null deref.
+		const getRoot = (id: string) => {
+			const root = document.getElementById(`acc-${ id }`)
+			expect(root).toBeInTheDocument()
+			return root as HTMLElement
+		}
+
+		it('puts the registered-default tokens inline on a standalone root', () => {
+			const defaults = getDefaultProps<Accordion.Props>('Accordion')
+			expect(defaults).toMatchObject({ order: 3, size: 'md' })
+
+			render(buildAccordion({ id: 'one' }))
+			const root = getRoot('one')
+
+			expect(root.style.getPropertyValue('--accordion-column-width')).toBe('var(--space-8)')
+			expect(root.style.getPropertyValue('--accordion-title-gap')).toBe('var(--space-6)')
+			expect(root.style.getPropertyValue('--accordion-indicator-size')).toBe('var(--font-size-20)')
+			expect(root.style.getPropertyValue('--accordion-padding')).toBe('var(--space-5)')
+			expect(root.style.getPropertyValue('--accordion-title-size')).toBe('var(--inkq-font-size-h4)')
+		})
+
+		it('omits the step token unless layout="steps"', () => {
+			render(buildAccordion({ id: 'one' }))
+			const root = getRoot('one')
+
+			expect(root.style.getPropertyValue('--accordion-title-gap')).not.toBe('')
+			expect(root.style.getPropertyValue('--accordion-step-size')).toBe('')
+		})
+
+		it('emits the step token when layout="steps"', () => {
+			document.documentElement.style.fontSize = '16px'
+			try {
+				render(buildAccordion({ id: 'one', layout: 'steps' }))
+				const step = getRoot('one').style.getPropertyValue('--accordion-step-size')
+
+				expect(step).toContain('var(--accordion-title-size)')
+				expect(step).not.toContain('NaN')
+			} finally {
+				document.documentElement.style.fontSize = ''
+			}
+		})
+
+		it('changes the inline values when size changes', () => {
+			render(buildAccordion({ id: 'small', size: 'sm' }))
+			render(buildAccordion({ id: 'large', size: 'lg' }))
+			const small = getRoot('small'), large = getRoot('large')
+
+			expect(small.style.getPropertyValue('--accordion-title-gap')).toBe('var(--space-3)')
+			expect(small.style.getPropertyValue('--accordion-padding')).toBe('var(--space-4)')
+			expect(small.style.getPropertyValue('--accordion-indicator-size')).toBe('var(--font-size-16)')
+			expect(small.style.getPropertyValue('--accordion-title-size')).toBe('var(--inkq-font-size-h5)')
+
+			expect(large.style.getPropertyValue('--accordion-title-gap')).toBe('var(--space-9)')
+			expect(large.style.getPropertyValue('--accordion-padding')).toBe('var(--space-6)')
+			expect(large.style.getPropertyValue('--accordion-indicator-size')).toBe('var(--font-size-24)')
+			expect(large.style.getPropertyValue('--accordion-title-size')).toBe('var(--inkq-font-size-h3)')
+		})
+
+		it('changes only the title size when order changes', () => {
+			render(buildAccordion({ id: 'base' }))
+			render(buildAccordion({ id: 'other', order: 1 }))
+			const a = getRoot('base'), b = getRoot('other')
+
+			expect(a.style.getPropertyValue('--accordion-title-size')).toBe('var(--inkq-font-size-h4)')
+			expect(b.style.getPropertyValue('--accordion-title-size')).toBe('var(--inkq-font-size-h2)')
+			TOKENS.filter(t => t !== '--accordion-title-size').forEach(token => {
+				expect(b.style.getPropertyValue(token)).toBe(a.style.getPropertyValue(token))
+			})
+		})
+
+		it('drops every inline token when unstyled, while a styled sibling keeps them', () => {
+			render(
+				<>
+					{ buildAccordion({ id: 'styled' }) }
+					<Accordion id="bare" unstyled>
+						<Accordion.Title>Bare title</Accordion.Title>
+						<Accordion.Content>Bare body</Accordion.Content>
+					</Accordion>
+				</>
+			)
+			const styled = getRoot('styled'), bare = getRoot('bare')
+
+			expect(styled.style.getPropertyValue('--accordion-title-gap')).not.toBe('')
+			TOKENS.forEach(token => {
+				expect(bare.style.getPropertyValue(token)).toBe('')
+			})
+		})
 	})
 })

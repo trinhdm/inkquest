@@ -1,3 +1,4 @@
+import { getDefaultProps } from '@/hooks/useProps'
 import { render, reset, screen } from '@/tests/test-utils'
 import { Statistic } from '../Statistic'
 
@@ -22,10 +23,72 @@ jest.mock('framer-motion', () => {
 import { animate } from 'framer-motion'
 
 describe('Statistic.Group', () => {
-	reset('Statistic.Group', 'Statistic')
+	// `StatisticGroup` renders a real `Group` internally (childName="Statistic"),
+	// so its registry needs resetting too, alongside the two names this suite
+	// authors directly.
+	reset('Statistic.Group', 'Statistic', 'Group')
 
 	afterEach(() => {
 		jest.mocked(animate).mockClear()
+	})
+
+	describe('defaults', () => {
+		it('registers its animation, layout, order and size defaults', () => {
+			expect(getDefaultProps<Statistic.Group.Props & { as: 'div' }>('Statistic.Group')).toEqual({
+				animated: true,
+				as: 'div',
+				columns: 4,
+				divider: true,
+				duration: 3000,
+				once: false,
+				order: 'descend',
+				size: 'lg',
+				stagger: 200,
+			})
+		})
+
+		it('lays the group out in 4 columns with dividers', () => {
+			render(
+				<Statistic.Group>
+					<Statistic caption="Users" value="10" />
+				</Statistic.Group>
+			)
+
+			const group = screen.getByRole('group')
+			expect(group.style.getPropertyValue('--group-item-count')).toBe('4')
+			expect(group).toHaveAttribute('data-divide')
+		})
+
+		it('lets the caller change the column count and turn the dividers off', () => {
+			render(
+				<Statistic.Group columns={ 2 } divider={ false }>
+					<Statistic caption="Users" value="10" />
+				</Statistic.Group>
+			)
+
+			const group = screen.getByRole('group')
+			expect(group.style.getPropertyValue('--group-item-count')).toBe('2')
+			expect(group).not.toHaveAttribute('data-divide')
+		})
+
+		it('hands the large size to each Statistic, unless the group asks for another', () => {
+			const { container } = render(
+				<>
+					<Statistic.Group>
+						<Statistic caption="Users" value="10" />
+					</Statistic.Group>
+					<Statistic.Group size="sm">
+						<Statistic caption="Orders" value="20" />
+					</Statistic.Group>
+				</>
+			)
+
+			const statistics = container.querySelectorAll('.statistic')
+			expect(statistics).toHaveLength(2)
+			expect(statistics[0]).toHaveClass('statistic--lg')
+			expect(statistics[1]).toHaveClass('statistic--sm')
+			expect(statistics[1]).not.toHaveClass('statistic--lg')
+		})
 	})
 
 	it('renders as an accessible group and renders each Statistic child', () => {
@@ -41,18 +104,28 @@ describe('Statistic.Group', () => {
 		expect(screen.getByText('Orders')).toBeInTheDocument()
 	})
 
-	it('drops children that are not Statistic instances', () => {
-		render(
-			<Statistic.Group>
-				<Statistic caption="Users" value="10" />
-				<div>not a statistic</div>
-			</Statistic.Group>
-		)
+	// Statistic.Group filters through the shared Group, so the warning names
+	// `Group`, not `Statistic.Group`
+	it('drops children that are not Statistic instances, and warns about them', () => {
+		const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
 
-		expect(screen.queryByText('not a statistic')).not.toBeInTheDocument()
+		try {
+			render(
+				<Statistic.Group>
+					<Statistic caption="Users" value="10" />
+					<div>not a statistic</div>
+				</Statistic.Group>
+			)
+
+			expect(screen.getByText('Users')).toBeInTheDocument()
+			expect(screen.queryByText('not a statistic')).not.toBeInTheDocument()
+			expect(warn).toHaveBeenCalledWith('Group: ignoring unrelated <div>.')
+		} finally {
+			warn.mockRestore()
+		}
 	})
 
-	// group defaults (from `StatisticGroup.setDefaults`) leave `withinView`
+	// group defaults (from `StatisticGroup.set({ defaultProps })`) leave `withinView`
 	// as `false` (the stubbed IntersectionObserver never fires), so children
 	// stay pinned at their un-animated start value and `animate` is never called
 	it('does not animate its children while the group itself is not in view', () => {

@@ -1,42 +1,44 @@
 import { keyHasValue } from '@/utils/helpers'
 import type { CSSProperties } from 'react'
+import type { RootCtxValue } from '@/lib/component/context'
 import type { SharedConfig } from './useStyles'
+import type { SpecsContract } from '@/lib/component/factory/types'
 
-type InheritConfig<P extends object, V extends object> =
-	Omit<SharedConfig<P, V>, 'props'>
-	& { props: P & Record<'style', CSSProperties> }
+type InheritConfig<S extends SpecsContract> =
+	& Omit<SharedConfig<S>, 'props'>
+	& { props: S['props'] & Record<'style', CSSProperties> }
 
-const canInherit = <P extends object, V extends object>(
-	args: SharedConfig<P, V>
-): args is InheritConfig<P, V> =>
-	'style' in args.props && keyHasValue(args.props, 'style')
+const canInherit = <S extends SpecsContract>(
+	args: SharedConfig<S>
+): args is InheritConfig<S> =>
+	keyHasValue(args.props, 'style')
 
-const inheritStyles = <P extends object, V extends object>({
+const inheritStyles = <S extends SpecsContract>({
 	check,
 	props,
-}: InheritConfig<P, V>): CSSProperties => (
-	check.isRoot && keyHasValue(props, 'style')
-		? props.style
-		: {}
-)
+}: InheritConfig<S>): CSSProperties =>
+	check.isRoot && keyHasValue(props, 'style') ? props.style : {}
 
-export const getStyle = <P extends object, V extends object>(
-	args: SharedConfig<P, V>
+export const getStyle = <S extends SpecsContract>(
+	args: SharedConfig<S>
 ): CSSProperties => {
-	const inherited = canInherit(args)
-		? inheritStyles(args)
-		: {}
-
 	const {
-		props,
-		selector,
-		theme,
-		tokens,
+		check, context,
+		props, selector,
+		theme, tokens,
 	} = args
 
+	const inherited = canInherit(args) ? inheritStyles(args) : {}
+
+	if (check.isUnstyled)
+		return inherited
+
 	if (typeof tokens === 'function') {
-		const stylesCtx = {}
-		const variables = tokens?.(theme, props, stylesCtx)
+		const variables = tokens({
+			context: context as RootCtxValue<S['context']>,
+			props,
+			theme,
+		})
 
 		if (keyHasValue(variables, selector)) {
 			const styles = variables[selector]

@@ -1,13 +1,13 @@
 import { useCountUp, type MaybeAnimationProps } from '@/hooks/animation'
-import { useProps, extractOtherProps } from '@/hooks/useProps'
-import { useStatisticGroupProps } from './StatisticGroup'
-import { useStyles } from '@/hooks/useStyles'
-import { polymorphic } from '@/lib/component'
-import { setThemeCSS } from '@/lib/theme'
+import { useStatisticGroup } from './StatisticGroup'
+import { extractOthers } from '@/hooks/useProps'
+import { getSharedTokens, type StatisticTokens } from './utils'
+import { polymorphic } from '@/lib/component/factory'
 import { Box } from '@/components/polymorphic/Box'
 import { StatisticGroup } from './StatisticGroup'
 import type { ReactNode } from 'react'
-import type { ListProps } from '@/lib/component/factory/types'
+import type { PropsDefaultList } from '@/lib/component/factory/types'
+import type { Size } from '@/types/shared'
 import classes from './Statistic.module.scss'
 
 const NAME = 'Statistic' as const,
@@ -23,12 +23,16 @@ const DEFAULT_PROPS = {
 	stagger: 0,
 } as const
 
+const SUBCOMPONENTS = {
+	Group: StatisticGroup,
+} as const
+
 interface BaseStatisticProps {
 	caption?: string
 	highlight?: boolean
 	icon?: ReactNode
-	order?: StatisticGroup.Props['order']
-	size?: StatisticGroup.Props['size']
+	order?: 'ascend' | 'descend'
+	size?: Exclude<Size, 'md'>
 	value: number | string
 }
 
@@ -37,55 +41,39 @@ type StatisticProps =
 	& MaybeAnimationProps
 
 interface StatisticSpecs {
+	context: StatisticGroup.Context
 	defaults: {
 		as: typeof TAG
-		props: ListProps<typeof DEFAULT_PROPS>
+		props: PropsDefaultList<typeof DEFAULT_PROPS>
 	}
 	props: StatisticProps
-	subcomponents: {
-		Group: typeof StatisticGroup
-	}
+	selectors: StatisticSelectors
+	subcomponents: typeof SUBCOMPONENTS
+	tokens: StatisticTokens
 }
 
-const tokens = setThemeCSS<StatisticSpecs>((theme, props) => {
-	const { order, size } = props
-	const isDescend = order === 'descend'
+type StatisticSelectors =
+	| 'root' | 'inner'
+	| 'value' | 'caption'
 
-	const align = isDescend ? 'start' : 'end',
-		direction = isDescend ? '' : '-reverse',
-		titleTag = size === 'lg' ? 'h3' : 'h4'
+const tokens = getSharedTokens('root')
 
-	const captionFont = size === 'lg'
-		? theme.presets.text.caption('item')
-		: theme.presets.text.section('eyebrow')
+export const Statistic = polymorphic<StatisticSpecs>((_props, { useProps, useStyles }) => {
+	const { useStatisticGroupCtx, useStatisticGroupProps } = useStatisticGroup()
 
-	return {
-		root: {
-			'--statistic-align': `flex-${align}`,
-			'--statistic-direction': `column${direction}`,
-			'--statistic-font-caption': !!size ? captionFont : undefined,
-			'--statistic-font-value': !!size ? theme.presets.text[titleTag]() : undefined,
-		},
-	}
-})
-
-export const Statistic = polymorphic<StatisticSpecs>(_props => {
-	const props = useProps(NAME, useStatisticGroupProps(_props))
-	const styles = useStyles(NAME, { classes, props, tokens })
+	const context = useStatisticGroupCtx()
+	const props = useProps(useStatisticGroupProps(_props))
+	const styles = useStyles({ context, props, tokens })
 
 	const {
-		animated,
-		caption,
-		duration,
-		highlight,
-		icon,
-		index,
-		size,
-		stagger,
-		value,
-		withinView,
+		animated, as, caption,
+		duration, highlight, icon,
+		index, order, size,
+		stagger, value, withinView,
 		...rest
 	} = props
+
+	const others = extractOthers(rest)
 
 	const { display, ref } = useCountUp({
 		delay: index * stagger,
@@ -95,9 +83,8 @@ export const Statistic = polymorphic<StatisticSpecs>(_props => {
 		withinView,
 	})
 
-	const { as, others } = extractOtherProps(rest)
 	const clsx = {
-		global: { highlight, item: true },
+		global: { accent: !!highlight, item: true },
 		module: { [`${size}`]: !!size || null },
 	}
 
@@ -116,17 +103,20 @@ export const Statistic = polymorphic<StatisticSpecs>(_props => {
 			<span { ...styles('caption', true) }>{ caption }</span>
 		</Box>
 	)
-}, classes)
+}, { name: NAME, classes })
 
-Statistic.displayName = NAME
-Statistic.Group = StatisticGroup
-Statistic.setDefaults({ props: DEFAULT_PROPS })
+Statistic.set({
+	defaultProps: DEFAULT_PROPS,
+	displayName: NAME,
+	subcomponents: SUBCOMPONENTS,
+})
 
 export declare namespace Statistic {
 	export type Props = StatisticProps
 	export type Specs = StatisticSpecs
 
 	export namespace Group {
+		export type Context = StatisticGroup.Context
 		export type Props = StatisticGroup.Props
 		export type Specs = StatisticGroup.Specs
 	}

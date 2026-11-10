@@ -1,12 +1,9 @@
+@use '@/styles/utils' as global;
+
 .inkq-button {
 	$name: &;
 
-	--button-background: var(--variant-background);
-	--button-border: var(--variant-border);
-	--button-color: var(--variant-color);
-	--button-height: 2.25rem;
-	--button-icon-size: calc((var(--button-height) * .5) - .125rem);
-	--button-padding: var(--inkq-pad-chip);
+	--button-background: var(--variant-background, transparent);
 
 	background-color: var(--button-background);
 	border-radius: var(--inkq-border-radius-chip);
@@ -14,8 +11,8 @@
 	color: var(--button-color, inherit);
 	display: inline-block;
 	font: var(--inkq-text-label);
-	letter-spacing: var(--inkq-font-tracking-stat);
-	max-height: var(--button-height, 'none');
+	font-size: var(--button-font-size, var(--inkq-font-size-label));
+	letter-spacing: var(--button-tracking, var(--inkq-font-tracking-display));
 	overflow: hidden;
 	position: relative;
 	text-decoration: none;
@@ -24,29 +21,31 @@
 	vertical-align: middle;
 
 	&__inner {
-		--icon-size: var(--button-icon-size);
+		--icon-size: var(--button-icon-size, var(--inkq-icon-md));
 
 		align-items: center;
 		display: flex;
-		gap: var(--inkq-space-chip);
+		gap: var(--button-gap, var(--inkq-space-chip));
 		justify-content: center;
-		padding: var(--button-padding);
+		padding: var(--button-padding, var(--inkq-pad-chip));
 		position: relative;
+		transition: opacity var(--duration-default) var(--easing);
+		user-select: none;
 	}
 
+	&__indicator,
 	&__section {
 		align-items: center;
 		display: inline-flex;
 	}
 
-	&__icon {
-		display: inline-block;
-		font-size: var(--icon-size);
-		height: 1em;
+	&__indicator {
+		--icon-size: var(--button-indicator-size, var(--inkq-icon-md));
+
+		height: var(--icon-size);
 		inset: auto;
-		opacity: 0;
 		position: absolute;
-		width: 1em;
+		width: var(--icon-size);
 		z-index: 5;
 	}
 
@@ -59,97 +58,81 @@
 		opacity: 0;
 		pointer-events: none;
 		position: absolute;
-		transition: var(--inkq-motion-colors), var(--inkq-motion-opacity);
+		transition: opacity var(--duration-fast) var(--easing);
+		will-change: opacity;
 		width: 100%;
 		z-index: 1;
 	}
 
-	&:not(
-		:disabled,
-		[data-disabled],
-		[data-loading]
-	):hover {
-		background-color: var(--button-background-hover);
-		border-color: var(--button-border-hover);
+	&:not(:disabled, [data-disabled], [data-loading]):hover {
+		background-color: var(--button-background-hover, var(--button-background));
+		border-color: var(--button-border-hover, var(--button-border));
+		color: var(--button-color-hover, var(--button-color));
 		cursor: pointer;
 	}
 
+	&:not([data-block]) {
+		width: fit-content;
+	}
+
+	&:where([data-animate]) {
+		svg {
+			transition: transform var(--duration-default) var(--easing);
+			will-change: transform;
+		}
+
+		&:is(:focus, :hover) svg {
+			transform: translateX(var(--button-icon-translate));
+		}
+	}
+
 	&:where([data-disabled]) {
-		background-color: rgb(from var(--button-background) r g b / var(--inkq-opacity-disabled));
+		background-color: global.disable(var(--button-background));
 	}
 
 	&:where([data-loading]) {
-		cursor: progress;
-		user-select: none;
+		align-items: center;
+		cursor: auto;
+		display: inline-flex;
+		justify-content: center;
+
+		#{$name}__inner {
+			opacity: 0;
+			pointer-events: none;
+			will-change: opacity;
+		}
 
 		&::after {
 			opacity: 1;
 		}
-
-		#{$name} {
-			&__label,
-			&__section {
-				opacity: 0;
-			}
-
-			&__icon {
-				animation:
-					fadeIn var(--duration-default) ease-out var(--duration-instant) forwards,
-					spin 2s linear calc(var(--duration-gradual) - var(--duration-default)) infinite;
-			}
-
-		}
 	}
 
-	&--md {
-		--button-height: 2.875rem;
-		--button-padding: var(--space-3) var(--space-5);
-
-		font-size: var(--inkq-font-size-body);
+	&:where([data-variant="ghost"]) svg {
+		opacity: .5;
 	}
 
-	&--lg {
-		--button-height: 3.375rem;
-		--button-padding: var(--inkq-pad-block);
-
-		font-size: var(--inkq-font-size-body);
+	&:where([data-variant="text"]) #{$name}__inner {
+		padding-inline: 0;
 	}
 }
 
 .inkq-button-group {
-	--button-gap: var(--inkq-space-group);
-
 	display: flex;
-	gap: var(--button-gap);
-	max-width: fit-content;
+	gap: var(--button-group-gap, var(--inkq-space-group));
+
+	&:not([data-block]) {
+		justify-content: var(--button-group-justify, start);
+		max-width: fit-content;
+	}
 
 	&:where([data-block]) {
 		flex: 1 1 100%;
-		justify-content: space-between;
+		justify-content: var(--button-group-justify, space-between);
 		max-width: none;
 		width: 100%;
-	}
-
-	&--md {
-		--button-gap: var(--inkq-space-group);
-	}
-
-	&--lg {
-		--button-gap: var(--inkq-space-group-lg);
 	}
 
 	&--vertical {
 		flex-direction: column;
 	}
-}
-
-@keyframes fadeIn {
-	from { opacity: 0; }
-	to { opacity: 1; }
-}
-
-
-@keyframes spin {
-	0% { transform: rotate(0deg); }
-	100% { transform: rotate(360deg); }
 }

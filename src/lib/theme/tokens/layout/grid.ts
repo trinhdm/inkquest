@@ -1,13 +1,10 @@
 import { base } from '../../reference'
-import type { TokenVariableShape } from '../../types'
+import type { SizeRangeX } from '@/types/shared'
+import type { TokenSizeShape, TokenVariableShape } from '../../types'
 
-export interface BreakpointTokens {
+export interface BreakpointTokens
+	extends TokenSizeShape<SizeRangeX> {
 	min: string
-	xs: string
-	sm: string
-	md: string
-	lg: string
-	xl: string
 	max: string
 }
 
@@ -22,12 +19,14 @@ export const getBreakpointTokens = (): BreakpointTokens => ({
 })
 
 export interface ContainerTokens {
-	block: string
-	page: string
+	block: TokenVariableShape
+	form: TokenVariableShape
+	page: TokenVariableShape
 }
 
 export const getContainerTokens = (): ContainerTokens => ({
 	block: base.screen('600'),
+	form: base.screen('480'),
 	page: base.screen('1280'),
 })
 
@@ -41,7 +40,17 @@ interface LayoutItemTokens {
 }
 
 export interface GridTokens {
-	gutter: string
+	gutter: {
+		base: TokenVariableShape
+		content: TokenVariableShape
+		item: TokenVariableShape
+		list: TokenVariableShape
+	}
+
+	indent: {
+		list: TokenVariableShape
+	}
+
 	hero: LayoutItemTokens
 	section: LayoutItemTokens
 
@@ -61,34 +70,80 @@ export interface GridTokens {
 
 	navbar: { size: string }
 	subnav: { size: string }
+
+	field: {
+		gap: TokenVariableShape
+		padding: TokenSizeShape
+	}
+
+	accessible: {
+		control: TokenVariableShape
+		icon: TokenVariableShape
+	}
+
+	// paragraph: {
+	// 	gap: TokenVariableShape
+	// }
 }
 
-export const getGridTokens = (): GridTokens => ({
-	gutter: base.space('10'),
+export const getGridTokens = (): GridTokens => {
+	const start = 5,
+		step = 2,
+		stack = Array.from({ length: 4 }, (_, i) => (start + (i * step)))
 
-	hero: {
-		padding: base.space('16'),
-	},
-
-	section: {
-		padding: base.space('15'),
-	},
-
-	stack: {
-		padding: base.space('15'),
-
-		gap: {
-			kicker: base.space('5'),
-			head: base.space('11'),
-			lede: base.space('7'),
-			cta: base.space('9'),
+	return {
+		gutter: {
+			base: base.space('10'),
+			content: base.space('4'),
+			item: base.space('3'),
+			list: base.space('2'),
 		},
-	},
 
-	footer: {
-		padding: `${base.space('12')} ${base.space('10')}`,
-	},
+		indent: {
+			list: base.space('5'),
+		},
 
-	navbar: { size: base.space('13') },
-	subnav: { size: base.space('10') },
-})
+		stack: {
+			gap: {
+				kicker: base.space(`${stack[0]}`),
+				head: base.space(`${stack[3]}`),
+				lede: base.space(`${stack[1]}`),
+				cta: base.space(`${stack[2]}`),
+			},
+			padding: base.space('15'),
+		},
+
+		hero: {
+			padding: base.space('16'),
+		},
+
+		section: {
+			padding: base.space('15'),
+		},
+
+		footer: {
+			padding: `${base.space('12')} ${base.space('10')}`,
+		},
+
+		navbar: { size: base.space('13') },
+		subnav: { size: base.space('10') },
+
+		// paragraph: {
+		// 	gap: contentGutter,
+		// },
+
+		field: {
+			gap: base.space('3'),
+			padding: {
+				sm: base.space('2'),
+				md: base.space('3'),
+				lg: base.space('4'),
+			},
+		},
+
+		accessible: {
+			control: base.space('11'),
+			icon: base.space('6'),
+		},
+	}
+}

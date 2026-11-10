@@ -19,16 +19,23 @@ describe('Timeline', () => {
 		expect(screen.getByText('Second entry')).toBeInTheDocument()
 	})
 
-	it('drops children that are not Timeline.Item instances', () => {
-		render(
-			<Timeline>
-				<Timeline.Item content="Kept entry" title="Kept" />
-				<div>Not a timeline item</div>
-			</Timeline>
-		)
+	it('drops children that are not Timeline.Item instances, and warns about them', () => {
+		const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
 
-		expect(screen.getByText('Kept')).toBeInTheDocument()
-		expect(screen.queryByText('Not a timeline item')).not.toBeInTheDocument()
+		try {
+			render(
+				<Timeline>
+					<Timeline.Item content="Kept entry" title="Kept" />
+					<div>Not a timeline item</div>
+				</Timeline>
+			)
+
+			expect(screen.getByText('Kept')).toBeInTheDocument()
+			expect(screen.queryByText('Not a timeline item')).not.toBeInTheDocument()
+			expect(warn).toHaveBeenCalledWith('Timeline: ignoring unrelated <div>.')
+		} finally {
+			warn.mockRestore()
+		}
 	})
 
 	it('renders as a div by default per its registered defaults', () => {

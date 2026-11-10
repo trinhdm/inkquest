@@ -14,10 +14,11 @@ export const getSecondaryTokens = (config: ThemeConfig): SecondaryTokens => {
 
 	const modPercents = {
 		tint: 2.5,
-		shade: 18,
+		shade: 20,
 		bright: 5,
-		dim: 28,
-		muted: 12.5,
+		dim: 30,
+		dull: 15,
+		muted: 45,
 	}
 
 	const { colors, modColor } = byScheme(config, secondaryColors),

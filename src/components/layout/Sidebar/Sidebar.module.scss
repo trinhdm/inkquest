@@ -1,0 +1,126 @@
+@use '@/styles/utils' as global;
+
+.inkq-sidebar {
+	$name: &;
+
+	--sidebar-duration: var(--duration-slow);
+	--sidebar-transition: var(--sidebar-duration) var(--easing);
+	--sidebar-radius: var(--inkq-border-radius-sm);
+
+	&__wrapper {
+		position: relative;
+
+		&:not(:last-child) {
+			padding-block-end: var(--inkq-gutter-item);
+		}
+	}
+
+	&__inner {
+		display: flex;
+		flex-direction: column;
+		gap: 0;
+		position: relative;
+	}
+
+	&__label {
+		@include global.eyebrow;
+
+		font-weight: var(--inkq-font-weight-semibold);
+		margin-block-end: var(--inkq-gutter-content);
+	}
+
+	&__item {
+		align-items: center;
+		cursor: pointer;
+		display: flex;
+		justify-content: space-between;
+		position: relative;
+		text-wrap: balance;
+		z-index: 1;
+	}
+
+	&__button {
+		position: relative;
+		text-align: left;
+		width: 100%;
+	}
+
+	&--nav #{$name} {
+		&__inner {
+			border-left: 1px solid var(--inkq-border);
+		}
+
+		&__highlight,
+		&__item {
+			border-left: 2px solid;
+			border-radius:
+				0 var(--sidebar-radius) var(--sidebar-radius) 0 /
+				0 calc(var(--sidebar-radius) / var(--sidebar-highlight-scale, 1))
+				calc(var(--sidebar-radius) / var(--sidebar-highlight-scale, 1)) 0;
+		}
+
+		&__highlight {
+			background-color: var(--inkq-background-card-hover);
+			border-left-color: var(--inkq-color-action);
+			height: 3rem;
+			inset: 0;
+			inset-block-end: auto;
+			opacity: 1;
+			pointer-events: none;
+			position: absolute;
+			transform:
+				translateY(var(--sidebar-highlight-position))
+				scaleY(var(--sidebar-highlight-scale, 1));
+			transform-origin: top;
+			transition: transform var(--sidebar-transition);
+			user-select: none;
+			z-index: 0;
+		}
+
+		&__item {
+			border-left-color: transparent;
+			gap: var(--inkq-gutter-item);
+			min-height: 0;
+
+			&--active #{$name}__button {
+				color: transparent;
+
+				&,
+				&::after {
+					transition-delay: calc(var(--sidebar-duration) - var(--sidebar-fade));
+				}
+
+				&::after {
+					opacity: 1;
+				}
+			}
+		}
+
+		&__button {
+			--sidebar-fade: .025s;
+
+			display: grid;
+			padding: var(--inkq-gutter-item) var(--inkq-gutter-item);
+			transition: color var(--sidebar-fade) var(--easing);
+
+			& > *,
+			&::after {
+				grid-area: 1 / 1;
+			}
+
+			&::after {
+				color: var(--inkq-color-text);
+				content: attr(data-keep) / '';
+				font-weight: var(--inkq-font-weight-bold);
+				opacity: 0;
+				transition: opacity var(--sidebar-fade) var(--easing);
+				z-index: 5;
+			}
+		}
+	}
+
+	&--sticky {
+		position: sticky;
+		top: var(--inkq-stack-gap-head);
+	}
+}

@@ -3,7 +3,6 @@ import { getBackgroundTokens } from './background'
 import { getBorderTokens } from './border'
 import { getColorTokens, getOpacityTokens } from './colors'
 import { getLayoutTokens } from './layout'
-import { getGridTokens } from './layout/grid'
 import { getMotionTokens } from './motion'
 import { getTypographyTokens } from './typography'
 
@@ -21,5 +20,5 @@ export const Tokens = {
 	space: getLayoutTokens.space,
 	typography: getTypographyTokens,
 
-	layout: getGridTokens,
+	layout: getLayoutTokens.grid,
 }

@@ -66,7 +66,7 @@ export const FONT_FAMILY_SCALE = {
 	sans: `'Archivo', -apple-system, BlinkMacSystemFont, sans-serif`,
 } as const
 
-export const FONT_SIZE_SCALE = [ 10, 12, 14, 16, 20, 24, 32, 40, 48, 60, 96 ] as const
+export const FONT_SIZE_SCALE = [ 10, 12, 14, 16, 20, 24, 32, 40, 48, 60, 72, 96 ] as const
 
 export const FONT_WEIGHT_SCALE = [ 400, 600, 700 ] as const
 
@@ -110,11 +110,7 @@ export const SCREEN_SCALE = [
 	1440, 1920,
 ] as const
 
-export const CONTAINER_SIZE_SCALE = {
-	sm: 1040,
-	md: 1136,
-	lg: 1200,
-}
+export const ICON_SCALE = [ 14, 16, 18 ] as const
 
 export const OPACITY_SCALE = [ 0, .2, .35, .5, .65, .8, 1 ] as const
 

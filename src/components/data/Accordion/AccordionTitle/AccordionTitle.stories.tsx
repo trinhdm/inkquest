@@ -1,7 +1,11 @@
 import { Component } from 'react'
 import { expect, userEvent, within } from 'storybook/test'
+import { getDefaultProps } from '@/hooks/useProps'
 import { Accordion } from '../Accordion'
-import { BOOLEAN_OPTIONS, INDICATOR_OPTIONS } from '../options.story'
+import {
+	BOOLEAN_OPTIONS, INDICATOR_OPTIONS, INDICATOR_POSITION_OPTIONS,
+	LAYOUT_OPTIONS, ORDER_OPTIONS,
+} from '../options.story'
 import type { ReactNode } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import classes from '../Accordion.module.scss'
@@ -89,10 +93,11 @@ const meta: Meta<AccordionTitleStoryProps> = {
 		},
 		unstyled: {
 			control: 'boolean',
-			description: 'Part of `PolymorphicProps` (via the shared `SpecsContract`), not `AccordionTitle`\'s own `AccordionTitleProps`. Read purely off `AccordionTitle`\'s OWN props (`useProps(NAME, _props)`) — `useAccordionCtx(NAME)` only ever destructures `collapsible`/`disabled`/`handleToggle`/`idx`/`indicator`/`isOpen`/`step` here, never `unstyled`, so it does NOT inherit from the wrapping `Accordion`\'s context and must be set directly on `Accordion.Title` itself. The semantic base classes (`inkq-accordion-title`, `inkq-accordion-title__step`, `inkq-accordion-title__text`, `inkq-accordion-title__indicator`) are ALWAYS emitted regardless of this prop — all four have real declarations in `Accordion.module.scss`, so it only suppresses the CSS-module-hashed class normally appended alongside each. See the `Unstyled` story.',
+			description: 'Part of `PolymorphicProps` (via the shared `FactoryContract`), not `AccordionTitle`\'s own `AccordionTitleProps`. Read purely off `AccordionTitle`\'s OWN props (`useProps(_props)`) — `useAccordionCtx(NAME)` only ever destructures `collapsible`/`disabled`/`handleToggle`/`idx`/`index`/`indicator`/`isOpen`/`layout`/`order` here, never `unstyled`, so it does NOT inherit from the wrapping `Accordion`\'s context and must be set directly on `Accordion.Title` itself. The semantic base classes (`inkq-accordion-title`, `inkq-accordion-title__step`, `inkq-accordion-title__text`, `inkq-accordion-title__indicator`) are ALWAYS emitted regardless of this prop. `unstyled` drops the CSS-module-hashed class normally appended alongside each, plus: the config classes (the `inkq-h${order}` global class on the text `<span>`, and the `--plus`/`--chevron` modifier on the indicator `<span>`), the title tokens (`--accordion-title-indent` on the text `<span>`, `--accordion-title-direction` on the root), and — because it is also forwarded to the title\'s `Box` — the non-state `data-*` attributes (`data-title`, `data-open`). See the `Unstyled` story.',
 		},
 	},
 	args: {
+		...getDefaultProps<Accordion.Title.Props>('Accordion.Title'),
 		children: 'What is your refund policy?',
 	},
 }
@@ -111,7 +116,7 @@ export const Indicators: Story = {
 		<Row>
 			{ INDICATOR_OPTIONS.map(indicator => (
 				<Group key={ indicator } label={ indicator }>
-					{ titleTemplate(args, { children: null, indicator }) }
+					{ titleTemplate(args, { children: null, indicator } as AccordionWrapperProps) }
 				</Group>
 			)) }
 		</Row>
@@ -129,27 +134,100 @@ export const Indicators: Story = {
 	},
 }
 
-// `step` (from context) only renders a `styles('step')` `<span>` when the
-// wrapping `Accordion`'s `layout` is `'steps'` — otherwise it's entirely
-// absent, regardless of `index`.
+// The step label is worked out by `Accordion.Title` itself from the wrapping
+// `Accordion`'s `index` and `layout` (not read from context): a
+// `styles('step')` `<span>` only renders when `layout` is `'steps'` —
+// otherwise it's entirely absent, regardless of `index`.
 export const Step: Story = {
 	parameters: { layout: 'padded' },
 	render: args => (
 		<Row>
-			<Group label="layout: default (no step)">
-				{ titleTemplate(args, { children: null, layout: 'default', index: 0 }) }
-			</Group>
-			<Group label="layout: steps (step 01)">
-				{ titleTemplate(args, { children: null, layout: 'steps', index: 0 }) }
-			</Group>
+			{ LAYOUT_OPTIONS.map(layout => (
+				<Group key={ layout } label={ `layout: ${ layout }` }>
+					{ titleTemplate(args, { children: null, layout, index: 0 }) }
+				</Group>
+			)) }
 		</Row>
 	),
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement),
 			titles = canvas.getAllByRole('button')
 
-		await expect(titles[0].querySelector('[class*="step"]')).not.toBeInTheDocument()
-		await expect(titles[1].querySelector('[class*="step"]')).toHaveTextContent('01')
+		expect(titles).toHaveLength(LAYOUT_OPTIONS.length)
+		// `LAYOUT_OPTIONS` is `['default', 'blockquote', 'steps']`, mapped in
+		// order.
+		const [defaultTitle, blockquoteTitle, stepsTitle] = titles
+
+		await expect(defaultTitle.querySelector('[class*="step"]')).not.toBeInTheDocument()
+		await expect(blockquoteTitle.querySelector('[class*="step"]')).not.toBeInTheDocument()
+		await expect(stepsTitle.querySelector('[class*="step"]')).toHaveTextContent('01')
+	},
+}
+
+// With a non-default layout (`steps` or `blockquote`) the title sets
+// `--accordion-title-indent: 0` on its TEXT `<span>` (not its root) — with
+// `steps` the step label sits first, so the text needs no extra left margin;
+// with the default layout the token is not set at all. `Accordion` sets
+// `--accordion-step-size` on ITS root, and only for `layout="steps"`. The
+// wrapping `Accordion` here is standalone, so it computes its own shared
+// tokens (inside an `Accordion.Group` its root would get none).
+export const StepTokens: Story = {
+	parameters: { layout: 'padded' },
+	render: args => (
+		<Row>
+			{ LAYOUT_OPTIONS.map(layout => (
+				<Group key={ layout } label={ `layout: ${ layout }` }>
+					{ titleTemplate(args, { children: null, layout }) }
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const roots = [...canvasElement.querySelectorAll<HTMLElement>('.inkq-accordion')]
+
+		expect(roots).toHaveLength(LAYOUT_OPTIONS.length)
+
+		// `LAYOUT_OPTIONS` is `['default', 'blockquote', 'steps']`, mapped in
+		// order.
+		const [defaultRoot, blockquoteRoot, stepsRoot] = roots
+
+		const indentOf = (root: HTMLElement) =>
+			root.querySelector<HTMLElement>('.inkq-accordion-title__text')!
+				.style.getPropertyValue('--accordion-title-indent')
+
+		await expect(indentOf(defaultRoot)).toBe('')
+		await expect(indentOf(blockquoteRoot)).toBe('0')
+		await expect(indentOf(stepsRoot)).toBe('0')
+
+		await expect(defaultRoot.style.getPropertyValue('--accordion-step-size')).toBe('')
+		await expect(blockquoteRoot.style.getPropertyValue('--accordion-step-size')).toBe('')
+		await expect(stepsRoot.style.getPropertyValue('--accordion-step-size')).not.toBe('')
+	},
+}
+
+// `indicatorPosition` isn't `AccordionTitle`'s own prop either — it comes off
+// `Accordion.context`. `'left'` sets `--accordion-title-direction:
+// row-reverse` on the title root; `'right'` leaves the token unset.
+export const IndicatorPosition: Story = {
+	parameters: { layout: 'padded' },
+	render: args => (
+		<Row>
+			{ INDICATOR_POSITION_OPTIONS.map(indicatorPosition => (
+				<Group key={ indicatorPosition } label={ `indicatorPosition: ${ indicatorPosition }` }>
+					{ titleTemplate(args, { children: null, indicatorPosition }) }
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const titles = within(canvasElement).getAllByRole('button')
+
+		expect(titles).toHaveLength(INDICATOR_POSITION_OPTIONS.length)
+		// `INDICATOR_POSITION_OPTIONS` is `['left', 'right']`, mapped in order.
+		const [left, right] = titles
+
+		await expect(left.style.getPropertyValue('--accordion-title-direction')).toBe('row-reverse')
+		await expect(right.style.getPropertyValue('--accordion-title-direction')).toBe('')
 	},
 }
 
@@ -285,23 +363,32 @@ export const DisabledParent: Story = {
 
 // `unstyled` is `AccordionTitle`'s OWN prop, read straight off its own
 // `_props` via `useProps` — `useAccordionCtx(NAME)` only ever destructures
-// `collapsible`/`disabled`/`handleToggle`/`idx`/`indicator`/`isOpen`/`step`
-// off `Accordion.context`, never `unstyled`, so it must be set directly on
+// `collapsible`/`disabled`/`handleToggle`/`idx`/`index`/`indicator`/`isOpen`/
+// `layout`/`order` off `Accordion.context`, never `unstyled`, so it must be set directly on
 // `Accordion.Title` itself here, NOT on the wrapping `Accordion` (which has
 // no effect on it at all).
 //
 // It does NOT remove `AccordionTitle`'s own semantic base classes
 // (`inkq-accordion-title`, `inkq-accordion-title__step`,
 // `inkq-accordion-title__text`, `inkq-accordion-title__indicator`) — per
-// `getClassName.tsx`, the base class is now ALWAYS emitted. It only
-// suppresses the CSS-module hashed class normally appended alongside it, for
-// every selector this component styles — asserted here against the REAL
-// compiled export map (`Accordion.module.scss`), not a literal hash or an
-// "any extra class" heuristic. The wrapping `Accordion` is given `layout:
-// 'steps'` (so the `step` `<span>` renders) and keeps its registered default
-// `indicator: 'plus'` (so the indicator `<span>` renders too) — both
-// selectors have real SCSS declarations, so suppression is genuinely
-// observable on all four selectors.
+// `getClassName.tsx`, the base class is ALWAYS emitted. It does suppress the
+// CSS-module hashed class normally appended alongside it, for every selector
+// this component styles — asserted here against the REAL compiled export map
+// (`Accordion.module.scss`), not a literal hash or an "any extra class"
+// heuristic. Beyond that it also drops:
+//  - the config classes: the `inkq-h${order}` global class on the text
+//    `<span>` and the `--plus` modifier on the indicator `<span>`
+//    (`getClassName.tsx`);
+//  - the title tokens (`getStyle.tsx`): `--accordion-title-indent` on the
+//    text `<span>`;
+//  - the non-state `data-*` attributes (`data-title`, `data-open`), because
+//    `AccordionTitle` forwards `unstyled` on to its `Box`
+//    (`buildAttributes.ts`).
+// The wrapping `Accordion` is given `layout: 'steps'` (so the `step` `<span>`
+// and the indent token exist) and `defaultOpen: true` (so there is a
+// `data-open` to drop), and keeps its registered default `indicator: 'plus'`
+// (so the indicator `<span>` renders too) — all four selectors have real SCSS
+// declarations, so suppression is genuinely observable on every one.
 export const Unstyled: Story = {
 	parameters: {
 		layout: 'padded',
@@ -311,7 +398,7 @@ export const Unstyled: Story = {
 		<Row>
 			{ BOOLEAN_OPTIONS.map(unstyled => (
 				<Group key={ String(unstyled) } label={ String(unstyled) }>
-					{ titleTemplate({ ...args, unstyled }, { children: null, layout: 'steps', index: 0 }) }
+					{ titleTemplate({ ...args, unstyled }, { children: null, layout: 'steps', index: 0, defaultOpen: true }) }
 				</Group>
 			)) }
 		</Row>
@@ -359,10 +446,108 @@ export const Unstyled: Story = {
 		const indicatorHash = classes['inkq-accordion-title__indicator']!
 		expect(styledIndicator.classList.contains(indicatorHash)).toBe(true)
 		expect(unstyledIndicator.classList.contains(indicatorHash)).toBe(false)
+
+		// Config classes: global heading class on the text, `--plus` modifier
+		// on the indicator.
+		await expect(styledText).toHaveClass('inkq-h3')
+		await expect(unstyledText).not.toHaveClass('inkq-h3')
+
+		const plusHash = classes['inkq-accordion-title__indicator--plus']!
+		await expect(styledIndicator).toHaveClass(plusHash)
+		await expect(unstyledIndicator).not.toHaveClass(plusHash)
+		await expect(unstyledIndicator).not.toHaveClass('inkq-accordion-title__indicator--plus')
+
+		// Tokens.
+		// `--accordion-title-indent` is set on the text `<span>`, not the root.
+		await expect(styledText.style.getPropertyValue('--accordion-title-indent')).toBe('0')
+		await expect(unstyledText.style.getPropertyValue('--accordion-title-indent')).toBe('')
+
+		// Non-state `data-*` attributes, forwarded to `Box`.
+		await expect(styledRoot).toHaveAttribute('data-title')
+		await expect(styledRoot).toHaveAttribute('data-open')
+		await expect(unstyledRoot).not.toHaveAttribute('data-title')
+		await expect(unstyledRoot).not.toHaveAttribute('data-open')
+
+		// State attributes (`aria-expanded`) are kept either way.
+		await expect(styledRoot).toHaveAttribute('aria-expanded', 'true')
+		await expect(unstyledRoot).toHaveAttribute('aria-expanded', 'true')
 	},
 }
 
-// `useAccordionCtx(NAME)` (`createRootCtx`'s REQUIRED reader, not the
+// `order` isn't `AccordionTitle`'s own prop — `AccordionTitle` reads it off
+// `Accordion.context`, published by the wrapping `<Accordion>`, and applies it
+// as a global `inkq-h${order}` class on the text `<span>`. Each group sets the
+// WRAPPING `Accordion`'s `order` and asserts its own class is present and
+// every sibling's is absent.
+export const Order: Story = {
+	parameters: { layout: 'padded' },
+	render: args => (
+		<Row>
+			{ ORDER_OPTIONS.map(order => (
+				<Group key={ order } label={ String(order) }>
+					{ titleTemplate(args, { children: null, order }) }
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const texts = canvasElement.querySelectorAll('.inkq-accordion-title__text')
+
+		expect(texts).toHaveLength(ORDER_OPTIONS.length)
+
+		for (const [i, order] of ORDER_OPTIONS.entries()) {
+			await expect(texts[i]).toHaveClass(`inkq-h${ order }`)
+
+			for (const other of ORDER_OPTIONS.filter(o => o !== order))
+				await expect(texts[i]).not.toHaveClass(`inkq-h${ other }`)
+		}
+	},
+}
+
+// `collapsible` isn't `AccordionTitle`'s own prop either — it comes off
+// `Accordion.context`. With `collapsible: false`, `AccordionTitle` skips its
+// interactive branch: it renders a plain `<div>` (still with `data-title` and
+// `data-open`, since the item is always open) with no `aria-expanded`/
+// `aria-controls`, no `type`, and no indicator `<span>`. `collapsible: true`
+// renders the disclosure `<button>`.
+export const NonInteractive: Story = {
+	parameters: { layout: 'padded' },
+	render: args => (
+		<Row>
+			{ BOOLEAN_OPTIONS.map(collapsible => (
+				<Group key={ String(collapsible) } label={ `collapsible: ${ String(collapsible) }` }>
+					{ titleTemplate(args, { children: null, collapsible }) }
+				</Group>
+			)) }
+		</Row>
+	),
+	play: async ({ canvasElement }) => {
+		const titles = canvasElement.querySelectorAll<HTMLElement>('[data-title]')
+
+		expect(titles).toHaveLength(2)
+		// `BOOLEAN_OPTIONS` is `[true, false]`, mapped in order.
+		const [interactive, fixed] = titles
+
+		await expect(interactive.tagName).toBe('BUTTON')
+		await expect(interactive).toHaveAttribute('aria-expanded', 'false')
+		await expect(interactive).toHaveAttribute('aria-controls')
+		await expect(interactive.querySelector('.inkq-accordion-title__indicator')).toBeInTheDocument()
+
+		await expect(fixed.tagName).toBe('DIV')
+		await expect(fixed).toHaveClass('inkq-accordion-title')
+		await expect(fixed).toHaveAttribute('data-open')
+		await expect(fixed).not.toHaveAttribute('aria-expanded')
+		await expect(fixed).not.toHaveAttribute('aria-controls')
+		await expect(fixed).not.toHaveAttribute('type')
+		await expect(fixed.querySelector('.inkq-accordion-title__indicator')).not.toBeInTheDocument()
+		await expect(fixed.querySelector('.inkq-accordion-title__text')).toHaveTextContent('What is your refund policy?')
+
+		// Only the `true` title is a button.
+		await expect(within(canvasElement).getAllByRole('button')).toHaveLength(1)
+	},
+}
+
+// `useAccordionCtx(NAME)` (`createCompoundCtx`'s REQUIRED reader, not the
 // optional `useSafeRootCtx`) throws the instant `AccordionTitle` is rendered
 // with no wrapping `Accordion` at all, rather than silently rendering
 // unstyled/inert. A raw, uncaught render throw would crash every other
@@ -391,6 +576,6 @@ export const RequiresAccordionParent: Story = {
 		await expect(validTitle).toBeInTheDocument()
 
 		const errorFallback = await canvas.findByTestId('accordion-title-error')
-		await expect(errorFallback).toHaveTextContent('<Accordion.Title /> must be rendered inside <Accordion>')
+		await expect(errorFallback).toHaveTextContent('<Accordion.Title /> must be a direct child of <Accordion>')
 	},
 }

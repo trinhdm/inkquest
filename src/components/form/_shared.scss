@@ -1,0 +1,141 @@
+@use '@/styles/utils' as global;
+
+@mixin form-tokens {
+	--form-control-background: var(--inkq-background-card);
+	--form-control-background-active: var(--inkq-background-card-hover);
+
+	--form-control-border: var(--inkq-border);
+	--form-control-border-hover: var(--inkq-border-strong);
+	--form-control-border-focus: var(--inkq-color-action);
+	--form-control-border-active: var(--inkq-color-action-hover);
+
+	--form-control-border-radius: var(--inkq-border-radius-sm);
+	--form-control-border-width: 1px;
+
+	--form-control-color: var(--inkq-color-link);
+
+	--form-control-shadow: none;
+	--form-control-shadow-focus: #{global.shadow-focus(var(--form-control-border-focus))};
+
+	--form-control-padding-inline: calc(1.5 * var(--inkq-field-padding-md));
+    --form-control-padding: var(--inkq-field-padding-md) var(--form-control-padding-inline);
+
+	--form-control-duration: var(--duration-default);
+	--form-control-easing: var(--easing);
+	--form-control-transition: var(--form-control-duration) var(--form-control-easing);
+	--form-control-transition-border:
+		border-color var(--form-control-transition),
+		box-shadow var(--form-control-transition);
+	--form-control-transition-bg-border:
+		background-color var(--form-control-transition),
+        var(--form-control-transition-border);
+
+	&:disabled,
+	&:has(:disabled) {
+		--form-control-background-disabled: #{global.disable(var(--form-control-background))};
+		--form-control-border-disabled: #{global.disable(var(--form-control-border))};
+	}
+}
+
+@mixin focused-form-control {
+	border-color: var(--form-control-border-focus);
+	box-shadow: var(--form-control-shadow-focus);
+	outline: 0 solid transparent;
+}
+
+@mixin form-control {
+	@include form-tokens;
+
+    background-color: var(--form-control-background);
+    border: var(--form-control-border-width) solid var(--form-control-border);
+    border-radius: var(--form-control-border-radius);
+    box-shadow: var(--form-control-shadow);
+	position: relative;
+    transition: var(--form-control-transition-bg-border);
+
+	&:hover {
+		border-color: var(--form-control-border-hover);
+	}
+
+	&:focus-visible {
+		@include focused-form-control;
+	}
+
+	&:disabled {
+		background-color: var(--form-control-background-disabled);
+		border-color: var(--form-control-border-disabled);
+		cursor: not-allowed;
+	}
+
+	&:is([aria-invalid="true"]) {
+		border-color: var(--inkq-color-danger);
+	}
+}
+
+@mixin form-control-content {
+	@include form-control;
+
+	color: var(--form-control-color);
+	font: var(--inkq-text-body);
+	padding: var(--form-control-padding);
+	width: 100%;
+}
+
+@mixin form-control-text {
+	@include form-control-content;
+
+	&:is([readonly]) {
+		--form-control-background: #{global.disable(var(--inkq-background-card-hover))};
+		--form-control-border-focus: #{global.disable(var(--inkq-border-strong))};
+
+		color: var(--inkq-color-text);
+		cursor: auto;
+	}
+
+	&::placeholder {
+		color: var(--inkq-color-placeholder);
+	}
+
+	&:-webkit-autofill,
+	&:autofill {
+		background-clip: content-box;
+		font-weight: var(--inkq-font-weight-semibold);
+		-webkit-text-fill-color: var(--form-control-color);
+
+		&,
+		&:is(:disabled, [read-only]) {
+			box-shadow: global.autofill(var(--form-control-background));
+			transition:
+				background-color 9999s ease-in-out 0s,
+				var(--form-control-transition-border);
+		}
+
+		&:is(:active, :focus, :hover) {
+			$autofill-mix: (var(--form-control-background-active), var(--form-control-background));
+			--form-control-autofill: #{global.to-mix($autofill-mix, 25%)};
+
+			box-shadow: global.autofill(var(--form-control-autofill));
+		}
+	}
+}
+
+@mixin form-control-icon {
+	$name: &;
+
+	--icon-size: var(--field-icon-size);
+
+	align-items: center;
+	color: var(--inkq-color-placeholder);
+	display: flex;
+	inset-block: 0;
+	inset-inline: var(--form-control-icon-inset);
+	justify-content: center;
+	margin: auto var(--field-padding-inline);
+	max-height: fit-content;
+	position: absolute;
+	z-index: 2;
+
+	// &:has(+ [aria-invalid="true"]) {
+	// 	color: var(--inkq-color-danger);
+	// }
+}
